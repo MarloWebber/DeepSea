@@ -155,8 +155,8 @@ public:
 		    b2DistanceJointDef jointDef1;
 			jointDef1.bodyA = body1;
 			jointDef1.bodyB = body2;
-			jointDef1.localAnchorA =  b2Vec2(1.0f, 0.65f); //SetZero();
-			jointDef1.localAnchorB =  b2Vec2(1.0f, 0.65f);//SetZero();
+			jointDef1.localAnchorA =  b2Vec2(2.0f, 2.65f); //SetZero();
+			jointDef1.localAnchorB =  b2Vec2(2.0f, 2.65f);//SetZero();
 			jointDef1.frequencyHz = 100.0f;
 			jointDef1.dampingRatio = 0.0f;
 			jointDef1.length = 0.0f;
@@ -165,8 +165,8 @@ public:
 			b2RevoluteJointDef jointDef2;
 			jointDef2.bodyA = body1;
 			jointDef2.bodyB = body2;
-			jointDef2.localAnchorA =  b2Vec2(1.0f, 0.65f); //SetZero();
-			jointDef2.localAnchorB =  b2Vec2(1.0f, 0.65f);//SetZero();
+			jointDef2.localAnchorA =  b2Vec2(2.0f, 2.65f); //SetZero();
+			jointDef2.localAnchorB =  b2Vec2(2.0f, 2.65f);//SetZero();
 			// jointDef1.frequencyHz = 100.0f;
 			// jointDef1.dampingRatio = 0.0f;
 			// jointDef1.length = 0.0f;
@@ -189,8 +189,8 @@ public:
 			b2DistanceJointDef jointDef3;
 			jointDef3.bodyA = body1;
 			jointDef3.bodyB = body3;
-			jointDef3.localAnchorA =  b2Vec2(1.0f, 0.65f); //SetZero();
-			jointDef3.localAnchorB =  b2Vec2(1.0f, 0.65f);//SetZero();
+			jointDef3.localAnchorA =  b2Vec2(2.0f, 2.65f); //SetZero();
+			jointDef3.localAnchorB =  b2Vec2(2.0f, 2.65f);//SetZero();
 			jointDef3.frequencyHz = 100.0f;
 			jointDef3.dampingRatio = 0.0f;
 			jointDef3.length = 0.0f;
@@ -199,8 +199,8 @@ public:
 			b2RevoluteJointDef jointDef4;
 			jointDef4.bodyA = body1;
 			jointDef4.bodyB = body3;
-			jointDef4.localAnchorA =  b2Vec2(1.0f, 0.65f); //SetZero();
-			jointDef4.localAnchorB =  b2Vec2(1.0f, 0.65f);//SetZero();
+			jointDef4.localAnchorA =  b2Vec2(2.0f, 2.65f); //SetZero();
+			jointDef4.localAnchorB =  b2Vec2(2.0f, 2.65f);//SetZero();
 			// jointDef1.frequencyHz = 100.0f;
 			// jointDef1.dampingRatio = 0.0f;
 			// jointDef1.length = 0.0f;
