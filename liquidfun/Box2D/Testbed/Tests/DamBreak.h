@@ -121,8 +121,6 @@ for (int i = 0; i < 3; i ++) {
 
 			// a fishy
 
-		// instead of making the animals out of rigid bodies, you could possibly make them out of rigid particle groups ?
-			// it may not be possible to constrain particle objects with joints.
 		{
 			b2BodyDef bd1;
 			bd1.type = b2_dynamicBody;

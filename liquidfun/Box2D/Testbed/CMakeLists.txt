@@ -16,6 +16,8 @@ set(Testbed_Framework_SRCS
 	Framework/FullscreenUI.h
 	Framework/ParticleParameter.cpp
 	Framework/ParticleParameter.h
+	Framework/DeepSea.cpp
+	Framework/DeepSea.h
 )
 
 #define the test files.
