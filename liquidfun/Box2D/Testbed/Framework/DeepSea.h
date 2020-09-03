@@ -86,40 +86,9 @@
 		}
 
 
-		void recursiveBoneIncorporator() {
+	void recursiveBoneIncorporator(bone, cumulativeBonePosition) {
 
-		}
-
-
-
-		class BonyFish {
-			// these are the animals made from rigid physical objects in the game world.
-			// they are comprised of skeletons that brachiate from an origin point. each bone ends in none, one, or several others. bones can be jointed and can move to apply force.
-			// these have the potential to be simple to implement.
-
-			// let us say that the bone arrays can be capped to 8 for now.
-			public:
-				b2boneUserData bones[8];
-
-			// a neural network brain
-
-			// the starting position of the fish in the game world
-				b2vec2 position = b2vec2(0.0f, 0.0f);
-
-
-
-			void incorporate () {
-
-				// for each bone
-
-				b2vec2 cumulativeBonePosition = position;
-
-				n_bones = len(bones);
-				for (int i = 0; i < n_bones, i++) {
-
-
-
-					// generate the b2 vectors for each bone
+			// generate the b2 vectors for each bone
 						// first, the center of the root of the bone will be at cumulativeBonePosition.
 						// then, the vertexes on the root are placed 1/2 the width to either side, and rotated by the bone angle.
 
@@ -142,10 +111,76 @@
 						tipVertexB = rotatePoint( tipCenter[0], tipCenter[1], bone.normalAngle, tipVertexB);
 
 
+						b2vec2 vertices[] = {rootVertexB, tipVertexB, tipVertexA, rootVertexA};
 
-					// rotate and translate them into the appropriate game coordinates
-					// generate the b2 bodies and shapes
-					// attach pointers to the b2 structs into the user data object and vice versa
+						// attach pointers to the b2 structs into the user data object and vice versa. for b2body this has to be done before you take the bodydef object to the factory				
+					// generate the b2 bodies and shapes. 
+						b2BodyDef bd1;
+
+						b1.SetUserData(&bone)
+
+						bd1.type = b2_dynamicBody;
+						b2Body* body1 = m_world->CreateBody(&bd1);
+						b2PolygonShape shape1;
+
+						shape1.SetUserData(&bone)
+
+						// they are added into the world
+						shape1.set(vertices); //SetAsBox(0.01f, 0.15f, b2Vec2(2.0f,2.5f+ (i * 0.3)), 0.0f);
+						body1->CreateFixture(&shape1, 1.5f);
+						m_particleSystem->DestroyParticlesInShape(shape1,
+																  body1->GetTransform());
+
+						bone.body = body1;
+						bone.shape = shape1;
+
+
+						// run this same function on any new bones that the bone had.
+						n_bones = len(bone.bones);
+						for (int i = 0; i < n_bones, i++) {
+
+							recursiveBoneIncorporator(bone, tipCenter);
+							
+						}
+
+			}
+
+
+
+
+
+		class BonyFish {
+			// these are the animals made from rigid physical objects in the game world.
+			// they are comprised of skeletons that brachiate from an origin point. each bone ends in none, one, or several others. bones can be jointed and can move to apply force.
+			// these have the potential to be simple to implement.
+
+			// let us say that the bone arrays can be capped to 8 for now.
+			public:
+				b2boneUserData bones[8];
+
+			// a neural network brain
+
+			// the starting position of the fish in the game world
+				b2vec2 position = b2vec2(0.0f, 0.0f);
+
+
+
+		
+			void incorporate () {
+
+				// for each bone
+
+				b2vec2 cumulativeBonePosition = position;
+
+				n_bones = len(bones);
+				for (int i = 0; i < n_bones, i++) {
+
+
+
+					b2vec2 boneEnd = recursiveBoneIncorporator(bone);
+
+
+
 					// deploy them into the world
 				}
 
