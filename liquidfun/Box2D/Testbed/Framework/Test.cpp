@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include "../Tests/DamBreak.h"
 
+#include "DeepSea.h"
+
 void DestructionListener::SayGoodbye(b2Joint* joint)
 {
 	if (test->m_mouseJoint == joint)
