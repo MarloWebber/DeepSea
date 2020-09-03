@@ -25,6 +25,7 @@
 			bool driveCCW;	// a signal that tells the motor to turn in the other direction.
 
 			float upperAngle;
+			float normalAngle;
 			float lowerAngle;
 
 			b2RevoluteJoint joint; // the joint that this user data struct gets pinned to
@@ -32,7 +33,7 @@
 
 
 
-		typedef struct boneUserData {
+		class boneUserData {
 			// this will comprise the organs of the rigid animals.
 
 			float length;
@@ -45,8 +46,6 @@
 			jointUserData joint; // the joint that attaches it into its socket			
 
 			boneUserData bones[8]; // a collection of the other bones that are attached to it.
-			// 
-
 
 			bool isSensor = false;
 			float foodSensor = 0.0f;
@@ -54,6 +53,7 @@
 
 			b2Body body;
 			b2PolygonShape shape; 
+
 
 
 		}
@@ -64,6 +64,32 @@
 		// 	// this will typically comprise organs of the squishy animals.
 
 		// }
+
+		// https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
+		b2vec2 rotatePoint(float cx,float cy,float angle, b2vec2 p)
+		{
+		  float s = sin(angle);
+		  float c = cos(angle);
+
+		  // translate point back to origin:
+		  p.x -= cx;
+		  p.y -= cy;
+
+		  // rotate point
+		  float xnew = p.x * c - p.y * s;
+		  float ynew = p.x * s + p.y * c;
+
+		  // translate point back:
+		  p.x = xnew + cx;
+		  p.y = ynew + cy;
+		  return b2vec2(p.x,p.y);
+		}
+
+
+		void recursiveBoneIncorporator() {
+
+		}
+
 
 
 		class BonyFish {
@@ -78,17 +104,50 @@
 			// a neural network brain
 
 			// the starting position of the fish in the game world
+				b2vec2 position = b2vec2(0.0f, 0.0f);
 
 
 
 			void incorporate () {
 
 				// for each bone
-				// generate the b2 vectors for each vertex
-				// rotate and translate them into the appropriate game coordinates
-				// generate the b2 bodies and shapes
-				// attach pointers to the b2 structs into the user data object and vice versa
-				// deploy them into the world
+
+				b2vec2 cumulativeBonePosition = position;
+
+				n_bones = len(bones);
+				for (int i = 0; i < n_bones, i++) {
+
+
+
+					// generate the b2 vectors for each bone
+						// first, the center of the root of the bone will be at cumulativeBonePosition.
+						// then, the vertexes on the root are placed 1/2 the width to either side, and rotated by the bone angle.
+
+
+						b2vec2 rootVertexA = b2vec2(cumulativeBonePosition[0] + (bone.rootThickness/2), cumulativeBonePosition[1]);
+						b2vec2 rootVertexB = b2vec2(cumulativeBonePosition[0] - (bone.rootThickness/2), cumulativeBonePosition[1]);
+
+						rootVertexA = rotatePoint( cumulativeBonePosition[0], cumulativeBonePosition[1], bone.normalAngle, rootVertexA);
+						rootVertexB = rotatePoint( cumulativeBonePosition[0], cumulativeBonePosition[1], bone.normalAngle, rootVertexB);
+
+						// then you figure out the position of the tip center and do it again for the vertices at the end of the bone.
+						b2vec2 tipCenter = b2vec2(cumulativeBonePosition[0], cumulativeBonePosition[1] + bone.length);
+						tipCenter = rotatePoint( cumulativeBonePosition[0], cumulativeBonePosition[1], bone.normalAngle, tipCenter);
+
+
+						b2vec2 tipVertexA = b2vec2(tipCenter[0] + (bone.tipThickness/2), tipCenter[1]);
+						b2vec2 tipVertexB = b2vec2(tipCenter[0] - (bone.tipThickness/2), tipCenter[1]);
+
+						tipVertexA = rotatePoint( tipCenter[0], tipCenter[1], bone.normalAngle, tipVertexA);
+						tipVertexB = rotatePoint( tipCenter[0], tipCenter[1], bone.normalAngle, tipVertexB);
+
+
+
+					// rotate and translate them into the appropriate game coordinates
+					// generate the b2 bodies and shapes
+					// attach pointers to the b2 structs into the user data object and vice versa
+					// deploy them into the world
+				}
 
 				// for each joint
 				// figure out the joint position
