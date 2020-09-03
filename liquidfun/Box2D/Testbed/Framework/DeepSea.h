@@ -51,7 +51,7 @@ struct boneUserData_t {
 // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
 b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p);
 
-void recursiveBoneIncorporator(boneUserData_t * p_bone, b2Vec2 cumulativeBonePosition, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+void recursiveBoneIncorporator(boneUserData_t * p_bone, b2Vec2 cumulativeBonePosition, b2World * m_world, b2ParticleSystem * m_particleSystem,boneUserData_t * previousBone) ;
 
 
 

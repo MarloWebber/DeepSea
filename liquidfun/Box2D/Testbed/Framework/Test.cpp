@@ -478,47 +478,47 @@ boneUserData_t bone0 = {
 
 bonyFish_t simpleJellyfish = {
 	&bone0,
-	b2Vec2(2.0f,2.0f)
+	b2Vec2(0.0f,0.0f)
 };
 
 
 
-	recursiveBoneIncorporator(simpleJellyfish.bone, b2Vec2(0.0f,0.0f), m_world, m_particleSystem);
+	recursiveBoneIncorporator(simpleJellyfish.bone, simpleJellyfish.position, m_world, m_particleSystem, nullptr);
 
 
 
 
 
-return;
+// return;
 
 //--------------------------
 
-	b2Joint* p_currentJoint = m_world->GetJointList();
+	// b2Joint* p_currentJoint = m_world->GetJointList();
 
-	while (p_currentJoint->GetNext()) {
+	// while (p_currentJoint->GetNext()) {
 		
 
 		
 
 
-		// void * vp_nangers = p_currentJoint->GetUserData();
+	// 	// void * vp_nangers = p_currentJoint->GetUserData();
 
-		// int* p_value = (int *) vp_nangers;
+	// 	// int* p_value = (int *) vp_nangers;
 
-		// int value = *p_value;
+	// 	// int value = *p_value;
 
-		// printf("value: %i\n", value);
+	// 	// printf("value: %i\n", value);
 
-		// if (value == 909) {
-		// 	printf("CUM DIX\n");
-		// }
-		b2RevoluteJoint* revoluteJoint = (b2RevoluteJoint*)p_currentJoint;
-        // revoluteJoint->EnableMotor(false);
-        revoluteJoint->SetMotorSpeed(-1 * revoluteJoint->GetMotorSpeed());
+	// 	// if (value == 909) {
+	// 	// 	printf("CUM DIX\n");
+	// 	// }
+	// 	b2RevoluteJoint* revoluteJoint = (b2RevoluteJoint*)p_currentJoint;
+ //        // revoluteJoint->EnableMotor(false);
+ //        revoluteJoint->SetMotorSpeed(-1 * revoluteJoint->GetMotorSpeed());
 
-		p_currentJoint = p_currentJoint->GetNext();
+	// 	p_currentJoint = p_currentJoint->GetNext();
 
-	}
+	// }
 
 
 }
