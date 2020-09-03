@@ -368,7 +368,8 @@ void Test::jointMotorSetpoint()
 		// 	printf("CUM DIX\n");
 		// }
 		b2RevoluteJoint* revoluteJoint = (b2RevoluteJoint*)p_currentJoint;
-        revoluteJoint->EnableMotor(false);
+        // revoluteJoint->EnableMotor(false);
+        revoluteJoint->SetMotorSpeed(-1 * revoluteJoint->GetMotorSpeed());
 
 		p_currentJoint = p_currentJoint->GetNext();
 
