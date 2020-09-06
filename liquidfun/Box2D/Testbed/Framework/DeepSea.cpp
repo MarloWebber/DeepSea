@@ -46,30 +46,69 @@ void recursiveBoneIncorporator(boneUserData_t*  p_bone, b2Vec2 cumulativeBonePos
 
 	// then you figure out the position of the tip center and do it again for the vertices at the end of the bone.
 	b2Vec2 tipCenter = b2Vec2(cumulativeBonePosition.x, cumulativeBonePosition.y + bone.length);
-	tipCenter = rotatePoint( cumulativeBonePosition.x, cumulativeBonePosition.y, angle, tipCenter);
+	// tipCenter = rotatePoint( cumulativeBonePosition.x, cumulativeBonePosition.y, angle, tipCenter);
 
-
-	if (false) { // saving this until i can make polygons properly.
+printf("cumulativeBonePosition x:%f , y:%f\n",cumulativeBonePosition.x, cumulativeBonePosition.y);
+printf("tipCenter x:%f , y:%f\n",tipCenter.x, tipCenter.y);
+printf("\n");
+	// if (false) { // saving this until i can make polygons properly.
 		
 
 		b2Vec2 rootVertexA = b2Vec2(cumulativeBonePosition.x + (bone.rootThickness/2), cumulativeBonePosition.y);
 		b2Vec2 rootVertexB = b2Vec2(cumulativeBonePosition.x - (bone.rootThickness/2), cumulativeBonePosition.y);
-		rootVertexA = rotatePoint( cumulativeBonePosition.x, cumulativeBonePosition.y, angle, rootVertexA);
-		rootVertexB = rotatePoint( cumulativeBonePosition.x, cumulativeBonePosition.y, angle, rootVertexB);
+		// rootVertexA = rotatePoint( cumulativeBonePosition.x, cumulativeBonePosition.y, angle, rootVertexA);
+		// rootVertexB = rotatePoint( cumulativeBonePosition.x, cumulativeBonePosition.y, angle, rootVertexB);
 
 	
 		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (bone.tipThickness/2), tipCenter.y);
 		b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (bone.tipThickness/2), tipCenter.y);
-		tipVertexA = rotatePoint( tipCenter.x, tipCenter.y, angle, tipVertexA);
-		tipVertexB = rotatePoint( tipCenter.x, tipCenter.y, angle, tipVertexB);
-	}
+		// tipVertexA = rotatePoint( tipCenter.x, tipCenter.y, angle, tipVertexA);
+		// tipVertexB = rotatePoint( tipCenter.x, tipCenter.y, angle, tipVertexB);
+	// }
 	
+	// bool setasbox = false;
 
-	// b2Vec2 vertices[4];
-	// vertices[0].Set(rootVertexB.x, rootVertexB.y);
+
+	// b2Vec2 lemonade[3];
+
+	int count = 4;
+	b2Vec2 vertices[count];
+
+
+	// CW
+	vertices[0].Set(rootVertexB.x, rootVertexB.y);
+	vertices[1].Set(tipVertexB.x, tipVertexB.y);
+	vertices[2].Set(tipVertexA.x, tipVertexB.y);
+	vertices[3].Set(rootVertexA.x, rootVertexA.y);
+
+	// vertices[0].Set(-0.005000,  2.500000);
 	// vertices[1].Set(tipVertexB.x, tipVertexB.y);
 	// vertices[2].Set(tipVertexA.x, tipVertexB.y);
 	// vertices[3].Set(rootVertexA.x, rootVertexA.y);
+
+	// CCW
+	// lemonade[3].Set(rootVertexB.x, rootVertexB.y);
+	// lemonade[2].Set(tipVertexB.x, tipVertexB.y);
+	// lemonade[1].Set(tipVertexA.x, tipVertexB.y);
+	// lemonade[0].Set(rootVertexA.x, rootVertexA.y);
+
+	
+	// vertices[0].Set(0.0f, 0.0f);
+
+	// vertices[1].Set(1.0f, 0.0f);
+
+	// vertices[2].Set(0.0f, 1.0f);
+
+
+
+
+
+	// b2PolygonShape polygon;
+
+	// polygon.Set(vertices, count);
+
+
+
 
 
 	// b2Vec2 vertices[4] = {	b2Vec2(rootVertexB.x, rootVertexB.y),
@@ -78,16 +117,16 @@ void recursiveBoneIncorporator(boneUserData_t*  p_bone, b2Vec2 cumulativeBonePos
 	// 						b2Vec2(0.1f, 0.5f), };
 
 
-	// printf("RootA.x: %f, RootA.y: %f\n", vertices[3].x, vertices[3].y);
-	// printf("RootB.x: %f, RootB.y: %f\n", vertices[0].x, vertices[0].y);
-	// printf("tipA.x: %f, tipA.y: %f\n", vertices[2].x, vertices[2].y);
-	// printf("tipB.x: %f, tipB.y: %f\n", vertices[1].x, vertices[1].y);
-	// printf("---\n");
+	printf("RootA.x: %f, RootA.y: %f\n", vertices[3].x, vertices[3].y);
+	printf("RootB.x: %f, RootB.y: %f\n", vertices[0].x, vertices[0].y);
+	printf("tipA.x: %f, tipA.y: %f\n", vertices[2].x, vertices[2].y);
+	printf("tipB.x: %f, tipB.y: %f\n", vertices[1].x, vertices[1].y);
+	printf("---\n");
 
 	// it's okay. we can use setasbox instead.
 
 	// figure out the center point.
-	b2Vec2 boneCenter = b2Vec2(cumulativeBonePosition.x, cumulativeBonePosition.y + (bone.length/2));
+	b2Vec2 boneCenter = b2Vec2(cumulativeBonePosition.x, cumulativeBonePosition.y + (2*bone.length));
 	boneCenter = rotatePoint(cumulativeBonePosition.x, cumulativeBonePosition.y, angle, boneCenter);
 
 	// attach pointers to the b2 structs into the user data object and vice versa. for b2body this has to be done before you take the bodydef object to the factory				
@@ -103,7 +142,7 @@ void recursiveBoneIncorporator(boneUserData_t*  p_bone, b2Vec2 cumulativeBonePos
 	// shape1.SetUserData(&bone)
 
 	// they are added into the world
-	// shape1.Set(vertices, 4);
+	// shape1.Set(vertices, count);
 	shape1.SetAsBox(bone.rootThickness, bone.length, boneCenter, angle);	
 	body1->CreateFixture(&shape1, 1.5f);
 	m_particleSystem->DestroyParticlesInShape(shape1,

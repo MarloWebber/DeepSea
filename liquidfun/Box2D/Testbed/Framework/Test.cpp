@@ -371,7 +371,7 @@ jointUserData_t joint1 = {
 	false,
 	false,
 	0.05f,
-	-0.7f * pi,
+	-0.15f * pi,
 	0.25f,
 	nullptr
 };
@@ -383,7 +383,7 @@ jointUserData_t joint2 = {
 	false,
 	false,
 	0.05f,
-	0.7f * pi,
+	0.15f * pi,
 	0.25f,
 	nullptr
 };
