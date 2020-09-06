@@ -24,6 +24,8 @@
 
 #include "DeepSea.h"
 
+float pi = 3.141f;
+
 void DestructionListener::SayGoodbye(b2Joint* joint)
 {
 	if (test->m_mouseJoint == joint)
@@ -369,7 +371,7 @@ jointUserData_t joint1 = {
 	false,
 	false,
 	0.05f,
-	0.10f,
+	-0.7f * pi,
 	0.25f,
 	nullptr
 };
@@ -381,7 +383,19 @@ jointUserData_t joint2 = {
 	false,
 	false,
 	0.05f,
-	0.10f,
+	0.7f * pi,
+	0.25f,
+	nullptr
+};
+
+jointUserData_t joint3 = {
+	1.0f,
+	0.0f,
+	2.0f,
+	false,
+	false,
+	0.05f,
+	0.0f * pi,
 	0.25f,
 	nullptr
 };
@@ -464,7 +478,7 @@ boneUserData_t bone0 = {
 	1.5f,
 	b2Vec2(0,0),
 	b2Vec2(0,0),
-	&joint2,
+	&joint3,
 	&bone1,&bone2,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,
 	2,
 	true,
@@ -478,7 +492,7 @@ boneUserData_t bone0 = {
 
 bonyFish_t simpleJellyfish = {
 	&bone0,
-	b2Vec2(0.0f,0.0f)
+	b2Vec2(0.0f,2.5f)
 };
 
 
@@ -489,7 +503,7 @@ bonyFish_t simpleJellyfish = {
 
 
 
-// return;
+return;
 
 //--------------------------
 

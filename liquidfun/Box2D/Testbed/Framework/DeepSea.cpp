@@ -34,6 +34,14 @@ void recursiveBoneIncorporator(boneUserData_t*  p_bone, b2Vec2 cumulativeBonePos
 	// then, the vertexes on the root are placed 1/2 the width to either side, and rotated by the bone angle.
 	boneUserData_t bone = *p_bone;
 
+	if(bone.joint != nullptr) {
+		// printf("the joint was not null\n");
+	}
+	else {
+		printf("the joint was null\n");
+		return;
+	}
+
 	float angle = bone.joint->normalAngle;
 
 	// then you figure out the position of the tip center and do it again for the vertices at the end of the bone.
