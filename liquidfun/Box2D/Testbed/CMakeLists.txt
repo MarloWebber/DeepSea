@@ -126,6 +126,7 @@ target_link_libraries (
 	Box2D
 	freeglut_static
 	glui
+	fann
 	${ADDITIONAL_LIBRARIES}
 	${OPENGL_LIBRARIES}
 )

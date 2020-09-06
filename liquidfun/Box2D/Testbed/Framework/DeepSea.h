@@ -55,6 +55,21 @@ void recursiveBoneIncorporator(boneUserData_t * p_bone, b2Vec2 cumulativeBonePos
 
 
 
+
+
+// struct fishBrain_t {
+
+
+
+// }
+
+
+
+void fishBrainCreator ();
+
+
+
+
 struct bonyFish_t {
 	// these are the animals made from rigid physical objects in the game world.
 	// they are comprised of skeletons that brachiate from an origin point. each bone ends in none, one, or several others. bones can be jointed and can move to apply force.
@@ -62,8 +77,20 @@ struct bonyFish_t {
 
 	boneUserData_t * bone;
 
+
+	// fishBrain_t * brain;
+
+
 	// the starting position of the fish in the game world
 	b2Vec2 position;
+};
+
+struct foodParticle_t {
+	b2Vec2 position; // starting position of the food in the game world
+	float energy; // the nutritive value of the food
+
+	b2Body * body;
+	b2CircleShape * shape; 
 };
 
 // typedef struct SquishyFish {

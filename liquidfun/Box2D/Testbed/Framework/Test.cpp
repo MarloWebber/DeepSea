@@ -319,6 +319,32 @@ void Test::MouseMove(const b2Vec2& p)
 
 void Test::jointMotorSetpoint()
 {
+
+
+
+		// add a food particle to the game world
+				// no idea how to change the color
+
+				foodParticle_t fishFood;
+				fishFood.energy = 1.0f;
+
+				b2BodyDef bd9;
+				bd9.type = b2_dynamicBody;
+				b2Body* body9 = m_world->CreateBody(&bd9);
+				b2CircleShape shape9;
+				shape9.m_p.Set(-2.5,2.5 );
+				shape9.m_radius = 0.02f;
+				body9->CreateFixture(&shape9, 4.0f);
+				m_particleSystem->DestroyParticlesInShape(shape9,
+														  body9->GetTransform());
+
+				fishFood.body = body9;
+				fishFood.shape = &shape9;
+
+
+
+
+
 	
 	// b2Joint alljoints[] = m_world->GetJointList();
 	// int n_joints = m_world->GetJointCount();
@@ -501,7 +527,7 @@ bonyFish_t simpleJellyfish = {
 
 
 
-
+	fishBrainCreator();
 
 return;
 
