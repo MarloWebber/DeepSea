@@ -18,6 +18,8 @@ struct jointUserData_t {
 
 	b2RevoluteJoint * joint; // the joint that this user data struct gets pinned to
 } ;
+
+#define N_FINGERS 8 // the bones sprouting from a root bone, the next layer down in the bone hierarchy. you know, fish fingers.
 		
 struct boneUserData_t {
 	// this will comprise the organs of the rigid animals.
@@ -34,7 +36,7 @@ struct boneUserData_t {
 
 	jointUserData_t * joint; // the joint that attaches it into its socket			
 
-	boneUserData_t* bones[8]; // a collection of the other bones that are attached to it.
+	boneUserData_t* bones[N_FINGERS]; // a collection of the other bones that are attached to it.
 	int n_bones;			  // number of child bones that are actually used.
 
 	bool isRoot ;
@@ -56,7 +58,7 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p);
 
 void recursiveBoneIncorporator(boneUserData_t * p_bone, b2Vec2 cumulativeBonePosition, b2World * m_world, b2ParticleSystem * m_particleSystem,boneUserData_t * previousBone) ;
 
-
+void recursiveSensorUpdater (boneUserData_t * p_bone) ;
 
 
 

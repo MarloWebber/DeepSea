@@ -213,13 +213,12 @@ float magnitude (b2Vec2 vector) {
 }
 
 // to traverse the hierarchy and update the sensation of sensors, we need another special recursive function.
-void recursiveSensorUpdater () {
+void recursiveSensorUpdater (boneUserData_t * p_bone) {
 
 
 	// update the position of the sensor bone
-
-	bone.position = bone.body->GetPosition();
-
+	p_bone->position = p_bone->body->GetPosition();
+	p_bone->sensation = 0.0f;
 
 
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
@@ -227,14 +226,21 @@ void recursiveSensorUpdater () {
 			foodParticle = food[i];
 
 
-			b2Vec2 positionalDifference = B2Vec2((bone.position.x - food.position.x),(bone.position.y - food.position.y));
+			b2Vec2 positionalDifference = B2Vec2((p_bone->position.x - food.position.x),(p_bone->position.y - food.position.y));
 
 
-			bone.sensation += magnitude (positionalDifference);
+			p_bone->sensation += magnitude (positionalDifference);
 
 
 		}
 
+	}
+
+	
+	for  (int i = 0; i < N_FINGERS; i++) {
+		if (bone.bones[i] != nullptr) {
+			recursiveSensorUpdater(bone.bones[i]);
+		}
 	}
 
 
@@ -321,10 +327,9 @@ void deepSeaLoop () {
 		// if fish is not null
 		if (fishes[i] != nullptr) {
 
-
 			// iterate through the bones of the fish and update any sensors
+			recursiveSensorUpdater(fishes[i].bone);
 
-				// how the f*ck to transverse a linked hierarchy?
 
 		
 
