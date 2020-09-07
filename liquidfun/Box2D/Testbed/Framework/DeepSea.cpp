@@ -1,6 +1,10 @@
 
 #include "DeepSea.h"
 #include "fann.h"
+#include "Test.h"
+
+foodParticle_t food[N_FOODPARTICLES];
+bonyFish_t fishes[N_FISHES];
 
 // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
 b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
@@ -140,7 +144,7 @@ printf("\n");
 	b2Body* body1 = m_world->CreateBody(&bd1);
 	b2PolygonShape shape1;
 
-	shape1.SetUserData(&bone)
+	// shape1.SetUserData(&bone)
 
 	// they are added into the world
 	// shape1.Set(vertices, count);
@@ -183,6 +187,8 @@ printf("\n");
 
             jointDef2.userData = &bone.joint;
 
+            bone.joint->init = true;
+
 			m_world->CreateJoint(&jointDef2);
        
 	}
@@ -197,6 +203,7 @@ printf("\n");
 	cumulativeBonePosition = bone.rootCenter;
 
 	// that was my favorite episode of bones.
+	bone.init = true;
 };
 
 // typedef struct SquishyFish {
@@ -222,11 +229,9 @@ void recursiveSensorUpdater (boneUserData_t * p_bone) {
 
 
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (food[i] != nullptr) {
-			foodParticle = food[i];
-
-
-			b2Vec2 positionalDifference = B2Vec2((p_bone->position.x - food.position.x),(p_bone->position.y - food.position.y));
+		if (food[i].init) {
+			
+			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[i].position.x),(p_bone->position.y - food[i].position.y));
 
 
 			p_bone->sensation += magnitude (positionalDifference);
@@ -238,8 +243,8 @@ void recursiveSensorUpdater (boneUserData_t * p_bone) {
 
 	
 	for  (int i = 0; i < N_FINGERS; i++) {
-		if (bone.bones[i] != nullptr) {
-			recursiveSensorUpdater(bone.bones[i]);
+		if (p_bone->bones[i]->init) {
+			recursiveSensorUpdater(p_bone->bones[i]);
 		}
 	}
 
@@ -251,47 +256,21 @@ void recursiveSensorUpdater (boneUserData_t * p_bone) {
 
 
 
-// add a food particle to the world and register it so the game knows it exists.
-void addFoodParticle () {
-
-		// // add a food particle to the game world
-		// 		// no idea how to change the color
-
-				foodParticle_t fishFood;
-				fishFood.energy = 1.0f;
-
-				b2BodyDef bd9;
-				bd9.userData = &fishFood; // register the fishfood struct as user data on the body
-				bd9.type = b2_dynamicBody;
-				b2Body* body9 = m_world->CreateBody(&bd9);
-				b2CircleShape shape9;
-				shape1.SetUserData(&fishFood)	// and also on the shape
-				shape9.m_p.Set(-2.5,2.5 );
-				shape9.m_radius = 0.02f;
-				body9->CreateFixture(&shape9, 4.0f);
-				m_particleSystem->DestroyParticlesInShape(shape9,
-														  body9->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
-
-				fishFood.body = body9;
-				fishFood.shape = &shape9;
-
-}
-
 
 
 void fishBrainCreator () {
-	const unsigned int num_input = 2;
-    const unsigned int num_output = 1;
-    const unsigned int num_layers = 3;
-    const unsigned int num_neurons_hidden = 3;
-    const float desired_error = (const float) 0.001;
-    const unsigned int max_epochs = 500000;
-    const unsigned int epochs_between_reports = 1000;
+	// const unsigned int num_input = 2;
+ //    const unsigned int num_output = 1;
+ //    const unsigned int num_layers = 3;
+ //    const unsigned int num_neurons_hidden = 3;
+ //    const float desired_error = (const float) 0.001;
+ //    const unsigned int max_epochs = 500000;
+ //    const unsigned int epochs_between_reports = 1000;
 
-    struct fann *ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
+ //    struct fann *ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
 
-    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
-    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
+ //    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
+ //    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
     // fann_train_on_file(ann, "xor.data", max_epochs, epochs_between_reports, desired_error);
 
@@ -313,19 +292,14 @@ void deepSeaLoop () {
 
 	// get positions of all the food particles
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (food[i] != nullptr) {
-			foodParticle = food[i];
-			foodParticle.position = foodParticle.body->GetPosition();
+		if (food[i].init) {
+			food[i].position = food[i].body->GetPosition();
 		}
-
 	}
-
 
 	// for each fish in the game world
 	for (int i = 0; i < N_FISHES; i++) {
-
-		// if fish is not null
-		if (fishes[i] != nullptr) {
+		if (fishes[i].init) {
 
 			// iterate through the bones of the fish and update any sensors
 			recursiveSensorUpdater(fishes[i].bone);

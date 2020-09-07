@@ -37,6 +37,8 @@
 #include <string>
 #include <sstream>
 
+#include "DeepSea.h"
+
 namespace TestMain
 {
 

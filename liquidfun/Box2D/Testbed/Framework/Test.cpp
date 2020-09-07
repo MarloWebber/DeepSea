@@ -317,12 +317,46 @@ void Test::MouseMove(const b2Vec2& p)
 }
 
 
+
+
+// add a food particle to the world and register it so the game knows it exists.
+void Test::addFoodParticle () {
+
+		// // add a food particle to the game world
+		// 		// no idea how to change the color
+
+				foodParticle_t fishFood;
+				fishFood.energy = 1.0f;
+
+				b2BodyDef bd9;
+				bd9.userData = &fishFood; // register the fishfood struct as user data on the body
+				bd9.type = b2_dynamicBody;
+				b2Body* body9 = m_world->CreateBody(&bd9);
+				b2CircleShape shape9;
+				// shape9.SetUserData(&fishFood)	// and also on the shape
+				shape9.m_p.Set(-2.5,2.5 );
+				shape9.m_radius = 0.02f;
+				body9->CreateFixture(&shape9, 4.0f);
+				m_particleSystem->DestroyParticlesInShape(shape9,
+														  body9->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
+
+				fishFood.body = body9;
+				fishFood.shape = &shape9;
+
+				fishFood.init = true;
+
+}
+
+
+
 void Test::jointMotorSetpoint()
 {
 
 
 
 		// // add a food particle to the game world
+		Test::addFoodParticle();
+
 		// 		// no idea how to change the color
 
 		// 		foodParticle_t fishFood;
@@ -399,7 +433,8 @@ jointUserData_t joint1 = {
 	0.05f,
 	-0.15f * pi,
 	0.25f,
-	nullptr
+	nullptr,
+	false
 };
 
 jointUserData_t joint2 = {
@@ -411,7 +446,8 @@ jointUserData_t joint2 = {
 	0.05f,
 	0.15f * pi,
 	0.25f,
-	nullptr
+	nullptr,
+	false
 };
 
 jointUserData_t joint3 = {
@@ -423,7 +459,8 @@ jointUserData_t joint3 = {
 	0.05f,
 	0.0f * pi,
 	0.25f,
-	nullptr
+	nullptr,
+	false
 };
 
 /*
@@ -442,15 +479,23 @@ boneUserData_t* bones[8]; // a collection of the other bones that are attached t
 int n_bones;			  // number of child bones that are actually used.
 
 bool isRoot ;
-bool isMouth ;
-bool isSensor ;
-float foodSensor ;
+	bool isMouth ;
 
-bool isWeapon ;
+	bool isSensor ;
+	float sensation;
+
+	bool isWeapon ;	// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
+
+	float energy; 
+
 
 b2Body * body;
 b2PolygonShape * shape; 
 */
+
+
+
+
 boneUserData_t bone1 = {
 	0.1f,
 	0.01f,
@@ -466,8 +511,11 @@ boneUserData_t bone1 = {
 	false,
 	0.0f,
 	false,
+	0.0f,
 	nullptr,
-	nullptr
+	nullptr,
+	b2Vec2(0,0),
+	false
 };
 
 boneUserData_t bone2 = {
@@ -485,8 +533,11 @@ boneUserData_t bone2 = {
 	false,
 	0.0f,
 	false,
+	0.0f,
 	nullptr,
-	nullptr
+	nullptr,
+	b2Vec2(0,0),
+	false
 };
 
 boneUserData_t bone0 = {
@@ -512,22 +563,30 @@ boneUserData_t bone0 = {
 	true,
 	1.0f,
 	false,
+	0.0f,
 	nullptr,
-	nullptr
+	nullptr,
+	b2Vec2(0,0),
+	false
 };
 
 bonyFish_t simpleJellyfish = {
 	&bone0,
+	0.0f,
 	b2Vec2(0.0f,2.5f)
-};
+}; 
 
 
 
 	recursiveBoneIncorporator(simpleJellyfish.bone, simpleJellyfish.position, m_world, m_particleSystem, nullptr);
 
-
-
 	fishBrainCreator();
+
+
+	simpleJellyfish.init = true;
+
+
+	
 
 return;
 

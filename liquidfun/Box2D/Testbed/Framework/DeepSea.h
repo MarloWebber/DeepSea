@@ -4,6 +4,11 @@
 #include "Test.h"
 #include "Main.h"
 
+#define N_FINGERS 8 // the bones sprouting from a root bone, the next layer down in the bone hierarchy. you know, fish fingers.
+#define N_FISHES 10
+#define N_FOODPARTICLES 10
+
+
 struct jointUserData_t {
 	float torque; 	
 	float speed; 	
@@ -17,10 +22,11 @@ struct jointUserData_t {
 	float lowerAngle;
 
 	b2RevoluteJoint * joint; // the joint that this user data struct gets pinned to
+
+	bool init;
 } ;
 
-#define N_FINGERS 8 // the bones sprouting from a root bone, the next layer down in the bone hierarchy. you know, fish fingers.
-		
+
 struct boneUserData_t {
 	// this will comprise the organs of the rigid animals.
 	// it is like a linked list that connects to other bones.
@@ -51,6 +57,10 @@ struct boneUserData_t {
 
 	b2Body * body;
 	b2PolygonShape * shape; 
+
+	b2Vec2 position;
+
+	bool init;
 } ;
 
 // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
@@ -62,16 +72,8 @@ void recursiveSensorUpdater (boneUserData_t * p_bone) ;
 
 
 
-// struct fishBrain_t {
-
-
-
-// }
-
-
 
 void fishBrainCreator ();
-
 
 
 
@@ -89,6 +91,9 @@ struct bonyFish_t {
 
 	// the starting position of the fish in the game world
 	b2Vec2 position;
+
+
+	bool init; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 };
 
 struct foodParticle_t {
@@ -97,6 +102,8 @@ struct foodParticle_t {
 
 	b2Body * body;
 	b2CircleShape * shape; 
+
+	bool init; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 };
 
 // typedef struct SquishyFish {
@@ -109,10 +116,8 @@ struct foodParticle_t {
 
 void deepSeaLoop () ;
 
-#define N_FISHES 10
-#define N_FOODPARTICLES 10
 
-foodParticle_t[] food[N_FOODPARTICLES]
-bonyFish_t[] fishes[N_FISHES];
+
+
 
 #endif
