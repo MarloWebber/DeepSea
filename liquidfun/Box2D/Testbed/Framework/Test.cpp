@@ -319,34 +319,6 @@ void Test::MouseMove(const b2Vec2& p)
 
 
 
-// add a food particle to the world and register it so the game knows it exists.
-void Test::addFoodParticle () {
-
-		// // add a food particle to the game world
-		// 		// no idea how to change the color
-
-				foodParticle_t fishFood;
-				fishFood.energy = 1.0f;
-
-				b2BodyDef bd9;
-				bd9.userData = &fishFood; // register the fishfood struct as user data on the body
-				bd9.type = b2_dynamicBody;
-				b2Body* body9 = m_world->CreateBody(&bd9);
-				b2CircleShape shape9;
-				// shape9.SetUserData(&fishFood)	// and also on the shape
-				shape9.m_p.Set(-2.5,2.5 );
-				shape9.m_radius = 0.02f;
-				body9->CreateFixture(&shape9, 4.0f);
-				m_particleSystem->DestroyParticlesInShape(shape9,
-														  body9->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
-
-				fishFood.body = body9;
-				fishFood.shape = &shape9;
-
-				fishFood.init = true;
-
-}
-
 
 
 void Test::jointMotorSetpoint()
@@ -355,7 +327,7 @@ void Test::jointMotorSetpoint()
 
 
 		// // add a food particle to the game world
-		Test::addFoodParticle();
+		addFoodParticle(b2Vec2(2.5f, 2.5f), m_world, m_particleSystem);
 
 		// 		// no idea how to change the color
 
@@ -578,12 +550,13 @@ bonyFish_t simpleJellyfish = {
 
 
 
-	recursiveBoneIncorporator(simpleJellyfish.bone, simpleJellyfish.position, m_world, m_particleSystem, nullptr);
-
-	fishBrainCreator();
+	fishIncorporator(&simpleJellyfish,  m_world, m_particleSystem);
 
 
-	simpleJellyfish.init = true;
+	// fishBrainCreator();
+
+
+	// simpleJellyfish.init = true;
 
 
 	

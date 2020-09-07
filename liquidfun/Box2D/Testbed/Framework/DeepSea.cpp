@@ -6,6 +6,9 @@
 foodParticle_t food[N_FOODPARTICLES];
 bonyFish_t fishes[N_FISHES];
 
+int currentNumberOfFish;
+int currentNumberOfFood;
+
 // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
 b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 	float s = sin(angle);
@@ -53,9 +56,9 @@ void recursiveBoneIncorporator(boneUserData_t*  p_bone, b2Vec2 cumulativeBonePos
 	b2Vec2 tipCenter = b2Vec2(cumulativeBonePosition.x, cumulativeBonePosition.y + bone.length);
 	// tipCenter = rotatePoint( cumulativeBonePosition.x, cumulativeBonePosition.y, angle, tipCenter);
 
-printf("cumulativeBonePosition x:%f , y:%f\n",cumulativeBonePosition.x, cumulativeBonePosition.y);
-printf("tipCenter x:%f , y:%f\n",tipCenter.x, tipCenter.y);
-printf("\n");
+// printf("cumulativeBonePosition x:%f , y:%f\n",cumulativeBonePosition.x, cumulativeBonePosition.y);
+// printf("tipCenter x:%f , y:%f\n",tipCenter.x, tipCenter.y);
+// printf("\n");
 	// if (false) { // saving this until i can make polygons properly.
 		
 
@@ -122,11 +125,11 @@ printf("\n");
 	// 						b2Vec2(0.1f, 0.5f), };
 
 
-	printf("RootA.x: %f, RootA.y: %f\n", vertices[3].x, vertices[3].y);
-	printf("RootB.x: %f, RootB.y: %f\n", vertices[0].x, vertices[0].y);
-	printf("tipA.x: %f, tipA.y: %f\n", vertices[2].x, vertices[2].y);
-	printf("tipB.x: %f, tipB.y: %f\n", vertices[1].x, vertices[1].y);
-	printf("---\n");
+	// printf("RootA.x: %f, RootA.y: %f\n", vertices[3].x, vertices[3].y);
+	// printf("RootB.x: %f, RootB.y: %f\n", vertices[0].x, vertices[0].y);
+	// printf("tipA.x: %f, tipA.y: %f\n", vertices[2].x, vertices[2].y);
+	// printf("tipB.x: %f, tipB.y: %f\n", vertices[1].x, vertices[1].y);
+	// printf("---\n");
 
 	// it's okay. we can use setasbox instead.
 
@@ -222,13 +225,14 @@ float magnitude (b2Vec2 vector) {
 // to traverse the hierarchy and update the sensation of sensors, we need another special recursive function.
 void recursiveSensorUpdater (boneUserData_t * p_bone) {
 
+	// printf("melel");
 
 	// update the position of the sensor bone
 	p_bone->position = p_bone->body->GetPosition();
 	p_bone->sensation = 0.0f;
 
 
-	for  (int i = 0; i < N_FOODPARTICLES; i++) {
+	for  (int i = 0; i < currentNumberOfFood; i++) {
 		if (food[i].init) {
 			
 			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[i].position.x),(p_bone->position.y - food[i].position.y));
@@ -241,10 +245,11 @@ void recursiveSensorUpdater (boneUserData_t * p_bone) {
 
 	}
 
-	
-	for  (int i = 0; i < N_FINGERS; i++) {
-		if (p_bone->bones[i]->init) {
-			recursiveSensorUpdater(p_bone->bones[i]);
+	// this part segfaults.
+	boneUserData_t bone = *p_bone;
+	for  (int i = 0; i < bone.n_bones; i++) {
+		if (bone.bones[i]->init) {
+			recursiveSensorUpdater(bone.bones[i]);
 		}
 	}
 
@@ -286,20 +291,73 @@ void fishBrainCreator () {
 
 
 
+// add a food particle to the world and register it so the game knows it exists.
+void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+		// // add a food particle to the game world
+		// 		// no idea how to change the color
+
+				foodParticle_t fishFood;
+				fishFood.energy = 1.0f;
+
+				b2BodyDef bd9;
+				bd9.userData = &fishFood; // register the fishfood struct as user data on the body
+				bd9.type = b2_dynamicBody;
+				b2Body* body9 = m_world->CreateBody(&bd9);
+				b2CircleShape shape9;
+				// shape9.SetUserData(&fishFood)	// and also on the shape
+				shape9.m_p.Set(-position.x,position.y );
+				shape9.m_radius = 0.02f;
+				body9->CreateFixture(&shape9, 4.0f);
+				m_particleSystem->DestroyParticlesInShape(shape9,
+														  body9->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
+
+				fishFood.body = body9;
+				fishFood.shape = &shape9;
+
+				fishFood.init = true;
+				currentNumberOfFood++;
+
+}
+
+
+
+void fishIncorporator (bonyFish_t * p_fish,  b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+	recursiveBoneIncorporator(p_fish->bone, p_fish->position, m_world, m_particleSystem, nullptr);
+
+	p_fish->init = true;
+
+	fishes[currentNumberOfFish] = *p_fish;
+
+	currentNumberOfFish ++;
+}
+
+
+void fishDestroyer () {
+	;
+}
+
 
 
 void deepSeaLoop () {
 
+	// printf("ngingual\n");
+
 	// get positions of all the food particles
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		// printf("fenies\n");
 		if (food[i].init) {
+			// printf("lecmoca\n");
 			food[i].position = food[i].body->GetPosition();
 		}
 	}
 
 	// for each fish in the game world
-	for (int i = 0; i < N_FISHES; i++) {
+	for (int i = 0; i < currentNumberOfFish; i++) {
+		// printf("tlemnote\n");
 		if (fishes[i].init) {
+			// printf("reftif\n");
 
 			// iterate through the bones of the fish and update any sensors
 			recursiveSensorUpdater(fishes[i].bone);

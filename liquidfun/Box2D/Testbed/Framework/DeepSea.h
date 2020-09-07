@@ -61,6 +61,8 @@ struct boneUserData_t {
 	b2Vec2 position;
 
 	bool init;
+
+
 } ;
 
 // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
@@ -105,6 +107,11 @@ struct foodParticle_t {
 
 	bool init; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 };
+
+
+
+void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+void fishIncorporator (bonyFish_t * p_fish,  b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 
 // typedef struct SquishyFish {
 // 	// this is the type of animal made of particle groups.

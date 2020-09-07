@@ -168,7 +168,7 @@ public:
 	void LaunchBomb();
 	void LaunchBomb(const b2Vec2& position, const b2Vec2& velocity);
 
-	void addFoodParticle();
+	// void addFoodParticle();
 	void jointMotorSetpoint();
 	
 	void SpawnBomb(const b2Vec2& worldPt);
