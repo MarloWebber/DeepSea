@@ -5,8 +5,8 @@
 #include "Main.h"
 
 #define N_FINGERS 8 // the bones sprouting from a root bone, the next layer down in the bone hierarchy. you know, fish fingers.
-#define N_FISHES 10
-#define N_FOODPARTICLES 10
+#define N_FISHES 8
+#define N_FOODPARTICLES 8
 
 
 struct jointUserData_t {

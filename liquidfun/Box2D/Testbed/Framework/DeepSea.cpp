@@ -6,8 +6,9 @@
 foodParticle_t food[N_FOODPARTICLES];
 bonyFish_t fishes[N_FISHES];
 
-int currentNumberOfFish;
 int currentNumberOfFood;
+int currentNumberOfFish;
+
 
 // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
 b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
@@ -232,24 +233,29 @@ void recursiveSensorUpdater (boneUserData_t * p_bone) {
 	p_bone->sensation = 0.0f;
 
 
-	for  (int i = 0; i < currentNumberOfFood; i++) {
+	for  (int i = 0; i < N_FOODPARTICLES; i++) {
 		if (food[i].init) {
 			
 			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[i].position.x),(p_bone->position.y - food[i].position.y));
 
+			float distance = magnitude (positionalDifference);
+			if (distance > 0) {
 
-			p_bone->sensation += magnitude (positionalDifference);
+				p_bone->sensation += 1/distance;
+			}
 
 
 		}
 
 	}
 
+	printf("sensation: %f\n", p_bone->sensation);
+
 	// this part segfaults.
-	boneUserData_t bone = *p_bone;
-	for  (int i = 0; i < bone.n_bones; i++) {
-		if (bone.bones[i]->init) {
-			recursiveSensorUpdater(bone.bones[i]);
+	// boneUserData_t bone = *p_bone;
+	for  (int i = 0; i < N_FINGERS; i++) {
+		if (p_bone->bones[i]->init) {
+			// recursiveSensorUpdater(p_bone->bones[i]);  // recursing this is required unless the sensor is the root bone. but it segfaults if you do.
 		}
 	}
 
@@ -297,11 +303,11 @@ void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_
 		// // add a food particle to the game world
 		// 		// no idea how to change the color
 
-				foodParticle_t fishFood;
-				fishFood.energy = 1.0f;
+				// fishFood = ;
+				food[currentNumberOfFood].energy = 1.0f;
 
 				b2BodyDef bd9;
-				bd9.userData = &fishFood; // register the fishfood struct as user data on the body
+				bd9.userData = &food[currentNumberOfFood]; // register the fishfood struct as user data on the body
 				bd9.type = b2_dynamicBody;
 				b2Body* body9 = m_world->CreateBody(&bd9);
 				b2CircleShape shape9;
@@ -312,10 +318,11 @@ void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_
 				m_particleSystem->DestroyParticlesInShape(shape9,
 														  body9->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
 
-				fishFood.body = body9;
-				fishFood.shape = &shape9;
+				food[currentNumberOfFood].body = body9;
+				food[currentNumberOfFood].shape = &shape9;
 
-				fishFood.init = true;
+				food[currentNumberOfFood].init = true;
+
 				currentNumberOfFood++;
 
 }
@@ -324,11 +331,14 @@ void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_
 
 void fishIncorporator (bonyFish_t * p_fish,  b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
-	recursiveBoneIncorporator(p_fish->bone, p_fish->position, m_world, m_particleSystem, nullptr);
-
-	p_fish->init = true;
-
 	fishes[currentNumberOfFish] = *p_fish;
+ 
+
+	recursiveBoneIncorporator(fishes[currentNumberOfFish].bone, fishes[currentNumberOfFish].position, m_world, m_particleSystem, nullptr);
+
+	fishes[currentNumberOfFish].init = true;
+
+	
 
 	currentNumberOfFish ++;
 }
@@ -354,7 +364,7 @@ void deepSeaLoop () {
 	}
 
 	// for each fish in the game world
-	for (int i = 0; i < currentNumberOfFish; i++) {
+	for (int i = 0; i < N_FISHES; i++) {
 		// printf("tlemnote\n");
 		if (fishes[i].init) {
 			// printf("reftif\n");

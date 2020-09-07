@@ -2,6 +2,9 @@
 add_definitions( -DFREEGLUT_EXPORTS -DFREEGLUT_STATIC
                  -DGLUT_DISABLE_ATEXIT_HACK -D_CRT_SECURE_NO_WARNINGS )
 
+# https://bytefreaks.net/programming-2/cc-how-do-you-set-gdb-debug-flag-g-with-cmake
+# set(CMAKE_BUILD_TYPE Debug)
+
 # Define the framework files.
 set(Testbed_Framework_SRCS
 	Framework/Main.cpp
