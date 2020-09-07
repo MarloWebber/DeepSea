@@ -115,122 +115,122 @@ public:
 
 
 
+				
+
+
 			
-
-
-		
-for (int i = 0; i < 3; i ++) {
+	// for (int i = 0; i < 3; i ++) {
 
 
 
-			// a fishy
+	// 			// a fishy
 
-		{
-			b2BodyDef bd1;
-			bd1.type = b2_dynamicBody;
-			b2Body* body1 = m_world->CreateBody(&bd1);
-			b2PolygonShape shape1;
-			shape1.SetAsBox(0.01f, 0.15f, b2Vec2(2.0f,2.5f+ (i * 0.3)), 0.0f);
-			body1->CreateFixture(&shape1, 1.5f);
-			m_particleSystem->DestroyParticlesInShape(shape1,
-													  body1->GetTransform());
-
-
-			b2BodyDef bd2;
-			bd2.type = b2_dynamicBody;
-			b2Body* body2 = m_world->CreateBody(&bd2);
-			b2PolygonShape shape2;
-			shape2.SetAsBox(0.01f, 0.1f, b2Vec2(2.05f, 2.5f+ (i * 0.3)), 0.25f);
-			body2->CreateFixture(&shape2, 1.5f);
-			m_particleSystem->DestroyParticlesInShape(shape2,
-													  body2->GetTransform());
+	// 		{
+	// 			b2BodyDef bd1;
+	// 			bd1.type = b2_dynamicBody;
+	// 			b2Body* body1 = m_world->CreateBody(&bd1);
+	// 			b2PolygonShape shape1;
+	// 			shape1.SetAsBox(0.01f, 0.15f, b2Vec2(2.0f,2.5f+ (i * 0.3)), 0.0f);
+	// 			body1->CreateFixture(&shape1, 1.5f);
+	// 			m_particleSystem->DestroyParticlesInShape(shape1,
+	// 													  body1->GetTransform());
 
 
-			b2BodyDef bd3;
-			bd3.type = b2_dynamicBody;
-			b2Body* body3 = m_world->CreateBody(&bd3);
-			b2PolygonShape shape3;
-			shape3.SetAsBox(0.01f, 0.1f, b2Vec2(1.95f, 2.5+ (i * 0.3)), -0.25f);
-			body3->CreateFixture(&shape3, 1.5f);
-			m_particleSystem->DestroyParticlesInShape(shape3,
-													  body3->GetTransform());
+	// 			b2BodyDef bd2;
+	// 			bd2.type = b2_dynamicBody;
+	// 			b2Body* body2 = m_world->CreateBody(&bd2);
+	// 			b2PolygonShape shape2;
+	// 			shape2.SetAsBox(0.01f, 0.1f, b2Vec2(2.05f, 2.5f+ (i * 0.3)), 0.25f);
+	// 			body2->CreateFixture(&shape2, 1.5f);
+	// 			m_particleSystem->DestroyParticlesInShape(shape2,
+	// 													  body2->GetTransform());
+
+
+	// 			b2BodyDef bd3;
+	// 			bd3.type = b2_dynamicBody;
+	// 			b2Body* body3 = m_world->CreateBody(&bd3);
+	// 			b2PolygonShape shape3;
+	// 			shape3.SetAsBox(0.01f, 0.1f, b2Vec2(1.95f, 2.5+ (i * 0.3)), -0.25f);
+	// 			body3->CreateFixture(&shape3, 1.5f);
+	// 			m_particleSystem->DestroyParticlesInShape(shape3,
+	// 													  body3->GetTransform());
 
 
 
 
-			// some notes about serializing joints. https://stackoverflow.com/questions/6950587/how-to-extract-create-a-jointdef-based-off-a-b2joint-instantiation
+	// 			// some notes about serializing joints. https://stackoverflow.com/questions/6950587/how-to-extract-create-a-jointdef-based-off-a-b2joint-instantiation
 
-		 //    b2DistanceJointDef jointDef1;
-			// jointDef1.bodyA = body1;
-			// jointDef1.bodyB = body2;
-			// jointDef1.localAnchorA =  b2Vec2(2.0f, 2.65f+ (i * 0.3)); //SetZero();
-			// jointDef1.localAnchorB =  b2Vec2(2.0f, 2.65f+ (i * 0.3));//SetZero();
-			// jointDef1.frequencyHz = 100.0f;
-			// jointDef1.dampingRatio = 0.0f;
-			// jointDef1.length = 0.0f;
-			// m_world->CreateJoint(&jointDef1);
+	// 		 //    b2DistanceJointDef jointDef1;
+	// 			// jointDef1.bodyA = body1;
+	// 			// jointDef1.bodyB = body2;
+	// 			// jointDef1.localAnchorA =  b2Vec2(2.0f, 2.65f+ (i * 0.3)); //SetZero();
+	// 			// jointDef1.localAnchorB =  b2Vec2(2.0f, 2.65f+ (i * 0.3));//SetZero();
+	// 			// jointDef1.frequencyHz = 100.0f;
+	// 			// jointDef1.dampingRatio = 0.0f;
+	// 			// jointDef1.length = 0.0f;
+	// 			// m_world->CreateJoint(&jointDef1);
 
-			b2RevoluteJointDef jointDef2;
-			jointDef2.bodyA = body1;
-			jointDef2.bodyB = body2;
-			jointDef2.localAnchorA =  b2Vec2(2.0f, 2.65f+ (i * 0.3)); //SetZero();
-			jointDef2.localAnchorB =  b2Vec2(2.0f, 2.65f+ (i * 0.3));//SetZero();
-			// jointDef1.frequencyHz = 100.0f;
-			// jointDef1.dampingRatio = 0.0f;
-			// jointDef1.length = 0.0f;
-			jointDef2.enableLimit = true;
-			jointDef2.lowerAngle = 0.05f;
-			jointDef2.upperAngle = 0.25f;
+	// 			b2RevoluteJointDef jointDef2;
+	// 			jointDef2.bodyA = body1;
+	// 			jointDef2.bodyB = body2;
+	// 			jointDef2.localAnchorA =  b2Vec2(2.0f, 2.65f+ (i * 0.3)); //SetZero();
+	// 			jointDef2.localAnchorB =  b2Vec2(2.0f, 2.65f+ (i * 0.3));//SetZero();
+	// 			// jointDef1.frequencyHz = 100.0f;
+	// 			// jointDef1.dampingRatio = 0.0f;
+	// 			// jointDef1.length = 0.0f;
+	// 			jointDef2.enableLimit = true;
+	// 			jointDef2.lowerAngle = 0.05f;
+	// 			jointDef2.upperAngle = 0.25f;
 
-			jointDef2.enableMotor = true;
-            jointDef2.maxMotorTorque = 1.0f;
-            jointDef2.motorSpeed = -2.0f;
-       
+	// 			jointDef2.enableMotor = true;
+	//             jointDef2.maxMotorTorque = 1.0f;
+	//             jointDef2.motorSpeed = -2.0f;
+	       
 
-            int balrge = 909;
-            jointDef2.userData = &balrge;
+	//             int balrge = 909;
+	//             jointDef2.userData = &balrge;
 
-			m_world->CreateJoint(&jointDef2);
-
-
-
-//--
-			// b2DistanceJointDef jointDef3;
-			// jointDef3.bodyA = body1;
-			// jointDef3.bodyB = body3;
-			// jointDef3.localAnchorA =  b2Vec2(2.0f, 2.65f+ (i * 0.3)); //SetZero();
-			// jointDef3.localAnchorB =  b2Vec2(2.0f, 2.65f+ (i * 0.3));//SetZero();
-			// jointDef3.frequencyHz = 100.0f;
-			// jointDef3.dampingRatio = 0.0f;
-			// jointDef3.length = 0.0f;
-			// m_world->CreateJoint(&jointDef3);
-
-			b2RevoluteJointDef jointDef4;
-			jointDef4.bodyA = body1;
-			jointDef4.bodyB = body3;
-			jointDef4.localAnchorA =  b2Vec2(2.0f, 2.65f+ (i * 0.3)); //SetZero();
-			jointDef4.localAnchorB =  b2Vec2(2.0f, 2.65f+ (i * 0.3));//SetZero();
-			// jointDef1.frequencyHz = 100.0f;
-			// jointDef1.dampingRatio = 0.0f;
-			// jointDef1.length = 0.0f;
-			jointDef4.enableLimit = true;
-			jointDef4.lowerAngle = -0.25f;
-			jointDef4.upperAngle = -0.05f;
-
-			jointDef4.enableMotor = true;
-            jointDef4.maxMotorTorque = 1.0f;
-            jointDef4.motorSpeed = 2.0f;
-       
-
-            int someUserData = 910;
-            jointDef4.userData = &someUserData;
-
-			m_world->CreateJoint(&jointDef4);
+	// 			m_world->CreateJoint(&jointDef2);
 
 
 
+	// //--
+	// 			// b2DistanceJointDef jointDef3;
+	// 			// jointDef3.bodyA = body1;
+	// 			// jointDef3.bodyB = body3;
+	// 			// jointDef3.localAnchorA =  b2Vec2(2.0f, 2.65f+ (i * 0.3)); //SetZero();
+	// 			// jointDef3.localAnchorB =  b2Vec2(2.0f, 2.65f+ (i * 0.3));//SetZero();
+	// 			// jointDef3.frequencyHz = 100.0f;
+	// 			// jointDef3.dampingRatio = 0.0f;
+	// 			// jointDef3.length = 0.0f;
+	// 			// m_world->CreateJoint(&jointDef3);
 
-}
+	// 			b2RevoluteJointDef jointDef4;
+	// 			jointDef4.bodyA = body1;
+	// 			jointDef4.bodyB = body3;
+	// 			jointDef4.localAnchorA =  b2Vec2(2.0f, 2.65f+ (i * 0.3)); //SetZero();
+	// 			jointDef4.localAnchorB =  b2Vec2(2.0f, 2.65f+ (i * 0.3));//SetZero();
+	// 			// jointDef1.frequencyHz = 100.0f;
+	// 			// jointDef1.dampingRatio = 0.0f;
+	// 			// jointDef1.length = 0.0f;
+	// 			jointDef4.enableLimit = true;
+	// 			jointDef4.lowerAngle = -0.25f;
+	// 			jointDef4.upperAngle = -0.05f;
+
+	// 			jointDef4.enableMotor = true;
+	//             jointDef4.maxMotorTorque = 1.0f;
+	//             jointDef4.motorSpeed = 2.0f;
+	       
+
+	//             int someUserData = 910;
+	//             jointDef4.userData = &someUserData;
+
+	// 			m_world->CreateJoint(&jointDef4);
+
+
+
+
+	// }
 
 
 

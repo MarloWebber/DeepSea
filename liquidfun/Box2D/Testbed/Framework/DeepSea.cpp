@@ -140,7 +140,7 @@ printf("\n");
 	b2Body* body1 = m_world->CreateBody(&bd1);
 	b2PolygonShape shape1;
 
-	// shape1.SetUserData(&bone)
+	shape1.SetUserData(&bone)
 
 	// they are added into the world
 	// shape1.Set(vertices, count);
@@ -208,8 +208,68 @@ printf("\n");
 // }
 
 
+float magnitude (b2Vec2 vector) {
+	return sqrt( (vector.x * vector.x) + (vector.y * vector.y));
+}
+
+// to traverse the hierarchy and update the sensation of sensors, we need another special recursive function.
+void recursiveSensorUpdater () {
 
 
+	// update the position of the sensor bone
+
+	bone.position = bone.body->GetPosition();
+
+
+
+	for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		if (food[i] != nullptr) {
+			foodParticle = food[i];
+
+
+			b2Vec2 positionalDifference = B2Vec2((bone.position.x - food.position.x),(bone.position.y - food.position.y));
+
+
+			bone.sensation += magnitude (positionalDifference);
+
+
+		}
+
+	}
+
+
+
+}
+
+
+
+
+
+// add a food particle to the world and register it so the game knows it exists.
+void addFoodParticle () {
+
+		// // add a food particle to the game world
+		// 		// no idea how to change the color
+
+				foodParticle_t fishFood;
+				fishFood.energy = 1.0f;
+
+				b2BodyDef bd9;
+				bd9.userData = &fishFood; // register the fishfood struct as user data on the body
+				bd9.type = b2_dynamicBody;
+				b2Body* body9 = m_world->CreateBody(&bd9);
+				b2CircleShape shape9;
+				shape1.SetUserData(&fishFood)	// and also on the shape
+				shape9.m_p.Set(-2.5,2.5 );
+				shape9.m_radius = 0.02f;
+				body9->CreateFixture(&shape9, 4.0f);
+				m_particleSystem->DestroyParticlesInShape(shape9,
+														  body9->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
+
+				fishFood.body = body9;
+				fishFood.shape = &shape9;
+
+}
 
 
 
@@ -227,14 +287,63 @@ void fishBrainCreator () {
     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
-    fann_train_on_file(ann, "xor.data", max_epochs, epochs_between_reports, desired_error);
+    // fann_train_on_file(ann, "xor.data", max_epochs, epochs_between_reports, desired_error);
 
-    fann_save(ann, "xor_float.net");
+    // fann_save(ann, "xor_float.net");
 
-    fann_destroy(ann);
+    // fann_destroy(ann);
 
     return ;
 
 
 
+}
+
+
+
+
+
+void deepSeaLoop () {
+
+	// get positions of all the food particles
+	for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		if (food[i] != nullptr) {
+			foodParticle = food[i];
+			foodParticle.position = foodParticle.body->GetPosition();
+		}
+
+	}
+
+
+	// for each fish in the game world
+	for (int i = 0; i < N_FISHES; i++) {
+
+		// if fish is not null
+		if (fishes[i] != nullptr) {
+
+
+			// iterate through the bones of the fish and update any sensors
+
+				// how the f*ck to transverse a linked hierarchy?
+
+		
+
+		// sensory detection of food
+			// each sensor on the animal simply indicates a float number which is the amount of food it 'smells'. it does not tell direction and cannot distinguish different smell sources
+
+		// running of the brain or behavior algorithm
+
+		// motor outputs or other controls
+
+
+		}
+
+
+
+	}
+
+
+
+
+	;
 }

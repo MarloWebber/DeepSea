@@ -184,6 +184,10 @@ static void SimulationLoop()
 	B2_NOT_USED(changed);
 
 
+	// the DeepSea main loop
+	deepSeaLoop();
+
+
 	if (fullscreenUI.GetEnabled())
 	{
 		// Set framework settings options based on parameters

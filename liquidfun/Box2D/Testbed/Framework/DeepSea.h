@@ -39,10 +39,13 @@ struct boneUserData_t {
 
 	bool isRoot ;
 	bool isMouth ;
-	bool isSensor ;
-	float foodSensor ;
 
-	bool isWeapon ;
+	bool isSensor ;
+	float sensation;
+
+	bool isWeapon ;	// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
+
+	float energy; // the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
 	b2Body * body;
 	b2PolygonShape * shape; 
@@ -79,6 +82,7 @@ struct bonyFish_t {
 
 
 	// fishBrain_t * brain;
+	float hunger; // the animal spends energy to move and must replenish it by eating
 
 
 	// the starting position of the fish in the game world
@@ -100,5 +104,13 @@ struct foodParticle_t {
 // 	// particle groups can be made into finer and more detailed shapes than the rigid bones.
 // 	// to create a muscle, we must provide force onto the tissue using liquidfun's force tool. we have to figure that out ourselves.
 // }
+
+void deepSeaLoop () ;
+
+#define N_FISHES 10
+#define N_FOODPARTICLES 10
+
+foodParticle_t[] food[N_FOODPARTICLES]
+bonyFish_t[] fishes[N_FISHES];
 
 #endif
