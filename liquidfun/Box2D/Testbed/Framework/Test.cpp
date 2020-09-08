@@ -327,7 +327,7 @@ void Test::jointMotorSetpoint()
 
 
 		// // add a food particle to the game world
-		// addFoodParticle(b2Vec2(2.5f, 2.5f), m_world, m_particleSystem);
+		addFoodParticle(b2Vec2(2.5f, 2.5f), m_world, m_particleSystem);
 
 		// 		// no idea how to change the color
 
