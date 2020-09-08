@@ -201,59 +201,108 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 // this describes the original 3 boned jellyfish.
 // void makeAJellyfish (BonyFish * p_fish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
-boneAndJointDescriptor_t jellyfishBone0 {
-		0,		// attachesTo
-		0.15f,	// length
-		0.015f,	// rootThickness
-		0.01f,	// tipThickness
-		true,	// isRoot
-		true,	// isMouth
-		true,	// isSensor
-		false,	// isWeapon
-		0.0f,	// torque
-		0.0f,	// speedLimit
-		0.0f,	// upperAngle
-		0.0f,	// normalAngle
-		0.0f,	// lowerAngle
-};
-boneAndJointDescriptor_t jellyfishBone1 {
-		0,		// attachesTo
-		0.15f,	// length
-		0.015f,	// rootThickness
-		0.01f,	// tipThickness
-		true,	// isRoot
-		true,	// isMouth
-		true,	// isSensor
-		false,	// isWeapon
-		1.0f,	// torque
-		1.0f,	// speedLimit
-		-0.05f,	// upperAngle
-		-0.015f,	// normalAngle
-		-0.25f,	// lowerAngle
-};
-boneAndJointDescriptor_t jellyfishBone2 {
-		0,		// attachesTo
-		0.15f,	// length
-		0.015f,	// rootThickness
-		0.01f,	// tipThickness
-		true,	// isRoot
-		true,	// isMouth
-		true,	// isSensor
-		false,	// isWeapon
-		1.0f,	// torque
-		1.0f,	// speedLimit
-		0.05f,	// upperAngle
-		0.15f,	// normalAngle
-		0.25f,	// lowerAngle
+// boneAndJointDescriptor_t jellyfishBone0 {
+// 		0,		// attachesTo
+// 		0.15f,	// length
+// 		0.015f,	// rootThickness
+// 		0.01f,	// tipThickness
+// 		true,	// isRoot
+// 		true,	// isMouth
+// 		true,	// isSensor
+// 		false,	// isWeapon
+// 		0.0f,	// torque
+// 		0.0f,	// speedLimit
+// 		0.0f,	// upperAngle
+// 		0.0f,	// normalAngle
+// 		0.0f,	// lowerAngle
+// };
+// boneAndJointDescriptor_t jellyfishBone1 {
+// 		0,		// attachesTo
+// 		0.15f,	// length
+// 		0.015f,	// rootThickness
+// 		0.01f,	// tipThickness
+// 		true,	// isRoot
+// 		true,	// isMouth
+// 		true,	// isSensor
+// 		false,	// isWeapon
+// 		1.0f,	// torque
+// 		1.0f,	// speedLimit
+// 		-0.05f,	// upperAngle
+// 		-0.015f,	// normalAngle
+// 		-0.25f,	// lowerAngle
+// };
+// boneAndJointDescriptor_t jellyfishBone2 {
+// 		0,		// attachesTo
+// 		0.15f,	// length
+// 		0.015f,	// rootThickness
+// 		0.01f,	// tipThickness
+// 		true,	// isRoot
+// 		true,	// isMouth
+// 		true,	// isSensor
+// 		false,	// isWeapon
+// 		1.0f,	// torque
+// 		1.0f,	// speedLimit
+// 		0.05f,	// upperAngle
+// 		0.15f,	// normalAngle
+// 		0.25f,	// lowerAngle
+// };
+
+
+fishDescriptor_t simpleJellyfish = {
+	{
+		{
+				0,		// attachesTo
+				0.15f,	// length
+				0.015f,	// rootThickness
+				0.01f,	// tipThickness
+				true,	// isRoot
+				true,	// isMouth
+				true,	// isSensor
+				false,	// isWeapon
+				0.0f,	// torque
+				0.0f,	// speedLimit
+				0.0f,	// upperAngle
+				0.0f,	// normalAngle
+				0.0f,	// lowerAngle
+		},
+		{
+				0,		// attachesTo
+				0.15f,	// length
+				0.015f,	// rootThickness
+				0.01f,	// tipThickness
+				true,	// isRoot
+				true,	// isMouth
+				true,	// isSensor
+				false,	// isWeapon
+				1.0f,	// torque
+				1.0f,	// speedLimit
+				-0.05f,	// upperAngle
+				-0.015f,	// normalAngle
+				-0.25f,	// lowerAngle
+		},
+		 {
+				0,		// attachesTo
+				0.15f,	// length
+				0.015f,	// rootThickness
+				0.01f,	// tipThickness
+				true,	// isRoot
+				true,	// isMouth
+				true,	// isSensor
+				false,	// isWeapon
+				1.0f,	// torque
+				1.0f,	// speedLimit
+				0.05f,	// upperAngle
+				0.15f,	// normalAngle
+				0.25f,	// lowerAngle
+		}
+	}
+
 };
 
-// fishDescriptor_t simpleJellyfish = {
-// 	{
-// 		&jellyfishBone0,
-// 		&jellyfishBone1,
-// 		&jellyfishBone2
-// 	}
-// };
+// fishDescriptor_t * p_simpleJellyfish = new fishDescriptor_t;
+
+
+
 
 void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	for (int i = 0; i < N_FINGERS; ++i)
@@ -275,9 +324,9 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 	addFoodParticle(b2Vec2(2.5f, 2.5f), m_world, m_particleSystem);
 // 
-	// loadFish(0, simpleJellyfish, m_world, m_particleSystem);
+	loadFish(0, simpleJellyfish, m_world, m_particleSystem);
 
-	// totalFishIncorporator(0, m_world, m_particleSystem);
+	totalFishIncorporator(0, m_world, m_particleSystem);
 }
 
 

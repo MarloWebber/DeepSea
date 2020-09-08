@@ -34,7 +34,10 @@ struct boneAndJointDescriptor_t {
 
 struct fishDescriptor_t {
 	boneAndJointDescriptor_t bones[N_FINGERS];
+
+	// fishDescriptor_t( boneAndJointDescriptor_t * boneIndex, int boneCount);
 };
+
 
 struct JointUserData {
 	float torque; 	
