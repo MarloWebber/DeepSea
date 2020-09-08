@@ -14,6 +14,28 @@ struct JointUserData; // forward class declaration
 struct BoneUserData;
 struct BonyFish;
 
+// a condensed form of fish used for data storage and transfer.
+// it is made so that it is safe to serialize and mutate, and that any changes will not crash the program.
+struct boneAndJointDescriptor_t {
+		uint8_t attachedTo = 0; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
+		float length = 0.1f;
+		float rootThickness = 0.1f;
+		float tipThickness = 0.1f;
+		bool isRoot = false;
+		bool isMouth = false;
+		bool isSensor = false;
+		bool isWeapon  = false;
+		float torque = 0.0f;
+		float speedLimit = 0.0f;
+		float upperAngle = 0.0f;
+		float normalAngle = 0.0f;
+		float lowerAngle = 0.0f;
+};
+
+struct fishDescriptor_t {
+	boneAndJointDescriptor_t bones[N_FINGERS];
+};
+
 struct JointUserData {
 	float torque; 	
 	float speed; 	
@@ -33,8 +55,11 @@ struct JointUserData {
 	BoneUserData * attaches;
 	BoneUserData * attachedTo;
 
-	JointUserData(b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+	JointUserData(boneAndJointDescriptor_t boneDescription, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 } ;
+
+
+
 
 struct BoneUserData {
 	float length;
@@ -44,7 +69,7 @@ struct BoneUserData {
 	b2Vec2 tipCenter; 				// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	b2Vec2 rootCenter; 
 	JointUserData * joint; 		// the joint that attaches it into its socket		
-	BoneUserData * attachedTo;	
+	uint8_t attachedTo;	
 	bool isRoot ;
 	bool isMouth ;
 	bool isSensor ;
@@ -60,19 +85,21 @@ struct BoneUserData {
 	bool init;		// if the struct has been created properly
 	bool isUsed;	// if the bone is actually used in the game, presumably not all animals will use all 8
 
-	BoneUserData(b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+	BoneUserData(boneAndJointDescriptor_t boneDescription,
+		BonyFish * fish,
+		b2World * m_world, b2ParticleSystem * m_particleSystem );
 } ;
 
 struct BonyFish
 {
-	BoneUserData bones[N_FINGERS]; // for now, let's just get fish working with a small, hard-linked, flat level set of bones.
 
 	float hunger; // the animal spends energy to move and must replenish it by eating
-	b2Vec2 position; // the starting position of the fish in the game world
 	bool init; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;
 
-	BonyFish(b2World * m_world, b2ParticleSystem * m_particleSystem);
+	BoneUserData * bones[N_FINGERS]; // for now, let's just get fish working with a small, hard-linked, flat level set of bones.
+	
+	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem);
 };
 
 struct foodParticle_t {

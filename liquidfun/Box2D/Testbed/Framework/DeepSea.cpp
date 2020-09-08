@@ -8,16 +8,7 @@ int currentNumberOfFish = 0;
 float pi = 3.14159f;
 
 foodParticle_t food[N_FOODPARTICLES];
-BonyFish * fishes[N_FISHES] = {
-	new BonyFish,
-	new BonyFish,
-	new BonyFish,
-	new BonyFish,
-	new BonyFish,
-	new BonyFish,
-	new BonyFish,
-	new BonyFish
-};
+BonyFish * fishes[N_FISHES];
 
 float magnitude (b2Vec2 vector) {
 	return sqrt( (vector.x * vector.x) + (vector.y * vector.y));
@@ -42,17 +33,16 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 	return b2Vec2(p.x,p.y);
 };
 
-JointUserData::JointUserData( b2World * m_world, b2ParticleSystem * m_particleSystem) {
-	torque = 0.0f; 	
+JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+	torque = boneDescription.torque; 	
 	speed = 0.0f; 	
-	speedLimit = 0.0f;
+	speedLimit = boneDescription.speedLimit;
+	upperAngle = boneDescription.upperAngle;
+	normalAngle = boneDescription.normalAngle;
+	lowerAngle = boneDescription.lowerAngle;
 
 	driveCW = false;	// a signal that tells the motor to turn in one direction. This is much simpler than trying to drive it with a number and having to remember positon etc. With this, you just hit the button, or don't.
 	driveCCW = false;	// a signal that tells the motor to turn in the other direction.
-
-	upperAngle = 0.0f;
-	normalAngle = 0.0f;
-	lowerAngle = 0.0f;
 
 	// init = false;
 	isUsed = false;
@@ -75,31 +65,36 @@ JointUserData::JointUserData( b2World * m_world, b2ParticleSystem * m_particleSy
     init = true;
 }
 
-BoneUserData::BoneUserData(b2World * m_world, b2ParticleSystem * m_particleSystem) {
+BoneUserData::BoneUserData(
+	//	 these are the parameters that can fully describe a bone, in condensed form
+
+		boneAndJointDescriptor_t boneDescription,
+		BonyFish * fish,
+		b2World * m_world, b2ParticleSystem * m_particleSystem // primarily needed to create the body
+	) {
+
+	BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
 
 	// initialize everything to default, sane values
-	length = 0.1f;
-	rootThickness = 0.1f;
-	tipThickness = 0.1f;
-	density = 1.0f;
+	length = boneDescription.length;
+	rootThickness = boneDescription.rootThickness;
+	tipThickness = boneDescription.tipThickness;
+	density = 1.0f; //boneDescription.density;
+	isRoot = boneDescription.isRoot;
+	isMouth = boneDescription.isMouth;
+	isSensor = boneDescription.isSensor;
+	sensation = 0.0f;
+	isWeapon  = boneDescription.isWeapon;				// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
+	energy = ((rootThickness + tipThickness)/2) * (length * density); 					// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
 	tipCenter = b2Vec2(0.0f,0.1f); 	// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
-	rootCenter = b2Vec2(0.0f,0.0f); 			
-
-	isRoot = false;
-	isMouth = false;
-	isSensor = false ;
-	sensation = 0.0f;
-	isWeapon  = false;				// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
-
-	energy = 0.0f; 					// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
+	rootCenter = b2Vec2(0.0f,0.0f); 		
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
-	float angle = joint->normalAngle;
 
-	b2Vec2 tipCenter = b2Vec2(attachedTo->tipCenter.x, attachedTo->tipCenter.y + length);
-	b2Vec2 rootVertexA = b2Vec2(attachedTo->tipCenter.x + (rootThickness/2), attachedTo->tipCenter.y);
-	b2Vec2 rootVertexB = b2Vec2(attachedTo->tipCenter.x - (rootThickness/2), attachedTo->tipCenter.y);
+	b2Vec2 tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
+	b2Vec2 rootVertexA = b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y);
+	b2Vec2 rootVertexB = b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y);
 	b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
 	b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
 
@@ -111,7 +106,7 @@ BoneUserData::BoneUserData(b2World * m_world, b2ParticleSystem * m_particleSyste
 	vertices[3].Set(rootVertexA.x, rootVertexA.y);
 
 	// figure out the center point.
-	b2Vec2 boneCenter = b2Vec2(attachedTo->tipCenter.x, attachedTo->tipCenter.y + (2*length));
+	b2Vec2 boneCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + (2*length));
 
 	// attach user data to the body
 	bodyDef.userData = this;
@@ -119,14 +114,14 @@ BoneUserData::BoneUserData(b2World * m_world, b2ParticleSystem * m_particleSyste
 	bodyDef.type = b2_dynamicBody;
 	p_body = m_world->CreateBody(&bodyDef);
 	
-	shape.SetAsBox(rootThickness, length, boneCenter, angle);	
+	shape.SetAsBox(rootThickness, length, boneCenter, 0.0f);	
 
 	// reference the physics object from the user data.
 	tipCenter = tipCenter;
-	rootCenter = attachedTo->tipCenter;
+	rootCenter = attachesTo->tipCenter;
 
 	if (!isRoot) {
-		joint = new JointUserData( m_world, m_particleSystem); 	// the joint that attaches it into its socket 
+		joint = new JointUserData( boneDescription, m_world, m_particleSystem); 	// the joint that attaches it into its socket 
 	}	
 
 	init = true;
@@ -182,161 +177,107 @@ void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_
 	food[currentNumberOfFood].init = true;
 
 	currentNumberOfFood++;
-}
+};
 
-BonyFish::BonyFish(b2World * m_world, b2ParticleSystem * m_particleSystem)
-{
+BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
-	position = b2Vec2(0.0f, 0.0f); // the starting position of the fish in the game world
+	// position = b2Vec2(0.0f, 0.0f); // the starting position of the fish in the game world
 
 	for (int i = 0; i < N_FINGERS; ++i) {
-		bones[i] = new BoneUserData( m_world, m_particleSystem);
+
+		if (i == 0) {
+			// set the bone as root
+			driedFish.bones[i].isRoot = true;
+		}
+
+		bones[i] = new BoneUserData(driedFish.bones[i], fishes[fishIndex],  m_world, m_particleSystem);
 	}
+
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false;
 
-}
+};
 
 // this describes the original 3 boned jellyfish.
 // void makeAJellyfish (BonyFish * p_fish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
-// p_fish->bones[0]->joint = {
-// 	1.0f,
-// 	0.0f,
-// 	2.0f,
-// 	false,
-// 	false,
-// 	0.0f,
-// 	0.0f * pi,
-// 	0.0f,
-// 	nullptr,
-// 	false,
-// 	true
-// };
+boneAndJointDescriptor_t jellyfishBone0 {
+		0,		// attachesTo
+		0.15f,	// length
+		0.015f,	// rootThickness
+		0.01f,	// tipThickness
+		true,	// isRoot
+		true,	// isMouth
+		true,	// isSensor
+		false,	// isWeapon
+		0.0f,	// torque
+		0.0f,	// speedLimit
+		0.0f,	// upperAngle
+		0.0f,	// normalAngle
+		0.0f,	// lowerAngle
+};
+boneAndJointDescriptor_t jellyfishBone1 {
+		0,		// attachesTo
+		0.15f,	// length
+		0.015f,	// rootThickness
+		0.01f,	// tipThickness
+		true,	// isRoot
+		true,	// isMouth
+		true,	// isSensor
+		false,	// isWeapon
+		1.0f,	// torque
+		1.0f,	// speedLimit
+		-0.05f,	// upperAngle
+		-0.015f,	// normalAngle
+		-0.25f,	// lowerAngle
+};
+boneAndJointDescriptor_t jellyfishBone2 {
+		0,		// attachesTo
+		0.15f,	// length
+		0.015f,	// rootThickness
+		0.01f,	// tipThickness
+		true,	// isRoot
+		true,	// isMouth
+		true,	// isSensor
+		false,	// isWeapon
+		1.0f,	// torque
+		1.0f,	// speedLimit
+		0.05f,	// upperAngle
+		0.15f,	// normalAngle
+		0.25f,	// lowerAngle
+};
 
-// p_fish->bones[1]->joint = {
-// 	1.0f,
-// 	0.0f,
-// 	2.0f,
-// 	false,
-// 	false,
-// 	0.05f,
-// 	-0.15f * pi,
-// 	0.25f,
-// 	nullptr,
-// 	false,
-// 	true
-// };
-
-// p_fish->bones[2]->joint = {
-// 	1.0f,
-// 	0.0f,
-// 	2.0f,
-// 	false,
-// 	false,
-// 	0.05f,
-// 	0.15f * pi,
-// 	0.25f,
-// 	nullptr,
-// 	false,
-// 	true
-// };
-
-// p_fish->bones[0] = {
-// 	0.15f,
-// 	0.01f,
-// 	0.01f,
-// 	1.5f,
-// 	b2Vec2(0,0),
-// 	b2Vec2(0,0),
-// 	&joint3,
-// 	nullptr,
-// 	true,
-// 	true,
-// 	true,
-// 	1.0f,
-// 	false,
-// 	0.0f,
-// 	nullptr,
-// 	nullptr,
-// 	b2Vec2(0,0),
-// 	false,
-// 	true
-// };
-
-// p_fish->bones[1] = {
-// 	0.1f,
-// 	0.01f,
-// 	0.01f,
-// 	1.5f,
-// 	b2Vec2(0,0),
-// 	b2Vec2(0,0),
-// 	&joint1,
-// 	&bone0,
-// 	false,
-// 	false,
-// 	false,
-// 	0.0f,
-// 	false,
-// 	0.0f,
-// 	nullptr,
-// 	nullptr,
-// 	b2Vec2(0,0),
-// 	false,
-// 	true
-// };
-
-// p_fish->bones[2]= {
-// 	0.1f,
-// 	0.01f,
-// 	0.01f,
-// 	1.5f,
-// 	b2Vec2(0,0),
-// 	b2Vec2(0,0),
-// 	&joint2,
-// 	&bone0,
-// 	false,
-// 	false,
-// 	false,
-// 	0.0f,
-// 	false,
-// 	0.0f,
-// 	nullptr,
-// 	nullptr,
-// 	b2Vec2(0,0),
-// 	false,
-// 	true
-// };
-
-// p_fish = {
-// 	{bone0,bone1,bone2,nullptr,nullptr,nullptr,nullptr,nullptr},
-// 	0.0f,
-// 	b2Vec2(0.0f,2.5f),
-// 	false,
-// 	true
-// }; 
-
-// for (int i = 0; i < N_FINGERS; ++i)
-// {
-// 	if (p_fish->bones[i].isUsed) {
-// 		nonRecursiveBoneIncorporator(p_fish->bones[i], m_world, m_particleSystem) ;
+// fishDescriptor_t simpleJellyfish = {
+// 	{
+// 		&jellyfishBone0,
+// 		&jellyfishBone1,
+// 		&jellyfishBone2
 // 	}
-// }
+// };
 
-// p_fish->init = true;
-// p_fish->isUsed = true;
+void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+	for (int i = 0; i < N_FINGERS; ++i)
+	{
+		if (fishes[fishIndex]->bones[i]->init) {
+			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , m_world, m_particleSystem);
+		}
+	}
+}
 
-// }
+
+void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem);
+
+}
 
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
-	// // add a food particle to the game world
 	addFoodParticle(b2Vec2(2.5f, 2.5f), m_world, m_particleSystem);
+// 
+	// loadFish(0, simpleJellyfish, m_world, m_particleSystem);
 
-	// initialize 10 fish
-
-	// makeAJellyfish(&fishes[0], m_world, m_particleSystem);
-
+	// totalFishIncorporator(0, m_world, m_particleSystem);
 }
 
 

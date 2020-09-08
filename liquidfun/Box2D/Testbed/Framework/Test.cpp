@@ -24,7 +24,7 @@
 
 #include "DeepSea.h"
 
-float pi = 3.141f;
+// float pi = 3.141f;
 
 void DestructionListener::SayGoodbye(b2Joint* joint)
 {
