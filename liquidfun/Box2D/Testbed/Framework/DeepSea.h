@@ -30,6 +30,7 @@ struct boneAndJointDescriptor_t {
 		float upperAngle = 0.0f;
 		float normalAngle = 0.0f;
 		float lowerAngle = 0.0f;
+		bool used = false;
 };
 
 struct fishDescriptor_t {

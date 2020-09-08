@@ -88,6 +88,10 @@ BoneUserData::BoneUserData(
 		b2World * m_world, b2ParticleSystem * m_particleSystem // primarily needed to create the body
 	) {
 
+	if (!boneDescription.used) {
+		return;
+	}
+
 	BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
 
 	// initialize everything to default, sane values
@@ -249,55 +253,6 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 };
 
 // this describes the original 3 boned jellyfish.
-// void makeAJellyfish (BonyFish * p_fish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
-
-// boneAndJointDescriptor_t jellyfishBone0 {
-// 		0,		// attachesTo
-// 		0.15f,	// length
-// 		0.015f,	// rootThickness
-// 		0.01f,	// tipThickness
-// 		true,	// isRoot
-// 		true,	// isMouth
-// 		true,	// isSensor
-// 		false,	// isWeapon
-// 		0.0f,	// torque
-// 		0.0f,	// speedLimit
-// 		0.0f,	// upperAngle
-// 		0.0f,	// normalAngle
-// 		0.0f,	// lowerAngle
-// };
-// boneAndJointDescriptor_t jellyfishBone1 {
-// 		0,		// attachesTo
-// 		0.15f,	// length
-// 		0.015f,	// rootThickness
-// 		0.01f,	// tipThickness
-// 		true,	// isRoot
-// 		true,	// isMouth
-// 		true,	// isSensor
-// 		false,	// isWeapon
-// 		1.0f,	// torque
-// 		1.0f,	// speedLimit
-// 		-0.05f,	// upperAngle
-// 		-0.015f,	// normalAngle
-// 		-0.25f,	// lowerAngle
-// };
-// boneAndJointDescriptor_t jellyfishBone2 {
-// 		0,		// attachesTo
-// 		0.15f,	// length
-// 		0.015f,	// rootThickness
-// 		0.01f,	// tipThickness
-// 		true,	// isRoot
-// 		true,	// isMouth
-// 		true,	// isSensor
-// 		false,	// isWeapon
-// 		1.0f,	// torque
-// 		1.0f,	// speedLimit
-// 		0.05f,	// upperAngle
-// 		0.15f,	// normalAngle
-// 		0.25f,	// lowerAngle
-// };
-
-
 fishDescriptor_t simpleJellyfish = {
 	{
 		{
@@ -314,6 +269,7 @@ fishDescriptor_t simpleJellyfish = {
 				0.0f,	// upperAngle
 				0.0f,	// normalAngle
 				0.0f,	// lowerAngle
+				true
 		},
 		{
 				0,		// attachesTo
@@ -329,6 +285,7 @@ fishDescriptor_t simpleJellyfish = {
 				-0.05f,	// upperAngle
 				-0.015f,	// normalAngle
 				-0.25f,	// lowerAngle
+				true
 		},
 		 {
 				0,		// attachesTo
@@ -344,15 +301,11 @@ fishDescriptor_t simpleJellyfish = {
 				0.05f,	// upperAngle
 				0.15f,	// normalAngle
 				0.25f,	// lowerAngle
+				true
 		}
 	}
 
 };
-
-// fishDescriptor_t * p_simpleJellyfish = new fishDescriptor_t;
-
-
-
 
 void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	for (int i = 0; i < N_FINGERS; ++i)
@@ -388,28 +341,4 @@ void deepSeaLoop () {
 			food[i].position = food[i].p_body->GetPosition();
 		}
 	}
-
-	// // for each fish in the game world
-	// for (int i = 0; i < N_FISHES; i++) {
-	// 	if (fishes[i]->init) {
-
-	// 		// iterate through the bones of the fish and update any sensors
-	// 		for (int j = 0; j < N_FINGERS; ++j)
-	// 		{
-	// 			// nonRecursiveSensorUpdater( &(fishes[i]->bones[j]));
-	// 		}
-
-
-		
-
-	// 	// sensory detection of food
-	// 	// each sensor on the animal simply indicates a float number which is the amount of food it 'smells'. it does not tell direction and cannot distinguish different smell sources
-
-	// 	// running of the brain or behavior algorithm
-
-	// 	// motor outputs or other controls
-
-
-	// 	}
-	// }
 }
