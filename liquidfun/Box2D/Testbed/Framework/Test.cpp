@@ -381,7 +381,7 @@ void Test::jointMotorSetpoint()
 	// 	}
 	// }
 
-
+deepSeaSetup(  m_world, m_particleSystem);
 	// fishIncorporator(&simpleJellyfish,  m_world, m_particleSystem);
 
 

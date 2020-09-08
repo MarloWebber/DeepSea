@@ -6,6 +6,8 @@
  int currentNumberOfFish = 0;
 
 
+float pi = 3.14159f;
+
 foodParticle_t food[N_FOODPARTICLES];
 BonyFish * fishes[N_FISHES] = {
 	new BonyFish,
@@ -74,6 +76,27 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 
 // 	bool init;
 
+	jointUserData_t::jointUserData_t() {
+	torque = 0.0f; 	
+	 speed = 0.0f; 	
+	 speedLimit = 0.0f;
+
+	 driveCW = false;	// a signal that tells the motor to turn in one direction. This is much simpler than trying to drive it with a number and having to remember positon etc. With this, you just hit the button, or don't.
+	 driveCCW = false;	// a signal that tells the motor to turn in the other direction.
+
+	 upperAngle = 0.0f;
+	 normalAngle = 0.0f;
+	 lowerAngle = 0.0f;
+
+	joint = nullptr; // the joint that this user data struct gets pinned to
+
+	 init = false;
+	 isUsed = false;
+	}
+
+
+
+
 	boneUserData_t::boneUserData_t() {
 
 		// initialize everything blank
@@ -103,14 +126,14 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 
 		 energy = 0.0f; // the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
-		// b2Body * body;
-		// b2PolygonShape * shape; 
+		body = nullptr;
+		shape = nullptr;
 
 
 		 position = b2Vec2(0.0f,0.0f);
 
 		 init = false;
-
+		 isUsed=  false;
 		;
 	};
 
@@ -118,9 +141,11 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 // } ;
 
 
-void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
-	// boneUserData_t bone = *p_bone;
+
+void preparer(BonyFish * p_fish, boneUserData_t * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+		// boneUserData_t bone = *p_bone;
 
 
 
@@ -174,9 +199,7 @@ void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, b2World * m_world, b2
 
 	// they are added into the world
 	shape1.SetAsBox(p_bone->rootThickness, p_bone->length, boneCenter, angle);	
-	body1->CreateFixture(&shape1, 1.5f);
-	m_particleSystem->DestroyParticlesInShape(shape1,
-											  body1->GetTransform());
+
 
 	p_bone->body = body1;
 	p_bone->shape = &shape1;
@@ -186,8 +209,7 @@ void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, b2World * m_world, b2
 
 	// create the joint that pins it to the root bone.
 
-
-	if (previousBone != nullptr) {
+	if (!p_bone->isRoot) {
 			b2RevoluteJointDef jointDef2;
 			jointDef2.bodyA = p_bone->attachedTo->body;
 			jointDef2.bodyB = p_bone->body;
@@ -205,6 +227,43 @@ void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, b2World * m_world, b2
 
             p_bone->joint->init = true;
 
+			// m_world->CreateJoint(&jointDef2);
+       
+	}
+
+	p_bone->init = true;
+
+}
+
+
+
+void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+
+	body1->CreateFixture(&shape1, 1.5f);
+	m_particleSystem->DestroyParticlesInShape(shape1,
+											  body1->GetTransform());
+
+
+
+	if (!p_bone->isRoot) {
+			// b2RevoluteJointDef jointDef2;
+			// jointDef2.bodyA = p_bone->attachedTo->body;
+			// jointDef2.bodyB = p_bone->body;
+			// jointDef2.localAnchorA =  cumulativeBonePosition;
+			// jointDef2.localAnchorB =  cumulativeBonePosition;
+			// jointDef2.enableLimit = true;
+			// jointDef2.lowerAngle = p_bone->joint->lowerAngle;
+			// jointDef2.upperAngle = p_bone->joint->upperAngle;
+
+			// jointDef2.enableMotor = true;
+   //          jointDef2.maxMotorTorque = 1.0f;
+   //          jointDef2.motorSpeed = 0.0f;
+
+   //          jointDef2.userData = p_bone->joint;
+
+            p_bone->joint->isUsed = true;
+
 			m_world->CreateJoint(&jointDef2);
        
 	}
@@ -221,7 +280,8 @@ void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, b2World * m_world, b2
 	// cumulativeBonePosition = bone.rootCenter;
 
 	// that was my favorite episode of bones.
-	p_bone->init = true;
+	
+	p_bone->isUsed = true;
 
 }
 
@@ -494,6 +554,7 @@ BonyFish::BonyFish()
 	 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
 		 position = b2Vec2(0.0f, 0.0f); // the starting position of the fish in the game world
 		 init = false; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+		 isUsed = false;
 
 
 		for (int i = 0; i < N_FINGERS; ++i)
@@ -552,7 +613,7 @@ BonyFish::BonyFish()
 
 
 
-void makeAJellyfish (BonyFish * p_fish) {
+void makeAJellyfish (BonyFish * p_fish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 	// this describes the original 3 boned jellyfish.
 /*
@@ -566,33 +627,8 @@ void makeAJellyfish (BonyFish * p_fish) {
 	float lowerAngle;
 	b2RevoluteJoint * joint; // the joint that this user data struct gets pinned to
 	*/
-jointUserData_t joint1 = {
-	1.0f,
-	0.0f,
-	2.0f,
-	false,
-	false,
-	0.05f,
-	-0.15f * pi,
-	0.25f,
-	nullptr,
-	false
-};
 
-jointUserData_t joint2 = {
-	1.0f,
-	0.0f,
-	2.0f,
-	false,
-	false,
-	0.05f,
-	0.15f * pi,
-	0.25f,
-	nullptr,
-	false
-};
-
-jointUserData_t joint3 = {
+p_fish->bones[0]->joint = {
 	1.0f,
 	0.0f,
 	2.0f,
@@ -602,8 +638,39 @@ jointUserData_t joint3 = {
 	0.0f * pi,
 	0.0f,
 	nullptr,
-	false
+	false,
+	true
 };
+
+
+p_fish->bones[1]->joint = {
+	1.0f,
+	0.0f,
+	2.0f,
+	false,
+	false,
+	0.05f,
+	-0.15f * pi,
+	0.25f,
+	nullptr,
+	false,
+	true
+};
+
+p_fish->bones[2]->joint = {
+	1.0f,
+	0.0f,
+	2.0f,
+	false,
+	false,
+	0.05f,
+	0.15f * pi,
+	0.25f,
+	nullptr,
+	false,
+	true
+};
+
 
 /*
 
@@ -642,7 +709,7 @@ jointUserData_t joint3 = {
 
 */
 
-boneUserData_t bone0 = {
+p_fish->bones[0] = {
 	// .length = 0.15f,
 	// .rootThickness = 0.01f,
 	// .tipThickness = 0.01f,
@@ -668,11 +735,11 @@ boneUserData_t bone0 = {
 	nullptr,
 	nullptr,
 	b2Vec2(0,0),
-	false
+	false,
+	true
 };
 
-
-boneUserData_t bone1 = {
+p_fish->bones[1] = {
 	0.1f,
 	0.01f,
 	0.01f,
@@ -690,10 +757,11 @@ boneUserData_t bone1 = {
 	nullptr,
 	nullptr,
 	b2Vec2(0,0),
-	false
+	false,
+	true
 };
 
-boneUserData_t bone2 = {
+p_fish->bones[2]= {
 	0.1f,
 	0.01f,
 	0.01f,
@@ -711,19 +779,18 @@ boneUserData_t bone2 = {
 	nullptr,
 	nullptr,
 	b2Vec2(0,0),
-	false
+	false,
+	true
 };
 
-
-
-BonyFish simpleJellyfish = {
+p_fish = {
 	{bone0,bone1,bone2,nullptr,nullptr,nullptr,nullptr,nullptr},
 	0.0f,
 	b2Vec2(0.0f,2.5f),
-	false
+	false,
+	true
 }; 
 
-*p_fish = simpleJellyfish;
 
 
 // the below part puts the fish into the world.
@@ -732,14 +799,15 @@ BonyFish simpleJellyfish = {
 for (int i = 0; i < N_FINGERS; ++i)
 {
 	/* code */
-	if (p_fish->bones[i] != nullptr) {
-		nonRecursiveBoneIncorporator(p_fish->bones[i], b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+	if (p_fish->bones[i].isUsed) {
+		nonRecursiveBoneIncorporator(p_fish->bones[i], m_world, m_particleSystem) ;
 	}
 
 	
 }
 
-
+p_fish->init = true;
+p_fish->isUsed = true;
 
 }
 
@@ -755,7 +823,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 	// initialize 10 fish
 
-		makeAJellyfish(&fishes[0]);
+		makeAJellyfish(&fishes[0], m_world, m_particleSystem);
 
 		// for (int i = 0; i < N_FISHES; ++i)
 		// {

@@ -24,6 +24,7 @@ struct jointUserData_t {
 	b2RevoluteJoint * joint; // the joint that this user data struct gets pinned to
 
 	bool init;
+	bool isUsed;
 } ;
 
 
@@ -62,7 +63,9 @@ struct boneUserData_t {
 
 	b2Vec2 position;
 
-	bool init;
+	bool init;		// if the struct has been created properly
+	bool isUsed;	// if the bone is actually used in the game, presumably not all animals will use all 8
+
 
 	boneUserData_t();
 
@@ -96,6 +99,7 @@ public:
 	float hunger; // the animal spends energy to move and must replenish it by eating
 	b2Vec2 position; // the starting position of the fish in the game world
 	bool init; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+	bool isUsed;
 
 
 	BonyFish();
@@ -140,6 +144,7 @@ struct foodParticle_t {
 	b2CircleShape * shape; 
 
 	bool init; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+	bool isUsed;
 };
 
 
@@ -157,6 +162,9 @@ void fishIncorporator (BonyFish * p_fish,  b2World * m_world, b2ParticleSystem *
 
 void deepSeaSetup(b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 void deepSeaLoop () ;
+
+
+void makeAJellyfish (BonyFish * p_fish, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 
 
 extern foodParticle_t food[N_FOODPARTICLES];
