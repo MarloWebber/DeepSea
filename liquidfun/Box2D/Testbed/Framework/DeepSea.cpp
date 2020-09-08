@@ -183,9 +183,13 @@ BoneUserData::BoneUserData(
 };
 
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+	if (!p_bone->init) {
+		return;
+	}
 	p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 	// m_particleSystem->DestroyParticlesInShape( &(p_bone->shape) ,p_bone->body->GetTransform());
 	if (!p_bone->isRoot) {
+			printf("nagies");
             p_bone->joint->isUsed = true;
 			p_bone->joint->p_joint = (b2RevoluteJoint*)m_world->CreateJoint( &(p_bone->joint->jointDef) );
 	}
@@ -276,9 +280,9 @@ fishDescriptor_t simpleJellyfish = {
 				0.15f,	// length
 				0.015f,	// rootThickness
 				0.01f,	// tipThickness
-				true,	// isRoot
-				true,	// isMouth
-				true,	// isSensor
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
@@ -292,9 +296,9 @@ fishDescriptor_t simpleJellyfish = {
 				0.15f,	// length
 				0.015f,	// rootThickness
 				0.01f,	// tipThickness
-				true,	// isRoot
-				true,	// isMouth
-				true,	// isSensor
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
