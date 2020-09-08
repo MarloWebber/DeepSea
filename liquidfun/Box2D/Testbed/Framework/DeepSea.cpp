@@ -33,7 +33,7 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 	return b2Vec2(p.x,p.y);
 };
 
-JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	torque = boneDescription.torque; 	
 	speed = 0.0f; 	
 	speedLimit = boneDescription.speedLimit;
@@ -48,16 +48,31 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, b2World *
 	isUsed = false;
 
 	// the following code prepares the box2d objects.
-	jointDef.bodyA = attachedTo->p_body;
-	jointDef.bodyB = attaches->p_body;
-	jointDef.localAnchorA =  attachedTo->tipCenter;
-	jointDef.localAnchorB =  attachedTo->tipCenter;
-	jointDef.enableLimit = true;
-	jointDef.lowerAngle = lowerAngle;
-	jointDef.upperAngle = upperAngle;
-	jointDef.enableMotor = true;
-    jointDef.maxMotorTorque = torque;
-    jointDef.motorSpeed = speed;
+	if (boneDescription.isRoot) {
+		// jointDef.bodyA = attachedTo->p_body;
+		// jointDef.bodyB = attaches->p_body;
+		// jointDef.localAnchorA =  attachedTo->tipCenter;
+		// jointDef.localAnchorB =  attachedTo->tipCenter;
+		// jointDef.enableLimit = true;
+		// jointDef.lowerAngle = lowerAngle;
+		// jointDef.upperAngle = upperAngle;
+		// jointDef.enableMotor = true;
+	 //    jointDef.maxMotorTorque = torque;
+	 //    jointDef.motorSpeed = speed;
+	}
+	else {
+		jointDef.bodyA = fish->bones[boneDescription.attachedTo]->p_body;
+		jointDef.bodyB = p_bone->p_body;
+		jointDef.localAnchorA =  fish->bones[boneDescription.attachedTo]->tipCenter;
+		jointDef.localAnchorB =  fish->bones[boneDescription.attachedTo]->tipCenter;
+		jointDef.enableLimit = true;
+		jointDef.lowerAngle = lowerAngle;
+		jointDef.upperAngle = upperAngle;
+		jointDef.enableMotor = true;
+	    jointDef.maxMotorTorque = torque;
+	    jointDef.motorSpeed = speed;
+	}
+	
 
     jointDef.userData = this;
     // joint = jointDef; 	// the joint that this user data struct gets pinned to
@@ -92,36 +107,71 @@ BoneUserData::BoneUserData(
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 
-	b2Vec2 tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
-	b2Vec2 rootVertexA = b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y);
-	b2Vec2 rootVertexB = b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y);
-	b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
-	b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
+	if (isRoot) {
 
-	int count = 4;
-	b2Vec2 vertices[count];
-	vertices[0].Set(rootVertexB.x, rootVertexB.y);
-	vertices[1].Set(tipVertexB.x, tipVertexB.y);
-	vertices[2].Set(tipVertexA.x, tipVertexB.y);
-	vertices[3].Set(rootVertexA.x, rootVertexA.y);
+		b2Vec2 tipCenter = b2Vec2(0.0f, 0.0f + length);
+		b2Vec2 rootVertexA = b2Vec2(0.0f + (rootThickness/2), 0.0f);
+		b2Vec2 rootVertexB = b2Vec2(0.0f - (rootThickness/2), 0.0f);
 
-	// figure out the center point.
-	b2Vec2 boneCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + (2*length));
+		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
+		b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
 
-	// attach user data to the body
-	bodyDef.userData = this;
+		int count = 4;
+		b2Vec2 vertices[count];
+		vertices[0].Set(rootVertexB.x, rootVertexB.y);
+		vertices[1].Set(tipVertexB.x, tipVertexB.y);
+		vertices[2].Set(tipVertexA.x, tipVertexB.y);
+		vertices[3].Set(rootVertexA.x, rootVertexA.y);
 
-	bodyDef.type = b2_dynamicBody;
-	p_body = m_world->CreateBody(&bodyDef);
-	
-	shape.SetAsBox(rootThickness, length, boneCenter, 0.0f);	
+		// figure out the center point.
+		b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (2*length));
 
-	// reference the physics object from the user data.
-	tipCenter = tipCenter;
-	rootCenter = attachesTo->tipCenter;
+		// attach user data to the body
+		bodyDef.userData = this;
+
+		bodyDef.type = b2_dynamicBody;
+		p_body = m_world->CreateBody(&bodyDef);
+		
+		shape.SetAsBox(rootThickness, length, boneCenter, 0.0f);	
+
+		// reference the physics object from the user data.
+		tipCenter = tipCenter;
+		rootCenter = b2Vec2(0.0f, 0.0f);
+	}
+	else {
+		b2Vec2 tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
+		b2Vec2 rootVertexA = b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y);
+		b2Vec2 rootVertexB = b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y);
+
+		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
+		b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
+
+		int count = 4;
+		b2Vec2 vertices[count];
+		vertices[0].Set(rootVertexB.x, rootVertexB.y);
+		vertices[1].Set(tipVertexB.x, tipVertexB.y);
+		vertices[2].Set(tipVertexA.x, tipVertexB.y);
+		vertices[3].Set(rootVertexA.x, rootVertexA.y);
+
+		// figure out the center point.
+		b2Vec2 boneCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + (2*length));
+
+		// attach user data to the body
+		bodyDef.userData = this;
+
+		bodyDef.type = b2_dynamicBody;
+		p_body = m_world->CreateBody(&bodyDef);
+		
+		shape.SetAsBox(rootThickness, length, boneCenter, 0.0f);	
+
+		// reference the physics object from the user data.
+		tipCenter = tipCenter;
+		rootCenter = attachesTo->tipCenter;
+
+	}
 
 	if (!isRoot) {
-		joint = new JointUserData( boneDescription, m_world, m_particleSystem); 	// the joint that attaches it into its socket 
+		joint = new JointUserData( boneDescription, this, fish, m_world, m_particleSystem); 	// the joint that attaches it into its socket 
 	}	
 
 	init = true;
@@ -190,7 +240,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 			driedFish.bones[i].isRoot = true;
 		}
 
-		bones[i] = new BoneUserData(driedFish.bones[i], fishes[fishIndex],  m_world, m_particleSystem);
+		bones[i] = new BoneUserData(driedFish.bones[i], this,  m_world, m_particleSystem);
 	}
 
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
@@ -339,27 +389,27 @@ void deepSeaLoop () {
 		}
 	}
 
-	// for each fish in the game world
-	for (int i = 0; i < N_FISHES; i++) {
-		if (fishes[i]->init) {
+	// // for each fish in the game world
+	// for (int i = 0; i < N_FISHES; i++) {
+	// 	if (fishes[i]->init) {
 
-			// iterate through the bones of the fish and update any sensors
-			for (int j = 0; j < N_FINGERS; ++j)
-			{
-				// nonRecursiveSensorUpdater( &(fishes[i]->bones[j]));
-			}
+	// 		// iterate through the bones of the fish and update any sensors
+	// 		for (int j = 0; j < N_FINGERS; ++j)
+	// 		{
+	// 			// nonRecursiveSensorUpdater( &(fishes[i]->bones[j]));
+	// 		}
 
 
 		
 
-		// sensory detection of food
-		// each sensor on the animal simply indicates a float number which is the amount of food it 'smells'. it does not tell direction and cannot distinguish different smell sources
+	// 	// sensory detection of food
+	// 	// each sensor on the animal simply indicates a float number which is the amount of food it 'smells'. it does not tell direction and cannot distinguish different smell sources
 
-		// running of the brain or behavior algorithm
+	// 	// running of the brain or behavior algorithm
 
-		// motor outputs or other controls
+	// 	// motor outputs or other controls
 
 
-		}
-	}
+	// 	}
+	// }
 }

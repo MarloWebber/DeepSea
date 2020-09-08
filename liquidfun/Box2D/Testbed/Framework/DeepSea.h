@@ -58,7 +58,7 @@ struct JointUserData {
 	BoneUserData * attaches;
 	BoneUserData * attachedTo;
 
-	JointUserData(boneAndJointDescriptor_t boneDescription, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+	JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 } ;
 
 
