@@ -326,6 +326,15 @@ void Test::jointMotorSetpoint()
 	deepSeaSetup(  m_world, m_particleSystem);
 }
 
+void Test::controlA()
+{
+	deepSeaControlA();
+}
+void Test::controlB()
+{
+	deepSeaControlB();
+}
+
 
 void Test::LaunchBomb()
 {

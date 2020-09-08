@@ -5,6 +5,8 @@
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 
+bool fishSlotLoaded[8];
+
 float pi = 3.14159f;
 
 foodParticle_t food[N_FOODPARTICLES];
@@ -189,7 +191,6 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2Pa
 	p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 	// m_particleSystem->DestroyParticlesInShape( &(p_bone->shape) ,p_bone->body->GetTransform());
 	if (!p_bone->isRoot) {
-			printf("nagies");
             p_bone->joint->isUsed = true;
 			p_bone->joint->p_joint = (b2RevoluteJoint*)m_world->CreateJoint( &(p_bone->joint->jointDef) );
 	}
@@ -286,9 +287,9 @@ fishDescriptor_t simpleJellyfish = {
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
-				-0.05f,	// upperAngle
+				-0.00f,	// upperAngle
 				-0.015f,	// normalAngle
-				-0.25f,	// lowerAngle
+				-1.0f,	// lowerAngle
 				true
 		},
 		 {
@@ -302,9 +303,9 @@ fishDescriptor_t simpleJellyfish = {
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
-				0.05f,	// upperAngle
+				1.0f,	// upperAngle
 				0.15f,	// normalAngle
-				0.25f,	// lowerAngle
+				0.0f,	// lowerAngle
 				true
 		}
 	}
@@ -324,6 +325,7 @@ void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSyst
 void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem);
+	fishSlotLoaded[fishIndex] = true;
 
 }
 
@@ -345,4 +347,44 @@ void deepSeaLoop () {
 			food[i].position = food[i].p_body->GetPosition();
 		}
 	}
+
+
+	// set all the drive speeds on the fish joints.
+	for (int i = 0; i < N_FISHES; ++i)
+
+	{
+
+		if (!fishSlotLoaded[i]) {
+			return;
+		}
+		for (int j = 0; j < N_FINGERS; ++j)
+		{
+			// if (fishes[i]->bones[j]->init && fishes[i]->bones[j]->isUsed) {
+
+			
+			// 		if (fishes[i]->bones[j]->joint->driveCW) {
+			// 			fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(fishes[i]->bones[j]->joint->speedLimit);
+			// 		}
+			// 		else if (fishes[i]->bones[j]->joint->driveCCW) {
+			// 			fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(-(fishes[i]->bones[j]->joint->speedLimit));
+			// 		}
+			// 		else {
+			// 			fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed (0);
+			// 		}
+			// 	}
+			}
+		}
+	
+
+	// set all the drive signals false again.
+
+}
+
+void deepSeaControlA () {
+	fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(1.0f);
+	// printf("deepSeaControlA\n");
+
+}
+void deepSeaControlB () {
+	fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(-1.0f);
 }

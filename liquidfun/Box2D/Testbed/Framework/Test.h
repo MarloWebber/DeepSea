@@ -170,6 +170,8 @@ public:
 
 	// void addFoodParticle();
 	void jointMotorSetpoint();
+	void controlA();
+	void controlB();
 	
 	void SpawnBomb(const b2Vec2& worldPt);
 	void CompleteBombSpawn(const b2Vec2& p);

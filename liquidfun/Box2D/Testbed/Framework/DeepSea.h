@@ -118,6 +118,8 @@ struct foodParticle_t {
 };
 
 
+void deepSeaControlA () ;
+void deepSeaControlB () ;
 
 void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 void fishIncorporator (BonyFish * p_fish,  b2World * m_world, b2ParticleSystem * m_particleSystem) ;

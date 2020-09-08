@@ -314,6 +314,20 @@ static void Keyboard(unsigned char key, int x, int y)
 		}
 		break;
 
+	case 'a':
+		if (test)
+		{
+			test->controlA();
+		}
+		break;
+	case 'd':
+		if (test)
+		{
+			test->controlB();
+		}
+		break;
+
+
 	case 'p':
 		settings.pause = !settings.pause;
 		break;
