@@ -72,7 +72,7 @@ struct BonyFish
 	bool init; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;
 
-	BonyFish();
+	BonyFish(b2World * m_world, b2ParticleSystem * m_particleSystem);
 };
 
 struct foodParticle_t {
