@@ -118,11 +118,13 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 // } ;
 
 
-void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, boneUserData_t * previousBone, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 	// boneUserData_t bone = *p_bone;
 
-	b2Vec2 cumulativeBonePosition = previousBone->tipCenter;
+
+
+	b2Vec2 cumulativeBonePosition = p_bone->attachedTo->tipCenter;
 
 	// if(bone.joint != nullptr) {
 	// 	// printf("the joint was not null\n");
@@ -187,7 +189,7 @@ void nonRecursiveBoneIncorporator(boneUserData_t * p_bone, boneUserData_t * prev
 
 	if (previousBone != nullptr) {
 			b2RevoluteJointDef jointDef2;
-			jointDef2.bodyA = previousBone->body;
+			jointDef2.bodyA = p_bone->attachedTo->body;
 			jointDef2.bodyB = p_bone->body;
 			jointDef2.localAnchorA =  cumulativeBonePosition;
 			jointDef2.localAnchorB =  cumulativeBonePosition;
@@ -550,175 +552,196 @@ BonyFish::BonyFish()
 
 
 
-// void makeAJellyfish () {
+void makeAJellyfish (BonyFish * p_fish) {
 
-// 	// this describes the original 3 boned jellyfish.
-// /*
-// 	float torque; 	
-// 	float speed; 	
-// 	float speedLimit;
-// 	bool driveCW;	// a signal that tells the motor to turn in one direction. This is much simpler than trying to drive it with a number and having to remember positon etc. With this, you just hit the button, or don't.
-// 	bool driveCCW;	// a signal that tells the motor to turn in the other direction.
-// 	float upperAngle;
-// 	float normalAngle;
-// 	float lowerAngle;
-// 	b2RevoluteJoint * joint; // the joint that this user data struct gets pinned to
-// 	*/
-// jointUserData_t joint1 = {
-// 	1.0f,
-// 	0.0f,
-// 	2.0f,
-// 	false,
-// 	false,
-// 	0.05f,
-// 	-0.15f * pi,
-// 	0.25f,
-// 	nullptr,
-// 	false
-// };
+	// this describes the original 3 boned jellyfish.
+/*
+	float torque; 	
+	float speed; 	
+	float speedLimit;
+	bool driveCW;	// a signal that tells the motor to turn in one direction. This is much simpler than trying to drive it with a number and having to remember positon etc. With this, you just hit the button, or don't.
+	bool driveCCW;	// a signal that tells the motor to turn in the other direction.
+	float upperAngle;
+	float normalAngle;
+	float lowerAngle;
+	b2RevoluteJoint * joint; // the joint that this user data struct gets pinned to
+	*/
+jointUserData_t joint1 = {
+	1.0f,
+	0.0f,
+	2.0f,
+	false,
+	false,
+	0.05f,
+	-0.15f * pi,
+	0.25f,
+	nullptr,
+	false
+};
 
-// jointUserData_t joint2 = {
-// 	1.0f,
-// 	0.0f,
-// 	2.0f,
-// 	false,
-// 	false,
-// 	0.05f,
-// 	0.15f * pi,
-// 	0.25f,
-// 	nullptr,
-// 	false
-// };
+jointUserData_t joint2 = {
+	1.0f,
+	0.0f,
+	2.0f,
+	false,
+	false,
+	0.05f,
+	0.15f * pi,
+	0.25f,
+	nullptr,
+	false
+};
 
-// jointUserData_t joint3 = {
-// 	1.0f,
-// 	0.0f,
-// 	2.0f,
-// 	false,
-// 	false,
-// 	0.05f,
-// 	0.0f * pi,
-// 	0.25f,
-// 	nullptr,
-// 	false
-// };
+jointUserData_t joint3 = {
+	1.0f,
+	0.0f,
+	2.0f,
+	false,
+	false,
+	0.0f,
+	0.0f * pi,
+	0.0f,
+	nullptr,
+	false
+};
 
-
-// float length;
-// float rootThickness;
-// float tipThickness;
-
-// float density;
-
-// b2Vec2 tipCenter; // these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
-// b2Vec2 rootCenter; 
-
-// jointUserData_t * joint; // the joint that attaches it into its socket			
-
-// boneUserData_t* bones[8]; // a collection of the other bones that are attached to it.
-// int n_bones;			  // number of child bones that are actually used.
-
-// bool isRoot ;
-// 	bool isMouth ;
-
-// 	bool isSensor ;
-// 	float sensation;
-
-// 	bool isWeapon ;	// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
-
-// 	float energy; 
+/*
 
 
-// b2Body * body;
-// b2PolygonShape * shape; 
+	float length;
+	float rootThickness;
+	float tipThickness;
+
+	float density;
+
+	b2Vec2 tipCenter; // these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
+	b2Vec2 rootCenter; 
+
+	jointUserData_t * joint; // the joint that attaches it into its socket			
+
+	// the non recursive data model does not have this.
+	// boneUserData_t* bones[N_FINGERS]; // a collection of the other bones that are attached to it. the root bone is 0
+	// int n_bones;			  // number of child bones that are actually used.
+
+	bool isRoot ;
+	bool isMouth ;
+
+	bool isSensor ;
+	float sensation;
+
+	bool isWeapon ;	// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
+
+	float energy; // the nutritive energy stored in the tissue of this limb; used by predators and scavengers
+
+	b2Body * body;
+	b2PolygonShape * shape; 
+
+	b2Vec2 position;
+
+	bool init;
+
+*/
+
+boneUserData_t bone0 = {
+	// .length = 0.15f,
+	// .rootThickness = 0.01f,
+	// .tipThickness = 0.01f,
+	// .density = 1.5f,
+	// .bones[0] = &bone1,
+	// .bones[1] = &bone2,
+	// .isMouth = true,
+	// .isSensor = true
+	0.15f,
+	0.01f,
+	0.01f,
+	1.5f,
+	b2Vec2(0,0),
+	b2Vec2(0,0),
+	&joint3,
+	nullptr,
+	true,
+	true,
+	true,
+	1.0f,
+	false,
+	0.0f,
+	nullptr,
+	nullptr,
+	b2Vec2(0,0),
+	false
+};
 
 
+boneUserData_t bone1 = {
+	0.1f,
+	0.01f,
+	0.01f,
+	1.5f,
+	b2Vec2(0,0),
+	b2Vec2(0,0),
+	&joint1,
+	&bone0,
+	false,
+	false,
+	false,
+	0.0f,
+	false,
+	0.0f,
+	nullptr,
+	nullptr,
+	b2Vec2(0,0),
+	false
+};
 
-
-
-// boneUserData_t bone1 = {
-// 	0.1f,
-// 	0.01f,
-// 	0.01f,
-// 	1.5f,
-// 	b2Vec2(0,0),
-// 	b2Vec2(0,0),
-// 	&joint1,
-// 	nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,
-// 	0,
-// 	false,
-// 	false,
-// 	false,
-// 	0.0f,
-// 	false,
-// 	0.0f,
-// 	nullptr,
-// 	nullptr,
-// 	b2Vec2(0,0),
-// 	false
-// };
-
-// boneUserData_t bone2 = {
-// 	0.1f,
-// 	0.01f,
-// 	0.01f,
-// 	1.5f,
-// 	b2Vec2(0,0),
-// 	b2Vec2(0,0),
-// 	&joint2,
-// 	nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,
-// 	0,
-// 	false,
-// 	false,
-// 	false,
-// 	0.0f,
-// 	false,
-// 	0.0f,
-// 	nullptr,
-// 	nullptr,
-// 	b2Vec2(0,0),
-// 	false
-// };
-
-// boneUserData_t bone0 = {
-// 	// .length = 0.15f,
-// 	// .rootThickness = 0.01f,
-// 	// .tipThickness = 0.01f,
-// 	// .density = 1.5f,
-// 	// .bones[0] = &bone1,
-// 	// .bones[1] = &bone2,
-// 	// .isMouth = true,
-// 	// .isSensor = true
-// 	0.15f,
-// 	0.01f,
-// 	0.01f,
-// 	1.5f,
-// 	b2Vec2(0,0),
-// 	b2Vec2(0,0),
-// 	&joint3,
-// 	&bone1,&bone2,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,
-// 	2,
-// 	true,
-// 	true,
-// 	true,
-// 	1.0f,
-// 	false,
-// 	0.0f,
-// 	nullptr,
-// 	nullptr,
-// 	b2Vec2(0,0),
-// 	false
-// };
-
-// BonyFish simpleJellyfish = {
-// 	&bone0,
-// 	0.0f,
-// 	b2Vec2(0.0f,2.5f)
-// }; 
+boneUserData_t bone2 = {
+	0.1f,
+	0.01f,
+	0.01f,
+	1.5f,
+	b2Vec2(0,0),
+	b2Vec2(0,0),
+	&joint2,
+	&bone0,
+	false,
+	false,
+	false,
+	0.0f,
+	false,
+	0.0f,
+	nullptr,
+	nullptr,
+	b2Vec2(0,0),
+	false
+};
 
 
 
-// }
+BonyFish simpleJellyfish = {
+	{bone0,bone1,bone2,nullptr,nullptr,nullptr,nullptr,nullptr},
+	0.0f,
+	b2Vec2(0.0f,2.5f),
+	false
+}; 
+
+*p_fish = simpleJellyfish;
+
+
+// the below part puts the fish into the world.
+
+
+for (int i = 0; i < N_FINGERS; ++i)
+{
+	/* code */
+	if (p_fish->bones[i] != nullptr) {
+		nonRecursiveBoneIncorporator(p_fish->bones[i], b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+	}
+
+	
+}
+
+
+
+}
 
 
 
@@ -731,6 +754,9 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem) {
 		addFoodParticle(b2Vec2(2.5f, 2.5f), m_world, m_particleSystem);
 
 	// initialize 10 fish
+
+		makeAJellyfish(&fishes[0]);
+
 		// for (int i = 0; i < N_FISHES; ++i)
 		// {
 		// 	/* code */

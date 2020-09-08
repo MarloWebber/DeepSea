@@ -31,8 +31,6 @@ struct boneUserData_t {
 	// this will comprise the organs of the rigid animals.
 	// it is like a linked list that connects to other bones.
 
-public:
-
 	float length;
 	float rootThickness;
 	float tipThickness;
@@ -42,7 +40,8 @@ public:
 	b2Vec2 tipCenter; // these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	b2Vec2 rootCenter; 
 
-	jointUserData_t * joint; // the joint that attaches it into its socket			
+	jointUserData_t * joint; // the joint that attaches it into its socket		
+	boneUserData_t * attachedTo;	
 
 	// the non recursive data model does not have this.
 	// boneUserData_t* bones[N_FINGERS]; // a collection of the other bones that are attached to it. the root bone is 0
