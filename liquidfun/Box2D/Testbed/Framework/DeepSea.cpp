@@ -430,6 +430,83 @@ void drawNeuralNetwork(struct 	fann 	*	ann	) {
 	unsigned int layerArray[n_layers];
 	fann_get_layer_array(ann,layerArray);
 
+	// float weights[];
+	// fann_get_weights(ann, weights	);
+
+	// get the connections
+
+	// struct fann *net;               your trained neural network 
+    struct fann_connection *con;   /* weight matrix */
+    unsigned int connum;           /* connections number */
+    size_t i;
+
+
+	connum = fann_get_total_connections(ann);
+    if (connum == 0) {
+        fprintf(stderr, "Error: connections count is 0\n");
+        // return EXIT_FAILURE;
+    }
+
+    con = (fann_connection *)calloc(connum, sizeof(*con));
+    if (con == NULL) {
+        fprintf(stderr, "Error: unable to allocate memory\n");
+        // return EXIT_FAILURE;
+    }
+
+    /* Get weight matrix */
+    fann_get_connection_array(ann, con);
+
+
+
+    /* Print weight matrix */
+    for (i = 0; i < connum; ++i) {
+        // printf("weight from %u to %u: %f\n", con[i].from_neuron,
+        //        con[i].to_neuron, con[i].weight);
+
+    	b2Vec2 printConnectionSideA;
+    	b2Vec2 printConnectionSideB;
+
+    	uint8_t neuronA_tally = con[i].from_neuron;
+    	for (uint8_t j = 0; j< n_layers; ++j) {
+    		if (neuronA_tally >= layerArray[j]) {
+    			neuronA_tally -= layerArray[j];
+    		}	
+    		else {
+    			printConnectionSideA = b2Vec2(drawingStartingPosition.x + neuronA_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
+    			break;
+    		}
+
+
+
+    		neuronA_tally --;
+
+    	}
+    	uint8_t neuronB_tally = con[i].to_neuron;
+    	for (uint8_t j = 0; j< n_layers; ++j) {
+    		if (neuronB_tally >= layerArray[j]) {
+    			neuronB_tally -= layerArray[j];
+    		}	
+    		else {
+    			printConnectionSideB = b2Vec2(drawingStartingPosition.x + neuronB_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
+    			break;
+    		}
+
+
+
+    		neuronB_tally --;
+
+    	}
+
+
+	    // figure out how to draw a line
+	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB, b2Color(100,100,100));
+
+
+
+    }
+
+    free(con);
+
 	// traverse the layer array and construct a diagram.	
 	for (uint8_t i = 0; i < n_layers; ++i)
 	{

@@ -173,6 +173,8 @@ public:
 	void controlA();
 	void controlB();
 	void drawPoint (b2Vec2 position) ;
+	void drawSegment(b2Vec2 p1, b2Vec2 p2, b2Color color);
+
 	void SpawnBomb(const b2Vec2& worldPt);
 	void CompleteBombSpawn(const b2Vec2& p);
 

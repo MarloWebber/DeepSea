@@ -325,6 +325,10 @@ void Test::drawPoint (b2Vec2 position) {
 	// draw lines for the connections
 }
 
+void Test::drawSegment(b2Vec2 p1, b2Vec2 p2, b2Color color) {
+	m_debugDraw.DrawSegment( p1, p2, color);
+
+}
 
 
 void Test::jointMotorSetpoint()
