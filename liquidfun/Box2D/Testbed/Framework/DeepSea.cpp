@@ -145,7 +145,7 @@ BoneUserData::BoneUserData(
 		bodyDef.type = b2_dynamicBody;
 		p_body = m_world->CreateBody(&bodyDef);
 		
-		shape.SetAsBox(rootThickness, length, boneCenter, 0.0f);	
+		shape.SetAsBox(rootThickness, length, boneCenter,boneDescription.normalAngle);	
 
 		// reference the physics object from the user data.
 		tipCenter = tipCenter;
@@ -349,7 +349,7 @@ fishDescriptor_t simpleJellyfish = {
 	{
 		{
 				0,		// attachesTo
-				0.15f,	// length
+				0.175f,	// length
 				0.015f,	// rootThickness
 				0.01f,	// tipThickness
 				true,	// isRoot
@@ -374,9 +374,9 @@ fishDescriptor_t simpleJellyfish = {
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
-				-1.00f,	// upperAngle
-				-0.5f,	// normalAngle
-				-0.0f,	// lowerAngle
+				0.50f,	// upperAngle
+				0.15f,	// normalAngle
+				0.05f,	// lowerAngle
 				true
 		},
 		 {
@@ -390,9 +390,9 @@ fishDescriptor_t simpleJellyfish = {
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
-				0.0f,	// upperAngle
-				0.5f,	// normalAngle
-				1.0f,	// lowerAngle
+				(2* 3.1415) -0.05f,// upperAngle
+				(2* 3.1415) -0.15f,	// normalAngle
+				(2* 3.1415) -0.5f,	// lowerAngle
 				true
 		}
 	}
@@ -619,9 +619,12 @@ void deepSeaLoop () {
 		float speedForJointA = motorSignals[0] - motorSignals[1];
 		float speedForJointB = motorSignals[2] - motorSignals[3];
 
-		fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(speedForJointA);
-		fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(speedForJointB);
+		if (false) {
 
+			fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(speedForJointA);
+			fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(speedForJointB);
+
+		}
 
 	// set all the drive signals false again.
 
