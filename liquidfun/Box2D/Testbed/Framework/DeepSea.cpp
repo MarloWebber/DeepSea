@@ -238,6 +238,29 @@ void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_
 	currentNumberOfFood++;
 };
 
+void brainalyzer () {
+    const unsigned int num_input = 4; // should be number of sensors and hearts
+    const unsigned int num_output = 5;
+    const unsigned int num_layers = 3;
+    const unsigned int num_neurons_hidden = 3;
+    const float desired_error = (const float) 0.01;
+    const unsigned int max_epochs = 50000;
+    const unsigned int epochs_between_reports = 1000;
+
+    struct fann *ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
+
+    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
+    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
+
+    fann_train_on_file(ann, "jellyfishMindControl.data", max_epochs, epochs_between_reports, desired_error);
+
+    fann_save(ann, "jellyfishMindControl.net");
+
+    // fann_destroy(ann);
+
+    return;
+}
+
 BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
 	// position = b2Vec2(0.0f, 0.0f); // the starting position of the fish in the game world
@@ -254,6 +277,8 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false;
+
+	brainalyzer();
 
 };
 
@@ -287,9 +312,9 @@ fishDescriptor_t simpleJellyfish = {
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
-				-0.00f,	// upperAngle
-				-0.015f,	// normalAngle
-				-1.0f,	// lowerAngle
+				-1.00f,	// upperAngle
+				-0.5f,	// normalAngle
+				-0.0f,	// lowerAngle
 				true
 		},
 		 {
@@ -303,9 +328,9 @@ fishDescriptor_t simpleJellyfish = {
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
-				1.0f,	// upperAngle
-				0.15f,	// normalAngle
-				0.0f,	// lowerAngle
+				0.0f,	// upperAngle
+				0.5f,	// normalAngle
+				1.0f,	// lowerAngle
 				true
 		}
 	}

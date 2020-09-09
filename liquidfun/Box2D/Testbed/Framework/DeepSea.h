@@ -96,12 +96,14 @@ struct BoneUserData {
 
 struct BonyFish
 {
-
-	float hunger; // the animal spends energy to move and must replenish it by eating
-	bool init; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
-	bool isUsed;
+	float hunger; 	// the animal spends energy to move and must replenish it by eating
+	bool init; 		// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+	bool isUsed;	// 
 
 	BoneUserData * bones[N_FINGERS]; // for now, let's just get fish working with a small, hard-linked, flat level set of bones.
+
+	uint8_t heartCount; 	// the heart is a neuro input used for timing and frequency control. 
+	uint8_t heartOutput;	// every heartCount timesteps, the output changes state between 1 and 0.
 	
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem);
 };
