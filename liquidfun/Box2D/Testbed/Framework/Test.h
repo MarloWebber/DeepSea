@@ -172,7 +172,7 @@ public:
 	void jointMotorSetpoint();
 	void controlA();
 	void controlB();
-	
+	void drawPoint (b2Vec2 position) ;
 	void SpawnBomb(const b2Vec2& worldPt);
 	void CompleteBombSpawn(const b2Vec2& p);
 

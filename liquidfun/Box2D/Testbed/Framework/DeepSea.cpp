@@ -9,6 +9,8 @@ bool fishSlotLoaded[8];
 
 float pi = 3.14159f;
 
+DebugDraw * local_debugDraw_pointer;
+
 // these FANN parameters should be common to all networks.
 const float desired_error = (const float) 0.01;
 const unsigned int max_epochs = 50000;
@@ -401,13 +403,49 @@ void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world,
 
 }
 
-void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem) {
+void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) {
+
+	// store the debugdraw pointer in here so we can use it.
+	local_debugDraw_pointer = p_debugDraw;
 
 	addFoodParticle(b2Vec2(2.5f, 2.5f), m_world, m_particleSystem);
 // 
 	loadFish(0, simpleJellyfish, m_world, m_particleSystem);
 
 	totalFishIncorporator(0, m_world, m_particleSystem);
+}
+
+
+void drawNeuralNetwork(struct 	fann 	*	ann	) {
+
+
+	b2Vec2 drawingStartingPosition = b2Vec2(0.0f,0.0f);
+	float spacingDistance = 0.5f;
+
+
+	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
+	unsigned int n_layers = fann_get_num_layers(ann);
+
+	// get the number of neurons on each layer.
+	unsigned int layerArray[n_layers];
+	fann_get_layer_array(ann,layerArray);
+
+	// traverse the layer array and construct a diagram.	
+	for (uint8_t i = 0; i < n_layers; ++i)
+	{
+		for (uint8_t j = 0; j < layerArray[i]; ++j)
+		{
+			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y + i * spacingDistance);
+			// test->drawPoint ( neuron_position) ;
+			local_debugDraw_pointer->DrawPoint(neuron_position, 10.0f, b2Color(0.3f, 0.95f, 0.3f));
+		}
+	}
+
+
+	// unsigned int n_total_connections = fann_get_total_connections(ann); // get the total number of connections
+
+	// fann_connection connections[n_total_connections]; 
+
 }
 
 
@@ -466,6 +504,10 @@ void deepSeaLoop () {
 
 
 	// set all the drive signals false again.
+
+		// print the brainal output
+
+		drawNeuralNetwork( fishes[i]->ann);
 
 	}
 }

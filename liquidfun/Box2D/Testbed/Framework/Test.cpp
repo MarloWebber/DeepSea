@@ -317,13 +317,19 @@ void Test::MouseMove(const b2Vec2& p)
 }
 
 
+void Test::drawPoint (b2Vec2 position) {
+	m_debugDraw.DrawPoint(position, 10.0f, b2Color(0.3f, 0.95f, 0.3f));
 
+	// draw a point for each neuron
+
+	// draw lines for the connections
+}
 
 
 
 void Test::jointMotorSetpoint()
 {
-	deepSeaSetup(  m_world, m_particleSystem);
+	deepSeaSetup(  m_world, m_particleSystem, &m_debugDraw);
 }
 
 void Test::controlA()
