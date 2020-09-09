@@ -205,6 +205,10 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2Pa
 }
 
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
+
+	if (!p_bone->init || !p_bone->isUsed) {
+		return;
+	}
 	p_bone->position = p_bone->p_body->GetPosition();
 	p_bone->sensation = 0.0f;
 
@@ -416,11 +420,10 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 }
 
 
-void drawNeuralNetwork(struct 	fann 	*	ann	) {
+void drawNeuralNetwork(struct 	fann 	*	ann, b2Vec2 drawingStartingPosition, float spacingDistance	) {
 
 
-	b2Vec2 drawingStartingPosition = b2Vec2(0.0f,0.0f);
-	float spacingDistance = 0.5f;
+	
 
 
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
@@ -499,7 +502,7 @@ void drawNeuralNetwork(struct 	fann 	*	ann	) {
 
 
 	    // figure out how to draw a line
-	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB, b2Color(100,100,100));
+	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB, b2Color(0.1f,0.1f,0.1f));
 
 
 
@@ -512,9 +515,8 @@ void drawNeuralNetwork(struct 	fann 	*	ann	) {
 	{
 		for (uint8_t j = 0; j < layerArray[i]; ++j)
 		{
-			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y + i * spacingDistance);
-			// test->drawPoint ( neuron_position) ;
-			local_debugDraw_pointer->DrawPoint(neuron_position, 10.0f, b2Color(0.3f, 0.95f, 0.3f));
+			// b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y + i * spacingDistance);
+			// local_debugDraw_pointer->DrawPoint(neuron_position, 10.0f, b2Color(0.1f, 0.1f, 0.1f));
 		}
 	}
 
@@ -568,6 +570,23 @@ void deepSeaLoop () {
 		// float motorSignals[5] =
 
 
+
+		b2Vec2 drawingStartingPosition = b2Vec2(0.0f,0.0f);
+		float spacingDistance = 0.5f;
+
+		for (int j = 0; j < 3; ++j)
+		{
+			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +i * spacingDistance,drawingStartingPosition.y );
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[i] * 1000, sensorium[i] * 1000, sensorium[i] *1000));
+			printf("nueroan %f\n", sensorium[i]);
+		}
+
+		for (int j = 0; j < 5; ++j)
+		{
+			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +i * spacingDistance,drawingStartingPosition.y + 2 * spacingDistance);
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[i]*1000, motorSignals[i]*1000, motorSignals[i]*1000));
+			printf("motar %f\n", motorSignals[i]);
+		}
 			// get output
 
 			// do motor control
@@ -584,7 +603,7 @@ void deepSeaLoop () {
 
 		// print the brainal output
 
-		drawNeuralNetwork( fishes[i]->ann);
+		drawNeuralNetwork( fishes[i]->ann,  drawingStartingPosition, spacingDistance);
 
 	}
 }
