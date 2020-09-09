@@ -301,7 +301,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 
 
 
-	heartSpeed = 50;
+	heartSpeed = 10;
 
 	/*
 	jellybrain descriptor_t
@@ -345,7 +345,7 @@ fishDescriptor_t simpleJellyfish = {
 				0.01f,	// tipThickness
 				true,	// isRoot
 				true,	// isMouth
-				true,	// isSensor
+				false,	// isSensor
 				false,	// isWeapon
 				0.0f,	// torque
 				0.0f,	// speedLimit
@@ -361,7 +361,7 @@ fishDescriptor_t simpleJellyfish = {
 				0.01f,	// tipThickness
 				false,	// isRoot
 				false,	// isMouth
-				false,	// isSensor
+				true,	// isSensor
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
@@ -377,7 +377,7 @@ fishDescriptor_t simpleJellyfish = {
 				0.01f,	// tipThickness
 				false,	// isRoot
 				false,	// isMouth
-				false,	// isSensor
+				true,	// isSensor
 				false,	// isWeapon
 				1.0f,	// torque
 				1.0f,	// speedLimit
@@ -548,6 +548,7 @@ void deepSeaLoop () {
 
 
 		// cause heart to beat
+		printf("heart: %i", fishes[0]->heartOutput);
 		if (fishes[i]->heartCount > fishes[i]->heartSpeed) {
 			fishes[i]->heartCount = 0;
 			fishes[i]->heartOutput = !fishes[i]->heartOutput; // NOT operator used on a uint8_t.
@@ -563,7 +564,7 @@ void deepSeaLoop () {
 			nonRecursiveSensorUpdater (fishes[i]->bones[j]);
 		}
 
-		float sensorium[3] = {fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation, (float)fishes[i]->heartOutput};
+		float sensorium[3] = {fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation, (float)fishes[i]->heartOutput * 100};
 
 			// feed information into brain
 		float * motorSignals = fann_run(fishes[i]->ann, sensorium);
@@ -571,21 +572,28 @@ void deepSeaLoop () {
 
 
 
-		b2Vec2 drawingStartingPosition = b2Vec2(0.0f,0.0f);
+		b2Vec2 drawingStartingPosition = b2Vec2(1.0f,2.0f);
 		float spacingDistance = 0.5f;
 
 		for (int j = 0; j < 3; ++j)
 		{
-			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +i * spacingDistance,drawingStartingPosition.y );
-			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[i] * 1000, sensorium[i] * 1000, sensorium[i] *1000));
-			printf("nueroan %f\n", sensorium[i]);
+			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
+
+			// float tempColor = sensorium[i] * 1000;
+			// if () {
+
+			// }
+			// uint8_t theColor = 
+
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j] * 100, sensorium[j] * 100, sensorium[j] *100));
+			// printf("nueroan %f\n", sensorium[i]);
 		}
 
 		for (int j = 0; j < 5; ++j)
 		{
-			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +i * spacingDistance,drawingStartingPosition.y + 2 * spacingDistance);
-			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[i]*1000, motorSignals[i]*1000, motorSignals[i]*1000));
-			printf("motar %f\n", motorSignals[i]);
+			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + (2 * spacingDistance)));
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]*100, motorSignals[j]*100, motorSignals[j]*100));
+			// printf("motar %f\n", motorSignals[i]);
 		}
 			// get output
 
