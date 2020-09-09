@@ -316,12 +316,21 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 	*/
 
 	// these are changeable parameters
-	const unsigned int num_input = 4; // should be number of sensors and hearts
-    const unsigned int num_output = 5;
-    const unsigned int num_layers = 3;
-    const unsigned int num_neurons_hidden = 3;
+	// const unsigned int num_input = 4; // should be number of sensors and hearts
+ //    const unsigned int num_output = 5;
+ //    const unsigned int num_layers = 4;
+ //    const unsigned int num_neurons_hidden = 3;
 
-    ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
+
+    unsigned int creationLayerCake[] = {
+    	4,
+    	4,
+    	5,
+    	5
+    };
+
+    ann = fann_create_standard_array(4, creationLayerCake);
+    // ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
 
     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
@@ -420,7 +429,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 }
 
 
-void drawNeuralNetwork(struct 	fann 	*	ann, b2Vec2 drawingStartingPosition, float spacingDistance	) {
+void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium) {
 
 
 	
@@ -459,6 +468,37 @@ void drawNeuralNetwork(struct 	fann 	*	ann, b2Vec2 drawingStartingPosition, floa
     /* Get weight matrix */
     fann_get_connection_array(ann, con);
 
+
+
+
+
+		b2Vec2 drawingStartingPosition = b2Vec2(1.0f,2.0f);
+		float spacingDistance = 0.5f;
+
+		for (int j = 0; j < 3; ++j)
+		{
+			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
+
+			// float tempColor = sensorium[i] * 1000;
+			// if () {
+
+			// }
+			// uint8_t theColor = 
+
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j] * 100, sensorium[j] * 100, sensorium[j] *100));
+			// printf("nueroan %f\n", sensorium[i]);
+		}
+
+		for (int j = 0; j < 5; ++j)
+		{
+			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]*100, motorSignals[j]*100, motorSignals[j]*100));
+			// printf("motar %f\n", motorSignals[i]);
+		}
+			// get output
+
+			// do motor control
+	
 
 
     /* Print weight matrix */
@@ -501,8 +541,12 @@ void drawNeuralNetwork(struct 	fann 	*	ann, b2Vec2 drawingStartingPosition, floa
     	}
 
 
+    	b2Color segmentColor = b2Color(con[i].weight*10,con[i].weight*10,con[i].weight*10);
+
+    	// printf("con->weight : %f\n", con->weight);
+
 	    // figure out how to draw a line
-	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB, b2Color(0.1f,0.1f,0.1f));
+	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB,segmentColor );
 
 
 
@@ -572,34 +616,6 @@ void deepSeaLoop () {
 
 
 
-		b2Vec2 drawingStartingPosition = b2Vec2(1.0f,2.0f);
-		float spacingDistance = 0.5f;
-
-		for (int j = 0; j < 3; ++j)
-		{
-			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
-
-			// float tempColor = sensorium[i] * 1000;
-			// if () {
-
-			// }
-			// uint8_t theColor = 
-
-			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j] * 100, sensorium[j] * 100, sensorium[j] *100));
-			// printf("nueroan %f\n", sensorium[i]);
-		}
-
-		for (int j = 0; j < 5; ++j)
-		{
-			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + (2 * spacingDistance)));
-			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]*100, motorSignals[j]*100, motorSignals[j]*100));
-			// printf("motar %f\n", motorSignals[i]);
-		}
-			// get output
-
-			// do motor control
-	
-
 		float speedForJointA = motorSignals[0] - motorSignals[1];
 		float speedForJointB = motorSignals[2] - motorSignals[3];
 
@@ -611,7 +627,7 @@ void deepSeaLoop () {
 
 		// print the brainal output
 
-		drawNeuralNetwork( fishes[i]->ann,  drawingStartingPosition, spacingDistance);
+		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium);
 
 	}
 }

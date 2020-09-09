@@ -1,0 +1,55 @@
+100 3 5
+
+// if there is no response on any sensor, you don't need to do anything
+0 0 0 0
+0 0 0 0 0
+
+0 0 0 1
+0 0 0 0 0
+
+// if a sensor goes off on one side, orient yourself toward it
+1 0 0 0
+0 0 1 0 0
+
+1 0 0 1
+0 0 0 1 0
+
+0 1 0 0
+1 0 0 0 0
+
+0 1 0 1
+0 1 0 0 0
+
+// same for heartbeart +
+
+
+// if both sensors go off equally, swim straight forward
+
+1 1 0 0
+1 0 0 1 0
+
+1 1 0 1
+0 1 1 0 0
+
+
+
+// in: sensorA, sensorB, mouth, heart
+// out: driveCWA, driveCCWA, driveCWB, driveCCWB, weapon1
+
+    /*
+
+	num_train_data num_input num_output
+	inputdata seperated by space
+	outputdata seperated by space
+
+	.
+	.
+	.
+
+	inputdata seperated by space
+	outputdata seperated by space
+
+    */
+
+
+
