@@ -9,6 +9,11 @@ bool fishSlotLoaded[8];
 
 float pi = 3.14159f;
 
+// these FANN parameters should be common to all networks.
+const float desired_error = (const float) 0.01;
+const unsigned int max_epochs = 50000;
+const unsigned int epochs_between_reports = 1000;
+
 foodParticle_t food[N_FOODPARTICLES];
 BonyFish * fishes[N_FISHES];
 
@@ -238,28 +243,37 @@ void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_
 	currentNumberOfFood++;
 };
 
-void brainalyzer () {
-    const unsigned int num_input = 4; // should be number of sensors and hearts
-    const unsigned int num_output = 5;
-    const unsigned int num_layers = 3;
-    const unsigned int num_neurons_hidden = 3;
-    const float desired_error = (const float) 0.01;
-    const unsigned int max_epochs = 50000;
-    const unsigned int epochs_between_reports = 1000;
+// void brainalyzer () {
+//     const unsigned int num_input = 4; // should be number of sensors and hearts
+//     const unsigned int num_output = 5;
+//     const unsigned int num_layers = 3;
+//     const unsigned int num_neurons_hidden = 3;
+//     const float desired_error = (const float) 0.01;
+//     const unsigned int max_epochs = 50000;
+//     const unsigned int epochs_between_reports = 1000;
 
-    struct fann *ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
+//     struct fann *ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
 
-    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
-    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
+//     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
+//     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
-    fann_train_on_file(ann, "jellyfishMindControl.data", max_epochs, epochs_between_reports, desired_error);
+//     fann_train_on_file(ann, "jellyfishMindControl.data", max_epochs, epochs_between_reports, desired_error);
 
-    fann_save(ann, "jellyfishMindControl.net");
+//     fann_save(ann, "jellyfishMindControl.net");
 
-    // fann_destroy(ann);
+//     // fann_destroy(ann);
+    
 
-    return;
-}
+//     return;
+// }
+
+
+// void thinkMeAThoughtMrJellyfish () {
+// 	// FANN_EXTERNAL fann_type * FANN_API fann_run(	struct 	fann 	*	ann,
+// 		// fann_type 	*	input	)
+
+// 	fann_run () ;
+// }
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
@@ -278,7 +292,40 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false;
 
-	brainalyzer();
+
+
+
+	heartSpeed = 50;
+
+	/*
+	jellybrain descriptor_t
+
+	uint8_t n_inputs
+	uint8_t n_outputs
+	uint8_t n_layers
+	uint8_t n_neurons_hidden
+	
+	.. data sets
+
+	*/
+
+	// these are changeable parameters
+	const unsigned int num_input = 4; // should be number of sensors and hearts
+    const unsigned int num_output = 5;
+    const unsigned int num_layers = 3;
+    const unsigned int num_neurons_hidden = 3;
+
+    ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
+
+    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
+    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
+
+    fann_train_on_file(ann, "jellyfishMindControl.data", max_epochs, epochs_between_reports, desired_error);
+
+    fann_save(ann, "jellyfishMindControl.net");
+
+    // fann_destroy(ann);
+    
 
 };
 
@@ -366,15 +413,14 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 void deepSeaLoop () {
 
-	// get positions of all the food particles
+	
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
 		if (food[i].init) {
-			food[i].position = food[i].p_body->GetPosition();
+			food[i].position = food[i].p_body->GetPosition(); // update positions of all the food particles
 		}
 	}
 
 
-	// set all the drive speeds on the fish joints.
 	for (int i = 0; i < N_FISHES; ++i)
 
 	{
@@ -382,27 +428,46 @@ void deepSeaLoop () {
 		if (!fishSlotLoaded[i]) {
 			return;
 		}
+
+
+		// cause heart to beat
+		if (fishes[i]->heartCount > fishes[i]->heartSpeed) {
+			fishes[i]->heartCount = 0;
+			fishes[i]->heartOutput = !fishes[i]->heartOutput; // NOT operator used on a uint8_t.
+		}
+		else {
+			fishes[i]->heartCount++;
+		}
+
+
 		for (int j = 0; j < N_FINGERS; ++j)
 		{
-			// if (fishes[i]->bones[j]->init && fishes[i]->bones[j]->isUsed) {
-
-			
-			// 		if (fishes[i]->bones[j]->joint->driveCW) {
-			// 			fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(fishes[i]->bones[j]->joint->speedLimit);
-			// 		}
-			// 		else if (fishes[i]->bones[j]->joint->driveCCW) {
-			// 			fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(-(fishes[i]->bones[j]->joint->speedLimit));
-			// 		}
-			// 		else {
-			// 			fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed (0);
-			// 		}
-			// 	}
-			}
+			// run sensors
+			nonRecursiveSensorUpdater (fishes[i]->bones[j]);
 		}
+
+		float sensorium[3] = {fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation, (float)fishes[i]->heartOutput};
+
+			// feed information into brain
+		float * motorSignals = fann_run(fishes[i]->ann, sensorium);
+		// float motorSignals[5] =
+
+
+			// get output
+
+			// do motor control
 	
+
+		float speedForJointA = motorSignals[0] - motorSignals[1];
+		float speedForJointB = motorSignals[2] - motorSignals[3];
+
+		fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(speedForJointA);
+		fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(speedForJointB);
+
 
 	// set all the drive signals false again.
 
+	}
 }
 
 void deepSeaControlA () {

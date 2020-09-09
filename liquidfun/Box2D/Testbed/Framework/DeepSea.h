@@ -103,7 +103,10 @@ struct BonyFish
 	BoneUserData * bones[N_FINGERS]; // for now, let's just get fish working with a small, hard-linked, flat level set of bones.
 
 	uint8_t heartCount; 	// the heart is a neuro input used for timing and frequency control. 
-	uint8_t heartOutput;	// every heartCount timesteps, the output changes state between 1 and 0.
+	uint8_t heartSpeed; 	//  
+	uint8_t heartOutput;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+
+	struct fann *ann;
 	
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem);
 };
