@@ -111,13 +111,13 @@ struct BonyFish
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem);
 };
 
-class foodParticle_t {
+struct foodParticle_t {
 	b2Vec2 position; 			// starting position of the food in the game world
 	float energy; 				// the nutritive value of the food
 
 	b2BodyDef bodyDef;
 	b2Body * p_body;
-	b2CircleShape shape; 
+	b2PolygonShape shape; 
 
 	bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;
@@ -137,7 +137,7 @@ void deepSeaLoop () ;
 
 void makeAJellyfish (BonyFish * p_fish, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 
-extern foodParticle_t food[N_FOODPARTICLES];
+extern foodParticle_t * food[N_FOODPARTICLES];
 extern BonyFish * fishes[N_FISHES];
 
 extern int currentNumberOfFood;

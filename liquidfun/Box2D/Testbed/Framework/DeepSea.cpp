@@ -9,7 +9,8 @@
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 
-bool fishSlotLoaded[8];
+bool fishSlotLoaded[N_FISHES];
+bool foodSlotLoaded[N_FOODPARTICLES];
 
 float pi = 3.14159f;
 
@@ -20,7 +21,7 @@ const float desired_error = (const float) 0.0025;
 const unsigned int max_epochs = 50000;
 const unsigned int epochs_between_reports = 100;
 
-foodParticle_t food[N_FOODPARTICLES];
+foodParticle_t * food[N_FOODPARTICLES];
 BonyFish * fishes[N_FISHES];
 
 float magnitude (b2Vec2 vector) {
@@ -106,7 +107,7 @@ BoneUserData::BoneUserData(
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
-	tipCenter = b2Vec2(0.0f,0.1f); 											a// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
+	tipCenter = b2Vec2(0.0f,0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	rootCenter = b2Vec2(0.0f,0.0f); 		
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
@@ -205,12 +206,13 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	// printf("bone position ");printab2Vec2(p_bone->position); << bone position is good
 	p_bone->sensation = 0.0f;
 
-	// for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (food[0].init && food[0].isUsed) {
+	for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		if (!foodSlotLoaded[i]) {
+			break;
+		}
+		if (food[i]->init && food[i]->isUsed) {
 			
-			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[0].position.x),(p_bone->position.y - food[0].position.y));
-
-
+			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[i]->position.x),(p_bone->position.y - food[i]->position.y));
 
 			float distance = magnitude (positionalDifference);
 
@@ -220,33 +222,38 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 				p_bone->sensation += 1/distance;
 			}
 		}
-	// }
+	}
 	// printf("sensation: %f\n", p_bone->sensation);
 }
 
 // add a food particle to the world and register it so the game knows it exists.
-addfoodParticle_t::addFoodParticle_t ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) {
-	food[currentNumberOfFood].energy = 1.0f;
+foodParticle_t::foodParticle_t ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+	
+	energy = 1.0f;
 
-	b2BodyDef bodyDef;
-	bodyDef.userData = &food[currentNumberOfFood]; // register the fishfood struct as user data on the body
-	bd9.type = b2_dynamicBody;
-	b2Body* body = m_world->CreateBody(&bodyDef);
-	b2CircleShape shape;
-	// shape9.SetUserData(&fishFood)	// and also on the shape
-	shape.m_p.Set(-position.x,position.y );
-	shape.m_radius = 0.02f;
-	body1->CreateFixture(&shape1, 4.0f);
-	m_particleSystem->DestroyParticlesInShape(shape,body->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
+	// b2BodyDef bodyDef;
+	bodyDef.userData = this; // register the fishfood struct as user data on the body
+	bodyDef.type = b2_dynamicBody;
+	p_body = m_world->CreateBody(&bodyDef);
+	// b2CircleShape shape;
+	// shape.SetUserData(this)	// and also on the shape
+	
+	shape.SetAsBox(0.025f, 0.025f, position,0.0f);	
+	p_body->CreateFixture(&shape, 1.0f);
+	// m_particleSystem->DestroyParticlesInShape(shape,p_body->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
 
-	food[currentNumberOfFood].p_body = body9;
-	food[currentNumberOfFood].shape = shape;
+	init = true;
+	isUsed = true;
 
-	food[currentNumberOfFood].init = true;
-	food[currentNumberOfFood].isUsed = true;
-
-	currentNumberOfFood++;
+	
 };
+
+void addFoodParticle(b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+	food[currentNumberOfFood] = new foodParticle_t( position, m_world,  m_particleSystem);
+	foodSlotLoaded[currentNumberOfFood] = true;
+	currentNumberOfFood++;
+
+}
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
@@ -309,11 +316,11 @@ fishDescriptor_t simpleJellyfish = {
 				false,	// isMouth
 				true,	// isSensor
 				false,	// isWeapon
-				1.0f,	// torque
-				1.0f,	// speedLimit
+				2.0f,	// torque
+				2.0f,	// speedLimit
 				0.50f,	// upperAngle
 				0.15f,	// normalAngle
-				0.05f,	// lowerAngle
+				0.075f,	// lowerAngle
 				true
 		},
 		 {
@@ -325,11 +332,11 @@ fishDescriptor_t simpleJellyfish = {
 				false,	// isMouth
 				true,	// isSensor
 				false,	// isWeapon
-				1.0f,	// torque
-				1.0f,	// speedLimit
+				2.0f,	// torque
+				2.0f,	// speedLimit
 				(2* 3.1415) -0.05f,// upperAngle
 				(2* 3.1415) -0.15f,	// normalAngle
-				(2* 3.1415) -0.5f,	// lowerAngle
+				(2* 3.1415) -0.75f,	// lowerAngle
 				true
 		}
 	}
@@ -364,8 +371,8 @@ void jellyfishTrainer () {
 	int n_examples = 10000;
 	// there are actually 6*n_examples examples.
 
-	float noise = 0.1f;
-	float maxSensation = 0.2f;
+	float noise = 0.5f;
+	float maxSensation = 1.0f;
 
 	FILE *fp;
     fp = fopen("jellyfishTrainer.data","wb");
@@ -428,20 +435,20 @@ void jellyfishTrainer () {
 
 		// for straight ahead, jiggle both?
 
-		// sensationAThisTime = (sensationThisTurn) +((RNG() - 0.5) * noiseThisTurn);
-		// sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
+		sensationAThisTime = (sensationThisTurn) +((RNG() - 0.5) * noiseThisTurn);
+		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
 		
 		// // for a sense on side A, jiggle the bell on side B
-		// 	// one with heartbeat OFF, bell open
-		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
-		// // fprintf(fp, "0.5 0 0 0.5 0\n");
-		// fprintf(fp, "1 0 0 1 0\n");
-		// // fprintf(fp, "0.5 0 0 0.5 0\n");
-		// 	// one with heartbeat ON, bell closed
-		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
-		// // fprintf(fp, "0 0.75 0.75 0 0\n");
-		// fprintf(fp, "0 1 1 0 0\n");
-		// // fprintf(fp, "0 0.5 0.5 0 0\n");
+			// one with heartbeat OFF, bell open
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		// fprintf(fp, "0.5 0 0 0.5 0\n");
+		fprintf(fp, "1 0 0 1 0\n");
+		// fprintf(fp, "0.5 0 0 0.5 0\n");
+			// one with heartbeat ON, bell closed
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		// fprintf(fp, "0 0.75 0.75 0 0\n");
+		fprintf(fp, "0 1 1 0 0\n");
+		// fprintf(fp, "0 0.5 0.5 0 0\n");
 
 	}
 
@@ -517,8 +524,6 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 
 		// do motor control
 
-
-
     /* Print weight matrix */
     for (i = 0; i < connum; ++i) {
     	b2Vec2 printConnectionSideA;
@@ -555,24 +560,24 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     free(con);
 }
 
-
 void deepSeaLoop () {
 
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (!food[i].init || !food[i].isUsed) {
-			continue;
+		if (!foodSlotLoaded[i]) {
+			break;
 		}
 		else {
-			food[i].position = food[i].p_body->GetPosition(); // update positions of all the food particles
+			// printf("i: %i\n", i);
+			food[i]->position = food[i]->p_body->GetPosition(); // update positions of all the food particles
 
-			printf("food position ");printab2Vec2(food[i].position); // this number is bugged, go fix
+			// printf("food position ");printab2Vec2(food[i]->p_body->GetPosition()); // this number is bugged, go fix
 		}
 	}
 
 	for (int i = 0; i < N_FISHES; ++i) {
 
 		if (!fishSlotLoaded[i]) {
-			return;
+			break;
 		}
 
 		// cause heart to beat
@@ -591,8 +596,24 @@ void deepSeaLoop () {
 		}
 
 		float range = fishes[i]->bones[1]->sensation - fishes[i]->bones[2]->sensation;
-		float senseA = (2* abs(range) + range);
-		float senseB = (2* abs(range) - range);
+
+		
+float senseA = 0;// fishes[i]->bones[1]->sensation ;//(2* abs(range) + range);
+		float senseB = 0;//fishes[i]->bones[2]->sensation ;//(2* abs(range) - range);
+		if (fishes[i]->bones[1]->sensation > fishes[i]->bones[2]->sensation) {
+			senseA=1.0f;
+		}
+		else {
+			senseB=1.0f;
+		}
+
+		if( abs(range) < 0.0001) {
+			senseA=1.0f;
+			senseB=1.0f;
+		}
+
+
+		
 		float sensorium[3] = {senseA, senseB, (float)fishes[i]->heartOutput * 100};
 
 			// feed information into brain
@@ -601,8 +622,8 @@ void deepSeaLoop () {
 		float speedForJointB = motorSignals[2] - motorSignals[3];
 
 		if (true) {
-			fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(speedForJointA);
-			fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(speedForJointB);
+			fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(speedForJointA*10);
+			fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(speedForJointB*10);
 		}
 
 		// print the brainal output
