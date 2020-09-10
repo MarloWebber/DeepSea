@@ -17,7 +17,7 @@ float pi = 3.14159f;
 DebugDraw * local_debugDraw_pointer;
 
 // these FANN parameters should be common to all networks.
-const float desired_error = (const float) 0.0025;
+const float desired_error = (const float) 0.004;
 const unsigned int max_epochs = 50000;
 const unsigned int epochs_between_reports = 100;
 
@@ -276,8 +276,8 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 
     unsigned int creationLayerCake[] = {
     	4,
+    	2,
     	4,
-    	5,
     	5
     };
 
@@ -368,10 +368,10 @@ float RNG() { //
 void jellyfishTrainer () {
 	int n_inputs = 4;
 	int n_outputs = 5;
-	int n_examples = 10000;
+	int n_examples = 5000;
 	// there are actually 6*n_examples examples.
 
-	float noise = 0.5f;
+	float noise = 1.0f;
 	float maxSensation = 1.0f;
 
 	FILE *fp;
@@ -393,7 +393,7 @@ void jellyfishTrainer () {
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0 0 0 0.5 0\n");
 		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
-		fprintf(fp, "0 0 0 1 0\n");
+		fprintf(fp, "0 0 0 0.5 0\n");
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0 0 0 0.5 0\n");
 
@@ -419,7 +419,7 @@ void jellyfishTrainer () {
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0.5 0 0 0 0\n");
 		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
-		fprintf(fp, "1 0 0 0 0\n");
+		fprintf(fp, "0.5 0 0 0 0\n");
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0.5 0 0 0 0\n");
 
@@ -442,7 +442,7 @@ void jellyfishTrainer () {
 			// one with heartbeat OFF, bell open
 		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0.5 0 0 0.5 0\n");
-		fprintf(fp, "1 0 0 1 0\n");
+		fprintf(fp, "0.5 0 0 0.5 0\n");
 		// fprintf(fp, "0.5 0 0 0.5 0\n");
 			// one with heartbeat ON, bell closed
 		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
