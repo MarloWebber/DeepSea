@@ -17,7 +17,7 @@ float pi = 3.14159f;
 DebugDraw * local_debugDraw_pointer;
 
 // these FANN parameters should be common to all networks.
-const float desired_error = (const float) 0.004;
+const float desired_error = (const float) 0.005;
 const unsigned int max_epochs = 50000;
 const unsigned int epochs_between_reports = 100;
 
@@ -275,17 +275,19 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 	heartSpeed = 50;
 
     unsigned int creationLayerCake[] = {
+    	3,
     	4,
-    	2,
     	4,
-    	5
+    	4
     };
 
     ann = fann_create_standard_array(4, creationLayerCake);
     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
     fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
-    // fann_save(ann, "jellyfishTrainer.net"); 
+    // fann_cascadetrain_on_file(ann, "jellyfishTrainer.data", 25, 1, desired_error); // cascade training is real slow ?
+
+    fann_save(ann, "jellyfishTrainer.net"); 
 };
 
 // this describes the original 3 boned jellyfish.
@@ -366,13 +368,15 @@ float RNG() { //
 }
 
 void jellyfishTrainer () {
-	int n_inputs = 4;
-	int n_outputs = 5;
-	int n_examples = 5000;
+	int n_inputs = 3;
+	int n_outputs = 4;
+	int n_examples = 10000;
 	// there are actually 6*n_examples examples.
 
-	float noise = 1.0f;
-	float maxSensation = 1.0f;
+	float noise = 0.5f;
+	float maxSensation = 0.9f;
+	float hardOutput = 0.9f;
+	float softOutput = 0.3f;
 
 	FILE *fp;
     fp = fopen("jellyfishTrainer.data","wb");
@@ -382,18 +386,33 @@ void jellyfishTrainer () {
 	for (int i = 0; i < n_examples; ++i)
 	{
 
-		float sensationThisTurn = RNG() * maxSensation;
 		float noiseThisTurn = ((RNG() - 0.5) * noise);
+		float outputNoiseThisTurn = ((RNG() - 0.5) * noise) * 0.5;
+
+
+
+
+		float noisyHardOutputThisTurn = RNG() * hardOutput; 
+		float noisySoftOutputThisTurn = RNG() * softOutput;
+		float sensationThisTurn = RNG() * maxSensation;
+
+
+
 
 		float sensationAThisTime = (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
 		float sensationBThisTime =  ((RNG() - 0.5) * noiseThisTurn);
+
 		
 		// for a sense on side A, jiggle the bell on side B
 			// one with heartbeat OFF, bell open
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0 0 0 0.5 0\n");
-		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
-		fprintf(fp, "0 0 0 0.5 0\n");
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f %f\n", ((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn),
+										noisyHardOutputThisTurn +((RNG() - 0.5) * outputNoiseThisTurn));
+										// ((RNG() - 0.5) * outputNoiseThisTurn));
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0 0 0 0.5 0\n");
 
@@ -403,8 +422,12 @@ void jellyfishTrainer () {
 			// one with heartbeat ON, bell closed
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
 		// fprintf(fp, "0 0 0.5 0 0\n");
-		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
-		fprintf(fp, "0 0 1 0 0\n");
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,1.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f %f\n", ((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn),
+										noisySoftOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn));
+										// ((RNG() - 0.5) * outputNoiseThisTurn));
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
 		// fprintf(fp, "0 0 0.5 0 0\n");
 
@@ -418,8 +441,12 @@ void jellyfishTrainer () {
 			// one with heartbeat OFF, bell open
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0.5 0 0 0 0\n");
-		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
-		fprintf(fp, "0.5 0 0 0 0\n");
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f %f\n", noisyHardOutputThisTurn+((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn));
+										// ((RNG() - 0.5) * outputNoiseThisTurn));
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0.5 0 0 0 0\n");
 
@@ -428,8 +455,12 @@ void jellyfishTrainer () {
 			// one with heartbeat ON, bell closed
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
 		// fprintf(fp, "0 0.5 0 0 0\n");
-		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
-		fprintf(fp, "0 1 0 0 0\n");
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,1.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f %f\n", ((RNG() - 0.5) * outputNoiseThisTurn),
+										noisySoftOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn));
+										// ((RNG() - 0.5) * outputNoiseThisTurn));
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
 		// fprintf(fp, "0 0.5 0 0 0\n");
 
@@ -440,14 +471,22 @@ void jellyfishTrainer () {
 		
 		// // for a sense on side A, jiggle the bell on side B
 			// one with heartbeat OFF, bell open
-		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.0f + ((RNG() - 0.5) * noiseThisTurn));
 		// fprintf(fp, "0.5 0 0 0.5 0\n");
-		fprintf(fp, "0.5 0 0 0.5 0\n");
+		fprintf(fp, "%f %f %f %f\n", noisyHardOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn),
+										noisyHardOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn));
+										// ((RNG() - 0.5) * outputNoiseThisTurn));
 		// fprintf(fp, "0.5 0 0 0.5 0\n");
 			// one with heartbeat ON, bell closed
-		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,1.0f + ((RNG() - 0.5) * noiseThisTurn));
 		// fprintf(fp, "0 0.75 0.75 0 0\n");
-		fprintf(fp, "0 1 1 0 0\n");
+		fprintf(fp, "%f %f %f %f\n", ((RNG() - 0.5) * outputNoiseThisTurn),
+										noisySoftOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
+										noisySoftOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
+										((RNG() - 0.5) * outputNoiseThisTurn));
+										// ((RNG() - 0.5) * outputNoiseThisTurn));
 		// fprintf(fp, "0 0.5 0.5 0 0\n");
 
 	}
@@ -608,16 +647,60 @@ float senseA = 0;// fishes[i]->bones[1]->sensation ;//(2* abs(range) + range);
 		}
 
 		if( abs(range) < 0.0001) {
-			senseA=1.0f;
-			senseB=1.0f;
+			senseA=1.0f + (RNG()* 0.5 * (RNG()-0.5f));
+			senseB=1.0f + (RNG() * 0.5 * (RNG()-0.5f));;
 		}
 
 
 		
 		float sensorium[3] = {senseA, senseB, (float)fishes[i]->heartOutput * 100};
 
+
+		// 
+		// float visualAdjustedMotorSignals[4];
+
+
+
 			// feed information into brain
 		float * motorSignals = fann_run(fishes[i]->ann, sensorium);
+
+		// float maxOutputThisTurn = 0.0f;
+
+		// ceiling and floor the motor output
+		// for (int j = 0; j < 4; ++j){
+		// 	if (motorSignals[i] > 1.0f) {
+		// 		motorSignals[i] = 1.0f;
+		// 	}
+		// 	if (motorSignals[i] < 0.0f) {
+		// 		motorSignals[i] = 0.001f; // not zero, lol.
+		// 	}
+		// 	if (motorSignals[i] > maxOutputThisTurn) {
+		// 		maxOutputThisTurn = motorSignals[i];
+		// 	}
+		// }
+
+		printf("%f %f %f %f\n", motorSignals[0], motorSignals[1], motorSignals[2], motorSignals[3]);
+
+		// output compressor. now that everything is clipped to range(0,1), autoscale it so that the biggest is increased to 1.
+		// float ratio = 1/maxOutputThisTurn;
+		// for (int i = 0; i < 4; ++i) {
+		// 	motorSignals[i] = motorSignals[i] * ratio;
+		// }
+
+		// for (int j = 0; j < 4; ++j){
+		// 	if (motorSignals[i] > 1.0f) {
+		// 		motorSignals[i] = 1.0f;
+		// 	}
+		// 	if (motorSignals[i] < 0.0f) {
+		// 		motorSignals[i] = 0.001f; // not zero, lol.
+		// 	}
+		// 	if (motorSignals[i] > maxOutputThisTurn) {
+		// 		maxOutputThisTurn = motorSignals[i];
+		// 	}
+		// }
+
+
+
 		float speedForJointA = motorSignals[0] - motorSignals[1];
 		float speedForJointB = motorSignals[2] - motorSignals[3];
 
