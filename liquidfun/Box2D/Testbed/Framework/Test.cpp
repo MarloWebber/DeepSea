@@ -338,11 +338,11 @@ void Test::jointMotorSetpoint()
 
 void Test::controlA()
 {
-	deepSeaControlA();
+	// deepSeaControlA();
 }
 void Test::controlB()
 {
-	deepSeaControlB();
+	// deepSeaControlB();
 }
 
 

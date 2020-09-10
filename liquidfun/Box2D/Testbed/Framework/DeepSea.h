@@ -104,7 +104,7 @@ struct BonyFish
 
 	uint8_t heartCount; 	// the heart is a neuro input used for timing and frequency control. 
 	uint8_t heartSpeed; 	//  
-	uint8_t heartOutput;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+	float heartOutput;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
 	struct fann *ann;
 	

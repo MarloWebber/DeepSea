@@ -49,14 +49,14 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 
 JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	torque = boneDescription.torque; 	
-	speed = 0.0f; 	
+	// speed = 0.0f; 	
 	speedLimit = boneDescription.speedLimit;
 	upperAngle = boneDescription.upperAngle;
 	normalAngle = boneDescription.normalAngle;
 	lowerAngle = boneDescription.lowerAngle;
 
-	driveCW = false;	// a signal that tells the motor to turn in one direction. This is much simpler than trying to drive it with a number and having to remember positon etc. With this, you just hit the button, or don't.
-	driveCCW = false;	// a signal that tells the motor to turn in the other direction.
+	// driveCW = false;	// a signal that tells the motor to turn in one direction. This is much simpler than trying to drive it with a number and having to remember positon etc. With this, you just hit the button, or don't.
+	// driveCCW = false;	// a signal that tells the motor to turn in the other direction.
 
 	// init = false;
 	isUsed = false;
@@ -75,7 +75,7 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 		jointDef.upperAngle = upperAngle;
 		jointDef.enableMotor = true;
 	    jointDef.maxMotorTorque = torque;
-	    jointDef.motorSpeed = speed;
+	    // jointDef.motorSpeed = speed;
 	}
 
     jointDef.userData = this;
@@ -374,9 +374,9 @@ void jellyfishTrainer () {
 	// there are actually 6*n_examples examples.
 
 	float noise = 0.5f;
-	float maxSensation = 0.9f;
-	float hardOutput = 0.3f;//0.9f;
-	float softOutput = 0.9f; //0.3f;
+	float maxSensation = 0.95f;
+	float hardOutput = -0.5f;//0.9f;
+	float softOutput = 0.95f; //0.3f;
 
 	FILE *fp;
     fp = fopen("jellyfishTrainer.data","wb");
@@ -407,7 +407,7 @@ void jellyfishTrainer () {
 			// one with heartbeat OFF, bell open
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0 0 0 0.5 0\n");
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
 		fprintf(fp, "%f %f %f %f\n", ((RNG() - 0.5) * outputNoiseThisTurn),
 										((RNG() - 0.5) * outputNoiseThisTurn),
 										((RNG() - 0.5) * outputNoiseThisTurn),
@@ -422,7 +422,7 @@ void jellyfishTrainer () {
 			// one with heartbeat ON, bell closed
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
 		// fprintf(fp, "0 0 0.5 0 0\n");
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,1.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
 		fprintf(fp, "%f %f %f %f\n", ((RNG() - 0.5) * outputNoiseThisTurn),
 										((RNG() - 0.5) * outputNoiseThisTurn),
 										noisySoftOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
@@ -441,7 +441,7 @@ void jellyfishTrainer () {
 			// one with heartbeat OFF, bell open
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
 		// fprintf(fp, "0.5 0 0 0 0\n");
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
 		fprintf(fp, "%f %f %f %f\n", noisyHardOutputThisTurn+((RNG() - 0.5) * outputNoiseThisTurn),
 										((RNG() - 0.5) * outputNoiseThisTurn),
 										((RNG() - 0.5) * outputNoiseThisTurn),
@@ -455,7 +455,7 @@ void jellyfishTrainer () {
 			// one with heartbeat ON, bell closed
 		// fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
 		// fprintf(fp, "0 0.5 0 0 0\n");
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,1.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
 		fprintf(fp, "%f %f %f %f\n", ((RNG() - 0.5) * outputNoiseThisTurn),
 										noisySoftOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
 										((RNG() - 0.5) * outputNoiseThisTurn),
@@ -471,7 +471,7 @@ void jellyfishTrainer () {
 		
 		// // for a sense on side A, jiggle the bell on side B
 			// one with heartbeat OFF, bell open
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
 		// fprintf(fp, "0.5 0 0 0.5 0\n");
 		fprintf(fp, "%f %f %f %f\n", noisyHardOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
 										((RNG() - 0.5) * outputNoiseThisTurn),
@@ -480,7 +480,7 @@ void jellyfishTrainer () {
 										// ((RNG() - 0.5) * outputNoiseThisTurn));
 		// fprintf(fp, "0.5 0 0 0.5 0\n");
 			// one with heartbeat ON, bell closed
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,1.0f + ((RNG() - 0.5) * noiseThisTurn));
+		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
 		// fprintf(fp, "0 0.75 0.75 0 0\n");
 		fprintf(fp, "%f %f %f %f\n", ((RNG() - 0.5) * outputNoiseThisTurn),
 										noisySoftOutputThisTurn + ((RNG() - 0.5) * outputNoiseThisTurn),
@@ -566,13 +566,13 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 	{
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
 
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j] * 100, sensorium[j] * 100, sensorium[j] *100));
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
 	}
 
 	for (uint8_t j = 0; j < layerArray[n_layers-1]; ++j)
 	{
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]*100, motorSignals[j]*100, motorSignals[j]*100));
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j], motorSignals[j], motorSignals[j]));
 	}
 		// get output
 
@@ -637,7 +637,15 @@ void deepSeaLoop () {
 		// cause heart to beat
 		if (fishes[i]->heartCount > fishes[i]->heartSpeed) {
 			fishes[i]->heartCount = 0;
-			fishes[i]->heartOutput = !fishes[i]->heartOutput; // NOT operator used on a uint8_t.
+			// fishes[i]->heartOutput = !fishes[i]->heartOutput; // NOT operator used on a uint8_t.
+
+			if (fishes[i]->heartOutput > 0) {
+				fishes[i]->heartOutput = -0.95;
+			}
+			else {
+				fishes[i]->heartOutput = 0.95;
+			}
+
 		}
 		else {
 			fishes[i]->heartCount++;
@@ -694,7 +702,7 @@ float senseA = 0;// fishes[i]->bones[1]->sensation ;//(2* abs(range) + range);
 		// 	}
 		// }
 
-		printf("%f %f %f %f\n", motorSignals[0], motorSignals[1], motorSignals[2], motorSignals[3]);
+		printf("motor: %.2f %.2f %.2f %.2f ", motorSignals[0], motorSignals[1], motorSignals[2], motorSignals[3]);
 
 		// output compressor. now that everything is clipped to range(0,1), autoscale it so that the biggest is increased to 1.
 		// float ratio = 1/maxOutputThisTurn;
@@ -720,6 +728,15 @@ float senseA = 0;// fishes[i]->bones[1]->sensation ;//(2* abs(range) + range);
 		float speedForJointB = motorSignals[2] - motorSignals[3];
 
 		if (true) {
+
+
+
+			float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
+			float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
+
+			printf("joint: %.2f %.2f\n", jointAngleA, jointAngleB);
+
+
 			fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(speedForJointA*10);
 			fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(speedForJointB*10);
 		}
@@ -730,11 +747,11 @@ float senseA = 0;// fishes[i]->bones[1]->sensation ;//(2* abs(range) + range);
 }
 
 void deepSeaControlA () {
-	fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(1.0f);
+	// fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(1.0f);
 	// printf("deepSeaControlA\n");
 
 }
 void deepSeaControlB () {
-	fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(-1.0f);
+	// fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(-1.0f);
 }
 
