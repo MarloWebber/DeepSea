@@ -5,7 +5,6 @@
 #include <iostream>
 #include <fstream>
 #include <random>
-// using namespace std;
 
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
@@ -63,16 +62,7 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 
 	// the following code prepares the box2d objects.
 	if (boneDescription.isRoot) {
-		// jointDef.bodyA = attachedTo->p_body;
-		// jointDef.bodyB = attaches->p_body;
-		// jointDef.localAnchorA =  attachedTo->tipCenter;
-		// jointDef.localAnchorB =  attachedTo->tipCenter;
-		// jointDef.enableLimit = true;
-		// jointDef.lowerAngle = lowerAngle;
-		// jointDef.upperAngle = upperAngle;
-		// jointDef.enableMotor = true;
-	 //    jointDef.maxMotorTorque = torque;
-	 //    jointDef.motorSpeed = speed;
+		;
 	}
 	else {
 		jointDef.bodyA = fish->bones[boneDescription.attachedTo]->p_body;
@@ -86,17 +76,13 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 	    jointDef.maxMotorTorque = torque;
 	    jointDef.motorSpeed = speed;
 	}
-	
 
     jointDef.userData = this;
-    // joint = jointDef; 	// the joint that this user data struct gets pinned to
 
     init = true;
 }
 
 BoneUserData::BoneUserData(
-	//	 these are the parameters that can fully describe a bone, in condensed form
-
 		boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
 		b2World * m_world, b2ParticleSystem * m_particleSystem // primarily needed to create the body
@@ -112,25 +98,23 @@ BoneUserData::BoneUserData(
 	length = boneDescription.length;
 	rootThickness = boneDescription.rootThickness;
 	tipThickness = boneDescription.tipThickness;
-	density = 1.0f; //boneDescription.density;
+	density = 1.0f;
 	isRoot = boneDescription.isRoot;
 	isMouth = boneDescription.isMouth;
 	isSensor = boneDescription.isSensor;
 	sensation = 0.0f;
-	isWeapon  = boneDescription.isWeapon;				// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
-	energy = ((rootThickness + tipThickness)/2) * (length * density); 					// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
+	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
+	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
-	tipCenter = b2Vec2(0.0f,0.1f); 	// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
+	tipCenter = b2Vec2(0.0f,0.1f); 											a// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	rootCenter = b2Vec2(0.0f,0.0f); 		
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
-
 	if (isRoot) {
 
 		b2Vec2 tipCenter = b2Vec2(0.0f, 0.0f + length);
 		b2Vec2 rootVertexA = b2Vec2(0.0f + (rootThickness/2), 0.0f);
 		b2Vec2 rootVertexB = b2Vec2(0.0f - (rootThickness/2), 0.0f);
-
 		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
 		b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
 
@@ -160,7 +144,6 @@ BoneUserData::BoneUserData(
 		b2Vec2 tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
 		b2Vec2 rootVertexA = b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y);
 		b2Vec2 rootVertexB = b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y);
-
 		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
 		b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
 
@@ -209,82 +192,61 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2Pa
 	p_bone->isUsed = true;
 }
 
+void printab2Vec2(b2Vec2 v) {
+	printf("x%f y%f\n", v.x, v.y);
+}
+
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 	if (!p_bone->init || !p_bone->isUsed) {
 		return;
 	}
 	p_bone->position = p_bone->p_body->GetPosition();
+	// printf("bone position ");printab2Vec2(p_bone->position); << bone position is good
 	p_bone->sensation = 0.0f;
 
-	for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (food[i].init) {
+	// for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		if (food[0].init && food[0].isUsed) {
 			
-			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[i].position.x),(p_bone->position.y - food[i].position.y));
+			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[0].position.x),(p_bone->position.y - food[0].position.y));
+
+
 
 			float distance = magnitude (positionalDifference);
+
+			// printf("positionalDistance ");printab2Vec2(positionalDifference);
+
 			if (distance > 0) {
 				p_bone->sensation += 1/distance;
 			}
 		}
-	}
-	printf("sensation: %f\n", p_bone->sensation);
+	// }
+	// printf("sensation: %f\n", p_bone->sensation);
 }
 
 // add a food particle to the world and register it so the game knows it exists.
-void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+addfoodParticle_t::addFoodParticle_t ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	food[currentNumberOfFood].energy = 1.0f;
 
-	b2BodyDef bd9;
-	bd9.userData = &food[currentNumberOfFood]; // register the fishfood struct as user data on the body
+	b2BodyDef bodyDef;
+	bodyDef.userData = &food[currentNumberOfFood]; // register the fishfood struct as user data on the body
 	bd9.type = b2_dynamicBody;
-	b2Body* body9 = m_world->CreateBody(&bd9);
-	b2CircleShape shape9;
+	b2Body* body = m_world->CreateBody(&bodyDef);
+	b2CircleShape shape;
 	// shape9.SetUserData(&fishFood)	// and also on the shape
-	shape9.m_p.Set(-position.x,position.y );
-	shape9.m_radius = 0.02f;
-	body9->CreateFixture(&shape9, 4.0f);
-	m_particleSystem->DestroyParticlesInShape(shape9,body9->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
+	shape.m_p.Set(-position.x,position.y );
+	shape.m_radius = 0.02f;
+	body1->CreateFixture(&shape1, 4.0f);
+	m_particleSystem->DestroyParticlesInShape(shape,body->GetTransform()); // snip out the particles that are already in that spot so it doesn't explode
 
 	food[currentNumberOfFood].p_body = body9;
-	food[currentNumberOfFood].shape = shape9;
+	food[currentNumberOfFood].shape = shape;
 
 	food[currentNumberOfFood].init = true;
+	food[currentNumberOfFood].isUsed = true;
 
 	currentNumberOfFood++;
 };
-
-// void brainalyzer () {
-//     const unsigned int num_input = 4; // should be number of sensors and hearts
-//     const unsigned int num_output = 5;
-//     const unsigned int num_layers = 3;
-//     const unsigned int num_neurons_hidden = 3;
-//     const float desired_error = (const float) 0.01;
-//     const unsigned int max_epochs = 50000;
-//     const unsigned int epochs_between_reports = 1000;
-
-//     struct fann *ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
-
-//     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
-//     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
-
-//     fann_train_on_file(ann, "jellyfishMindControl.data", max_epochs, epochs_between_reports, desired_error);
-
-//     fann_save(ann, "jellyfishMindControl.net");
-
-//     // fann_destroy(ann);
-    
-
-//     return;
-// }
-
-
-// void thinkMeAThoughtMrJellyfish () {
-// 	// FANN_EXTERNAL fann_type * FANN_API fann_run(	struct 	fann 	*	ann,
-// 		// fann_type 	*	input	)
-
-// 	fann_run () ;
-// }
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
@@ -303,29 +265,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false;
 
-
-
-
 	heartSpeed = 50;
-
-	/*
-	jellybrain descriptor_t
-
-	uint8_t n_inputs
-	uint8_t n_outputs
-	uint8_t n_layers
-	uint8_t n_neurons_hidden
-	
-	.. data sets
-
-	*/
-
-	// these are changeable parameters
-	// const unsigned int num_input = 4; // should be number of sensors and hearts
- //    const unsigned int num_output = 5;
- //    const unsigned int num_layers = 4;
- //    const unsigned int num_neurons_hidden = 3;
-
 
     unsigned int creationLayerCake[] = {
     	4,
@@ -335,18 +275,10 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
     };
 
     ann = fann_create_standard_array(4, creationLayerCake);
-    // ann = fann_create_standard(num_layers, num_input, num_neurons_hidden, num_output);
-
     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
-
     fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
-
-    fann_save(ann, "jellyfishTrainer.net");
-
-    // fann_destroy(ann);
-    
-
+    // fann_save(ann, "jellyfishTrainer.net"); 
 };
 
 // this describes the original 3 boned jellyfish.
@@ -413,7 +345,6 @@ void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSyst
 	}
 }
 
-
 void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem);
@@ -421,58 +352,25 @@ void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world,
 
 }
 
-
-
-
-float RNG() { // return a 
-// 	float get_random()
-// {
+float RNG() { //
     static std::default_random_engine e;
     static std::uniform_real_distribution<> dis(0, 1); // rage 0 - 1
     return dis(e);
-// }
 }
 
-
-
 void jellyfishTrainer () {
-
-
-  // ofstream myfile;
-  // myfile.open ("example.txt");
-  // myfile << "Writing this to a file.\n";
-
- 
 	int n_inputs = 4;
 	int n_outputs = 5;
 	int n_examples = 10000;
-
 	// there are actually 6*n_examples examples.
 
 	float noise = 0.1f;
-
 	float maxSensation = 0.2f;
 
 	FILE *fp;
     fp = fopen("jellyfishTrainer.data","wb");
 
     fprintf(fp, "%i %i% i\n", n_examples*4, n_inputs, n_outputs );
-
-    // char inputs[n_inputs];
-    // char outputs[n_output];
-
-	/*
-  
-    char lang[5][20] = {"C","C++","Java","Python","PHP"};
-
-    fprintf(fp,"Top 5 programming language\n");
-    for (int i=0; i<5; i++)
-        fprintf(fp, "%d. %s\n", i+1, lang[i]);
-
-    fclose(fp);
-    return 0;
-    */
-
 
 	for (int i = 0; i < n_examples; ++i)
 	{
@@ -559,7 +457,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	jellyfishTrainer();
 
-	printf("%f\n", RNG());
+	// printf("%f\n", RNG());
 
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
@@ -574,27 +472,16 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium) {
 
-
-	
-
-
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
 	unsigned int n_layers = fann_get_num_layers(ann);
 
 	// get the number of neurons on each layer.
 	unsigned int layerArray[n_layers];
 	fann_get_layer_array(ann,layerArray);
-
-	// float weights[];
-	// fann_get_weights(ann, weights	);
-
-	// get the connections
-
-	// struct fann *net;               your trained neural network 
+ 
     struct fann_connection *con;   /* weight matrix */
     unsigned int connum;           /* connections number */
     size_t i;
-
 
 	connum = fann_get_total_connections(ann);
     if (connum == 0) {
@@ -611,44 +498,29 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     /* Get weight matrix */
     fann_get_connection_array(ann, con);
 
+	b2Vec2 drawingStartingPosition = b2Vec2(1.0f,2.0f);
+	float spacingDistance = 0.5f;
 
+	for (int j = 0; j < 3; ++j)
+	{
+		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
 
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j] * 100, sensorium[j] * 100, sensorium[j] *100));
+	}
 
+	for (int j = 0; j < 5; ++j)
+	{
+		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]*100, motorSignals[j]*100, motorSignals[j]*100));
+	}
+		// get output
 
-		b2Vec2 drawingStartingPosition = b2Vec2(1.0f,2.0f);
-		float spacingDistance = 0.5f;
+		// do motor control
 
-		for (int j = 0; j < 3; ++j)
-		{
-			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
-
-			// float tempColor = sensorium[i] * 1000;
-			// if () {
-
-			// }
-			// uint8_t theColor = 
-
-			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j] * 100, sensorium[j] * 100, sensorium[j] *100));
-			// printf("nueroan %f\n", sensorium[i]);
-		}
-
-		for (int j = 0; j < 5; ++j)
-		{
-			b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
-			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]*100, motorSignals[j]*100, motorSignals[j]*100));
-			// printf("motar %f\n", motorSignals[i]);
-		}
-			// get output
-
-			// do motor control
-	
 
 
     /* Print weight matrix */
     for (i = 0; i < connum; ++i) {
-        // printf("weight from %u to %u: %f\n", con[i].from_neuron,
-        //        con[i].to_neuron, con[i].weight);
-
     	b2Vec2 printConnectionSideA;
     	b2Vec2 printConnectionSideB;
 
@@ -661,11 +533,7 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     			printConnectionSideA = b2Vec2(drawingStartingPosition.x + neuronA_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
     			break;
     		}
-
-
-
     		neuronA_tally --;
-
     	}
     	uint8_t neuronB_tally = con[i].to_neuron;
     	for (uint8_t j = 0; j< n_layers; ++j) {
@@ -676,66 +544,38 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     			printConnectionSideB = b2Vec2(drawingStartingPosition.x + neuronB_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
     			break;
     		}
-
-
-
     		neuronB_tally --;
-
     	}
-
 
     	b2Color segmentColor = b2Color(con[i].weight*10,con[i].weight*10,con[i].weight*10);
 
-    	// printf("con->weight : %f\n", con->weight);
-
-	    // figure out how to draw a line
 	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB,segmentColor );
-
-
-
     }
 
     free(con);
-
-	// traverse the layer array and construct a diagram.	
-	for (uint8_t i = 0; i < n_layers; ++i)
-	{
-		for (uint8_t j = 0; j < layerArray[i]; ++j)
-		{
-			// b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y + i * spacingDistance);
-			// local_debugDraw_pointer->DrawPoint(neuron_position, 10.0f, b2Color(0.1f, 0.1f, 0.1f));
-		}
-	}
-
-
-	// unsigned int n_total_connections = fann_get_total_connections(ann); // get the total number of connections
-
-	// fann_connection connections[n_total_connections]; 
-
 }
 
 
 void deepSeaLoop () {
 
-	
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (food[i].init) {
+		if (!food[i].init || !food[i].isUsed) {
+			continue;
+		}
+		else {
 			food[i].position = food[i].p_body->GetPosition(); // update positions of all the food particles
+
+			printf("food position ");printab2Vec2(food[i].position); // this number is bugged, go fix
 		}
 	}
 
-
-	for (int i = 0; i < N_FISHES; ++i)
-
-	{
+	for (int i = 0; i < N_FISHES; ++i) {
 
 		if (!fishSlotLoaded[i]) {
 			return;
 		}
 
-
 		// cause heart to beat
-		printf("heart: %i", fishes[0]->heartOutput);
 		if (fishes[i]->heartCount > fishes[i]->heartSpeed) {
 			fishes[i]->heartCount = 0;
 			fishes[i]->heartOutput = !fishes[i]->heartOutput; // NOT operator used on a uint8_t.
@@ -744,47 +584,29 @@ void deepSeaLoop () {
 			fishes[i]->heartCount++;
 		}
 
-
 		for (int j = 0; j < N_FINGERS; ++j)
 		{
 			// run sensors
 			nonRecursiveSensorUpdater (fishes[i]->bones[j]);
 		}
 
-
 		float range = fishes[i]->bones[1]->sensation - fishes[i]->bones[2]->sensation;
-
 		float senseA = (2* abs(range) + range);
 		float senseB = (2* abs(range) - range);
-
 		float sensorium[3] = {senseA, senseB, (float)fishes[i]->heartOutput * 100};
 
 			// feed information into brain
 		float * motorSignals = fann_run(fishes[i]->ann, sensorium);
-		// float motorSignals[5] =
-
-
-
-
-
 		float speedForJointA = motorSignals[0] - motorSignals[1];
 		float speedForJointB = motorSignals[2] - motorSignals[3];
 
-		printf("jointA: %f, jointB: %f\n", speedForJointA, speedForJointB);
-
 		if (true) {
-
 			fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(speedForJointA);
 			fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(speedForJointB);
-
 		}
 
-	// set all the drive signals false again.
-
 		// print the brainal output
-
 		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium);
-
 	}
 }
 
