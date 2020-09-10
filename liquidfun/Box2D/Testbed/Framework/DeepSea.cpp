@@ -2,6 +2,11 @@
 #include "fann.h"
 #include "Test.h"
 
+#include <iostream>
+#include <fstream>
+#include <random>
+// using namespace std;
+
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 
@@ -12,7 +17,7 @@ float pi = 3.14159f;
 DebugDraw * local_debugDraw_pointer;
 
 // these FANN parameters should be common to all networks.
-const float desired_error = (const float) 0.01;
+const float desired_error = (const float) 0.045;
 const unsigned int max_epochs = 50000;
 const unsigned int epochs_between_reports = 1000;
 
@@ -301,7 +306,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 
 
 
-	heartSpeed = 10;
+	heartSpeed = 50;
 
 	/*
 	jellybrain descriptor_t
@@ -335,9 +340,9 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
-    fann_train_on_file(ann, "jellyfishMindControl.data", max_epochs, epochs_between_reports, desired_error);
+    fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
 
-    fann_save(ann, "jellyfishMindControl.net");
+    fann_save(ann, "jellyfishTrainer.net");
 
     // fann_destroy(ann);
     
@@ -416,7 +421,145 @@ void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world,
 
 }
 
+
+
+
+float RNG() { // return a 
+// 	float get_random()
+// {
+    static std::default_random_engine e;
+    static std::uniform_real_distribution<> dis(0, 1); // rage 0 - 1
+    return dis(e);
+// }
+}
+
+
+
+void jellyfishTrainer () {
+
+
+  // ofstream myfile;
+  // myfile.open ("example.txt");
+  // myfile << "Writing this to a file.\n";
+
+ 
+	int n_inputs = 4;
+	int n_outputs = 5;
+	int n_examples = 1000;
+
+	// there are actually 18*n_examples examples.
+
+	float noise = 0.5f;
+
+	float maxSensation = 1.0f;
+
+	FILE *fp;
+    fp = fopen("jellyfishTrainer.data","wb");
+
+    fprintf(fp, "%i %i% i\n", n_examples*18, n_inputs, n_outputs );
+
+    // char inputs[n_inputs];
+    // char outputs[n_output];
+
+	/*
+  
+    char lang[5][20] = {"C","C++","Java","Python","PHP"};
+
+    fprintf(fp,"Top 5 programming language\n");
+    for (int i=0; i<5; i++)
+        fprintf(fp, "%d. %s\n", i+1, lang[i]);
+
+    fclose(fp);
+    return 0;
+    */
+
+
+	for (int i = 0; i < n_examples; ++i)
+	{
+
+		float sensationThisTurn = RNG() * maxSensation;
+		float noiseThisTurn = ((RNG() - 0.5) * noise);
+
+		float sensationAThisTime = (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
+		float sensationBThisTime =  ((RNG() - 0.5) * noiseThisTurn);
+		
+		// for a sense on side A, jiggle the bell on side B
+			// one with heartbeat OFF, bell open
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		fprintf(fp, "0 0 0 0.5 0\n");
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		fprintf(fp, "0 0 0 1 0\n");
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		fprintf(fp, "0 0 0 0.5 0\n");
+
+
+// fprintf(fp, "%d. %s\n", i+1, lang[i]);
+
+			// one with heartbeat ON, bell closed
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		fprintf(fp, "0 0 0.5 0 0\n");
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		fprintf(fp, "0 0 1 0 0\n");
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		fprintf(fp, "0 0 0.5 0 0\n");
+
+
+
+		// for a sense on side B, jiggle the bell on side A
+		sensationAThisTime = ((RNG() - 0.5) * noiseThisTurn);
+		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
+		
+		// for a sense on side A, jiggle the bell on side B
+			// one with heartbeat OFF, bell open
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		fprintf(fp, "0.5 0 0 0 0\n");
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		fprintf(fp, "1 0 0 0 0\n");
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		fprintf(fp, "0.5 0 0 0 0\n");
+
+
+
+			// one with heartbeat ON, bell closed
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		fprintf(fp, "0 0.5 0 0 0\n");
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		fprintf(fp, "0 1 0 0 0\n");
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		fprintf(fp, "0 0.5 0 0 0\n");
+
+		// for straight ahead, jiggle both?
+
+		sensationAThisTime = (sensationThisTurn) +((RNG() - 0.5) * noiseThisTurn);
+		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
+		
+		// for a sense on side A, jiggle the bell on side B
+			// one with heartbeat OFF, bell open
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),0.0f);
+		fprintf(fp, "0.5 0 0 0.5 0\n");
+		fprintf(fp, "1 0 0 1 0\n");
+		fprintf(fp, "0.5 0 0 0.5 0\n");
+			// one with heartbeat ON, bell closed
+		fprintf(fp, "%f %f %f %f\n", sensationAThisTime,sensationBThisTime,((RNG() - 0.5) * noiseThisTurn),1.0f);
+		fprintf(fp, "0 0.5 0.5 0 0\n");
+		fprintf(fp, "0 1 1 0 0\n");
+		fprintf(fp, "0 0.5 0.5 0 0\n");
+
+	}
+
+
+	// 
+  // myfile.close();
+
+	fclose(fp);
+
+}
+
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) {
+
+	jellyfishTrainer();
+
+	printf("%f\n", RNG());
 
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
@@ -608,7 +751,13 @@ void deepSeaLoop () {
 			nonRecursiveSensorUpdater (fishes[i]->bones[j]);
 		}
 
-		float sensorium[3] = {fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation, (float)fishes[i]->heartOutput * 100};
+
+		float range = fishes[i]->bones[1]->sensation - fishes[i]->bones[2]->sensation;
+
+		float senseA = (2* abs(range) + range);
+		float senseB = (2* abs(range) - range);
+
+		float sensorium[3] = {senseA, senseB, (float)fishes[i]->heartOutput * 100};
 
 			// feed information into brain
 		float * motorSignals = fann_run(fishes[i]->ann, sensorium);
@@ -619,7 +768,7 @@ void deepSeaLoop () {
 		float speedForJointA = motorSignals[0] - motorSignals[1];
 		float speedForJointB = motorSignals[2] - motorSignals[3];
 
-		if (false) {
+		if (true) {
 
 			fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(speedForJointA);
 			fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(speedForJointB);
@@ -643,3 +792,4 @@ void deepSeaControlA () {
 void deepSeaControlB () {
 	fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(-1.0f);
 }
+
