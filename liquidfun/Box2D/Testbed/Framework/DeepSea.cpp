@@ -276,7 +276,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 
     unsigned int creationLayerCake[] = {
     	3,
-    	4,
+    	2,
     	4,
     	4
     };
@@ -375,8 +375,8 @@ void jellyfishTrainer () {
 
 	float noise = 0.5f;
 	float maxSensation = 0.9f;
-	float hardOutput = 0.9f;
-	float softOutput = 0.3f;
+	float hardOutput = 0.3f;//0.9f;
+	float softOutput = 0.9f; //0.3f;
 
 	FILE *fp;
     fp = fopen("jellyfishTrainer.data","wb");
@@ -547,14 +547,29 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 	b2Vec2 drawingStartingPosition = b2Vec2(1.0f,2.0f);
 	float spacingDistance = 0.5f;
 
-	for (int j = 0; j < 3; ++j)
+	// float max = 0.0f;
+
+	// for (int j = 0; j < layerArray[0]; ++j)
+	// {
+	// 	if (motorSignals[j]) > max {
+	// 		max = motorSignals[j];
+	// 	}
+	// }
+
+	// if (max == 0.0f) {
+	// 	max = 0.01f;
+	// }
+
+	// float ratio = 1/max;
+
+	for (uint8_t j = 0; j < layerArray[0]; ++j)
 	{
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
 
 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j] * 100, sensorium[j] * 100, sensorium[j] *100));
 	}
 
-	for (int j = 0; j < 5; ++j)
+	for (uint8_t j = 0; j < layerArray[n_layers-1]; ++j)
 	{
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]*100, motorSignals[j]*100, motorSignals[j]*100));
