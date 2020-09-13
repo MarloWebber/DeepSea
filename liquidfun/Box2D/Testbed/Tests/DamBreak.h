@@ -50,6 +50,7 @@ public:
 		m_particleSystemGravel->SetDamping(0.2f);
 
 		{
+			// the water
 			b2PolygonShape shape;
 			shape.SetAsBox(2.9f, 1.5f, b2Vec2(0.0f, 1.6f), 0);
 			b2ParticleGroupDef pd;

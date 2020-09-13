@@ -339,10 +339,13 @@ void Test::jointMotorSetpoint()
 void Test::controlA()
 {
 	// deepSeaControlA();
+	setUserControlInputA();
 }
 void Test::controlB()
 {
 	// deepSeaControlB();
+	// userControlInputB = true;
+	setUserControlInputB();
 }
 
 

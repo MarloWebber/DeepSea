@@ -12,6 +12,17 @@ int currentNumberOfFish = 0;
 bool fishSlotLoaded[N_FISHES];
 bool foodSlotLoaded[N_FOODPARTICLES];
 
+bool userControlInputA;
+bool userControlInputB;
+
+void setUserControlInputA() {
+userControlInputA = true;
+}
+
+void setUserControlInputB () {
+userControlInputB = true;
+}
+
 float pi = 3.14159f;
 
 DebugDraw * local_debugDraw_pointer;
@@ -309,6 +320,22 @@ fishDescriptor_t simpleJellyfish = {
 				0.0f,	// lowerAngle
 				true
 		},
+		 {
+				0,		// attachesTo
+				0.15f,	// length
+				0.015f,	// rootThickness
+				0.01f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				true,	// isSensor
+				false,	// isWeapon
+				0.5f,	// torque
+				10.0f,	// speedLimit
+				(2* 3.1415) -0.075f,// upperAngle
+				(2* 3.1415) -0.15f,	// normalAngle
+				(2* 3.1415) -0.5f,	// lowerAngle
+				true
+		},
 		{
 				0,		// attachesTo
 				0.15f,	// length
@@ -324,23 +351,8 @@ fishDescriptor_t simpleJellyfish = {
 				0.15f,	// normalAngle
 				0.075f,	// lowerAngle
 				true
-		},
-		 {
-				0,		// attachesTo
-				0.15f,	// length
-				0.015f,	// rootThickness
-				0.01f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				true,	// isSensor
-				false,	// isWeapon
-				0.5f,	// torque
-				10.0f,	// speedLimit
-				(2* 3.1415) -0.05f,// upperAngle
-				(2* 3.1415) -0.15f,	// normalAngle
-				(2* 3.1415) -0.75f,	// lowerAngle
-				true
 		}
+		
 	}
 
 };
@@ -370,20 +382,20 @@ float RNG() { //
 void jellyfishTrainer () {
 	int n_inputs = 3;
 	int n_outputs = 2;
-	int n_examples = 5000;
+	int n_examples = 10000;
 	// there are actually 6*n_examples examples.
 
 	float noise = 0.25f;
 	float maxSensation = 0.95f;
 
 
-	float bellAOpen = 0.5f;//0.9f;
-	float bellAClose = -0.95f; //0.3f;
-	float bellASoftClose = 0.5f;
+	float bellAOpen = 0.3f;//0.9f;
+	float bellAClose = -0.9f; //0.3f;
+	float bellASoftClose = 0.3f;
 
-	float bellBOpen = -0.5f;//0.9f;
-	float bellBClose = 0.95f; //0.3f;
-	float bellBSoftClose = -0.5f;
+	float bellBOpen = -0.3f;//0.9f;
+	float bellBClose = 0.9f; //0.3f;
+	float bellBSoftClose = -0.3f;
 
 	FILE *fp;
     fp = fopen("jellyfishTrainer.data","wb");
@@ -585,11 +597,15 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
 
-	addFoodParticle(b2Vec2(2.5f, 2.5f), m_world, m_particleSystem);
+	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
 // 
-	loadFish(0, simpleJellyfish, m_world, m_particleSystem);
 
-	totalFishIncorporator(0, m_world, m_particleSystem);
+	for (int i = 0; i < N_FISHES; ++i)
+	{
+		loadFish(i, simpleJellyfish, m_world, m_particleSystem);
+		totalFishIncorporator(i, m_world, m_particleSystem);
+	}
+	
 }
 
 
@@ -737,7 +753,7 @@ void deepSeaLoop () {
 		float range = fishes[i]->bones[1]->sensation - fishes[i]->bones[2]->sensation;
 
 		
-float senseA = 0;// fishes[i]->bones[1]->sensation ;//(2* abs(range) + range);
+		float senseA = 0;// fishes[i]->bones[1]->sensation ;//(2* abs(range) + range);
 		float senseB = 0;//fishes[i]->bones[2]->sensation ;//(2* abs(range) - range);
 		if (fishes[i]->bones[1]->sensation > fishes[i]->bones[2]->sensation) {
 			senseA=1.0f;
@@ -751,6 +767,23 @@ float senseA = 0;// fishes[i]->bones[1]->sensation ;//(2* abs(range) + range);
 			senseB=1.0f + (RNG() * 0.5 * (RNG()-0.5f));;
 		}
 
+
+		if (i == 0) { // if fish is player, #0
+
+			if (userControlInputA || userControlInputB) {
+				senseA = 0;
+				senseB = 0;
+			}
+
+			if (userControlInputA) { 
+				senseA = 1.0;
+				userControlInputA = false;
+			}	
+			if (userControlInputB) { 
+				senseB = 1.0;
+				userControlInputB = false;
+			}
+		}
 
 		
 		float sensorium[3] = {senseA, senseB, (float)fishes[i]->heartOutput * 100};

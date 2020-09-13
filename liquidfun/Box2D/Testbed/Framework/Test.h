@@ -31,6 +31,8 @@ struct Settings;
 
 typedef Test* TestCreateFcn();
 
+
+
 #define	RAND_LIMIT	32767
 #define DRAW_STRING_NEW_LINE 25
 

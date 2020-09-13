@@ -14,6 +14,9 @@ struct JointUserData; // forward class declaration
 struct BoneUserData;
 struct BonyFish;
 
+void setUserControlInputA() ;
+void setUserControlInputB() ;
+
 // a condensed form of fish used for data storage and transfer.
 // it is made so that it is safe to serialize and mutate, and that any changes will not crash the program.
 struct boneAndJointDescriptor_t {
