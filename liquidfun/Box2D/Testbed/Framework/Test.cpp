@@ -127,10 +127,10 @@ void Test::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	b2Fixture* fixtureB = contact->GetFixtureB();
 
 	// //
-	BoneUserData * boneA = (BoneUserData *)((fixtureA->GetBody())->GetUserData());
-	BoneUserData * boneB = (BoneUserData *)((fixtureB->GetBody())->GetUserData());
+	void * userDataA = ((fixtureA->GetBody())->GetUserData());
+	void * userDataB = ((fixtureB->GetBody())->GetUserData());
 
-	collisionHandler(boneA, boneB);
+	collisionHandler(userDataA, userDataB);
 
 
 	b2PointState state1[b2_maxManifoldPoints], state2[b2_maxManifoldPoints];

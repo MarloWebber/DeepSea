@@ -139,6 +139,18 @@ struct foodParticle_t {
 	foodParticle_t(b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem);
 };
 
+// this is mainly used for high performance object type detection.
+enum gameObjectType { 
+	DEFAULT, 
+	FOOD, 
+	MOUTH 
+};
+
+struct uDataWrap() {
+	void * userData;
+	uint8_t dataType;
+};
+
 
 void deepSeaControlA () ;
 void deepSeaControlB () ;
@@ -157,6 +169,6 @@ extern BonyFish * fishes[N_FISHES];
 extern int currentNumberOfFood;
 extern int currentNumberOfFish;
 
-void collisionHandler (BoneUserData * boneA, BoneUserData * boneB) ;
+void collisionHandler (void * boneA, void * boneB) ;
 
 #endif

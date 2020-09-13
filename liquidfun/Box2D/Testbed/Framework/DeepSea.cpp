@@ -444,6 +444,41 @@ fann * loadFishBrainFromFile (std::string fileName) {
 	return fann_create_from_file( (fileName + std::string(".net")).c_str() );
 }
 
+void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
+	for (int i = 0; i < N_FINGERS; ++i)
+	{
+		if (fish->bones[i].used) {
+		// 		uint8_t attachedTo = 0; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
+		// float length = 0.1f;
+		// float rootThickness = 0.1f;
+		// float tipThickness = 0.1f;
+		// bool isRoot = false;
+		// bool isMouth = false;
+		// bool isSensor = false;
+		// bool isWeapon  = false;
+		// float torque = 0.0f;
+		// float speedLimit = 0.0f;
+		// float upperAngle = 0.0f;
+		// float normalAngle = 0.0f;
+		// float lowerAngle = 0.0f;
+		// bool used = false;
+
+			// mutate floats
+			if (RNG() > mutationChance) {	fish->bones[i].length += fish->bones[i].length 				*mutationSeverity*(RNG()-0.5); }
+			if (RNG() > mutationChance) {	fish->bones[i].rootThickness += fish->bones[i].rootThickness *mutationSeverity*(RNG()-0.5); }
+			if (RNG() > mutationChance) {	fish->bones[i].tipThickness += fish->bones[i].tipThickness 	*mutationSeverity*(RNG()-0.5); }
+			if (RNG() > mutationChance) {	fish->bones[i].torque += fish->bones[i].torque 				*mutationSeverity*(RNG()-0.5); }
+			if (RNG() > mutationChance) {	fish->bones[i].speedLimit += fish->bones[i].speedLimit 		*mutationSeverity*(RNG()-0.5); }
+			if (RNG() > mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
+			if (RNG() > mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
+
+
+
+
+		}
+	}
+
+}
 
 void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
@@ -453,7 +488,11 @@ void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * 
 
 	loadFishFromFile(fileName + std::string(".fsh"), newFish);
 
- 	loadFish ( fishIndex,  newFish,m_world,  m_particleSystem, loadFishBrainFromFile (fileName) ) ;
+	fann * ann  = loadFishBrainFromFile (fileName);
+
+	mutateFishDescriptor (&newFish, 0.1, 0.1) ;
+
+ 	loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, ann ) ;
 
 }
 
@@ -946,14 +985,36 @@ void deepSeaControlB () {
 
 
 
-void collisionHandler (BoneUserData * boneA, BoneUserData * boneB) {
+void collisionHandler (void * userDataA, void * userDataB) {
 
-	// if (boneB == isMouth) {
-
+	// if (boneB->isMouth) {
+	// 	printf("f");
 	// }
 
+	bool et = false;
+	bool fud = false;
 
-	// if (boneA == isMouth) {
+
+
+	if(dynamic_cast<BoneUserData*>((BoneUserData*)userDataA)) // this is, apparently, terribly bad practice. // https://stackoverflow.com/questions/11951121/checking-if-a-pointer-points-to-a-particular-class-c
+	{ // if boneA is a BoneUserData
+	  // printf("i didnt fuck up");
+		et = true;
+	}
+
+	if(dynamic_cast<foodParticle_t*>((foodParticle_t*)userDataB)) // this is, apparently, terribly bad practice. // https://stackoverflow.com/questions/11951121/checking-if-a-pointer-points-to-a-particular-class-c
+	{ // if boneA is a BoneUserData
+	  // printf("i didnt fuck up");
+	  fud = true;
+	}
+
+
+	if (et && fud) {
+		printf("monch");
+	}
+
+
+		// if (boneA == isMouth) {
 
 	// }
 
