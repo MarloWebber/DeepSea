@@ -100,6 +100,9 @@ struct BoneUserData {
 		b2World * m_world, b2ParticleSystem * m_particleSystem );
 } ;
 
+
+void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+
 struct BonyFish
 {
 	float hunger; 	// the animal spends energy to move and must replenish it by eating
@@ -118,7 +121,7 @@ struct BonyFish
 
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
 	
-	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem);
+	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann);
 
 };
 

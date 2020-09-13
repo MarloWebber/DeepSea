@@ -291,7 +291,7 @@ void loadFishFromFile(const std::string& file_name, fishDescriptor_t& data)
 
 
 
-BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann) {
 
 	genes = driedFish;
 
@@ -313,19 +313,26 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 
 	heartSpeed = 50;
 
-    unsigned int creationLayerCake[] = {
-    	3,
-    	3,
-    	4,
-    	2
-    };
 
-    ann = fann_create_standard_array(4, creationLayerCake);
-    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
-    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
-    fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
-    // fann_cascadetrain_on_file(ann, "jellyfishTrainer.data", 25, 1, desired_error); // cascade training is real slow ?
 
+    if (nann == NULL) {
+    	    unsigned int creationLayerCake[] = {
+	    	3,
+	    	3,
+	    	4,
+	    	2
+	    };
+	    	ann = fann_create_standard_array(4, creationLayerCake);
+		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
+		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
+		    fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
+		    // fann_cascadetrain_on_file(ann, "jellyfishTrainer.data", 25, 1, desired_error); // cascade training is real slow ?
+
+	    }
+    else { // a brain is provided
+    	ann = nann;
+    }
+    
     // make a random but sane file name. It would be better to have sequential, but i can't be assed to code it.
 
     name = RNG() * 255;
@@ -425,15 +432,30 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 
 
 
+void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann) {
 
-void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
-
-	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem);
+	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem, nann);
 	fishSlotLoaded[fishIndex] = true;
 
 }
 
 
+fann * loadFishBrainFromFile (std::string fileName) {
+	return fann_create_from_file( (fileName + std::string(".net")).c_str() );
+}
+
+
+void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+	fishDescriptor_t newFish;
+
+	std::string fileName = "225";
+
+	loadFishFromFile(fileName + std::string(".fsh"), newFish);
+
+ 	loadFish ( fishIndex,  newFish,m_world,  m_particleSystem, loadFishBrainFromFile (fileName) ) ;
+
+}
 
 void jellyfishTrainer () {
 	int n_inputs = 3;
@@ -658,7 +680,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	for (int i = 0; i < N_FISHES; ++i)
 	{
-		loadFish(i, simpleJellyfish, m_world, m_particleSystem);
+		LoadFishFromName(i, m_world, m_particleSystem);
 		totalFishIncorporator(i, m_world, m_particleSystem);
 	}
 	
@@ -694,7 +716,7 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     fann_get_connection_array(ann, con);
 
 
-	b2Vec2 drawingStartingPosition = b2Vec2( (2.0f * index) - (index),2.0f);
+	b2Vec2 drawingStartingPosition = b2Vec2( (2.0f * index) ,2.0f);
 	float spacingDistance = 0.5f;
 
 	// float max = 0.0f;
