@@ -140,15 +140,21 @@ struct foodParticle_t {
 };
 
 // this is mainly used for high performance object type detection.
-enum gameObjectType { 
-	DEFAULT, 
-	FOOD, 
-	MOUTH 
-};
+// enum gameObjectType { 
+// 	DEFAULT, 
+// 	MOUTH, 
+// 	FOOD 
+// };
 
-struct uDataWrap() {
-	void * userData;
+#define TYPE_DEFAULT 0
+#define TYPE_MOUTH 1
+#define TYPE_FOOD 2
+
+struct uDataWrap {
+	void * uData;
 	uint8_t dataType;
+
+	uDataWrap(void * dat, uint8_t type);
 };
 
 

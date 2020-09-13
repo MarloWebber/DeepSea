@@ -103,6 +103,11 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
     init = true;
 }
 
+uDataWrap::uDataWrap(void * dat, uint8_t typ) {
+		uData = dat;
+		dataType = typ;
+}
+
 BoneUserData::BoneUserData(
 		boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
@@ -150,7 +155,25 @@ BoneUserData::BoneUserData(
 		b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (2*length));
 
 		// attach user data to the body
-		bodyDef.userData = this;
+		// bodyDef.userData = this;
+
+		// this is mainly used for high performance object type detection.
+// enum gameObjectType { 
+// 	DEFAULT, 
+// 	FOOD, 
+// 	MOUTH 
+// };
+
+// struct uDataWrap() {
+// 	void * userData;
+// 	uint8_t dataType;
+// };
+
+
+		
+		uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
+		bodyDef.userData = (void *)p_dataWrapper;
+
 
 		bodyDef.type = b2_dynamicBody;
 		p_body = m_world->CreateBody(&bodyDef);
@@ -179,7 +202,9 @@ BoneUserData::BoneUserData(
 		b2Vec2 boneCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + (2*length));
 
 		// attach user data to the body
-		bodyDef.userData = this;
+		uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
+		bodyDef.userData = (void *)p_dataWrapper;
+
 
 		bodyDef.type = b2_dynamicBody;
 		p_body = m_world->CreateBody(&bodyDef);
@@ -252,7 +277,13 @@ foodParticle_t::foodParticle_t ( b2Vec2 position, b2World * m_world, b2ParticleS
 	energy = 1.0f;
 
 	// b2BodyDef bodyDef;
-	bodyDef.userData = this; // register the fishfood struct as user data on the body
+
+	// uDataWrap userD
+	// bodyDef.userData = this; // register the fishfood struct as user data on the body
+	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
+	bodyDef.userData = (void*)p_dataWrapper;
+
+
 	bodyDef.type = b2_dynamicBody;
 	p_body = m_world->CreateBody(&bodyDef);
 	// b2CircleShape shape;
@@ -996,17 +1027,57 @@ void collisionHandler (void * userDataA, void * userDataB) {
 
 
 
-	if(dynamic_cast<BoneUserData*>((BoneUserData*)userDataA)) // this is, apparently, terribly bad practice. // https://stackoverflow.com/questions/11951121/checking-if-a-pointer-points-to-a-particular-class-c
-	{ // if boneA is a BoneUserData
-	  // printf("i didnt fuck up");
-		et = true;
+	// if(dynamic_cast<BoneUserData*>((BoneUserData*)userDataA)) // this is, apparently, terribly bad practice. // https://stackoverflow.com/questions/11951121/checking-if-a-pointer-points-to-a-particular-class-c
+	// { // if boneA is a BoneUserData
+	//   // printf("i didnt fuck up");
+	// 	et = true;
+	// }
+
+	// if(dynamic_cast<foodParticle_t*>((foodParticle_t*)userDataB)) // this is, apparently, terribly bad practice. // https://stackoverflow.com/questions/11951121/checking-if-a-pointer-points-to-a-particular-class-c
+	// { // if boneA is a BoneUserData
+	//   // printf("i didnt fuck up");
+	//   fud = true;
+	// }
+
+
+	if (userDataA == nullptr || userDataB == nullptr) {
+		return;
+	}
+	else {
+		// printf("theprtwaedsasnit");
 	}
 
-	if(dynamic_cast<foodParticle_t*>((foodParticle_t*)userDataB)) // this is, apparently, terribly bad practice. // https://stackoverflow.com/questions/11951121/checking-if-a-pointer-points-to-a-particular-class-c
-	{ // if boneA is a BoneUserData
-	  // printf("i didnt fuck up");
-	  fud = true;
+	uDataWrap * p_dataA = (uDataWrap *) userDataA;
+	uDataWrap * p_dataB = (uDataWrap *) userDataB;
+
+	uDataWrap dataA = *p_dataA;
+	uDataWrap dataB = *p_dataB;
+
+
+
+	printf("A %u, B %u\n", dataA.dataType, dataB.dataType);
+
+
+
+	if( dataA.dataType == 1 ) {
+		et = true;
+		// printf("mouth collided");
+		if( dataB.dataType == 2 ) {
+		fud = true;
+		// printf("food collided");
 	}
+	}
+
+	if( dataB.dataType == 1 ) {
+		et = true;
+		// printf("mouth collided");
+		if( dataA.dataType == 2 ) {
+		fud = true;
+		// printf("food collided");
+	}
+	}
+	
+	
 
 
 	if (et && fud) {
