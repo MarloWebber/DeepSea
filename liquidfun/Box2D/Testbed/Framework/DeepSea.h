@@ -37,6 +37,9 @@ struct boneAndJointDescriptor_t {
 };
 
 struct fishDescriptor_t {
+
+	// char * compressedFishBrain; // fann_save produces a string apparently. no, it will go in an adjacent file because i am lazy.
+
 	boneAndJointDescriptor_t bones[N_FINGERS];
 
 	// fishDescriptor_t( boneAndJointDescriptor_t * boneIndex, int boneCount);
@@ -112,6 +115,7 @@ struct BonyFish
 	struct fann *ann;
 	
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem);
+
 };
 
 struct foodParticle_t {
@@ -145,5 +149,7 @@ extern BonyFish * fishes[N_FISHES];
 
 extern int currentNumberOfFood;
 extern int currentNumberOfFish;
+
+void collisionHandler (BoneUserData * boneA, BoneUserData * boneB) ;
 
 #endif

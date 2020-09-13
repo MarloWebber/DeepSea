@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <random>
+#include <string>
 
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
@@ -57,6 +58,12 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 	p.y = ynew + cy;
 	return b2Vec2(p.x,p.y);
 };
+
+float RNG() { //
+    static std::default_random_engine e;
+    static std::uniform_real_distribution<> dis(0, 1); // rage 0 - 1
+    return dis(e);
+}
 
 JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	torque = boneDescription.torque; 	
@@ -298,7 +305,15 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
     fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
     // fann_cascadetrain_on_file(ann, "jellyfishTrainer.data", 25, 1, desired_error); // cascade training is real slow ?
 
-    fann_save(ann, "jellyfishTrainer.net"); 
+    // make a random but sane file name. It would be better to have sequential, but i can't be assed to code it.
+
+    float fileNumber = RNG() * 255;
+
+    uint8_t fileNumberTrimmed = fileNumber;
+
+    std::string filename = std::string("../Aquarium/") + std::to_string(fileNumberTrimmed).c_str() + std::string(".net");
+
+    fann_save(ann, filename.c_str()); 
 };
 
 // this describes the original 3 boned jellyfish.
@@ -373,11 +388,7 @@ void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world,
 
 }
 
-float RNG() { //
-    static std::default_random_engine e;
-    static std::uniform_real_distribution<> dis(0, 1); // rage 0 - 1
-    return dis(e);
-}
+
 
 void jellyfishTrainer () {
 	int n_inputs = 3;
@@ -609,7 +620,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 }
 
 
-void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium) {
+void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index) {
 
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
 	unsigned int n_layers = fann_get_num_layers(ann);
@@ -637,7 +648,8 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     /* Get weight matrix */
     fann_get_connection_array(ann, con);
 
-	b2Vec2 drawingStartingPosition = b2Vec2(1.0f,2.0f);
+
+	b2Vec2 drawingStartingPosition = b2Vec2( (2.0f * index) - (index),2.0f);
 	float spacingDistance = 0.5f;
 
 	// float max = 0.0f;
@@ -852,7 +864,7 @@ void deepSeaLoop () {
 		}
 
 		// print the brainal output
-		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium);
+		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i);
 	}
 }
 
@@ -865,3 +877,17 @@ void deepSeaControlB () {
 	// fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(-1.0f);
 }
 
+
+
+void collisionHandler (BoneUserData * boneA, BoneUserData * boneB) {
+
+	// if (boneB == isMouth) {
+
+	// }
+
+
+	// if (boneA == isMouth) {
+
+	// }
+
+}

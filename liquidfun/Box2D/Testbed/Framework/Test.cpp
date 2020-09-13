@@ -113,6 +113,7 @@ Test::~Test()
 	RestoreParticleParameters();
 }
 
+// i think this is the collision handler? 
 void Test::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 {
 	const b2Manifold* manifold = contact->GetManifold();
@@ -124,6 +125,13 @@ void Test::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 
 	b2Fixture* fixtureA = contact->GetFixtureA();
 	b2Fixture* fixtureB = contact->GetFixtureB();
+
+	// //
+	BoneUserData * boneA = (BoneUserData *)((fixtureA->GetBody())->GetUserData());
+	BoneUserData * boneB = (BoneUserData *)((fixtureB->GetBody())->GetUserData());
+
+	collisionHandler(boneA, boneB);
+
 
 	b2PointState state1[b2_maxManifoldPoints], state2[b2_maxManifoldPoints];
 	b2GetPointStates(state1, state2, oldManifold, manifold);
