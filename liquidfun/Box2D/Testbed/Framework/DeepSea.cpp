@@ -7,6 +7,8 @@
 #include <random>
 #include <string>
 
+#include <fstream>
+
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 
@@ -273,7 +275,26 @@ void addFoodParticle(b2Vec2 position, b2World * m_world, b2ParticleSystem * m_pa
 
 }
 
+
+void saveFishToFile(const std::string& file_name, fishDescriptor_t& data)
+{
+  std::ofstream out(file_name.c_str());
+  out.write(reinterpret_cast<char*>(&data), sizeof(fishDescriptor_t));
+}
+
+void loadFishFromFile(const std::string& file_name, fishDescriptor_t& data)
+{
+  std::ifstream in(file_name.c_str());
+  in.read(reinterpret_cast<char*>(&data), sizeof(fishDescriptor_t));
+}
+
+
+
+
 BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+	genes = driedFish;
+
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
 	// position = b2Vec2(0.0f, 0.0f); // the starting position of the fish in the game world
 
@@ -307,13 +328,18 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 
     // make a random but sane file name. It would be better to have sequential, but i can't be assed to code it.
 
-    float fileNumber = RNG() * 255;
+    name = RNG() * 255;
 
-    uint8_t fileNumberTrimmed = fileNumber;
+    std::string nnfilename =  std::to_string(name).c_str() + std::string(".net");
+    std::string fdescfilename =  std::to_string(name).c_str() + std::string(".fsh");
 
-    std::string filename = std::string("../Aquarium/") + std::to_string(fileNumberTrimmed).c_str() + std::string(".net");
+    std::ofstream file { nnfilename };
 
-    fann_save(ann, filename.c_str()); 
+    saveFishToFile (fdescfilename, genes);
+
+    fann_save(ann, nnfilename.c_str()); 
+
+    // name = filename;
 };
 
 // this describes the original 3 boned jellyfish.
@@ -380,6 +406,25 @@ void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSyst
 		}
 	}
 }
+
+// delete a fish from the game world and remove it from memory
+void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+	// m_world->DestroyBody(fishes[fishIndex]->body);
+
+	for (int i = 0; i < N_FINGERS; ++i)
+	{
+		m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
+		delete fishes[fishIndex]->bones[i];
+	}
+
+	delete fishes[fishIndex];	 
+
+}
+
+
+
+
 
 void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 

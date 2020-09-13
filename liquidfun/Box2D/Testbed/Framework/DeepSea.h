@@ -113,6 +113,10 @@ struct BonyFish
 	float heartOutput;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
 	struct fann *ann;
+
+	uint8_t name; // the fish has a short number like a barcode for a name. it is used to unify the body and mind files among other things.
+
+	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
 	
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem);
 
