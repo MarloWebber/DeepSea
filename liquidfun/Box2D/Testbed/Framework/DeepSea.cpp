@@ -513,7 +513,7 @@ void goToLine (FILE * cursor, uint16_t linesToMoveAhead) {
 		bool scanning = true;
 		while (scanning) {
 			fseek(cursor, 1, SEEK_CUR);
-			char sample = fstream::get(cursor);
+			char sample = fgetc(cursor);
 			if (sample == '\n') {
 				scanning = false;
 			}
@@ -531,7 +531,7 @@ networkDescriptor::networkDescriptor () {
 	// read in number of layers
   	goToLine(pFile, 2); 			// advance pFile to line 2
   	pFile += sizeof("num_layers=");			// advance to the layer number position
-  	n_layers = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+  	n_layers = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
   	// read in layer cake structure
   	networkDescriptor * newCake = new networkDescriptor();	//
@@ -543,7 +543,7 @@ networkDescriptor::networkDescriptor () {
   		}
   		// layerDescriptor layer = new layerDescriptor();
   		newCake->layers[i] = *(new layerDescriptor()); 				// create the layer descriptor
-  		newCake->layers[i]->n_neurons = fstream::get(pFile) - 48; 	// read the number
+  		newCake->layers[i].n_neurons = fgetc(pFile) - 48; 	// read the number
 
   		for (int j = 0; j < newCake->layers[j].n_neurons; ++j) {
   			// neuronDescriptor neuron = new neuronDescriptor();
@@ -561,16 +561,20 @@ networkDescriptor::networkDescriptor () {
 		for (uint8_t j = 0; j < newCake->layers[i].n_neurons; ++j) {
 
 			// get number of inputs
-			newCake->layers[i].neurons[j].n_inputs = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+			newCake->layers[i].neurons[j].n_inputs = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
 			// get activation function type
 			fseek(pFile, 2, SEEK_CUR);
-			newCake->layers[i].neurons[j].activation_function = fstream::get(pFile) - 48;
+			newCake->layers[i].neurons[j].activation_function = fgetc(pFile) - 48;
 
 			// get activation function number
 			fseek(pFile, 2, SEEK_CUR);
-			char writtenValue[26];
-			newCake->layers[i].neurons[j].activation_steepness = strtod( pFile,writtenValue );	
+			char mingTheString[27]; 
+			char writtenValue[27];
+			char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
+			if (fgetc(pFile) == '-') 		{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
+			else 							{ fgets(mingTheString, 26, pFile); }
+			newCake->layers[i].neurons[j].activation_steepness = strtod( mingTheString,&(charPointer) );	
 		}
 	}
 
@@ -584,17 +588,23 @@ networkDescriptor::networkDescriptor () {
 			{
 				// connectionDescriptor connection =  new connectionDescriptor();
 				newCake->layers[i].neurons[j].connections[k] = *(new connectionDescriptor());
-				newCake->layers[i].neurons[j].connections[k].connectedTo = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+				newCake->layers[i].neurons[j].connections[k].connectedTo = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
+				// fseek(pFile, 2, SEEK_CUR);
+				// char writtenValue[26];
+				// newCake->layers[i].neurons[j].connections[k].connectionWeight = strtod( pFile,writtenValue );
+
+				// get connection weight
 				fseek(pFile, 2, SEEK_CUR);
-				char writtenValue[26];
-				newCake->layers[i].neurons[j].connections[k].connectionWeight = strtod( pFile,writtenValue );
-
+				char mingTheString[27]; 
+				char writtenValue[27];
+				char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
+				if (fgetc(pFile) == '-') 	{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
+				else 						{ fgets(mingTheString, 26, pFile); }
+				newCake->layers[i].neurons[j].connections[k].connectionWeight = strtod( mingTheString,&(charPointer) );
 			}		
 		}
 	}
-
-
 
 
 // save the file
