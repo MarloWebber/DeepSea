@@ -7,7 +7,8 @@
 #include <random>
 #include <string>
 
-#include <fstream>
+// #include <fstream>
+#include <limits>
 
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
@@ -458,16 +459,17 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 
 	delete fishes[fishIndex];	 
 
+
+	// you will also need to delete the uDataWrap structures, which were heap allocated, or a memory leak will be caused.
+
 }
 
 
 
 
 void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann) {
-
 	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem, nann);
 	fishSlotLoaded[fishIndex] = true;
-
 }
 
 
@@ -475,11 +477,118 @@ fann * loadFishBrainFromFile (std::string fileName) {
 	return fann_create_from_file( (fileName + std::string(".net")).c_str() );
 }
 
+
+connectionDescriptor::connectionDescriptor () {
+
+}
+
+neuronDescriptor::neuronDescriptor() {
+
+}
+
+layerDescriptor::layerDescriptor () {
+
+}
+
+
+std::fstream& goToLine(std::fstream& file, unsigned int num){
+    file.seekg(std::ios::beg);
+    for(int i=0; i < num - 1; ++i){
+        file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    }
+    return file;
+}
+// method to create a network descriptor from a stored file
+networkDescriptor::networkDescriptor () {
+	FILE * pFile;
+	pFile = fopen ( "filename.net" , "wb" );
+
+	// read in number of layers
+  	pFile = goToLine(pFile, 2); 			// advance pFile to line 2
+  	pFile += sizeof("num_layers=");			// advance to the layer number position
+  	n_layers = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+
+  	// read in layer cake structure
+  	layerDescriptor * newCake[n_layers];	//
+  	layers = newCake;
+  	pFile = goToLine(pFile, 31); 			// go forward 31 lines to the line with layer size information 
+  	for (int i = 0; i < n_layers; ++i) {
+  		if (i > 0) { 						// if i > 0, advance over the space.
+  			fseek(pFile, 1, SEEK_CUR);
+  		}
+  		newCake.layers[i] = new layerDescriptor(); 				// create the layer descriptor
+  		newCake.layers[i].n_neurons = fstream::get(pFile) - 48; 	// read the number
+
+  		for (int j = 0; j < newCake.layers[j].n_neurons; ++j) {
+  			newCake.layers[i].neurons[j] = new neuronDescriptor();
+  		}
+
+  		neuronDescriptor * newLayer
+  	}
+
+	// read in neuron connection numbers and activation function information
+	pFile = goToLine(pFile, 2);				// go forward two lines
+	for (int i = 0; i < newCake.layers[i]; ++i)	// loop over the neurons in this layer
+	{
+		
+	}
+
+
+	// read in neuron connection weights
+
+
+
+
+// save the file
+  	  fclose ( pFile );
+  	  // fclose(cursor);
+
+}
+
+// method to create a fann save file from a network descriptor
+networkDescriptor::createFannFile () {
+	std::string(); // string to hold the information.
+
+	"FANN_FLO_2.1\nnum_layers=" // added to string
+
+	// print number of layers to position
+
+
+	// print this
+ 	"\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n"
+
+ 	"layer_sizes="
+
+ 	// print layer sizes separated by a space
+
+	 // 
+
+ 	"\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)="
+
+ 	// print neurons
+
+
+
+	"\nconnections (connected_to_neuron, weight)="
+
+}
+
+
+void mutateFishBrain () {
+;
+
+
+}
+
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
+
+	// mutate heart rate
+	if (RNG() > mutationChance) {	fish->heartSpeed += fish->heartSpeed *mutationSeverity*(RNG()-0.5); }
+
 	for (int i = 0; i < N_FINGERS; ++i)
 	{
 		if (fish->bones[i].used) {
-		// 		uint8_t attachedTo = 0; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
+		// 	uint8_t attachedTo = 0; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
 		// float length = 0.1f;
 		// float rootThickness = 0.1f;
 		// float tipThickness = 0.1f;
@@ -503,7 +612,12 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			if (RNG() > mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() > mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
 
+			// mutate attachment points
+			if (RNG() > mutationChance) {	fish->bones[i].attachedTo = (RNG() * fish->n_bones_used ) }
 
+			// mutate bools
+			if (RNG() > mutationChance) {	fish->bones[i].isMouth = !fish->bones[i].isMouth; }
+			if (RNG() > mutationChance) {	fish->bones[i].isSensor = !fish->bones[i].isSensor; }
 
 
 		}
@@ -1055,23 +1169,23 @@ void collisionHandler (void * userDataA, void * userDataB) {
 
 
 
-	printf("A %u, B %u\n", dataA.dataType, dataB.dataType);
+	// printf("A %u, B %u\n", dataA.dataType, dataB.dataType);
 
 
 
-	if( dataA.dataType == 1 ) {
+	if( dataA.dataType == TYPE_MOUTH ) { //
 		et = true;
 		// printf("mouth collided");
-		if( dataB.dataType == 2 ) {
+		if( dataB.dataType == TYPE_FOOD ) {
 		fud = true;
 		// printf("food collided");
 	}
 	}
 
-	if( dataB.dataType == 1 ) {
+	if( dataB.dataType == TYPE_MOUTH ) {
 		et = true;
 		// printf("mouth collided");
-		if( dataA.dataType == 2 ) {
+		if( dataA.dataType == TYPE_FOOD ) {
 		fud = true;
 		// printf("food collided");
 	}

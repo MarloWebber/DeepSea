@@ -101,6 +101,40 @@ struct BoneUserData {
 } ;
 
 
+
+
+struct connectionDescriptor () {
+	uint8_t connectedTo;
+	float connectionWeight;	
+}
+
+struct neuronDescriptor () {
+	uint8_t n_inputs;
+	uint8_t activation_function;
+	float activation_steepness;
+
+	connectionDescriptor * connections; // n_connections is already known as the number of neurons in the next layer.
+}
+
+struct layerDescriptor () {
+	uint8_t n_neurons;
+	neuronDescriptor * neurons;
+}
+
+struct networkDescriptor () {
+	/*
+	1. it's impossible to modify a FANN network once it is created
+	2. modifying the network stored in text is possible, but hard
+	3. i might as well make an easily modifiable descriptor file, and methods to turn it back into the text file.
+	*/
+
+	uint8_t n_layers;
+	uint8_t * layers;
+
+	networkDescriptor();
+}
+
+
 void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 
 struct BonyFish
@@ -110,6 +144,7 @@ struct BonyFish
 	bool isUsed;	// 
 
 	BoneUserData * bones[N_FINGERS]; // for now, let's just get fish working with a small, hard-linked, flat level set of bones.
+	uint8_t n_bones_used;
 
 	uint8_t heartCount; 	// the heart is a neuro input used for timing and frequency control. 
 	uint8_t heartSpeed; 	//  
