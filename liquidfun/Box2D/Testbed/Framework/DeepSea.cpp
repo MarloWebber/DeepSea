@@ -520,22 +520,26 @@ void unused_variable(void * bullshit) {
 }
 
 void advanceCursor(FILE * cursor, int charToMoveAhead) {
-	int charMovedSoFar = 0;
-while(1) {
-	int c;
-      c = fgetc(cursor);
-      if( feof(cursor) ) { 
-         break ;
-      }
-      // printf("%c", c);
-      unused_variable((void *)&c);
-      if (charMovedSoFar >= charToMoveAhead) {
-      	// scanning = false;
-      	// printf("trememnsoi");
-      	break;
-      }
-      charMovedSoFar ++;
-  }
+int c;
+c = fgetc(cursor);
+unused_variable((void *)&c);
+
+// 	int charMovedSoFar = 0;
+// while(1) {
+// 	int c;
+//       c = fgetc(cursor);
+//       if( feof(cursor) ) { 
+//          break ;
+//       }
+//       // printf("%c", c);
+//       unused_variable((void *)&c);
+//       if (charMovedSoFar >= charToMoveAhead) {
+//       	// scanning = false;
+//       	// printf("trememnsoi");
+//       	break;
+//       }
+//       charMovedSoFar ++;
+//   }
 }
 
 void goToLine (FILE * cursor, int linesToMoveAhead) {
@@ -611,12 +615,14 @@ void createNeurodescriptorFromFile () {
 	// get array sizes
 
 	printf ("createNeurodescriptorFromFile:\n") ;// read in number of layers
+	fseek(pFile, 0, SEEK_SET); // set cursor to beginning
   	goToLine(pFile, 1); 			// advance pFile to line 2
   	// printf("selanemod");
   	// pFile += sizeof("num_layers=");			// advance to the layer number position
-  	advanceCursor(pFile, 10);
-  	uint8_t num_layers = fgetc(pFile) -48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
-  	printf ("Number of layers: %u\n", num_layers) ;// read in number of layers
+  	// advanceCursor(pFile, 12);
+  	fseek(pFile, 11, SEEK_CUR); // set cursor to beginning
+  	int num_layers = fgetc(pFile) -48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+  	printf ("Number of layers: %i\n", num_layers) ;// read in number of layers
 
 	
 
@@ -624,15 +630,27 @@ void createNeurodescriptorFromFile () {
 
   	// read in layer cake structure
   	printf ("Reading layer cake:\n") ;
-  	goToLine(pFile, 31); 			// go forward 31 lines to the line with layer size information 
-  	for (uint8_t i = 0; i < num_layers; ++i) {
-  		if (i > 0) { 						// if i > 0, advance over the space.
-  			fseek(pFile, 1, SEEK_CUR);
-  		}
+  	// fseek(pFile, 0, SEEK_SET); // set cursor to beginning
+  	goToLine(pFile, 31); 			// go forward 33 lines to the line with layer size information 
+  	// advanceCursor(pFile, 12);
+
+ 
+  	fseek(pFile, 12, SEEK_CUR); // 
+
+  	for (int i = 0; i < num_layers; ++i) {
+  		// if (i > 0) { 						// if i > 0, advance over the space.
+  		// 	fseek(pFile, 1, SEEK_CUR);
+  		// }
+  		// advanceCursor(pFile, 1);
   		// layerDescriptor * p_layer = new layerDescriptor();
   		int num_neurons = fgetc(pFile) - 48; 	// read the number
-  		printf("%i ", num_neurons);
+  		// int milne = fgetc(pFile);
+  		printf("%i", num_neurons);
+  		// printf ("Reading fsefs cake:\n") ;
+  		
+
   		layerCake[i] = num_neurons;
+  		fseek(pFile, 1, SEEK_CUR); // set cursor to beginning
 
   		
 
