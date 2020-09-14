@@ -613,33 +613,83 @@ networkDescriptor::networkDescriptor () {
 
 }
 
+// from: https://stackoverflow.com/questions/7132957/c-scientific-notation-format-number
+// C version; you can rewrite this to use std::string in C++ if you want
+void my_print_scientific(char *dest, double value) {
+    // First print out using scientific notation with 0 mantissa digits
+    snprintf(dest, 20, "%.0e", value); // 20 digits between the decimal place and the e
+
+    // Find the exponent and skip the "e" and the sign
+    char *exponent = strchr(dest, 'e') + 2;
+
+    // If we have an exponent starting with 0, drop it
+    if(exponent != NULL && exponent[0] == '0')
+    {
+        exponent[0] = exponent[1];
+        exponent[1] = '\0';
+  }
+}
 
 // method to create a fann save file from a network descriptor
-void createFANNFileFromDescriptor (bool spam) {
-	// std::string(); // string to hold the information.
+void createFANNFileFromDescriptor (networkDescriptor network) {
+	std::string s = std::string("FANN_FLO_2.1\nnum_layers=");; // string to hold the information.
 
-	// "FANN_FLO_2.1\nnum_layers=" // added to string
+	char * t = 0;
+	sprintf(t, "%u",network.n_layers);	// print number of layers to position
+	s += t;
 
-	// // print number of layers to position
+	// print this
+ 	s += "\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n";
+ 	s += "layer_sizes=";
 
+ 	// print layer sizes separated by a space
+	for (int i = 0; i < network.n_layers; ++i) {
+		sprintf(t, "%u", network.layers[i].n_neurons);
+		s += t;
+	}
 
-	// // print this
- // 	"\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n"
+	// print activation information
+ 	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
+ 	for (int i = 0; i < network.n_layers; ++i) 	{
+ 		for (int j = 0; j < network.layers[i].n_neurons; ++j) {
+ 			char chalkboard[9];
+ 			sprintf(chalkboard, "(%u, %u, ", network.layers[i].neurons[j].n_inputs, network.layers[i].neurons[j].activation_function);	
+ 			s += chalkboard;
 
- // 	"layer_sizes="
+ 			// std::string sciNotationBuffer = std::string("0.00000000000000000000e+00) ");
+ 			char sciNotationBuffer[] = "0.00000000000000000000e+00) ";
+ 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].activation_steepness);
+ 			s += sciNotationBuffer;
+ 		}
+ 	}
 
- // 	// print layer sizes separated by a space
+ 	// print connection information
+	s += "\nconnections (connected_to_neuron, weight)=";
+	for (int i = 0; i < network.n_layers; ++i) 	{
+ 		for (int j = 0; j < network.layers[i].n_neurons; ++j) {
+ 			// s += sprintf("(%u, %u, ", i+j, );	
 
-	//  // 
+ 			// get the sum of neurons before this layer.
+ 			// uint8_t sum = 0;
+ 			// for (int k = 0; k < network.n_layers; ++k) {
+ 			// 	sum += network.layers[k].n_neurons;
+ 			// }
 
- // 	"\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)="
+ 			// print the connections from each neuron to each of the neurons on the next layer.
+ 			// if ((i + 1) < network.n_layers) {
+ 			for (int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
+ 				char chalkboard[5];
+ 				sprintf(chalkboard, "(%u, ", network.layers[i].neurons[j].connections[k].connectedTo);
+ 				s += chalkboard;
 
- // 	// print neurons
-
-
-
-	// "\nconnections (connected_to_neuron, weight)="
-
+ 				// std::string sciNotationBuffer = std::string("0.00000000000000000000e+00) ");
+ 				char sciNotationBuffer[] = "0.00000000000000000000e+00) ";
+	 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].connections[k].connectionWeight);
+	 			s+= sciNotationBuffer;
+ 			}
+ 			// }
+ 		}
+ 	}
 }
 
 void mutateFishBrain () {
