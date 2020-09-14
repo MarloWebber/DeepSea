@@ -118,7 +118,7 @@ struct neuronDescriptor {
 	float activation_steepness;
 
 	uint8_t n_connections;
-	connectionDescriptor * connections; // n_connections is already known as the number of neurons in the next layer.
+	connectionDescriptor * connections[]; // n_connections is already known as the number of neurons in the next layer.
 
 	// neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections);
 
@@ -127,7 +127,7 @@ struct neuronDescriptor {
 
 struct layerDescriptor {
 	uint8_t n_neurons;
-	neuronDescriptor * neurons;
+	neuronDescriptor * neurons[]; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
 	// layerDescriptor(uint8_t n_neurons, neuronDescriptor * neurons);
 	layerDescriptor();
@@ -141,7 +141,7 @@ struct networkDescriptor {
 	*/
 
 	uint8_t n_layers;
-	layerDescriptor * layers;
+	layerDescriptor * layers[];
 
 	networkDescriptor( );
 	// networkDescriptor::createFannFile (bool spam) ;

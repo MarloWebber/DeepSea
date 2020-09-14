@@ -9,6 +9,10 @@
 
 // #include <fstream>
 #include <limits>
+#include <stdio.h>
+
+#include <chrono>
+#include <thread>
 
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
@@ -353,6 +357,9 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 	isUsed = false;
 
 	heartSpeed = driedFish.heartSpeed;
+	if (heartSpeed < 1) {
+		heartSpeed = 50;
+	}
 
 
 
@@ -508,64 +515,138 @@ layerDescriptor::layerDescriptor () {
 //     return file;
 // }
 
-void goToLine (FILE * cursor, uint16_t linesToMoveAhead) {
-	for (int i = 0; i < linesToMoveAhead; ++i){
-		bool scanning = true;
-		while (scanning) {
-			fseek(cursor, 1, SEEK_CUR);
-			char sample = fgetc(cursor);
-			if (sample == '\n') {
-				scanning = false;
-			}
 
-		}
-	}
+void advanceCursor(FILE * cursor, int charToMoveAhead) {
+	int charMovedSoFar = 0;
+while(1) {
+	int c;
+      c = fgetc(cursor);
+      if( feof(cursor) ) { 
+         break ;
+      }
+      printf("%c", c);
+      if (charMovedSoFar >= charToMoveAhead) {
+      	// scanning = false;
+      	// printf("trememnsoi");
+      	break;
+      }
+      charMovedSoFar ++;
+  }
+}
+
+void goToLine (FILE * cursor, int linesToMoveAhead) {
+	
+	int linesMovedSoFar = 0;
+	// bool scanning = true;
+	while(1) {
+	int c;
+      c = fgetc(cursor);
+      if( feof(cursor) ) { 
+         break ;
+      }
+      printf("%c", c);
+
+
+      if (c == '\n') {
+      	// printf("mondo jung");
+      	linesMovedSoFar ++;
+
+
+      }
+
+      if (linesMovedSoFar >= linesToMoveAhead) {
+      	// scanning = false;
+      	// printf("trememnsoi");
+      	break;
+      }
+
+
+   	}
+
+
+	// uint8_t linesMovedSoFar = 0;
+
+	// for (int i = 0; i < linesToMoveAhead; ++i)
+	// {
+	// 	bool scanning = false;
+	// 	while (scanning) {
+	// 		fseek(cursor, 1, SEEK_CUR);
+	// 		char sample = fgetc(cursor);
+	// 		printf("%c", sample);
+	// 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	// 		if (sample == '\n') {
+	// 			scanning = false;
+	// 			linesMovedSoFar ++;
+	// 			continue;
+	// 		}
+	// 	}
+
+
+	// }
+
+		
+			
+
+		
+	
 	// cursor is now advanced to the desired location.
 }
 
 // method to create a network descriptor from a stored file
 networkDescriptor::networkDescriptor () {
-	FILE * pFile;
-	pFile = fopen ( "filename.net" , "wb" );
 
-	// read in number of layers
+}
+
+void createNeurodescriptorFromFile () {
+
+
+	FILE * pFile;
+	pFile = fopen ( "209.net" , "r" );
+
+	networkDescriptor * newCake = new networkDescriptor();	//
+
+	printf ("createNeurodescriptorFromFile:\n") ;// read in number of layers
   	goToLine(pFile, 2); 			// advance pFile to line 2
-  	pFile += sizeof("num_layers=");			// advance to the layer number position
-  	n_layers = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+  	// printf("selanemod");
+  	// pFile += sizeof("num_layers=");			// advance to the layer number position
+  	advanceCursor(pFile, 6);
+  	newCake->n_layers = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+  	printf ("Number of layers: \n") ;// read in number of layers
 
   	// read in layer cake structure
-  	networkDescriptor * newCake = new networkDescriptor();	//
-  	// layers = newCake;
+  	printf ("Reading layer cake:\n") ;
   	goToLine(pFile, 31); 			// go forward 31 lines to the line with layer size information 
-  	for (uint8_t i = 0; i < n_layers; ++i) {
+  	for (uint8_t i = 0; i < newCake->n_layers; ++i) {
   		if (i > 0) { 						// if i > 0, advance over the space.
   			fseek(pFile, 1, SEEK_CUR);
   		}
-  		// layerDescriptor layer = new layerDescriptor();
-  		newCake->layers[i] = *(new layerDescriptor()); 				// create the layer descriptor
-  		newCake->layers[i].n_neurons = fgetc(pFile) - 48; 	// read the number
+  		// layerDescriptor * p_layer = new layerDescriptor();
+  		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
+  		newCake->layers[i]->n_neurons = fgetc(pFile) - 48; 	// read the number
+  		printf("%i ", newCake->layers[i]->n_neurons);
 
-  		for (int j = 0; j < newCake->layers[j].n_neurons; ++j) {
-  			// neuronDescriptor neuron = new neuronDescriptor();
-  			newCake->layers[i].neurons[j] = *(new neuronDescriptor());
+  		for (int j = 0; j < newCake->layers[j]->n_neurons; ++j) {
+  			// neuronDescriptor * p_neuron 
+  			newCake->layers[i]->neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
   		}
 
   		// neuronDescriptor * newLayer
   	}
+  	printf ("\nReading activation information") ;
 
 	// read in neuron connection numbers and activation function information
 	goToLine(pFile, 2);				// go forward two lines
 	pFile += sizeof("neurons (num_inputs, activation_function, activation_steepness)=(");			// advance to the layer number position
 	
-	for (uint8_t i = 0; i < n_layers; ++i)	{ // loop over the neurons in this layer
-		for (uint8_t j = 0; j < newCake->layers[i].n_neurons; ++j) {
+	for (uint8_t i = 0; i < newCake->n_layers; ++i)	{ // loop over the neurons in this layer
+		for (uint8_t j = 0; j < newCake->layers[i]->n_neurons; ++j) {
 
 			// get number of inputs
-			newCake->layers[i].neurons[j].n_inputs = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+			newCake->layers[i]->neurons[j]->n_inputs = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
 			// get activation function type
 			fseek(pFile, 2, SEEK_CUR);
-			newCake->layers[i].neurons[j].activation_function = fgetc(pFile) - 48;
+			newCake->layers[i]->neurons[j]->activation_function = fgetc(pFile) - 48;
 
 			// get activation function number
 			fseek(pFile, 2, SEEK_CUR);
@@ -574,7 +655,7 @@ networkDescriptor::networkDescriptor () {
 			char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
 			if (fgetc(pFile) == '-') 		{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
 			else 							{ fgets(mingTheString, 26, pFile); }
-			newCake->layers[i].neurons[j].activation_steepness = strtod( mingTheString,&(charPointer) );	
+			newCake->layers[i]->neurons[j]->activation_steepness = strtod( mingTheString,&(charPointer) );	
 		}
 	}
 
@@ -582,13 +663,12 @@ networkDescriptor::networkDescriptor () {
 	goToLine(pFile, 1); 
 	pFile += sizeof("connections (connected_to_neuron, weight)=(");			// advance to the layer number position
 	
-	for (uint8_t i = 0; i < n_layers; ++i)	{
-		for (uint8_t j = 0; j < newCake->layers[i].n_neurons; ++j) {
-			for (uint8_t k = 0; k < newCake->layers[i].neurons[j].n_connections ; ++k)
-			{
+	for (uint8_t i = 0; i < newCake->n_layers; ++i)	{
+		for (uint8_t j = 0; j < newCake->layers[i]->n_neurons; ++j) {
+			for (uint8_t k = 0; k < newCake->layers[i]->neurons[j]->n_connections ; ++k){
 				// connectionDescriptor connection =  new connectionDescriptor();
-				newCake->layers[i].neurons[j].connections[k] = *(new connectionDescriptor());
-				newCake->layers[i].neurons[j].connections[k].connectedTo = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+				newCake->layers[i]->neurons[j]->connections[k] = new connectionDescriptor();
+				newCake->layers[i]->neurons[j]->connections[k]->connectedTo = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
 				// fseek(pFile, 2, SEEK_CUR);
 				// char writtenValue[26];
@@ -601,7 +681,7 @@ networkDescriptor::networkDescriptor () {
 				char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
 				if (fgetc(pFile) == '-') 	{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
 				else 						{ fgets(mingTheString, 26, pFile); }
-				newCake->layers[i].neurons[j].connections[k].connectionWeight = strtod( mingTheString,&(charPointer) );
+				newCake->layers[i]->neurons[j]->connections[k]->connectionWeight = strtod( mingTheString,&(charPointer) );
 			}		
 		}
 	}
@@ -631,11 +711,11 @@ void my_print_scientific(char *dest, double value) {
 }
 
 // method to create a fann save file from a network descriptor
-void createFANNFileFromDescriptor (networkDescriptor network) {
+void createFANNFileFromDescriptor (networkDescriptor * network) {
 	std::string s = std::string("FANN_FLO_2.1\nnum_layers=");; // string to hold the information.
 
 	char * t = 0;
-	sprintf(t, "%u",network.n_layers);	// print number of layers to position
+	sprintf(t, "%u",network->n_layers);	// print number of layers to position
 	s += t;
 
 	// print this
@@ -643,30 +723,30 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
  	s += "layer_sizes=";
 
  	// print layer sizes separated by a space
-	for (int i = 0; i < network.n_layers; ++i) {
-		sprintf(t, "%u", network.layers[i].n_neurons);
+	for (int i = 0; i < network->n_layers; ++i) {
+		sprintf(t, "%u", network->layers[i]->n_neurons);
 		s += t;
 	}
 
 	// print activation information
  	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
- 	for (int i = 0; i < network.n_layers; ++i) 	{
- 		for (int j = 0; j < network.layers[i].n_neurons; ++j) {
+ 	for (int i = 0; i < network->n_layers; ++i) 	{
+ 		for (int j = 0; j < network->layers[i]->n_neurons; ++j) {
  			char chalkboard[9];
- 			sprintf(chalkboard, "(%u, %u, ", network.layers[i].neurons[j].n_inputs, network.layers[i].neurons[j].activation_function);	
+ 			sprintf(chalkboard, "(%u, %u, ", network->layers[i]->neurons[j]->n_inputs, network->layers[i]->neurons[j]->activation_function);	
  			s += chalkboard;
 
  			// std::string sciNotationBuffer = std::string("0.00000000000000000000e+00) ");
  			char sciNotationBuffer[] = "0.00000000000000000000e+00) ";
- 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].activation_steepness);
+ 			my_print_scientific(sciNotationBuffer, network->layers[i]->neurons[j]->activation_steepness);
  			s += sciNotationBuffer;
  		}
  	}
 
  	// print connection information
 	s += "\nconnections (connected_to_neuron, weight)=";
-	for (int i = 0; i < network.n_layers; ++i) 	{
- 		for (int j = 0; j < network.layers[i].n_neurons; ++j) {
+	for (int i = 0; i < network->n_layers; ++i) 	{
+ 		for (int j = 0; j < network->layers[i]->n_neurons; ++j) {
  			// s += sprintf("(%u, %u, ", i+j, );	
 
  			// get the sum of neurons before this layer.
@@ -677,14 +757,14 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
 
  			// print the connections from each neuron to each of the neurons on the next layer.
  			// if ((i + 1) < network.n_layers) {
- 			for (int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
+ 			for (int k = 0; k < network->layers[i]->neurons[j]->n_connections; ++k) {
  				char chalkboard[5];
- 				sprintf(chalkboard, "(%u, ", network.layers[i].neurons[j].connections[k].connectedTo);
+ 				sprintf(chalkboard, "(%u, ", network->layers[i]->neurons[j]->connections[k]->connectedTo);
  				s += chalkboard;
 
  				// std::string sciNotationBuffer = std::string("0.00000000000000000000e+00) ");
  				char sciNotationBuffer[] = "0.00000000000000000000e+00) ";
-	 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].connections[k].connectionWeight);
+	 			my_print_scientific(sciNotationBuffer, network->layers[i]->neurons[j]->connections[k]->connectionWeight);
 	 			s+= sciNotationBuffer;
  			}
  			// }
@@ -978,6 +1058,20 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	local_debugDraw_pointer = p_debugDraw;
 
 	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
+
+
+
+
+
+	// create a neurodescriptor from the saved fann file.
+	createNeurodescriptorFromFile();
+
+	// print the neurodescriptor parameters.
+
+
+	// output a fann file from the created descriptor.
+
+
 // 
 
 	for (int i = 0; i < N_FISHES; ++i) {
@@ -1017,7 +1111,7 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     fann_get_connection_array(ann, con);
 
 
-	b2Vec2 drawingStartingPosition = b2Vec2( (2.0f * index) ,2.0f);
+	b2Vec2 drawingStartingPosition = b2Vec2( (2.0f * index) ,4.0f);
 	float spacingDistance = 0.5f;
 
 	// float max = 0.0f;
