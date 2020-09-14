@@ -487,15 +487,15 @@ fann * loadFishBrainFromFile (std::string fileName) {
 }
 
 
-connectionDescriptor::connectionDescriptor (uint8_t connectedTo, float connectionWeight) {
+connectionDescriptor::connectionDescriptor () {
 
 }
 
-neuronDescriptor::neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections) {
+neuronDescriptor::neuronDescriptor() {
 
 }
 
-layerDescriptor::layerDescriptor (uint8_t n_neurons, neuronDescriptor * neurons) {
+layerDescriptor::layerDescriptor () {
 
 }
 
@@ -534,41 +534,43 @@ networkDescriptor::networkDescriptor () {
   	n_layers = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
   	// read in layer cake structure
-  	networkDescriptor newCake = new networkDescriptor();	//
+  	networkDescriptor * newCake = new networkDescriptor();	//
   	// layers = newCake;
   	goToLine(pFile, 31); 			// go forward 31 lines to the line with layer size information 
   	for (uint8_t i = 0; i < n_layers; ++i) {
   		if (i > 0) { 						// if i > 0, advance over the space.
   			fseek(pFile, 1, SEEK_CUR);
   		}
-  		newCake.layers[i] = new layerDescriptor(); 				// create the layer descriptor
-  		newCake.layers[i].n_neurons = fstream::get(pFile) - 48; 	// read the number
+  		// layerDescriptor layer = new layerDescriptor();
+  		newCake->layers[i] = *(new layerDescriptor()); 				// create the layer descriptor
+  		newCake->layers[i]->n_neurons = fstream::get(pFile) - 48; 	// read the number
 
-  		for (int j = 0; j < newCake.layers[j].n_neurons; ++j) {
-  			newCake.layers[i].neurons[j] = new neuronDescriptor();
+  		for (int j = 0; j < newCake->layers[j].n_neurons; ++j) {
+  			// neuronDescriptor neuron = new neuronDescriptor();
+  			newCake->layers[i].neurons[j] = *(new neuronDescriptor());
   		}
 
-  		neuronDescriptor * newLayer
+  		// neuronDescriptor * newLayer
   	}
 
 	// read in neuron connection numbers and activation function information
 	goToLine(pFile, 2);				// go forward two lines
 	pFile += sizeof("neurons (num_inputs, activation_function, activation_steepness)=(");			// advance to the layer number position
 	
-	for (uint8_t i = 0; i < newCake.layers[i]; ++i)	{ // loop over the neurons in this layer
-		for (uint8_t j = 0; j < newCake.layers[j].n_neurons; ++j) {
+	for (uint8_t i = 0; i < n_layers; ++i)	{ // loop over the neurons in this layer
+		for (uint8_t j = 0; j < newCake->layers[i].n_neurons; ++j) {
 
 			// get number of inputs
-			newCake.layers[i].n_neurons[j].n_inputs = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+			newCake->layers[i].neurons[j].n_inputs = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
 			// get activation function type
 			fseek(pFile, 2, SEEK_CUR);
-			newCake.layers[i].n_neurons[j].activation_function = fstream::get(pFile) - 48;
+			newCake->layers[i].neurons[j].activation_function = fstream::get(pFile) - 48;
 
 			// get activation function number
 			fseek(pFile, 2, SEEK_CUR);
 			char writtenValue[26];
-			newCake.layers[i].n_neurons[j].activation_steepness = strtod( pFile,writtenValue );	
+			newCake->layers[i].neurons[j].activation_steepness = strtod( pFile,writtenValue );	
 		}
 	}
 
@@ -576,16 +578,17 @@ networkDescriptor::networkDescriptor () {
 	goToLine(pFile, 1); 
 	pFile += sizeof("connections (connected_to_neuron, weight)=(");			// advance to the layer number position
 	
-	for (uint8_t i = 0; i < newCake.n_layers; ++i)	{
-		for (uint8_t j = 0; j < newCake.layers[i].n_neurons; ++j) {
-			for (uint8_t k = 0; k < newCake.layers[i].neurons[j].n_connections ; ++k)
+	for (uint8_t i = 0; i < n_layers; ++i)	{
+		for (uint8_t j = 0; j < newCake->layers[i].n_neurons; ++j) {
+			for (uint8_t k = 0; k < newCake->layers[i].neurons[j].n_connections ; ++k)
 			{
-				newCake.layers[i].n_neurons[j].connections[k] = new connectionDescriptor();
-				newCake.layers[i].n_neurons[j].connections[k].connectedTo = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+				// connectionDescriptor connection =  new connectionDescriptor();
+				newCake->layers[i].neurons[j].connections[k] = *(new connectionDescriptor());
+				newCake->layers[i].neurons[j].connections[k].connectedTo = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
 				fseek(pFile, 2, SEEK_CUR);
 				char writtenValue[26];
-				newCake.layers[i].n_neurons[j].connections[k].connectionWeight = strtod( pFile,writtenValue );
+				newCake->layers[i].neurons[j].connections[k].connectionWeight = strtod( pFile,writtenValue );
 
 			}		
 		}
