@@ -528,13 +528,43 @@ networkDescriptor::networkDescriptor () {
 
 	// read in neuron connection numbers and activation function information
 	pFile = goToLine(pFile, 2);				// go forward two lines
-	for (int i = 0; i < newCake.layers[i]; ++i)	// loop over the neurons in this layer
-	{
-		
+	pFile += sizeof("neurons (num_inputs, activation_function, activation_steepness)=(");			// advance to the layer number position
+	
+	for (int i = 0; i < newCake.layers[i]; ++i)	{ // loop over the neurons in this layer
+		for (int j = 0; j < newCake.layers[j].n_neurons; ++j) {
+
+			// get number of inputs
+			newCake.layers[i].n_neurons[j].n_inputs = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+
+			// get activation function type
+			fseek(pFile, 2, SEEK_CUR);
+			newCake.layers[i].n_neurons[j].activation_function = fstream::get(pFile) - 48;
+
+			// get activation function number
+			fseek(pFile, 2, SEEK_CUR);
+			char writtenValue[26];
+			newCake.layers[i].n_neurons[j].activation_steepness = strtod( pFile,writtenValue );	
+		}
 	}
 
-
 	// read in neuron connection weights
+	pFile = goToLine(pFile, 1); 
+	pFile += sizeof("connections (connected_to_neuron, weight)=(");			// advance to the layer number position
+	
+	for (int i = 0; i < newCake.n_layers; ++i)	{
+		for (int j = 0; j < newCake.layers[i].n_neurons; ++j) {
+			for (int i = 0; i < newCake.layers[i].neurons[j].n_connections ; ++i)
+			{
+				newCake.layers[i].n_neurons[j].connectedTo.n_inputs = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+
+				fseek(pFile, 2, SEEK_CUR);
+				char writtenValue[26];
+				float nimrod = strtod( pFile,writtenValue );
+
+				newConnection = new connectionDescriptor();
+			}		
+		}
+	}
 
 
 

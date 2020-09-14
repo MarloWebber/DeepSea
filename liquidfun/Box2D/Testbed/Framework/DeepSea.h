@@ -106,6 +106,8 @@ struct BoneUserData {
 struct connectionDescriptor () {
 	uint8_t connectedTo;
 	float connectionWeight;	
+
+	connectionDescriptor(uint8_t connectedTo, float connectionWeight);
 }
 
 struct neuronDescriptor () {
@@ -113,12 +115,17 @@ struct neuronDescriptor () {
 	uint8_t activation_function;
 	float activation_steepness;
 
+	uint8_t n_connections;
 	connectionDescriptor * connections; // n_connections is already known as the number of neurons in the next layer.
+
+	neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections);
 }
 
 struct layerDescriptor () {
 	uint8_t n_neurons;
 	neuronDescriptor * neurons;
+
+	layerDescriptor(uint8_t n_neurons, neuronDescriptor * neurons);
 }
 
 struct networkDescriptor () {
@@ -129,9 +136,9 @@ struct networkDescriptor () {
 	*/
 
 	uint8_t n_layers;
-	uint8_t * layers;
+	layerDescriptor * layers;
 
-	networkDescriptor();
+	networkDescriptor(uint8_t n_layers, uint8_t * layers );
 }
 
 
