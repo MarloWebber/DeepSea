@@ -224,6 +224,8 @@ BoneUserData::BoneUserData(
 
 	init = true;
 	isUsed=  false;
+
+
 };
 
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem) {
@@ -340,10 +342,17 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 		bones[i] = new BoneUserData(driedFish.bones[i], this,  m_world, m_particleSystem);
 	}
 
+	n_bones_used = 0;
+	for (int i = 0; i < N_FINGERS; ++i) {
+		if (driedFish.bones[i].used) {
+			n_bones_used ++;
+		}
+	}
+
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false;
 
-	heartSpeed = 50;
+	heartSpeed = driedFish.heartSpeed;
 
 
 
@@ -478,41 +487,57 @@ fann * loadFishBrainFromFile (std::string fileName) {
 }
 
 
-connectionDescriptor::connectionDescriptor () {
+connectionDescriptor::connectionDescriptor (uint8_t connectedTo, float connectionWeight) {
 
 }
 
-neuronDescriptor::neuronDescriptor() {
+neuronDescriptor::neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections) {
 
 }
 
-layerDescriptor::layerDescriptor () {
+layerDescriptor::layerDescriptor (uint8_t n_neurons, neuronDescriptor * neurons) {
 
 }
 
 
-std::fstream& goToLine(std::fstream& file, unsigned int num){
-    file.seekg(std::ios::beg);
-    for(int i=0; i < num - 1; ++i){
-        file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-    }
-    return file;
+// std::fstream& goToLine(std::fstream& file,  int num){
+//     file.seekg(std::ios::beg);
+//     for(int i=0; i < num - 1; ++i){
+//         file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+//     }
+//     return file;
+// }
+
+void goToLine (FILE * cursor, uint16_t linesToMoveAhead) {
+	for (int i = 0; i < linesToMoveAhead; ++i){
+		bool scanning = true;
+		while (scanning) {
+			fseek(cursor, 1, SEEK_CUR);
+			char sample = fstream::get(cursor);
+			if (sample == '\n') {
+				scanning = false;
+			}
+
+		}
+	}
+	// cursor is now advanced to the desired location.
 }
+
 // method to create a network descriptor from a stored file
 networkDescriptor::networkDescriptor () {
 	FILE * pFile;
 	pFile = fopen ( "filename.net" , "wb" );
 
 	// read in number of layers
-  	pFile = goToLine(pFile, 2); 			// advance pFile to line 2
+  	goToLine(pFile, 2); 			// advance pFile to line 2
   	pFile += sizeof("num_layers=");			// advance to the layer number position
   	n_layers = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
   	// read in layer cake structure
-  	layerDescriptor * newCake[n_layers];	//
-  	layers = newCake;
-  	pFile = goToLine(pFile, 31); 			// go forward 31 lines to the line with layer size information 
-  	for (int i = 0; i < n_layers; ++i) {
+  	networkDescriptor newCake = new networkDescriptor();	//
+  	// layers = newCake;
+  	goToLine(pFile, 31); 			// go forward 31 lines to the line with layer size information 
+  	for (uint8_t i = 0; i < n_layers; ++i) {
   		if (i > 0) { 						// if i > 0, advance over the space.
   			fseek(pFile, 1, SEEK_CUR);
   		}
@@ -527,11 +552,11 @@ networkDescriptor::networkDescriptor () {
   	}
 
 	// read in neuron connection numbers and activation function information
-	pFile = goToLine(pFile, 2);				// go forward two lines
+	goToLine(pFile, 2);				// go forward two lines
 	pFile += sizeof("neurons (num_inputs, activation_function, activation_steepness)=(");			// advance to the layer number position
 	
-	for (int i = 0; i < newCake.layers[i]; ++i)	{ // loop over the neurons in this layer
-		for (int j = 0; j < newCake.layers[j].n_neurons; ++j) {
+	for (uint8_t i = 0; i < newCake.layers[i]; ++i)	{ // loop over the neurons in this layer
+		for (uint8_t j = 0; j < newCake.layers[j].n_neurons; ++j) {
 
 			// get number of inputs
 			newCake.layers[i].n_neurons[j].n_inputs = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
@@ -548,20 +573,20 @@ networkDescriptor::networkDescriptor () {
 	}
 
 	// read in neuron connection weights
-	pFile = goToLine(pFile, 1); 
+	goToLine(pFile, 1); 
 	pFile += sizeof("connections (connected_to_neuron, weight)=(");			// advance to the layer number position
 	
-	for (int i = 0; i < newCake.n_layers; ++i)	{
-		for (int j = 0; j < newCake.layers[i].n_neurons; ++j) {
-			for (int i = 0; i < newCake.layers[i].neurons[j].n_connections ; ++i)
+	for (uint8_t i = 0; i < newCake.n_layers; ++i)	{
+		for (uint8_t j = 0; j < newCake.layers[i].n_neurons; ++j) {
+			for (uint8_t k = 0; k < newCake.layers[i].neurons[j].n_connections ; ++k)
 			{
-				newCake.layers[i].n_neurons[j].connectedTo.n_inputs = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+				newCake.layers[i].n_neurons[j].connections[k] = new connectionDescriptor();
+				newCake.layers[i].n_neurons[j].connections[k].connectedTo = fstream::get(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
 				fseek(pFile, 2, SEEK_CUR);
 				char writtenValue[26];
-				float nimrod = strtod( pFile,writtenValue );
+				newCake.layers[i].n_neurons[j].connections[k].connectionWeight = strtod( pFile,writtenValue );
 
-				newConnection = new connectionDescriptor();
 			}		
 		}
 	}
@@ -575,34 +600,34 @@ networkDescriptor::networkDescriptor () {
 
 }
 
+
 // method to create a fann save file from a network descriptor
-networkDescriptor::createFannFile () {
-	std::string(); // string to hold the information.
+void createFANNFileFromDescriptor (bool spam) {
+	// std::string(); // string to hold the information.
 
-	"FANN_FLO_2.1\nnum_layers=" // added to string
+	// "FANN_FLO_2.1\nnum_layers=" // added to string
 
-	// print number of layers to position
-
-
-	// print this
- 	"\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n"
-
- 	"layer_sizes="
-
- 	// print layer sizes separated by a space
-
-	 // 
-
- 	"\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)="
-
- 	// print neurons
+	// // print number of layers to position
 
 
+	// // print this
+ // 	"\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n"
 
-	"\nconnections (connected_to_neuron, weight)="
+ // 	"layer_sizes="
+
+ // 	// print layer sizes separated by a space
+
+	//  // 
+
+ // 	"\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)="
+
+ // 	// print neurons
+
+
+
+	// "\nconnections (connected_to_neuron, weight)="
 
 }
-
 
 void mutateFishBrain () {
 ;
@@ -643,7 +668,7 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			if (RNG() > mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
 
 			// mutate attachment points
-			if (RNG() > mutationChance) {	fish->bones[i].attachedTo = (RNG() * fish->n_bones_used ) }
+			// if (RNG() > mutationChance) {	fish->bones[i].attachedTo = (RNG() * fish->n_bones_used ) }
 
 			// mutate bools
 			if (RNG() > mutationChance) {	fish->bones[i].isMouth = !fish->bones[i].isMouth; }
@@ -892,8 +917,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
 // 
 
-	for (int i = 0; i < N_FISHES; ++i)
-	{
+	for (int i = 0; i < N_FISHES; ++i) {
 		LoadFishFromName(i, m_world, m_particleSystem);
 		totalFishIncorporator(i, m_world, m_particleSystem);
 	}

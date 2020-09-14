@@ -42,6 +42,8 @@ struct fishDescriptor_t {
 
 	boneAndJointDescriptor_t bones[N_FINGERS];
 
+	uint8_t heartSpeed;
+
 	// fishDescriptor_t( boneAndJointDescriptor_t * boneIndex, int boneCount);
 };
 
@@ -103,14 +105,14 @@ struct BoneUserData {
 
 
 
-struct connectionDescriptor () {
+struct connectionDescriptor {
 	uint8_t connectedTo;
 	float connectionWeight;	
 
 	connectionDescriptor(uint8_t connectedTo, float connectionWeight);
-}
+};
 
-struct neuronDescriptor () {
+struct neuronDescriptor {
 	uint8_t n_inputs;
 	uint8_t activation_function;
 	float activation_steepness;
@@ -119,16 +121,16 @@ struct neuronDescriptor () {
 	connectionDescriptor * connections; // n_connections is already known as the number of neurons in the next layer.
 
 	neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections);
-}
+};
 
-struct layerDescriptor () {
+struct layerDescriptor {
 	uint8_t n_neurons;
 	neuronDescriptor * neurons;
 
 	layerDescriptor(uint8_t n_neurons, neuronDescriptor * neurons);
-}
+};
 
-struct networkDescriptor () {
+struct networkDescriptor {
 	/*
 	1. it's impossible to modify a FANN network once it is created
 	2. modifying the network stored in text is possible, but hard
@@ -138,8 +140,9 @@ struct networkDescriptor () {
 	uint8_t n_layers;
 	layerDescriptor * layers;
 
-	networkDescriptor(uint8_t n_layers, uint8_t * layers );
-}
+	networkDescriptor( );
+	// networkDescriptor::createFannFile (bool spam) ;
+};
 
 
 void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
@@ -150,7 +153,7 @@ struct BonyFish
 	bool init; 		// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;	// 
 
-	BoneUserData * bones[N_FINGERS]; // for now, let's just get fish working with a small, hard-linked, flat level set of bones.
+	BoneUserData * bones[N_FINGERS]; // for now, let's just gnetworkDet fish working with a small, hard-linked, flat level set of bones.
 	uint8_t n_bones_used;
 
 	uint8_t heartCount; 	// the heart is a neuro input used for timing and frequency control. 
