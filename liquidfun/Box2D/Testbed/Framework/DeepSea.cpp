@@ -515,6 +515,9 @@ layerDescriptor::layerDescriptor () {
 //     return file;
 // }
 
+void unused_variable(void * bullshit) {
+	; // do nothing
+}
 
 void advanceCursor(FILE * cursor, int charToMoveAhead) {
 	int charMovedSoFar = 0;
@@ -524,7 +527,8 @@ while(1) {
       if( feof(cursor) ) { 
          break ;
       }
-      printf("%c", c);
+      // printf("%c", c);
+      unused_variable((void *)&c);
       if (charMovedSoFar >= charToMoveAhead) {
       	// scanning = false;
       	// printf("trememnsoi");
@@ -544,7 +548,8 @@ void goToLine (FILE * cursor, int linesToMoveAhead) {
       if( feof(cursor) ) { 
          break ;
       }
-      printf("%c", c);
+      // printf("%c", c);
+      unused_variable((void *)&c);
 
 
       if (c == '\n') {
@@ -603,27 +608,30 @@ void createNeurodescriptorFromFile () {
 	FILE * pFile;
 	pFile = fopen ( "209.net" , "r" );
 
-	networkDescriptor * newCake = new networkDescriptor();	//
 
 	printf ("createNeurodescriptorFromFile:\n") ;// read in number of layers
-  	goToLine(pFile, 2); 			// advance pFile to line 2
+  	goToLine(pFile, 1); 			// advance pFile to line 2
   	// printf("selanemod");
   	// pFile += sizeof("num_layers=");			// advance to the layer number position
-  	advanceCursor(pFile, 6);
-  	newCake->n_layers = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
-  	printf ("Number of layers: \n") ;// read in number of layers
+  	advanceCursor(pFile, 10);
+  	uint8_t num_layers = fgetc(pFile) -48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+  	printf ("Number of layers: %u\n", num_layers) ;// read in number of layers
+
+	networkDescriptor * newCake = new networkDescriptor();	//
 
   	// read in layer cake structure
   	printf ("Reading layer cake:\n") ;
   	goToLine(pFile, 31); 			// go forward 31 lines to the line with layer size information 
-  	for (uint8_t i = 0; i < newCake->n_layers; ++i) {
+  	for (uint8_t i = 0; i < num_layers; ++i) {
   		if (i > 0) { 						// if i > 0, advance over the space.
   			fseek(pFile, 1, SEEK_CUR);
   		}
   		// layerDescriptor * p_layer = new layerDescriptor();
+  		int nun_neurons = fgetc(pFile) - 48; 	// read the number
+  		printf("%i ", nun_neurons);
+
   		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
-  		newCake->layers[i]->n_neurons = fgetc(pFile) - 48; 	// read the number
-  		printf("%i ", newCake->layers[i]->n_neurons);
+  		
 
   		for (int j = 0; j < newCake->layers[j]->n_neurons; ++j) {
   			// neuronDescriptor * p_neuron 
@@ -655,6 +663,9 @@ void createNeurodescriptorFromFile () {
 			char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
 			if (fgetc(pFile) == '-') 		{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
 			else 							{ fgets(mingTheString, 26, pFile); }
+
+			printf("mingTheString: %s", mingTheString);
+
 			newCake->layers[i]->neurons[j]->activation_steepness = strtod( mingTheString,&(charPointer) );	
 		}
 	}
