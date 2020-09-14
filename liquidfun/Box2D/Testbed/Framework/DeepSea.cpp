@@ -599,7 +599,6 @@ void goToLine (FILE * cursor, int linesToMoveAhead) {
 
 // method to create a network descriptor from a stored file
 networkDescriptor::networkDescriptor () {
-
 }
 
 void createNeurodescriptorFromFile () {
@@ -609,6 +608,8 @@ void createNeurodescriptorFromFile () {
 	pFile = fopen ( "209.net" , "r" );
 
 
+	// get array sizes
+
 	printf ("createNeurodescriptorFromFile:\n") ;// read in number of layers
   	goToLine(pFile, 1); 			// advance pFile to line 2
   	// printf("selanemod");
@@ -617,7 +618,9 @@ void createNeurodescriptorFromFile () {
   	uint8_t num_layers = fgetc(pFile) -48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
   	printf ("Number of layers: %u\n", num_layers) ;// read in number of layers
 
-	networkDescriptor * newCake = new networkDescriptor();	//
+	
+
+	int layerCake[num_layers];
 
   	// read in layer cake structure
   	printf ("Reading layer cake:\n") ;
@@ -627,19 +630,40 @@ void createNeurodescriptorFromFile () {
   			fseek(pFile, 1, SEEK_CUR);
   		}
   		// layerDescriptor * p_layer = new layerDescriptor();
-  		int nun_neurons = fgetc(pFile) - 48; 	// read the number
-  		printf("%i ", nun_neurons);
+  		int num_neurons = fgetc(pFile) - 48; 	// read the number
+  		printf("%i ", num_neurons);
+  		layerCake[i] = num_neurons;
 
-  		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
   		
 
-  		for (int j = 0; j < newCake->layers[j]->n_neurons; ++j) {
+  		
+  		// neuronDescriptor * newLayer
+  	}
+
+
+  	// build everything in memory
+
+  	networkDescriptor * newCake = new networkDescriptor();	//
+
+  	for (int i = 0; i < num_layers; ++i) {
+  		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
+  		
+		for (int j = 0; j < layerCake[i] -1; ++j) {
   			// neuronDescriptor * p_neuron 
   			newCake->layers[i]->neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
   		}
-
-  		// neuronDescriptor * newLayer
   	}
+
+
+
+
+
+
+
+
+
+  		/// populate it
+
   	printf ("\nReading activation information") ;
 
 	// read in neuron connection numbers and activation function information
