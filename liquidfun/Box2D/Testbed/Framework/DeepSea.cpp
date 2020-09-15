@@ -999,14 +999,14 @@ void my_print_scientific(char *dest, double value) {
     snprintf(dest, 20, "%.0e", value); // 20 digits between the decimal place and the e
 
     // Find the exponent and skip the "e" and the sign
-    char *exponent = strchr(dest, 'e') + 2;
+    // char *exponent = strchr(dest, 'e') + 2;
 
     // If we have an exponent starting with 0, drop it
-    if(exponent != NULL && exponent[0] == '0')
-    {
-        exponent[0] = exponent[1];
-        exponent[1] = '\0';
-  }
+  //   if(exponent != NULL && exponent[0] == '0')
+  //   {
+  //       exponent[0] = exponent[1];
+  //       exponent[1] = '\0';
+  // }
 }
 
 
@@ -1046,9 +1046,11 @@ printf("print activation information\n");
  			s += chalkboard;
 
  			// std::string sciNotationBuffer = std::string("0.00000000000000000000e+00) ");
- 			char sciNotationBuffer[] = "0.00000000000000000000e+00) ";
+ 			char sciNotationBuffer[] = "0.00000000000000000000e+00";
  			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].activation_steepness);
  			s += sciNotationBuffer;
+
+ 			s.append(") ");
  		}
  	}
 
@@ -1073,9 +1075,11 @@ printf("print activation information\n");
  				s += chalkboard;
 
  				// std::string sciNotationBuffer = std::string("0.00000000000000000000e+00) ");
- 				char sciNotationBuffer[] = "0.00000000000000000000e+00) ";
+ 				char sciNotationBuffer[] = "0.00000000000000000000e+00";
 	 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].connections[k].connectionWeight);
 	 			s+= sciNotationBuffer;
+
+	 			s.append(") ");
  			}
  			// }
  		}
@@ -1150,7 +1154,7 @@ void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * 
 
 	loadFishFromFile(fileName + std::string(".fsh"), newFish);
 
-	fann * ann  = loadFishBrainFromFile (fileName);
+	fann * ann  = loadFishBrainFromFile ("mouptut");
 
 	mutateFishDescriptor (&newFish, 0.1, 0.1) ;
 
@@ -1369,7 +1373,7 @@ void jellyfishTrainer () {
 
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) {
 
-	jellyfishTrainer();
+	// jellyfishTrainer();
 
 	// printf("%f\n", RNG());
 
