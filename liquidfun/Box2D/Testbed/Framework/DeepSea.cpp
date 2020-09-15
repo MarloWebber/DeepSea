@@ -1089,17 +1089,74 @@ printf("print activation information\n");
 
  	// std::string input;
     // std::cin >> input;
-    std::ofstream out("mouptut.txt");
+    std::ofstream out("mouptut.net");
     out << s;
     out.close();
     // return 0;
 }
 
-void mutateFishBrain () {
-;
+void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float mutationSeverity) {
+
+	// traverse the mutated body and count the total number of sensors and hearts and limbs.
+	// make sure the number of inputs matches the number of sensors and hearts
+	// make sure the number of outputs matches the number of joint motors
+
+	// chance to grow a new layer
+	// chance to lose a layer
+
+	// chance to grow a new neuron
+	// chance to lose a neuron
+
+	// chance to grow a new connection
+	// chance to lose a connection
+
+	// chance to modify the weight of an existing connection .. s
+	for (int i = 0; i < 50; ++i)
+	{
+			if ( true ) {// RNG() > mutationChance) {
+		int l =  RNG() * newCake->n_layers ;
+		int m =  RNG() * newCake->layers[l].n_neurons ;
+		int n =  RNG() * newCake->layers[l].neurons[m].n_connections ;
+
+		float mutationAmount = ((RNG() -0.5) *mutationSeverity  );
+		printf("warped layer %i neuron %i connection %i by %f\n", l, m, n,  mutationAmount);
+
+		newCake->layers[l].neurons[m].connections[n].connectionWeight += mutationAmount;
+
+		}
+		}
+	
 
 
+	// 	for (int i = 0; i < 50; ++i)
+	// {
+	// 		if ( true ) {// RNG() > mutationChance) {
+	// 	int l =  RNG() * newCake->n_layers ;
+	// 	int m =  RNG() * newCake->layers[l].n_neurons ;
+	// 	int n =  RNG() * newCake->layers[l].neurons[m].n_connections ;
+
+	// 	float mutationAmount = 0;// ((RNG() -0.5) *mutationSeverity  );
+	// 	if (RNG() > 0.5) {
+	// 		mutationAmount = 1000;
+	// 	}
+	// 	// printf("warped layer %i neuron %i connection %i by %f\n", l, m, n,  mutationAmount);
+
+	// 	newCake->layers[l].neurons[m].connections[n].connectionWeight = mutationAmount;
+
+	// 	}
+	// 	}
+	
+
+
+
+
+	// chance to change the target of an existing connection
+	
 }
+	
+
+
+
 
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
 
@@ -1154,9 +1211,15 @@ void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * 
 
 	loadFishFromFile(fileName + std::string(".fsh"), newFish);
 
-	fann * ann  = loadFishBrainFromFile ("mouptut");
-
 	mutateFishDescriptor (&newFish, 0.1, 0.1) ;
+
+	networkDescriptor tamberlina = createNeurodescriptorFromFANN();
+	
+	mutateFishBrain(&tamberlina, 0.1f, 1.0f );
+
+	createFANNFileFromDescriptor(tamberlina);
+
+	fann * ann  = loadFishBrainFromFile ("mouptut"); // load the mutated file
 
  	loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, ann ) ;
 
@@ -1388,8 +1451,8 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	// create a neurodescriptor from the saved fann file.
 	// createNeurodescriptorFromFile();
-	networkDescriptor tamberlina = createNeurodescriptorFromFANN();
-	createFANNFileFromDescriptor(tamberlina);
+	// networkDescriptor tamberlina = createNeurodescriptorFromFANN();
+	// createFANNFileFromDescriptor(tamberlina);
 
 	// print the neurodescriptor parameters.
 
