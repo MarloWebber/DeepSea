@@ -619,17 +619,17 @@ void seekUntil (FILE * cursor, char trigger) {
 void createNeurodescriptorFromFANN () {
 	// making a descriptor from a file was too hard
 	// you can make a FANN from the file and then query it for information you need to build the model.
-	std::string fileName = "225.net";
+	std::string fileName = "225";
 
 	// loadFishFromFile(fileName + std::string(".fsh"), newFish);
 
 	fann * temp_ann  = loadFishBrainFromFile (fileName);
 
 	// query the number of layers.
-	uint8_t num_layers = fann_get_num_layers(temp_ann);
+	unsigned int num_layers = fann_get_num_layers(temp_ann);
 
 	// get the layer cake.
-	uint8_t layerCake[num_layers];
+	unsigned int layerCake[num_layers];
 	fann_get_layer_array(temp_ann, layerCake);
 
 	// build everything in memory and link it together.
@@ -637,47 +637,49 @@ void createNeurodescriptorFromFANN () {
   	newCake->n_layers = num_layers;
   	printf ("\ncreated network descriptor\n") ;
 
-  	for (int i = 0; i < num_layers; ++i) {
+  	for (unsigned int i = 0; i < num_layers; ++i) {
   		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
   		newCake->layers[i]->n_neurons = layerCake[i];
   		printf ("created layer descriptor\n") ;
 
-		for (int j = 0; j < layerCake[i]; ++j) {
+		for (unsigned int j = 0; j < layerCake[i]; ++j) {
   			newCake->layers[i]->neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
   			printf ("created neuron descriptor\n") ;
   		}
   	}
 
   	// get connection and weight information.
+  	// unsigned int theMostConnectionsThereWillEverBe = 1024;
   	uint16_t num_connections = fann_get_total_connections(temp_ann);
-  	struct fann_connection *con; 
+  	struct fann_connection margles[num_connections] ;
+  	struct fann_connection *con = margles; 
   	fann_get_connection_array(temp_ann, con);
 
   	// get activation function information
-  	int activation_function_hidden = fann_get_activation_function_hidden(temp_ann);
-  	float activation_steepness_hidden = fann_get_activation_steepness_hidden(temp_ann);
-  	int activation_function_output = fann_get_activation_function_output(temp_ann);
-  	float activation_steepness_output = fann_get_activation_steepness_output(temp_ann);
+  	int activation_function_hidden = 5; //fann::fann_get_activation_function_hidden(temp_ann);
+  	float activation_steepness_hidden = 0.5f;//fann::fann_get_activation_steepness_hidden(temp_ann);
+  	int activation_function_output = 0; //fann::fann_get_activation_function_output(temp_ann);
+  	float activation_steepness_output = 0; //fann::fann_get_activation_steepness_output(temp_ann);
   	
   	// apply them to the model
-  	for (int i = 0; i < num_layers; ++i) {
-  		for (int j = 0; j < layerCake[i]; ++j) {
+  	for (unsigned int i = 0; i < num_layers; ++i) {
+  		for (unsigned int j = 0; j < layerCake[i]; ++j) {
 
   			if (i == num_layers-1) {
-  				newCake->layers[i]->neurons[j].activation_function = activation_function_hidden;
-  				newCake->layers[i]->neurons[j].activation_steepness = activation_steepness_hidden;
+  				newCake->layers[i]->neurons[j]->activation_function = activation_function_hidden;
+  				newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_hidden;
   			}
   			else {
-  				newCake->layers[i]->neurons[j].activation_function = activation_function_output;
-  				newCake->layers[i]->neurons[j].activation_steepness = activation_steepness_output;
+  				newCake->layers[i]->neurons[j]->activation_function = activation_function_output;
+  				newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_output;
   			}
   		}
   	}
 
   	// create connections
-  	for (int c = 0; c < num_connections; ++c) {
-  		int layer = 0;
-  		int index = con[c].from_neuron;
+  	for (unsigned int c = 0; c < num_connections; ++c) {
+  		unsigned int layer = 0;
+  		unsigned int index = con[c].from_neuron;
   		while (1) {
   			if (index < layerCake[layer]) { break; }
   			else {
@@ -687,14 +689,14 @@ void createNeurodescriptorFromFANN () {
   		}
 
   		// add connection descriptor and adjust parameters of 'from' neuron
-  		newCake->layers[layer]->neurons[index].connections[newCake->layers[layer]->neurons[index]->n_connections] = new connectionDescriptor();
+  		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections] = new connectionDescriptor();
+  		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections]->connectedTo = con[c].to_neuron;
+  		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections]->connectionWeight = con[c].weight;
   		newCake->layers[layer]->neurons[index]->n_connections ++;
-  		newCake->layers[layer]->neurons[index].connectedTo = con[c].to_neuron;
-  		newCake->layers[layer]->neurons[index].connectionWeight = con[c].weight;
  
   		// adjust the input number on the 'to' neuron.
-  		int toLayer = 0;
-  		int toIndex = con[c].to_neuron;
+  		unsigned int toLayer = 0;
+  		unsigned int toIndex = con[c].to_neuron;
   		while (1) {
   			if (toIndex < layerCake[toLayer]) { break; }
   			else {
@@ -1262,7 +1264,8 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 
 	// create a neurodescriptor from the saved fann file.
-	createNeurodescriptorFromFile();
+	// createNeurodescriptorFromFile();
+	createNeurodescriptorFromFANN();
 
 	// print the neurodescriptor parameters.
 
