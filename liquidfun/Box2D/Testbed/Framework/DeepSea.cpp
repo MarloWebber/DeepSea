@@ -494,16 +494,21 @@ fann * loadFishBrainFromFile (std::string fileName) {
 }
 
 
-connectionDescriptor::connectionDescriptor () {
 
+connectionDescriptor::connectionDescriptor () {
+	connectedTo = 0;
+	connectionWeight = 0.0f;	
 }
 
 neuronDescriptor::neuronDescriptor() {
 	n_connections = 0;
 	n_inputs = 0;
+	connections = nullptr;
 }
 
 layerDescriptor::layerDescriptor () {
+	n_neurons = 0;
+	neurons = nullptr; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
 }
 
@@ -604,6 +609,8 @@ void goToLine (FILE * cursor, int linesToMoveAhead) {
 
 // method to create a network descriptor from a stored file
 networkDescriptor::networkDescriptor () {
+	n_layers = 0;
+	layers = nullptr;
 }
 
 void seekUntil (FILE * cursor, char trigger) {
@@ -1472,7 +1479,7 @@ void deepSeaLoop () {
 	for (int i = 0; i < N_FISHES; ++i) {
 
 		if (!fishSlotLoaded[i]) {
-			break;
+			continue;
 		}
 
 		// cause heart to beat
