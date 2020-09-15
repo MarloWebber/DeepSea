@@ -649,7 +649,7 @@ void seekUntil (FILE * cursor, char trigger) {
 }
 
 
-void createNeurodescriptorFromFANN () {
+networkDescriptor createNeurodescriptorFromFANN () {
 	// making a descriptor from a file was too hard
 	// you can make a FANN from the file and then query it for information you need to build the model.
 	std::string fileName = "225";
@@ -814,10 +814,12 @@ void createNeurodescriptorFromFANN () {
   		// printf("%u %u ", toIndex, toLayer);
   		// printf("%u %u ", toIndex, toLayer);
 		newCake.layers[toLayer].neurons[toIndex].n_inputs ++;
-		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections) ;	
+		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections-1) ;	
 
 
 }
+
+return newCake;
 }
 
 // void createNeurodescriptorFromFile () {
@@ -1010,21 +1012,30 @@ void my_print_scientific(char *dest, double value) {
 
 // method to create a fann save file from a network descriptor
 void createFANNFileFromDescriptor (networkDescriptor network) {
+
+	printf("createFANNFileFromDescriptor\n");
+
+
 	std::string s = std::string("FANN_FLO_2.1\nnum_layers=");; // string to hold the information.
 
-	char * t = 0;
-	sprintf(t, "%u",network.n_layers);	// print number of layers to position
-	s += t;
+	// char * t = 0;
+	// sprintf(t, "%u",network.n_layers);	// print number of layers to position
+	s.append(std::to_string(network.n_layers));
+	// s += t;
 
 	// print this
- 	s += "\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n";
- 	s += "layer_sizes=";
+ 	s.append("\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n");
+ 	s.append("layer_sizes=");
 
  	// print layer sizes separated by a space
 	for (unsigned int i = 0; i < network.n_layers; ++i) {
-		sprintf(t, "%u", network.layers[i].n_neurons);
-		s += t;
+		// sprintf(t, "%u", network.layers[i].n_neurons);
+		// s += t;
+		s.append(std::to_string(network.layers[i].n_neurons));
+		s.append(" ");
 	}
+
+printf("print activation information\n");
 
 	// print activation information
  	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
@@ -1041,7 +1052,8 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
  		}
  	}
 
- 	// print connection information
+ 	printf("print connection information\n");
+ 	// 
 	s += "\nconnections (connected_to_neuron, weight)=";
 	for (unsigned int i = 0; i < network.n_layers; ++i) 	{
  		for (unsigned int j = 0; j < network.layers[i].n_neurons; ++j) {
@@ -1068,6 +1080,15 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
  			// }
  		}
  	}
+
+ 	printf("print to file\n");
+
+ 	// std::string input;
+    // std::cin >> input;
+    std::ofstream out("mouptut.txt");
+    out << s;
+    out.close();
+    // return 0;
 }
 
 void mutateFishBrain () {
@@ -1363,7 +1384,8 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	// create a neurodescriptor from the saved fann file.
 	// createNeurodescriptorFromFile();
-	createNeurodescriptorFromFANN();
+	networkDescriptor tamberlina = createNeurodescriptorFromFANN();
+	createFANNFileFromDescriptor(tamberlina);
 
 	// print the neurodescriptor parameters.
 
