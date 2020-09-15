@@ -615,63 +615,25 @@ void seekUntil (FILE * cursor, char trigger) {
 }
 }
 
-void createNeurodescriptorFromFile () {
 
+void createNeurodescriptorFromFANN () {
+	// making a descriptor from a file was too hard
+	// you can make a FANN from the file and then query it for information you need to build the model.
+	std::string fileName = "225.net";
 
-	FILE * pFile;
-	pFile = fopen ( "209.net" , "r" );
+	// loadFishFromFile(fileName + std::string(".fsh"), newFish);
 
+	fann * temp_ann  = loadFishBrainFromFile (fileName);
 
-	// get array sizes
+	// query the number of layers.
+	uint8_t num_layers = fann_get_num_layers(temp_ann);
 
-	printf ("createNeurodescriptorFromFile:\n") ;// read in number of layers
-	fseek(pFile, 0, SEEK_SET); // set cursor to beginning
-  	goToLine(pFile, 1); 			// advance pFile to line 2
-  	// printf("selanemod");
-  	// pFile += sizeof("num_layers=");			// advance to the layer number position
-  	// advanceCursor(pFile, 12);
-  	fseek(pFile, 11, SEEK_CUR); // set cursor to beginning
-  	int num_layers = fgetc(pFile) -48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
-  	printf ("Number of layers: %i\n", num_layers) ;// read in number of layers
+	// get the layer cake.
+	uint8_t layerCake[num_layers];
+	fann_get_layer_array(temp_ann, layerCake);
 
-	
-
-	int layerCake[num_layers];
-
-  	// read in layer cake structure
-  	printf ("Reading layer cake:\n") ;
-  	// fseek(pFile, 0, SEEK_SET); // set cursor to beginning
-  	goToLine(pFile, 31); 			// go forward 33 lines to the line with layer size information 
-  	// advanceCursor(pFile, 12);
-
- 
-  	fseek(pFile, 12, SEEK_CUR); // 
-
-  	for (int i = 0; i < num_layers; ++i) {
-  		// if (i > 0) { 						// if i > 0, advance over the space.
-  		// 	fseek(pFile, 1, SEEK_CUR);
-  		// }
-  		// advanceCursor(pFile, 1);
-  		// layerDescriptor * p_layer = new layerDescriptor();
-  		int num_neurons = fgetc(pFile) - 48; 	// read the number
-  		// int milne = fgetc(pFile);
-  		printf("%i", num_neurons);
-  		// printf ("Reading fsefs cake:\n") ;
-  		
-
-  		layerCake[i] = num_neurons;
-  		fseek(pFile, 1, SEEK_CUR); // set cursor to beginning
-
-  		
-
-  		
-  		// neuronDescriptor * newLayer
-  	}
-
-
-  	// build everything in memory and link it together
-
-  	networkDescriptor * newCake = new networkDescriptor();	//
+	// build everything in memory and link it together.
+	networkDescriptor * newCake = new networkDescriptor();	//
   	newCake->n_layers = num_layers;
   	printf ("\ncreated network descriptor\n") ;
 
@@ -681,26 +643,153 @@ void createNeurodescriptorFromFile () {
   		printf ("created layer descriptor\n") ;
 
 		for (int j = 0; j < layerCake[i]; ++j) {
-  			// neuronDescriptor * p_neuron 
   			newCake->layers[i]->neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
-  			if (i > 0) {
-  				newCake->layers[i]->neurons[j]->n_connections = newCake->layers[i-1]->n_neurons;
-  			}
-  			else {
-  				newCake->layers[i]->neurons[j]->n_connections = 0;
-  			}
-
-  			for (int k = 0; k < newCake->layers[i]->neurons[j]->n_connections; ++k)
-  			{
-  				newCake->layers[i]->neurons[j]->connections[k] = new connectionDescriptor();
-  				printf ("created connection descriptor\n") ;
-  			}
-  			
   			printf ("created neuron descriptor\n") ;
-
   		}
   	}
 
+  	// get connection and weight information.
+  	uint16_t num_connections = fann_get_total_connections(temp_ann);
+  	struct fann_connection *con; 
+  	fann_get_connection_array(temp_ann, con);
+
+  	// get activation function information
+  	int activation_function_hidden = fann_get_activation_function_hidden(temp_ann);
+  	float activation_steepness_hidden = fann_get_activation_steepness_hidden(temp_ann);
+  	int activation_function_output = fann_get_activation_function_output(temp_ann);
+  	float activation_steepness_output = fann_get_activation_steepness_output(temp_ann);
+  	
+  	// apply them to the model
+  	for (int i = 0; i < num_layers; ++i) {
+  		for (int j = 0; j < layerCake[i]; ++j) {
+
+  			if (i == num_layers-1) {
+  				newCake->layers[i]->neurons[j].activation_function = activation_function_hidden;
+  				newCake->layers[i]->neurons[j].activation_steepness = activation_steepness_hidden;
+  			}
+  			else {
+  				newCake->layers[i]->neurons[j].activation_function = activation_function_output;
+  				newCake->layers[i]->neurons[j].activation_steepness = activation_steepness_output;
+  			}
+  		}
+  	}
+
+  	// create connections
+  	for (int c = 0; c < num_connections; ++c) {
+  		int layer = 0;
+  		int index = con[c].from_neuron;
+  		while (1) {
+  			if (index < layerCake[layer]) { break; }
+  			else {
+  				index -= layerCake[layer];
+  				layer ++;
+  			}
+  		}
+
+  		// add connection descriptor and adjust parameters of 'from' neuron
+  		newCake->layers[layer]->neurons[index].connections[newCake->layers[layer]->neurons[index]->n_connections] = new connectionDescriptor();
+  		newCake->layers[layer]->neurons[index]->n_connections ++;
+  		newCake->layers[layer]->neurons[index].connectedTo = con[c].to_neuron;
+  		newCake->layers[layer]->neurons[index].connectionWeight = con[c].weight;
+ 
+  		// adjust the input number on the 'to' neuron.
+  		int toLayer = 0;
+  		int toIndex = con[c].to_neuron;
+  		while (1) {
+  			if (toIndex < layerCake[toLayer]) { break; }
+  			else {
+  				toIndex -= layerCake[toLayer];
+  				toLayer ++;
+  			}
+  		}
+		newCake->layers[toLayer]->neurons[toIndex]->n_inputs ++;
+		printf ("created connection descriptor\n") ;	
+
+
+
+  	}
+
+  	// for (int i = 0; i < newCake->n_layers; ++i)
+  	// {
+  	// 	for (int j = 0; j < newCake->layers[i]->n_neurons; ++j)
+  	// 	{
+  	// 		for (int i = 0; i < count; ++i)
+  	// 		{
+  	// 			/* code */
+  	// 		}
+  	// 	}
+  	// }
+}
+
+// void createNeurodescriptorFromFile () {
+// 	FILE * pFile;
+// 	pFile = fopen ( "209.net" , "r" );
+
+// 	// get array sizes
+
+// 	printf ("createNeurodescriptorFromFile:\n") ;// read in number of layers
+// 	fseek(pFile, 0, SEEK_SET); // set cursor to beginning
+//   	goToLine(pFile, 1); 			// advance pFile to line 2
+//   	// printf("selanemod");
+//   	// pFile += sizeof("num_layers=");			// advance to the layer number position
+//   	// advanceCursor(pFile, 12);
+//   	fseek(pFile, 11, SEEK_CUR); // set cursor to beginning
+//   	int num_layers = fgetc(pFile) -48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+//   	printf ("Number of layers: %i\n", num_layers) ;// read in number of layers
+
+// 	int layerCake[num_layers];
+
+//   	// read in layer cake structure
+//   	printf ("Reading layer cake:\n") ;
+//   	// fseek(pFile, 0, SEEK_SET); // set cursor to beginning
+//   	goToLine(pFile, 31); 			// go forward 33 lines to the line with layer size information 
+//   	// advanceCursor(pFile, 12);
+
+//   	fseek(pFile, 12, SEEK_CUR); // 
+
+//   	for (int i = 0; i < num_layers; ++i) {
+//   		int num_neurons = fgetc(pFile) - 48; 	// read the number
+//   		// int milne = fgetc(pFile);
+//   		printf("%i", num_neurons);
+//   		// printf ("Reading fsefs cake:\n") ;
+  		
+//   		layerCake[i] = num_neurons;
+//   		fseek(pFile, 1, SEEK_CUR); // set cursor to beginning
+  		
+//   		// neuronDescriptor * newLayer
+//   	}
+
+//   	// build everything in memory and link it together
+
+//   	networkDescriptor * newCake = new networkDescriptor();	//
+//   	newCake->n_layers = num_layers;
+//   	printf ("\ncreated network descriptor\n") ;
+
+//   	for (int i = 0; i < num_layers; ++i) {
+//   		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
+//   		newCake->layers[i]->n_neurons = layerCake[i];
+//   		printf ("created layer descriptor\n") ;
+
+// 		for (int j = 0; j < layerCake[i]; ++j) {
+//   			// neuronDescriptor * p_neuron 
+//   			newCake->layers[i]->neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
+//   			if (i > 0) {
+//   				newCake->layers[i]->neurons[j]->n_connections = newCake->layers[i-1]->n_neurons;
+//   			}
+//   			else {
+//   				newCake->layers[i]->neurons[j]->n_connections = 0;
+//   			}
+
+//   			for (int k = 0; k < newCake->layers[i]->neurons[j]->n_connections; ++k)
+//   			{
+//   				newCake->layers[i]->neurons[j]->connections[k] = new connectionDescriptor();
+//   				printf ("created connection descriptor\n") ;
+//   			}
+  			
+//   			printf ("created neuron descriptor\n") ;
+
+//   		}
+//   	}
 
 
 
@@ -709,96 +798,98 @@ void createNeurodescriptorFromFile () {
 
 
 
-  		/// populate it
 
-  	printf ("\nReading activation information") ;
+//   		/// populate it
 
-	// read in neuron connection numbers and activation function information
-	// goToLine(pFile, 2);				// go forward two lines
-	// pFile += sizeof("neurons (num_inputs, activation_function, activation_steepness)=(");			// advance to the layer number position
-	// fseek(pFile, 65, SEEK_CUR); // set cursor to beginning
+//   	printf ("\nReading activation information") ;
 
-  	if (true) {
-	  		fseek(pFile, 0, SEEK_SET); // set cursor to beginning
-	  		goToLine(pFile, 34);
-	  		fseek(pFile, 65, SEEK_CUR);
+// 	// read in neuron connection numbers and activation function information
+// 	// goToLine(pFile, 2);				// go forward two lines
+// 	// pFile += sizeof("neurons (num_inputs, activation_function, activation_steepness)=(");			// advance to the layer number position
+// 	// fseek(pFile, 65, SEEK_CUR); // set cursor to beginning
+
+//   	if (true) {
+// 	  		fseek(pFile, 0, SEEK_SET); // set cursor to beginning
+// 	  		goToLine(pFile, 34);
+// 	  		fseek(pFile, 65, SEEK_CUR);
 
 
-			for (uint8_t i = 0; i < newCake->n_layers; ++i)	{ // loop over the neurons in this layer
-				printf("neurons in this layer: %i\n", newCake->layers[i]->n_neurons);
-					for (uint8_t j = 0; j < newCake->layers[i]->n_neurons; ++j) {
+// 			for (uint8_t i = 0; i < newCake->n_layers; ++i)	{ // loop over the neurons in this layer
+// 				printf("neurons in this layer: %i\n", newCake->layers[i]->n_neurons);
+// 					for (uint8_t j = 0; j < newCake->layers[i]->n_neurons; ++j) {
 
-						// get number of inputs
-						// printf("%i\n", newCake->layers[i]->neurons[j]->n_connections);
+// 						// get number of inputs
+// 						// printf("%i\n", newCake->layers[i]->neurons[j]->n_connections);
 
-						int ninpits = fgetc(pFile) - 48;
-						printf("num_inputs: %i\n", ninpits);
+// 						int ninpits = fgetc(pFile) - 48;
+// 						printf("num_inputs: %i\n", ninpits);
 
-						// newCake->layers[i]->neurons[j]->n_inputs = ninpits; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+// 						// newCake->layers[i]->neurons[j]->n_inputs = ninpits; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
-						// get activation function type
-						fseek(pFile, 2, SEEK_CUR);
-						ninpits = fgetc(pFile) - 48;
+// 						// get activation function type
+// 						fseek(pFile, 2, SEEK_CUR);
+// 						ninpits = fgetc(pFile) - 48;
 
-						printf("activation_function: %i\n", ninpits);
+// 						printf("activation_function: %i\n", ninpits);
 
-						// newCake->layers[i]->neurons[j]->activation_function = ninpits;
+// 						// newCake->layers[i]->neurons[j]->activation_function = ninpits;
 
-						seekUntil(pFile, '(');
+						
 
-						// get activation function number
-						// fseek(pFile, 2, SEEK_CUR);
-						// char mingTheString[27]; 
-						// char writtenValue[27];
-						// char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
-						// if (fgetc(pFile) == '-') 		{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
-						// else 							{ fgets(mingTheString, 26, pFile); }
+// 						// get activation function number
+// 						// fseek(pFile, 2, SEEK_CUR);
+// 						// char mingTheString[27]; 
+// 						// char writtenValue[27];
+// 						// char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
+// 						// if (fgetc(pFile) == '-') 		{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
+// 						// else 							{ fgets(mingTheString, 26, pFile); }
 
-						// printf("mingTheString: %s", mingTheString);
+// 						// printf("mingTheString: %s", mingTheString);
 
-						// newCake->layers[i]->neurons[j]->activation_steepness = strtod( mingTheString,&(charPointer) );	
-					}
-				}
+// 						// newCake->layers[i]->neurons[j]->activation_steepness = strtod( mingTheString,&(charPointer) );	
+// 						seekUntil(pFile, '(');
+// 					}
+// 				}
 
-  	}		
+//   	}		
 
 	
-	// read in neuron connection weights
-	if (false) {
-		goToLine(pFile, 1); 
-		pFile += sizeof("connections (connected_to_neuron, weight)=(");			// advance to the layer number position
+// 	// read in neuron connection weights
+// 	if (false) {
+// 		goToLine(pFile, 1); 
+// 		pFile += sizeof("connections (connected_to_neuron, weight)=(");			// advance to the layer number position
 		
-		for (uint8_t i = 0; i < newCake->n_layers; ++i)	{
-			for (uint8_t j = 0; j < newCake->layers[i]->n_neurons; ++j) {
-				for (uint8_t k = 0; k < newCake->layers[i]->neurons[j]->n_connections ; ++k){
-					// connectionDescriptor connection =  new connectionDescriptor();
-					newCake->layers[i]->neurons[j]->connections[k] = new connectionDescriptor();
-					newCake->layers[i]->neurons[j]->connections[k]->connectedTo = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
+// 		for (uint8_t i = 0; i < newCake->n_layers; ++i)	{
+// 			for (uint8_t j = 0; j < newCake->layers[i]->n_neurons; ++j) {
+// 				for (uint8_t k = 0; k < newCake->layers[i]->neurons[j]->n_connections ; ++k){
+// 					// connectionDescriptor connection =  new connectionDescriptor();
+// 					newCake->layers[i]->neurons[j]->connections[k] = new connectionDescriptor();
+// 					newCake->layers[i]->neurons[j]->connections[k]->connectedTo = fgetc(pFile) - 48; 	// get one character, the -48 is used to convert ASCII encoding to positive integer.
 
-					// fseek(pFile, 2, SEEK_CUR);
-					// char writtenValue[26];
-					// newCake->layers[i].neurons[j].connections[k].connectionWeight = strtod( pFile,writtenValue );
+// 					// fseek(pFile, 2, SEEK_CUR);
+// 					// char writtenValue[26];
+// 					// newCake->layers[i].neurons[j].connections[k].connectionWeight = strtod( pFile,writtenValue );
 
-					// get connection weight
-					fseek(pFile, 2, SEEK_CUR);
-					char mingTheString[27]; 
-					char writtenValue[27];
-					char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
-					if (fgetc(pFile) == '-') 	{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
-					else 						{ fgets(mingTheString, 26, pFile); }
-					newCake->layers[i]->neurons[j]->connections[k]->connectionWeight = strtod( mingTheString,&(charPointer) );
-				}		
-			}
-		}
+// 					// get connection weight
+// 					fseek(pFile, 2, SEEK_CUR);
+// 					char mingTheString[27]; 
+// 					char writtenValue[27];
+// 					char * charPointer = writtenValue;  // required by strtod to be a pointer to a char pointer
+// 					if (fgetc(pFile) == '-') 	{ fgets(mingTheString, 27, pFile);	}  // if the string is preceded by a negative symbol it will be 1 character longer.
+// 					else 						{ fgets(mingTheString, 26, pFile); }
+// 					newCake->layers[i]->neurons[j]->connections[k]->connectionWeight = strtod( mingTheString,&(charPointer) );
+// 				}		
+// 			}
+// 		}
 
-	}
+// 	}
 
 
-// save the file
-  	  fclose ( pFile );
-  	  // fclose(cursor);
+// // save the file
+//   	  fclose ( pFile );
+//   	  // fclose(cursor);
 
-}
+// }
 
 // from: https://stackoverflow.com/questions/7132957/c-scientific-notation-format-number
 // C version; you can rewrite this to use std::string in C++ if you want
