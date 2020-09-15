@@ -106,19 +106,19 @@ struct BoneUserData {
 
 
 struct connectionDescriptor {
-	uint8_t connectedTo;
+	unsigned int connectedTo;
 	float connectionWeight;	
 
 	connectionDescriptor();
 };
 
 struct neuronDescriptor {
-	uint8_t n_inputs;
-	uint8_t activation_function;
+	unsigned int n_inputs;
+	unsigned int activation_function;
 	float activation_steepness;
 
-	uint8_t n_connections;
-	connectionDescriptor * connections[]; // n_connections is already known as the number of neurons in the next layer.
+	unsigned int n_connections;
+	connectionDescriptor * connections[];
 
 	// neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections);
 
@@ -126,7 +126,7 @@ struct neuronDescriptor {
 };
 
 struct layerDescriptor {
-	uint8_t n_neurons;
+	unsigned int n_neurons;
 	neuronDescriptor * neurons[]; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
 	// layerDescriptor(uint8_t n_neurons, neuronDescriptor * neurons);
@@ -140,7 +140,7 @@ struct networkDescriptor {
 	3. i might as well make an easily modifiable descriptor file, and methods to turn it back into the text file.
 	*/
 
-	uint8_t n_layers;
+	unsigned int n_layers;
 	layerDescriptor * layers[];
 
 	networkDescriptor( );

@@ -499,7 +499,8 @@ connectionDescriptor::connectionDescriptor () {
 }
 
 neuronDescriptor::neuronDescriptor() {
-
+	n_connections = 0;
+	n_inputs = 0;
 }
 
 layerDescriptor::layerDescriptor () {
@@ -627,6 +628,14 @@ void createNeurodescriptorFromFANN () {
 
 	// query the number of layers.
 	unsigned int num_layers = fann_get_num_layers(temp_ann);
+	printf("new %u layer networkDescriptor\n", num_layers);
+
+	 // get activation function information
+  	unsigned int activation_function_hidden = 5; //fann::fann_get_activation_function_hidden(temp_ann);
+  	float activation_steepness_hidden = 0.5f;//fann::fann_get_activation_steepness_hidden(temp_ann);
+  	unsigned int activation_function_output = 0; //fann::fann_get_activation_function_output(temp_ann);
+  	float activation_steepness_output = 0; //fann::fann_get_activation_steepness_output(temp_ann);
+  	
 
 	// get the layer cake.
 	unsigned int layerCake[num_layers];
@@ -637,44 +646,51 @@ void createNeurodescriptorFromFANN () {
   	newCake->n_layers = num_layers;
   	printf ("\ncreated network descriptor\n") ;
 
+
+
   	for (unsigned int i = 0; i < num_layers; ++i) {
   		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
   		newCake->layers[i]->n_neurons = layerCake[i];
   		printf ("created layer descriptor\n") ;
 
-		for (unsigned int j = 0; j < layerCake[i]; ++j) {
+		for (unsigned int j = 0; j <= layerCake[i]; ++j) {
   			newCake->layers[i]->neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
+  			newCake->layers[i]->neurons[j]->activation_function = activation_function_hidden;
+  			newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_hidden;
+  			newCake->layers[i]->neurons[j]->n_connections = 0; // so not used uninitialized
+  			newCake->layers[i]->neurons[j]->n_inputs = 0; // so not used uninitialized
+
+  			if (i == num_layers-1) {
+				newCake->layers[i]->neurons[j]->activation_function = activation_function_output;
+  				newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_output;
+  			}
   			printf ("created neuron descriptor\n") ;
   		}
   	}
 
   	// get connection and weight information.
   	// unsigned int theMostConnectionsThereWillEverBe = 1024;
-  	uint16_t num_connections = fann_get_total_connections(temp_ann);
-  	struct fann_connection margles[num_connections] ;
+  	unsigned int num_connections = fann_get_total_connections(temp_ann);
+  	static struct fann_connection margles[256] ;
   	struct fann_connection *con = margles; 
   	fann_get_connection_array(temp_ann, con);
 
-  	// get activation function information
-  	int activation_function_hidden = 5; //fann::fann_get_activation_function_hidden(temp_ann);
-  	float activation_steepness_hidden = 0.5f;//fann::fann_get_activation_steepness_hidden(temp_ann);
-  	int activation_function_output = 0; //fann::fann_get_activation_function_output(temp_ann);
-  	float activation_steepness_output = 0; //fann::fann_get_activation_steepness_output(temp_ann);
-  	
+ 
   	// apply them to the model
-  	for (unsigned int i = 0; i < num_layers; ++i) {
-  		for (unsigned int j = 0; j < layerCake[i]; ++j) {
+  	// for (unsigned int i = 0; i < num_layers; ++i) {
+  	// 	for (unsigned int j = 0; j <= layerCake[i]; ++j) {
 
-  			if (i == num_layers-1) {
-  				newCake->layers[i]->neurons[j]->activation_function = activation_function_hidden;
-  				newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_hidden;
-  			}
-  			else {
-  				newCake->layers[i]->neurons[j]->activation_function = activation_function_output;
-  				newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_output;
-  			}
-  		}
-  	}
+  	// 		if (i == num_layers-1) {
+  	// 			newCake->layers[i]->neurons[j]->activation_function = activation_function_hidden;
+  	// 			newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_hidden;
+  	// 		}
+  	// 		else {
+  	// 			newCake->layers[i]->neurons[j]->activation_function = activation_function_output;
+  	// 			newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_output;
+  	// 		}
+  	// 		printf ("set activation parameters l%u n%u\n", i, j) ;
+  	// 	}
+  	// }
 
   	// create connections
   	for (unsigned int c = 0; c < num_connections; ++c) {
@@ -686,9 +702,16 @@ void createNeurodescriptorFromFANN () {
   				index -= layerCake[layer];
   				layer ++;
   			}
+  			// printf("0");
   		}
 
+  		// if (layer > num_layers) {
+  		// 	continue;
+  		// }
+
   		// add connection descriptor and adjust parameters of 'from' neuron
+  		printf("%u %u\n", index, layer);
+  		// printf("%u\n", newCake->layers[layer]->neurons[index]->n_connections)
   		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections] = new connectionDescriptor();
   		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections]->connectedTo = con[c].to_neuron;
   		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections]->connectionWeight = con[c].weight;
@@ -703,9 +726,11 @@ void createNeurodescriptorFromFANN () {
   				toIndex -= layerCake[toLayer];
   				toLayer ++;
   			}
+  			// printf("1");
   		}
-		newCake->layers[toLayer]->neurons[toIndex]->n_inputs ++;
-		printf ("created connection descriptor\n") ;	
+  		printf("%u %u ", toIndex, toLayer-1);
+		newCake->layers[toLayer-1]->neurons[toIndex]->n_inputs ++;
+		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections) ;	
 
 
 
@@ -923,15 +948,15 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
  	s += "layer_sizes=";
 
  	// print layer sizes separated by a space
-	for (int i = 0; i < network->n_layers; ++i) {
+	for (unsigned int i = 0; i < network->n_layers; ++i) {
 		sprintf(t, "%u", network->layers[i]->n_neurons);
 		s += t;
 	}
 
 	// print activation information
  	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
- 	for (int i = 0; i < network->n_layers; ++i) 	{
- 		for (int j = 0; j < network->layers[i]->n_neurons; ++j) {
+ 	for (unsigned int i = 0; i < network->n_layers; ++i) 	{
+ 		for (unsigned int j = 0; j < network->layers[i]->n_neurons; ++j) {
  			char chalkboard[9];
  			sprintf(chalkboard, "(%u, %u, ", network->layers[i]->neurons[j]->n_inputs, network->layers[i]->neurons[j]->activation_function);	
  			s += chalkboard;
@@ -945,8 +970,8 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
 
  	// print connection information
 	s += "\nconnections (connected_to_neuron, weight)=";
-	for (int i = 0; i < network->n_layers; ++i) 	{
- 		for (int j = 0; j < network->layers[i]->n_neurons; ++j) {
+	for (unsigned int i = 0; i < network->n_layers; ++i) 	{
+ 		for (unsigned int j = 0; j < network->layers[i]->n_neurons; ++j) {
  			// s += sprintf("(%u, %u, ", i+j, );	
 
  			// get the sum of neurons before this layer.
@@ -957,7 +982,7 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
 
  			// print the connections from each neuron to each of the neurons on the next layer.
  			// if ((i + 1) < network.n_layers) {
- 			for (int k = 0; k < network->layers[i]->neurons[j]->n_connections; ++k) {
+ 			for (unsigned int k = 0; k < network->layers[i]->neurons[j]->n_connections; ++k) {
  				char chalkboard[5];
  				sprintf(chalkboard, "(%u, ", network->layers[i]->neurons[j]->connections[k]->connectedTo);
  				s += chalkboard;
