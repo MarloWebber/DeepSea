@@ -118,7 +118,7 @@ struct neuronDescriptor {
 	float activation_steepness;
 
 	unsigned int n_connections;
-	connectionDescriptor * connections[];
+	connectionDescriptor * connections[16];
 
 	// neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections);
 

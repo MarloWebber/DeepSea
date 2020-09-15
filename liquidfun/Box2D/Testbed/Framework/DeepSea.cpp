@@ -646,14 +646,16 @@ void createNeurodescriptorFromFANN () {
   	newCake->n_layers = num_layers;
   	printf ("\ncreated network descriptor\n") ;
 
-
+  	for (unsigned int i = 0; i < num_layers; ++i) {
+  		layerCake[i] += 1;
+  	}
 
   	for (unsigned int i = 0; i < num_layers; ++i) {
   		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
   		newCake->layers[i]->n_neurons = layerCake[i];
-  		printf ("created layer descriptor\n") ;
+  		printf ("created layer descriptor %i\n", layerCake[i]) ;
 
-		for (unsigned int j = 0; j <= layerCake[i]; ++j) {
+		for (unsigned int j = 0; j < layerCake[i]; ++j) {
   			newCake->layers[i]->neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
   			newCake->layers[i]->neurons[j]->activation_function = activation_function_hidden;
   			newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_hidden;
@@ -694,42 +696,88 @@ void createNeurodescriptorFromFANN () {
 
   	// create connections
   	for (unsigned int c = 0; c < num_connections; ++c) {
-  		unsigned int layer = 0;
-  		unsigned int index = con[c].from_neuron;
+  		unsigned int layer = 0;//num_layers-1;
+  		unsigned int index = con[c].from_neuron +1; // so as to not start from 0
+  		// printf("search %u, ", index);
   		while (1) {
-  			if (index < layerCake[layer]) { break; }
+  			if (index <= layerCake[layer]) {
+  				break; }
   			else {
   				index -= layerCake[layer];
+  				// printf("skip %u remainder %u, ", layerCake[layer], index);
   				layer ++;
   			}
-  			// printf("0");
   		}
-
+  		// printf("decide %i of %i, give %i\n", index, layerCake[layer], index-1); 
+  		index--;
   		// if (layer > num_layers) {
   		// 	continue;
   		// }
 
   		// add connection descriptor and adjust parameters of 'from' neuron
+  		// printf("%u %u\n", index, layer);
+  		// printf("%u %u\n", index, layer);
+  		// printf("%u %u\n", index, layer);
+  		// printf("%u %u\n", index, layer);
   		printf("%u %u\n", index, layer);
-  		// printf("%u\n", newCake->layers[layer]->neurons[index]->n_connections)
-  		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections] = new connectionDescriptor();
-  		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections]->connectedTo = con[c].to_neuron;
-  		newCake->layers[layer]->neurons[index]->connections[newCake->layers[layer]->neurons[index]->n_connections]->connectionWeight = con[c].weight;
+  		// printf("%u\n", newCake->layers[layer]->neurons[index]->n_connections);
+  		unsigned int newestConnectionIndex = newCake->layers[layer]->neurons[index]->n_connections;
+  		printf("%u\n", newestConnectionIndex);
+  		newCake->layers[layer]->neurons[index]->connections[newestConnectionIndex] = new connectionDescriptor();
+  		newCake->layers[layer]->neurons[index]->connections[newestConnectionIndex]->connectedTo = con[c].to_neuron;
+  		newCake->layers[layer]->neurons[index]->connections[newestConnectionIndex]->connectionWeight = con[c].weight;
   		newCake->layers[layer]->neurons[index]->n_connections ++;
  
+
+
+
+
+
+
+
+
+
+
+
+
   		// adjust the input number on the 'to' neuron.
-  		unsigned int toLayer = 0;
-  		unsigned int toIndex = con[c].to_neuron;
+  		// unsigned int toLayer = 0;//num_layers;
+  		// unsigned int toIndex = con[c].to_neuron;
+  		// // printf("%u %u\n",toIndex, toLayer);
+  		// while (1) {
+  		// 	if (toIndex < layerCake[toLayer]) { break; }
+  		// 	else {
+  		// 		toIndex -= layerCake[toLayer];
+  		// 		toLayer ++;
+  		// 	}
+  		// 	// printf("1");
+  		// }
+
+
+
+		unsigned int toLayer = 0;//num_layers-1;
+  		unsigned int toIndex = con[c].from_neuron +1; // so as to not start from 0
+  		// printf("search %u, ", toIndex);
   		while (1) {
-  			if (toIndex < layerCake[toLayer]) { break; }
+  			if (toIndex <= layerCake[toLayer]) {
+  				break; }
   			else {
   				toIndex -= layerCake[toLayer];
+  				// printf("skip %u remainder %u, ", layerCake[toLayer], toIndex);
   				toLayer ++;
   			}
-  			// printf("1");
   		}
-  		printf("%u %u ", toIndex, toLayer-1);
-		newCake->layers[toLayer-1]->neurons[toIndex]->n_inputs ++;
+  		// printf("decide %i of %i, give %i\n", toIndex, layerCake[toLayer], toIndex-1); 
+  		toIndex--;
+
+
+
+  		// printf("%u %u ", toIndex, toLayer);
+  		// printf("%u %u ", toIndex, toLayer);
+  		// printf("%u %u ", toIndex, toLayer);
+  		// printf("%u %u ", toIndex, toLayer);
+  		// printf("%u %u ", toIndex, toLayer);
+		newCake->layers[toLayer]->neurons[toIndex]->n_inputs ++;
 		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections) ;	
 
 
