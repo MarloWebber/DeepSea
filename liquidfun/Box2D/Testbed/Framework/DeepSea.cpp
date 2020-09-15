@@ -496,6 +496,7 @@ fann * loadFishBrainFromFile (std::string fileName) {
 
 
 connectionDescriptor::connectionDescriptor () {
+	isUsed = false;
 	connectedTo = 0;
 	connectionWeight = 0.0f;	
 }
@@ -503,14 +504,43 @@ connectionDescriptor::connectionDescriptor () {
 neuronDescriptor::neuronDescriptor() {
 	n_connections = 0;
 	n_inputs = 0;
-	connections = nullptr;
+	isUsed = false;
+	for (int i = 0; i < 8; ++i)
+	{
+		connections[i] = connectionDescriptor();
+	};
 }
 
 layerDescriptor::layerDescriptor () {
 	n_neurons = 0;
-	neurons = nullptr; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
+	isUsed = false;
+	for (int i = 0; i < 8; ++i)
+	{
+		neurons[i] = neuronDescriptor();
+	};
 
 }
+
+// method to create a network descriptor in memory
+networkDescriptor::networkDescriptor () {
+	n_layers = 0;
+	// layers = {
+	// 	 layerDescriptor(),
+	// 	 layerDescriptor(),
+	// 	 layerDescriptor(),
+	// 	 layerDescriptor(),
+	// 	 layerDescriptor(),
+	// 	 layerDescriptor(),
+	// 	 layerDescriptor(),
+	// 	 layerDescriptor()
+	// };
+	for (int i = 0; i < 8; ++i)
+	{
+		layers[i] = layerDescriptor();
+	};
+}
+
+
 
 
 // std::fstream& goToLine(std::fstream& file,  int num){
@@ -607,11 +637,6 @@ void goToLine (FILE * cursor, int linesToMoveAhead) {
 	// cursor is now advanced to the desired location.
 }
 
-// method to create a network descriptor from a stored file
-networkDescriptor::networkDescriptor () {
-	n_layers = 0;
-	layers = nullptr;
-}
 
 void seekUntil (FILE * cursor, char trigger) {
 	while(1) {
@@ -649,8 +674,9 @@ void createNeurodescriptorFromFANN () {
 	fann_get_layer_array(temp_ann, layerCake);
 
 	// build everything in memory and link it together.
-	networkDescriptor * newCake = new networkDescriptor();	//
-  	newCake->n_layers = num_layers;
+	// build everything in memory and link it together.
+	networkDescriptor newCake = networkDescriptor();	//
+  	newCake.n_layers = num_layers;
   	printf ("\ncreated network descriptor\n") ;
 
   	for (unsigned int i = 0; i < num_layers; ++i) {
@@ -658,20 +684,22 @@ void createNeurodescriptorFromFANN () {
   	}
 
   	for (unsigned int i = 0; i < num_layers; ++i) {
-  		newCake->layers[i] =  new layerDescriptor(); 				// create the layer descriptor
-  		newCake->layers[i]->n_neurons = layerCake[i];
+  		// newCake.layers[i] =  new layerDescriptor(); 				// create the layer descriptor
+  		newCake.layers[i].n_neurons = layerCake[i];
+  		newCake.layers[i].isUsed = true;
   		printf ("created layer descriptor %i\n", layerCake[i]) ;
 
 		for (unsigned int j = 0; j < layerCake[i]; ++j) {
-  			newCake->layers[i]->neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
-  			newCake->layers[i]->neurons[j]->activation_function = activation_function_hidden;
-  			newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_hidden;
-  			newCake->layers[i]->neurons[j]->n_connections = 0; // so not used uninitialized
-  			newCake->layers[i]->neurons[j]->n_inputs = 0; // so not used uninitialized
+  			// newCake.layers[i].neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
+  			newCake.layers[i].neurons[j].activation_function = activation_function_hidden;
+  			newCake.layers[i].neurons[j].activation_steepness = activation_steepness_hidden;
+  			newCake.layers[i].neurons[j].n_connections = 0; // so not used uninitialized
+  			newCake.layers[i].neurons[j].n_inputs = 0; // so not used uninitialized
+  			newCake.layers[i].neurons[j].isUsed = true;
 
   			if (i == num_layers-1) {
-				newCake->layers[i]->neurons[j]->activation_function = activation_function_output;
-  				newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_output;
+				newCake.layers[i].neurons[j].activation_function = activation_function_output;
+  				newCake.layers[i].neurons[j].activation_steepness = activation_steepness_output;
   			}
   			printf ("created neuron descriptor\n") ;
   		}
@@ -690,12 +718,12 @@ void createNeurodescriptorFromFANN () {
   	// 	for (unsigned int j = 0; j <= layerCake[i]; ++j) {
 
   	// 		if (i == num_layers-1) {
-  	// 			newCake->layers[i]->neurons[j]->activation_function = activation_function_hidden;
-  	// 			newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_hidden;
+  	// 			newCake.layers[i].neurons[j].activation_function = activation_function_hidden;
+  	// 			newCake.layers[i].neurons[j].activation_steepness = activation_steepness_hidden;
   	// 		}
   	// 		else {
-  	// 			newCake->layers[i]->neurons[j]->activation_function = activation_function_output;
-  	// 			newCake->layers[i]->neurons[j]->activation_steepness = activation_steepness_output;
+  	// 			newCake.layers[i].neurons[j].activation_function = activation_function_output;
+  	// 			newCake.layers[i].neurons[j].activation_steepness = activation_steepness_output;
   	// 		}
   	// 		printf ("set activation parameters l%u n%u\n", i, j) ;
   	// 	}
@@ -727,13 +755,14 @@ void createNeurodescriptorFromFANN () {
   		// printf("%u %u\n", index, layer);
   		// printf("%u %u\n", index, layer);
   		printf("%u %u\n", index, layer);
-  		// printf("%u\n", newCake->layers[layer]->neurons[index]->n_connections);
-  		unsigned int newestConnectionIndex = newCake->layers[layer]->neurons[index]->n_connections;
+  		// printf("%u\n", newCake.layers[layer].neurons[index].n_connections);
+  		unsigned int newestConnectionIndex = newCake.layers[layer].neurons[index].n_connections;
   		printf("%u\n", newestConnectionIndex);
-  		newCake->layers[layer]->neurons[index]->connections[newestConnectionIndex] = new connectionDescriptor();
-  		newCake->layers[layer]->neurons[index]->connections[newestConnectionIndex]->connectedTo = con[c].to_neuron;
-  		newCake->layers[layer]->neurons[index]->connections[newestConnectionIndex]->connectionWeight = con[c].weight;
-  		newCake->layers[layer]->neurons[index]->n_connections ++;
+  		// newCake.layers[layer].neurons[index].connections[newestConnectionIndex] = new connectionDescriptor();
+  		newCake.layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo = con[c].to_neuron;
+  		newCake.layers[layer].neurons[index].connections[newestConnectionIndex].connectionWeight = con[c].weight;
+  		newCake.layers[layer].neurons[index].connections[newestConnectionIndex].isUsed = true;
+  		newCake.layers[layer].neurons[index].n_connections ++;
  
 
 
@@ -784,23 +813,11 @@ void createNeurodescriptorFromFANN () {
   		// printf("%u %u ", toIndex, toLayer);
   		// printf("%u %u ", toIndex, toLayer);
   		// printf("%u %u ", toIndex, toLayer);
-		newCake->layers[toLayer]->neurons[toIndex]->n_inputs ++;
+		newCake.layers[toLayer].neurons[toIndex].n_inputs ++;
 		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections) ;	
 
 
-
-  	}
-
-  	// for (int i = 0; i < newCake->n_layers; ++i)
-  	// {
-  	// 	for (int j = 0; j < newCake->layers[i]->n_neurons; ++j)
-  	// 	{
-  	// 		for (int i = 0; i < count; ++i)
-  	// 		{
-  	// 			/* code */
-  	// 		}
-  	// 	}
-  	// }
+}
 }
 
 // void createNeurodescriptorFromFile () {
@@ -990,12 +1007,13 @@ void my_print_scientific(char *dest, double value) {
   }
 }
 
+
 // method to create a fann save file from a network descriptor
-void createFANNFileFromDescriptor (networkDescriptor * network) {
+void createFANNFileFromDescriptor (networkDescriptor network) {
 	std::string s = std::string("FANN_FLO_2.1\nnum_layers=");; // string to hold the information.
 
 	char * t = 0;
-	sprintf(t, "%u",network->n_layers);	// print number of layers to position
+	sprintf(t, "%u",network.n_layers);	// print number of layers to position
 	s += t;
 
 	// print this
@@ -1003,30 +1021,30 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
  	s += "layer_sizes=";
 
  	// print layer sizes separated by a space
-	for (unsigned int i = 0; i < network->n_layers; ++i) {
-		sprintf(t, "%u", network->layers[i]->n_neurons);
+	for (unsigned int i = 0; i < network.n_layers; ++i) {
+		sprintf(t, "%u", network.layers[i].n_neurons);
 		s += t;
 	}
 
 	// print activation information
  	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
- 	for (unsigned int i = 0; i < network->n_layers; ++i) 	{
- 		for (unsigned int j = 0; j < network->layers[i]->n_neurons; ++j) {
+ 	for (unsigned int i = 0; i < network.n_layers; ++i) 	{
+ 		for (unsigned int j = 0; j < network.layers[i].n_neurons; ++j) {
  			char chalkboard[9];
- 			sprintf(chalkboard, "(%u, %u, ", network->layers[i]->neurons[j]->n_inputs, network->layers[i]->neurons[j]->activation_function);	
+ 			sprintf(chalkboard, "(%u, %u, ", network.layers[i].neurons[j].n_inputs, network.layers[i].neurons[j].activation_function);	
  			s += chalkboard;
 
  			// std::string sciNotationBuffer = std::string("0.00000000000000000000e+00) ");
  			char sciNotationBuffer[] = "0.00000000000000000000e+00) ";
- 			my_print_scientific(sciNotationBuffer, network->layers[i]->neurons[j]->activation_steepness);
+ 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].activation_steepness);
  			s += sciNotationBuffer;
  		}
  	}
 
  	// print connection information
 	s += "\nconnections (connected_to_neuron, weight)=";
-	for (unsigned int i = 0; i < network->n_layers; ++i) 	{
- 		for (unsigned int j = 0; j < network->layers[i]->n_neurons; ++j) {
+	for (unsigned int i = 0; i < network.n_layers; ++i) 	{
+ 		for (unsigned int j = 0; j < network.layers[i].n_neurons; ++j) {
  			// s += sprintf("(%u, %u, ", i+j, );	
 
  			// get the sum of neurons before this layer.
@@ -1037,14 +1055,14 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
 
  			// print the connections from each neuron to each of the neurons on the next layer.
  			// if ((i + 1) < network.n_layers) {
- 			for (unsigned int k = 0; k < network->layers[i]->neurons[j]->n_connections; ++k) {
+ 			for (unsigned int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
  				char chalkboard[5];
- 				sprintf(chalkboard, "(%u, ", network->layers[i]->neurons[j]->connections[k]->connectedTo);
+ 				sprintf(chalkboard, "(%u, ", network.layers[i].neurons[j].connections[k].connectedTo);
  				s += chalkboard;
 
  				// std::string sciNotationBuffer = std::string("0.00000000000000000000e+00) ");
  				char sciNotationBuffer[] = "0.00000000000000000000e+00) ";
-	 			my_print_scientific(sciNotationBuffer, network->layers[i]->neurons[j]->connections[k]->connectionWeight);
+	 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].connections[k].connectionWeight);
 	 			s+= sciNotationBuffer;
  			}
  			// }

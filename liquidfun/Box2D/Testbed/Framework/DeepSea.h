@@ -106,6 +106,10 @@ struct BoneUserData {
 
 
 struct connectionDescriptor {
+
+	bool isUsed;
+
+
 	unsigned int connectedTo;
 	float connectionWeight;	
 
@@ -113,12 +117,16 @@ struct connectionDescriptor {
 };
 
 struct neuronDescriptor {
+
+	bool isUsed;
+
+
 	unsigned int n_inputs;
 	unsigned int activation_function;
 	float activation_steepness;
 
 	unsigned int n_connections;
-	connectionDescriptor * connections[];
+	connectionDescriptor connections[8];
 
 	// neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections);
 
@@ -126,8 +134,11 @@ struct neuronDescriptor {
 };
 
 struct layerDescriptor {
+
+	bool isUsed;
+
 	unsigned int n_neurons;
-	neuronDescriptor * neurons[]; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
+	neuronDescriptor neurons[8]; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
 	// layerDescriptor(uint8_t n_neurons, neuronDescriptor * neurons);
 	layerDescriptor();
@@ -141,7 +152,7 @@ struct networkDescriptor {
 	*/
 
 	unsigned int n_layers;
-	layerDescriptor * layers[];
+	layerDescriptor layers[8];
 
 	networkDescriptor( );
 	// networkDescriptor::createFannFile (bool spam) ;
