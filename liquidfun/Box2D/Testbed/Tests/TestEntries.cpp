@@ -84,6 +84,9 @@
 #include "DrawingParticles.h"
 // #include "ElasticParticles.h"
 #include "Faucet.h"
+
+#include "SunPool.h"
+
 // #include "Fracker.h"
 // #include "Impulse.h"
 // #include "LiquidTimer.h"
@@ -110,6 +113,7 @@ TestEntry g_testEntries[] =
 	// {"Particles", Particles::Create},
 	{"Faucet", Faucet::Create},
 	{"Particle Drawing", DrawingParticles::Create},
+	{"Sun Pool", SunPool::Create},
 	// {"Soup", Soup::Create},
 	// {"Surface Tension", ParticlesSurfaceTension::Create},
 	// {"Elastic Particles", ElasticParticles::Create},

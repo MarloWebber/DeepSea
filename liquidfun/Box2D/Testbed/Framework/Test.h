@@ -229,7 +229,7 @@ protected:
 	b2World* m_world;
 	b2ParticleSystem* m_particleSystem;
 
-	b2ParticleSystem* m_particleSystemGravel;
+	// b2ParticleSystem* m_particleSystemGravel;
 	b2Body* m_bomb;
 	b2MouseJoint* m_mouseJoint;
 	b2Vec2 m_bombSpawnPoint;

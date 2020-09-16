@@ -67,7 +67,7 @@ Test::Test()
 	m_particleSystem = m_world->CreateParticleSystem(&particleSystemDef);
 
 
-	m_particleSystemGravel = m_world->CreateParticleSystem(&particleSystemDef);
+	// m_particleSystemGravel = m_world->CreateParticleSystem(&particleSystemDef);
 
 
 
@@ -84,8 +84,8 @@ Test::Test()
 	m_particleSystem->SetGravityScale(0.4f);
 	m_particleSystem->SetDensity(1.2f);
 
-	m_particleSystemGravel->SetGravityScale(0.4f);
-	m_particleSystemGravel->SetDensity(2.4f);
+	// m_particleSystemGravel->SetGravityScale(0.4f);
+	// m_particleSystemGravel->SetDensity(2.4f);
 
 	m_bombSpawning = false;
 
