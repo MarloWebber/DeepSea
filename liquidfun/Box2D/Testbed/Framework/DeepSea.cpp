@@ -125,7 +125,7 @@ BoneUserData::BoneUserData(
 	length = boneDescription.length;
 	rootThickness = boneDescription.rootThickness;
 	tipThickness = boneDescription.tipThickness;
-	density = 1.0f;
+	density = 1.5f;
 	isRoot = boneDescription.isRoot;
 	isMouth = boneDescription.isMouth;
 	isSensor = boneDescription.isSensor;
@@ -340,7 +340,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 	    	ann = fann_create_standard_array(4, creationLayerCake);
 		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
 		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
-		    // fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
+		    fann_train_on_file(ann, "wormTrainer.data", max_epochs, epochs_between_reports, desired_error);
 	    }
     else { // a brain is provided
     	ann = nann;
@@ -443,7 +443,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				0.005f,	// torque
+				5.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -493,7 +493,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				0.005f,	// torque
+				5.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -509,7 +509,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				0.005f,	// torque
+				5.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -568,11 +568,49 @@ void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSyst
 
 // delete a fish from the game world and remove it from memory
 void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_particleSystem) {
-	for (int i = 0; i < N_FINGERS; ++i) {
-		m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
-		delete fishes[fishIndex]->bones[i];
+
+
+
+
+	if (fishSlotLoaded[fishIndex]) {
+
+		printf("deleting %i of 8.", fishIndex);
+
+		
+		fishes[fishIndex]->init = false;
+		fishes[fishIndex]->isUsed = false;
+
+		fishSlotLoaded[fishIndex] = false;
+
+		for (int i = 0; i < N_FINGERS; ++i) {
+
+							if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
+								continue;
+							}
+
+		// 					else if (fishes[fishIndex]->bones[i]->init && !fishes[fishIndex]->bones[i]->isUsed) { // if the object is initialized, but not applied in the game world, you can still delete it from the game logic.
+		// 						delete fishes[fishIndex]->bones[i]->joint;
+		// 						delete fishes[fishIndex]->bones[i];
+		// 					}
+
+							else if (fishes[fishIndex]->bones[i]->isUsed && fishes[fishIndex]->bones[i]->init) {
+								printf("deleting bone %i of 8.", i);
+								m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
+
+								fishes[fishIndex]->bones[i]->init = false;
+								fishes[fishIndex]->bones[i]->isUsed = false;
+
+
+
+								// delete fishes[fishIndex]->bones[i]->joint;
+								// delete fishes[fishIndex]->bones[i];
+							}
+		}
+		// delete fishes[fishIndex];	 // delete does, in fact, take a pointer
+
+		// fishSlotLoaded[fishIndex] = false;
+
 	}
-	delete fishes[fishIndex];	 
 }
 
 void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann) {
@@ -951,6 +989,138 @@ void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * 
 
 }
 
+
+
+
+
+void wormTrainer () {
+
+	int n_examples = 1000;
+
+
+
+	// float inputValues[12]; 
+	// float outputValues[8];
+
+
+	// float bodysegments = 4;
+
+	FILE *fp;
+    fp = fopen("wormTrainer.data","wb");
+
+    fprintf(fp, "%i %i% i\n", n_examples*4, 12, 8 );
+
+
+	// for (int i = 0; i < 12; ++i)
+	// {
+	// 	inputValues[i] = 0.0f;
+	// }
+	// for (int i = 0; i < 8; ++i)
+	// {
+	// 	outputValues[i] = 0.0f;
+	// }
+
+
+	for (int i = 0; i < 2*n_examples; ++i)
+	{
+		
+
+		float senseDiffPerSegment = RNG() * 0.25;
+
+		float noize = RNG() * 0.5;
+
+		// four samples that show a swimming motion when the food is ahead
+		// ------- SEQ 1
+	
+		// four samples that show a swimming motion when the food is ahead
+		// ------- SEQ 1
+		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
+			4*senseDiffPerSegment + (RNG() * noize),
+			3*senseDiffPerSegment + (RNG() * noize),
+			2*senseDiffPerSegment + (RNG() * noize),
+			1*senseDiffPerSegment + (RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize)
+			);
+
+		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+			0  + (RNG() * noize),
+			1 + (RNG() * noize),
+			-1 + (RNG() * noize),
+			0 + (RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize)
+			);
+		// -------- SEQ 2
+		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
+			4*senseDiffPerSegment + (RNG() * noize),
+			3*senseDiffPerSegment + (RNG() * noize),
+			2*senseDiffPerSegment + (RNG() * noize),
+			1*senseDiffPerSegment + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize)
+			);
+
+		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+			-1 + (RNG() * noize),
+			0 + (RNG() * noize),
+			0 + (RNG() * noize),
+			1 + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
+			);
+		// -------- SEQ 3
+		
+fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
+			4*senseDiffPerSegment + (RNG() * noize),
+			3*senseDiffPerSegment + (RNG() * noize),
+			2*senseDiffPerSegment + (RNG() * noize),
+			1*senseDiffPerSegment + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
+			0 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize),1 + (RNG() * noize)
+			);
+
+		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+			1 + (RNG() * noize),
+			0 + (RNG() * noize),
+			0 + (RNG() * noize),
+			-1 + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
+			);
+		// -------- SEQ 4
+		
+fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
+			4*senseDiffPerSegment + (RNG() * noize),
+			3*senseDiffPerSegment + (RNG() * noize),
+			2*senseDiffPerSegment + (RNG() * noize),
+			1*senseDiffPerSegment + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
+			0 + (RNG() * noize),1 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize)
+			);
+
+		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+			0 + (RNG() * noize),
+			-1 + (RNG() * noize),
+			1 + (RNG() * noize),
+			0 + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
+			);
+		// --------
+		
+
+
+
+
+
+
+	}
+
+
+
+}
+
+
+
+
+
 void jellyfishTrainer () {
 	int n_inputs = 8;
 	int n_outputs = 8;
@@ -969,7 +1139,7 @@ void jellyfishTrainer () {
 	float bellBSoftClose = -0.3f;
 
 	FILE *fp;
-    fp = fopen("koiTrainer.data","wb");
+    fp = fopen("jellyfishTrainer.data","wb");
 
     fprintf(fp, "%i %i% i\n", n_examples*6, n_inputs, n_outputs );
 
@@ -1034,16 +1204,43 @@ void jellyfishTrainer () {
 	fclose(fp);
 }
 
+
+
+
+void vote (b2World * m_world, b2ParticleSystem * m_particleSystem) { // select an animal as an evolutionary winner, passing its genes on to the next generation
+
+	// save the winner to file with a new name.
+
+	// destroy all creatures in the world and delete them from memory. make sure their udata is deleted too.
+
+	for (int i = 0; i < N_FISHES; ++i)
+	{
+		deleteFish (i, m_world, m_particleSystem) ;
+	}
+ 
+
+	// create 8 mutant copies of the winner
+
+	// spawn them into the world to repeat the cycle
+
+
+
+}
+
+
+
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) {
 
-	jellyfishTrainer();
+	// jellyfishTrainer();
+
+	wormTrainer();
 
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
 
 	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
 
-	int howManyNewFishToAdd = 1;
+	int howManyNewFishToAdd = 3;
 	for (int i = 0; i < howManyNewFishToAdd; ++i) {
 
 
@@ -1062,10 +1259,12 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	}
 }
 
-void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index) {
+void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar) {
 
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
 	unsigned int n_layers = fann_get_num_layers(ann);
+
+	unsigned int sizeOfBiggestLayer = 0;
 
 	// get the number of neurons on each layer.
 	unsigned int layerArray[n_layers];
@@ -1088,8 +1287,21 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     /* Get weight matrix */
     fann_get_connection_array(ann, con);
 
-	b2Vec2 drawingStartingPosition = b2Vec2( (2.0f * index) ,4.0f);
+    // int icompatiblespaces = spacesUsedSoFar
+    float fcompatiblespaces = *spacesUsedSoFar;
+	b2Vec2 drawingStartingPosition = b2Vec2(  fcompatiblespaces + 1 ,4.0f);
 	float spacingDistance = 0.5f;
+
+
+	// compute the size of biggest layer so you know how far to move over all subsequent layers.
+	for (uint8_t j = 0; j < n_layers; ++j)
+	{
+		if (layerArray[j] > sizeOfBiggestLayer) {
+			sizeOfBiggestLayer = layerArray[j];
+		}
+	}
+	*spacesUsedSoFar += sizeOfBiggestLayer;
+
 
 	for (uint8_t j = 0; j < layerArray[0]; ++j)
 	{
@@ -1148,6 +1360,8 @@ void deepSeaLoop () {
 			food[i]->position = food[i]->p_body->GetPosition(); // update positions of all the food particles
 		}
 	}
+
+	unsigned int spacesUsedSoFar =0;
 
 	for (int i = 0; i < N_FISHES; ++i) {
 		if (fishSlotLoaded[i]) {
@@ -1213,31 +1427,47 @@ void deepSeaLoop () {
 				// feed information into brain
 				float * motorSignals = fann_run(fishes[i]->ann, sensorium);
 
-				// printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
+				printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
 
-				if (false) {
+				if (true) {
 					// float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
 					// float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
 
 					// printf("joint: %.2f %.2f\n", jointAngleA, jointAngleB);
 
-					for (int j = 0; j < 8; ++j)
+					for (int j = 1; j < 8; ++j) // dont even try to move the 0th one
 					{
-						fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
+
+						if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
+							continue;
+						}
+						else if (fishes[i]->bones[j]->isUsed && fishes[i]->bones[j]->init) {
+
+							if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
+								fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
+								printf("the joint speed was set");
+
+							}
+
+							
+							
+						}
+						
+						
 					}
 
 					 //speedForJointA*10);
-					fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(motorSignals[1]*fishes[i]->bones[1]->joint->speedLimit);//speedForJointB*10);
-					fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(motorSignals[2]*fishes[i]->bones[2]->joint->speedLimit); //speedForJointA*10);
-					fishes[i]->bones[3]->joint->p_joint->SetMotorSpeed(motorSignals[3]*fishes[i]->bones[3]->joint->speedLimit);//speedForJointB*10);
-					fishes[i]->bones[4]->joint->p_joint->SetMotorSpeed(motorSignals[4]*fishes[i]->bones[4]->joint->speedLimit); //speedForJointA*10);
-					fishes[i]->bones[5]->joint->p_joint->SetMotorSpeed(motorSignals[5]*fishes[i]->bones[5]->joint->speedLimit);//speedForJointB*10);
-					fishes[i]->bones[6]->joint->p_joint->SetMotorSpeed(motorSignals[6]*fishes[i]->bones[6]->joint->speedLimit); //speedForJointA*10);
-					fishes[i]->bones[7]->joint->p_joint->SetMotorSpeed(motorSignals[7]*fishes[i]->bones[7]->joint->speedLimit);//speedForJointB*10);
+					// fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(motorSignals[1]*fishes[i]->bones[1]->joint->speedLimit);//speedForJointB*10);
+					// fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(motorSignals[2]*fishes[i]->bones[2]->joint->speedLimit); //speedForJointA*10);
+					// fishes[i]->bones[3]->joint->p_joint->SetMotorSpeed(motorSignals[3]*fishes[i]->bones[3]->joint->speedLimit);//speedForJointB*10);
+					// fishes[i]->bones[4]->joint->p_joint->SetMotorSpeed(motorSignals[4]*fishes[i]->bones[4]->joint->speedLimit); //speedForJointA*10);
+					// fishes[i]->bones[5]->joint->p_joint->SetMotorSpeed(motorSignals[5]*fishes[i]->bones[5]->joint->speedLimit);//speedForJointB*10);
+					// fishes[i]->bones[6]->joint->p_joint->SetMotorSpeed(motorSignals[6]*fishes[i]->bones[6]->joint->speedLimit); //speedForJointA*10);
+					// fishes[i]->bones[7]->joint->p_joint->SetMotorSpeed(motorSignals[7]*fishes[i]->bones[7]->joint->speedLimit);//speedForJointB*10);
 				}
 
 				// print the brainal output
-				drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i);
+				drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
 
 
 

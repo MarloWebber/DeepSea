@@ -221,4 +221,6 @@ extern int currentNumberOfFish;
 
 void collisionHandler (void * boneA, void * boneB) ;
 
+void vote(b2World * m_world, b2ParticleSystem * m_particleSystem);
+
 #endif

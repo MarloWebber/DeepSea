@@ -12,7 +12,7 @@ public:
 
 		{
 
-			m_world->SetGravity(b2Vec2(0.0f,-1.0f));
+			m_world->SetGravity(b2Vec2(0.0f,-5.0f));
 
 			b2BodyDef bd;
 			b2Body* ground = m_world->CreateBody(&bd);
@@ -34,18 +34,18 @@ public:
 
 		}
 
-		m_particleSystem->SetRadius(0.25f);
+		m_particleSystem->SetRadius(0.2f);
 		m_particleSystem->SetDamping(0.2f);
 
 		{
-			// the water
+			//  water A
 			b2PolygonShape shape;
-			shape.SetAsBox(15.0f, 15.0f, b2Vec2(0.0f, 0.0f), 0);
+			shape.SetAsBox(7.5f, 15.0f, b2Vec2(7.5f, 0.0f), 0);
 			b2ParticleGroupDef pd;
 			pd.flags = TestMain::GetParticleParameterValue();
 
 			// pastel red
-			pd.color.Set(225, 36, 35, 255);
+			pd.color.Set(250, 20, 50, 255);
 			pd.shape = &shape;
 
 			b2ParticleGroup * const group = m_particleSystem->CreateParticleGroup(pd);
@@ -54,6 +54,26 @@ public:
 				ColorParticleGroup(group, 0);
 			}
 		}
+
+
+		{
+			//  water B
+			b2PolygonShape shape;
+			shape.SetAsBox(7.5f, 15.0f, b2Vec2(-7.5f, 0.0f), 0);
+			b2ParticleGroupDef pd;
+			pd.flags = TestMain::GetParticleParameterValue();
+
+			// pastel red
+			pd.color.Set(220, 120, 0, 255);
+			pd.shape = &shape;
+
+			b2ParticleGroup * const group = m_particleSystem->CreateParticleGroup(pd);
+			if (pd.flags & b2_colorMixingParticle)
+			{
+				ColorParticleGroup(group, 0);
+			}
+		}
+
 	}
 
 
