@@ -133,7 +133,7 @@ BoneUserData::BoneUserData(
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 	if (isRoot) {
 
-		b2Vec2 tipCenter = b2Vec2(0.0f, 0.0f + length);
+		tipCenter = b2Vec2(0.0f, 0.0f + length);
 		b2Vec2 rootVertexA = b2Vec2(0.0f + (rootThickness/2), 0.0f);
 		b2Vec2 rootVertexB = b2Vec2(0.0f - (rootThickness/2), 0.0f);
 		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
@@ -162,7 +162,7 @@ BoneUserData::BoneUserData(
 		rootCenter = b2Vec2(0.0f, 0.0f);
 	}
 	else {
-		b2Vec2 tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
+		tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
 		b2Vec2 rootVertexA = b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y);
 		b2Vec2 rootVertexB = b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y);
 		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
@@ -373,6 +373,137 @@ fishDescriptor_t simpleJellyfish = {
 		}
 	}
 };
+
+
+
+
+
+// this describes the original 3 boned jellyfish.
+fishDescriptor_t koiCarp = {
+	{
+		{		// root mouth bone
+				0,		// attachesTo
+				0.1f,	// length
+				0.015f,	// rootThickness
+				0.01f,	// tipThickness
+				true,	// isRoot
+				true,	// isMouth
+				false,	// isSensor
+				false,	// isWeapon
+				0.0f,	// torque
+				0.0f,	// speedLimit
+				0.0f,	// upperAngle
+				0.0f,	// normalAngle
+				0.0f,	// lowerAngle
+				true
+		},
+		//  {		// pec fin A
+		// 		0,		// attachesTo
+		// 		0.15f,	// length
+		// 		0.015f,	// rootThickness
+		// 		0.01f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		true,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		(2* 3.1415) -0.075f,// upperAngle
+		// 		(2* 3.1415) -0.15f,	// normalAngle
+		// 		(2* 3.1415) -0.5f,	// lowerAngle
+		// 		true
+		// },
+		// {		// pec fin B
+		// 		0,		// attachesTo
+		// 		0.15f,	// length
+		// 		0.015f,	// rootThickness
+		// 		0.01f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		true,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		0.50f,	// upperAngle
+		// 		0.15f,	// normalAngle
+		// 		0.075f,	// lowerAngle
+		// 		true
+		// },
+
+		{		// body segment
+				0,		// attachesTo
+				0.15f,	// length
+				0.015f,	// rootThickness
+				0.01f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				false,	// isWeapon
+				0.005f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.5f,// upperAngle
+				pi *  1.0f,	// normalAngle
+				pi * 0.5f,	// lowerAngle
+				true
+		},
+
+		{		// tail segment 1 segment
+				1,		// attachesTo
+				0.15f,	// length
+				0.015f,	// rootThickness
+				0.01f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				false,	// isWeapon
+				0.005f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.5f,// upperAngle
+				pi *  1.0f,	// normalAngle
+				pi * 0.5f,	// lowerAngle
+				true
+		}//,
+
+		// {		// tail segment 1
+		// 		1,		// attachesTo
+		// 		0.15f,	// length
+		// 		0.015f,	// rootThickness
+		// 		0.01f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		false,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		 0.5f,// upperAngle
+		// 		 0.0f,	// normalAngle
+		// 		-0.5f,	// lowerAngle
+		// 		true
+		// },
+		// {		// tail segment 2
+		// 		3,		// attachesTo
+		// 		0.15f,	// length
+		// 		0.015f,	// rootThickness
+		// 		0.01f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		false,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		0.5f,// upperAngle
+		// 		0.0f,	// normalAngle
+		// 		-0.5f,	// lowerAngle
+		// 		true
+		// }
+
+	}
+};
+
+
+
+
+
 
 void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	for (int i = 0; i < N_FINGERS; ++i) {
@@ -812,8 +943,21 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
 
-	for (int i = 0; i < N_FISHES; ++i) {
-		LoadFishFromName(i, m_world, m_particleSystem);
+	int howManyNewFishToAdd = 3;
+	for (int i = 0; i < howManyNewFishToAdd; ++i) {
+
+
+		//  loadFishFromName is used to load the named files associated with the evolution system.
+		// LoadFishFromName(i, m_world, m_particleSystem);
+
+
+		// this one is good to just load in a desfault fish from the descriptor.
+
+		fann * ann  = loadFishBrainFromFile ("mouptut"); // unfortunately you still need to load some kind of brain or it wont work.
+		loadFish ( i,  koiCarp, m_world,  m_particleSystem, ann ) ;
+
+
+
 		totalFishIncorporator(i, m_world, m_particleSystem);
 	}
 }
@@ -930,20 +1074,25 @@ void deepSeaLoop () {
 			nonRecursiveSensorUpdater (fishes[i]->bones[j]);
 		}
 
-		float range = fishes[i]->bones[1]->sensation - fishes[i]->bones[2]->sensation;
+
 		float senseA = 0;
 		float senseB = 0;
-		if (fishes[i]->bones[1]->sensation > fishes[i]->bones[2]->sensation) {
-			senseA=1.0f;
-		}
-		else {
-			senseB=1.0f;
-		}
+		if (false) {
+		float range = fishes[i]->bones[1]->sensation - fishes[i]->bones[2]->sensation;
+			
+			if (fishes[i]->bones[1]->sensation > fishes[i]->bones[2]->sensation) {
+				senseA=1.0f;
+			}
+			else {
+				senseB=1.0f;
+			}
 
-		if( abs(range) < 0.0001) {
-			senseA=1.0f + (RNG()* 0.5 * (RNG()-0.5f));
-			senseB=1.0f + (RNG() * 0.5 * (RNG()-0.5f));;
+			if( abs(range) < 0.0001) {
+				senseA=1.0f + (RNG()* 0.5 * (RNG()-0.5f));
+				senseB=1.0f + (RNG() * 0.5 * (RNG()-0.5f));;
+			}
 		}
+		
 
 		if (i == 0) { // if fish is player, #0
 			if (userControlInputA || userControlInputB) {
@@ -968,7 +1117,7 @@ void deepSeaLoop () {
 
 		printf("motor: %.2f %.2f ", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
 
-		if (true) {
+		if (false) {
 			float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
 			float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
 

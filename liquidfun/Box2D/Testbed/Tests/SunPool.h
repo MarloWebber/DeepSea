@@ -34,7 +34,7 @@ public:
 
 		}
 
-		m_particleSystem->SetRadius(0.025f);
+		m_particleSystem->SetRadius(0.0375f);
 		m_particleSystem->SetDamping(0.2f);
 
 		{

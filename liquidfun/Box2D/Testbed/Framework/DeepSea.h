@@ -77,6 +77,7 @@ struct BoneUserData {
 	bool isRoot ;
 	bool isMouth ;
 	bool isSensor ;
+	// uint8_t sensorType; 
 	float sensation;
 	bool isWeapon ;					// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	float energy; 					// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
@@ -178,6 +179,7 @@ struct foodParticle_t {
 #define TYPE_DEFAULT 0
 #define TYPE_MOUTH 1
 #define TYPE_FOOD 2
+#define TYPE_DANGER 3
 
 struct uDataWrap {
 	void * uData;
