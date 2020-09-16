@@ -38,15 +38,10 @@ struct boneAndJointDescriptor_t {
 
 struct fishDescriptor_t {
 
-	// char * compressedFishBrain; // fann_save produces a string apparently. no, it will go in an adjacent file because i am lazy.
-
 	boneAndJointDescriptor_t bones[N_FINGERS];
 
 	uint8_t heartSpeed;
-
-	// fishDescriptor_t( boneAndJointDescriptor_t * boneIndex, int boneCount);
 };
-
 
 struct JointUserData {
 	float torque; 	
@@ -70,9 +65,6 @@ struct JointUserData {
 	JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 } ;
 
-
-
-
 struct BoneUserData {
 	float length;
 	float rootThickness;
@@ -92,6 +84,7 @@ struct BoneUserData {
 	b2BodyDef bodyDef;
 	b2Body * p_body;
 	b2PolygonShape shape;
+	BonyFish * p_owner;
 
 	b2Vec2 position;
 	bool init;		// if the struct has been created properly
@@ -102,14 +95,8 @@ struct BoneUserData {
 		b2World * m_world, b2ParticleSystem * m_particleSystem );
 } ;
 
-
-
-
 struct connectionDescriptor {
-
 	bool isUsed;
-
-
 	unsigned int connectedTo;
 	float connectionWeight;	
 
@@ -117,10 +104,7 @@ struct connectionDescriptor {
 };
 
 struct neuronDescriptor {
-
 	bool isUsed;
-
-
 	unsigned int n_inputs;
 	unsigned int activation_function;
 	float activation_steepness;
@@ -128,19 +112,14 @@ struct neuronDescriptor {
 	unsigned int n_connections;
 	connectionDescriptor connections[8];
 
-	// neuronDescriptor(uint8_t n_inputs, uint8_t activation_function, float activation_steepness, uint8_t n_connections, connectionDescriptor * connections);
-
 	neuronDescriptor();
 };
 
 struct layerDescriptor {
-
 	bool isUsed;
-
 	unsigned int n_neurons;
 	neuronDescriptor neurons[8]; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
-	// layerDescriptor(uint8_t n_neurons, neuronDescriptor * neurons);
 	layerDescriptor();
 };
 
@@ -155,14 +134,12 @@ struct networkDescriptor {
 	layerDescriptor layers[8];
 
 	networkDescriptor( );
-	// networkDescriptor::createFannFile (bool spam) ;
 };
 
 
 void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
 
-struct BonyFish
-{
+struct BonyFish {
 	float hunger; 	// the animal spends energy to move and must replenish it by eating
 	bool init; 		// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;	// 
@@ -198,13 +175,6 @@ struct foodParticle_t {
 	foodParticle_t(b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem);
 };
 
-// this is mainly used for high performance object type detection.
-// enum gameObjectType { 
-// 	DEFAULT, 
-// 	MOUTH, 
-// 	FOOD 
-// };
-
 #define TYPE_DEFAULT 0
 #define TYPE_MOUTH 1
 #define TYPE_FOOD 2
@@ -215,7 +185,6 @@ struct uDataWrap {
 
 	uDataWrap(void * dat, uint8_t type);
 };
-
 
 void deepSeaControlA () ;
 void deepSeaControlB () ;
