@@ -90,7 +90,7 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 		jointDef.enableLimit = true;
 		jointDef.lowerAngle = lowerAngle;
 		jointDef.upperAngle = upperAngle;
-		jointDef.enableMotor = true;
+		jointDef.enableMotor = false;
 	    jointDef.maxMotorTorque = torque;
 	}
     jointDef.userData = this;
@@ -133,7 +133,7 @@ BoneUserData::BoneUserData(
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 	if (isRoot) {
 
-		tipCenter = b2Vec2(0.0f, 0.0f + length);
+		tipCenter = b2Vec2(0.0f, 0.0f + 2* length);
 		b2Vec2 rootVertexA = b2Vec2(0.0f + (rootThickness/2), 0.0f);
 		b2Vec2 rootVertexB = b2Vec2(0.0f - (rootThickness/2), 0.0f);
 		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
@@ -147,15 +147,22 @@ BoneUserData::BoneUserData(
 		vertices[3].Set(rootVertexA.x, rootVertexA.y);
 
 		// figure out the center point.
-		b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (2*length));
+		b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (0.5*length));
 	
-		uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
-		bodyDef.userData = (void *)p_dataWrapper;
+		if (isMouth) {
+			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
+			bodyDef.userData = (void *)p_dataWrapper;
+		}
+		else {
+			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
+			bodyDef.userData = (void *)p_dataWrapper;
 
+		}
+		
 		bodyDef.type = b2_dynamicBody;
 		p_body = m_world->CreateBody(&bodyDef);
 		
-		shape.SetAsBox(rootThickness, length, boneCenter,boneDescription.normalAngle);	
+		shape.SetAsBox(rootThickness, length, boneCenter,0.0f);	
 
 		// reference the physics object from the user data.
 		tipCenter = tipCenter;
@@ -179,8 +186,16 @@ BoneUserData::BoneUserData(
 		b2Vec2 boneCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + (2*length));
 
 		// attach user data to the body
-		uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
-		bodyDef.userData = (void *)p_dataWrapper;
+		
+		if (isMouth) {
+			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
+			bodyDef.userData = (void *)p_dataWrapper;
+		}
+		else {
+			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
+			bodyDef.userData = (void *)p_dataWrapper;
+
+		}
 
 		bodyDef.type = b2_dynamicBody;
 		p_body = m_world->CreateBody(&bodyDef);
@@ -288,7 +303,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 	}
 
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
-	isUsed = false;
+	isUsed = false; // only true when the part is added to the world
 
 	heartSpeed = driedFish.heartSpeed;
 	if (heartSpeed < 1) {
@@ -441,9 +456,9 @@ fishDescriptor_t koiCarp = {
 				false,	// isWeapon
 				0.005f,	// torque
 				10.0f,	// speedLimit
-				pi * 1.5f,// upperAngle
-				pi *  1.0f,	// normalAngle
-				pi * 0.5f,	// lowerAngle
+				pi * 1.0f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f,	// lowerAngle
 				true
 		},
 
@@ -458,11 +473,27 @@ fishDescriptor_t koiCarp = {
 				false,	// isWeapon
 				0.005f,	// torque
 				10.0f,	// speedLimit
-				pi * 1.5f,// upperAngle
-				pi *  1.0f,	// normalAngle
-				pi * 0.5f,	// lowerAngle
+				pi * 1.0f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f,	// lowerAngle
 				true
-		}//,
+		},
+		{		// tail segment 1 segment
+				2,		// attachesTo
+				0.15f,	// length
+				0.015f,	// rootThickness
+				0.01f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				false,	// isWeapon
+				0.005f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.0f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f,	// lowerAngle
+				true
+		}//,//,,
 
 		// {		// tail segment 1
 		// 		1,		// attachesTo
