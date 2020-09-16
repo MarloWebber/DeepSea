@@ -14,6 +14,8 @@
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 
+int generationsThisGame = 0;
+
 bool fishSlotLoaded[N_FISHES];
 bool foodSlotLoaded[N_FOODPARTICLES];
 
@@ -347,12 +349,12 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
     }
     
     // make a random but sane file name. It would be better to have sequential, but i can't be assed to code it.
-    name = RNG() * 255;
-    std::string nnfilename =  std::to_string(name).c_str() + std::string(".net");
-    std::string fdescfilename =  std::to_string(name).c_str() + std::string(".fsh");
-    std::ofstream file { nnfilename };
-    saveFishToFile (fdescfilename, genes);
-    fann_save(ann, nnfilename.c_str()); 
+    // name = RNG() * 255;
+    // std::string nnfilename =  std::to_string(name).c_str() + std::string(".net");
+    // std::string fdescfilename =  std::to_string(name).c_str() + std::string(".fsh");
+    // std::ofstream file { nnfilename };
+    // saveFishToFile (fdescfilename, genes);
+    // fann_save(ann, nnfilename.c_str()); 
 };
 
 // this describes the original 3 boned jellyfish.
@@ -443,7 +445,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				5.0f,	// torque
+				50.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -493,7 +495,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				5.0f,	// torque
+				50.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -509,7 +511,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				5.0f,	// torque
+				50.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -615,6 +617,7 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 
 void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann) {
 	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem, nann);
+	fishes[fishIndex]->slot = fishIndex;
 	fishSlotLoaded[fishIndex] = true;
 }
 
@@ -693,12 +696,12 @@ void seekUntil (FILE * cursor, char trigger) {
 	}
 }
 
-networkDescriptor createNeurodescriptorFromFANN () {
+networkDescriptor createNeurodescriptorFromFANN (fann * temp_ann) {
 	// making a descriptor from a file was too hard
 	// you can make a FANN from the file and then query it for information you need to build the model.
-	std::string fileName = "225";
+	// std::string fileName = "225";
 
-	fann * temp_ann  = loadFishBrainFromFile (fileName);
+	// fann * temp_ann  = loadFishBrainFromFile (fileName);
 
 	// query the number of layers.
 	unsigned int num_layers = fann_get_num_layers(temp_ann);
@@ -719,8 +722,9 @@ networkDescriptor createNeurodescriptorFromFANN () {
   	newCake.n_layers = num_layers;
   	printf ("\ncreated network descriptor\n") ;
 
+  	unsigned int sumOfNeurons = 0;
   	for (unsigned int i = 0; i < num_layers; ++i) {
-  		layerCake[i] += 1;
+  		sumOfNeurons += layerCake[i];
   	}
 
   	for (unsigned int i = 0; i < num_layers; ++i) {
@@ -746,9 +750,24 @@ networkDescriptor createNeurodescriptorFromFANN () {
 
   	// get connection and weight information.
   	unsigned int num_connections = fann_get_total_connections(temp_ann);
-  	static struct fann_connection margles[256] ;
+  	static struct fann_connection margles[512] ;
   	struct fann_connection *con = margles; 
   	fann_get_connection_array(temp_ann, con);
+
+  	for (unsigned int c = 0; c < num_connections; ++c) {
+  		if (con[c].from_neuron < 0 || con[c].from_neuron > sumOfNeurons ) {
+  			// unsigned int newDestination = RNG() * num_connections;
+  			// con[c].from_neuron = newDestination;
+  			continue;
+  		}
+  		if (con[c].to_neuron < 0 || con[c].to_neuron > sumOfNeurons ) {
+  			// unsigned int newDestination = RNG() * num_connections;
+  			// con[c].to_neuron = newDestination;
+  			continue;
+  		}
+  	}
+
+
 
   	// create connections
   	for (unsigned int c = 0; c < num_connections; ++c) {
@@ -766,6 +785,11 @@ networkDescriptor createNeurodescriptorFromFANN () {
  
   		printf("%u %u\n", index, layer);
   		unsigned int newestConnectionIndex = newCake.layers[layer].neurons[index].n_connections;
+
+  		if (newestConnectionIndex > sumOfNeurons) {
+  			continue;
+  		}
+
   		printf("%u\n", newestConnectionIndex);
   		newCake.layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo = con[c].to_neuron;
   		newCake.layers[layer].neurons[index].connections[newestConnectionIndex].connectionWeight = con[c].weight;
@@ -838,7 +862,15 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
 	for (unsigned int i = 0; i < network.n_layers; ++i) 	{
  		for (unsigned int j = 0; j < network.layers[i].n_neurons; ++j) {
  			for (unsigned int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
+
+ 				if (k >= 8) {
+ 					break;
+ 				}
+
  				char chalkboard[5];
+
+ 				printf("(%u, ", network.layers[i].neurons[j].connections[k].connectedTo);
+
  				sprintf(chalkboard, "(%u, ", network.layers[i].neurons[j].connections[k].connectedTo);
  				s += chalkboard;
  				char sciNotationBuffer[] = "0.00000000000000000000e+00";
@@ -851,7 +883,7 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
 
  	printf("print to file\n");
 
-    std::ofstream out("mouptut.net");
+    std::ofstream out("mutantGimp.net");
     out << s;
     out.close();
 }
@@ -874,18 +906,34 @@ void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float m
 	// chance to modify the weight of an existing connection .. s
 	for (int i = 0; i < 50; ++i)
 	{
-			if ( true ) {// RNG() > mutationChance) {
-		int l =  RNG() * newCake->n_layers ;
-		int m =  RNG() * newCake->layers[l].n_neurons ;
-		int n =  RNG() * newCake->layers[l].neurons[m].n_connections ;
+		if ( RNG() > mutationChance) {
+			unsigned int l =  RNG() * newCake->n_layers ;
+			unsigned int m =  RNG() * newCake->layers[l].n_neurons ;
+			unsigned int n =  RNG() * newCake->layers[l].neurons[m].n_connections ;
 
-		float mutationAmount = ((RNG() -0.5) *mutationSeverity  );
-		printf("warped layer %i neuron %i connection %i by %f\n", l, m, n,  mutationAmount);
+			if (newCake->layers[l].neurons[m].n_connections > 8) {
+				continue;
+			}
 
-		newCake->layers[l].neurons[m].connections[n].connectionWeight += mutationAmount;
+			printf("max l:%u m:%u n:%u", newCake->n_layers ,  newCake->layers[l].n_neurons, newCake->layers[l].neurons[m].n_connections );
+
+			float mutationAmount = ((RNG() -0.5) *mutationSeverity  );
+			printf("warped layer %u neuron %u connection %u by %f\n", l, m, n,  mutationAmount);
+
+			if (l > newCake->n_layers) {
+				continue;
+			}
+			if (m > newCake->layers[l].n_neurons) {
+				continue;
+			}
+			if (n > newCake->layers[l].neurons[m].n_connections) {
+				continue;
+			}
+
+			newCake->layers[l].neurons[m].connections[n].connectionWeight += mutationAmount;
 
 		}
-		}
+	}
 	
 	// chance to change the target of an existing connection
 	
@@ -969,7 +1017,9 @@ void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * 
 
 	mutateFishDescriptor (&newFish, 0.1, 0.1) ;
 
-	networkDescriptor tamberlina = createNeurodescriptorFromFANN();
+	fann *wann = loadFishBrainFromFile (fileName) ;	
+
+	networkDescriptor tamberlina = createNeurodescriptorFromFANN(wann);
 	
 	mutateFishBrain(&tamberlina, 0.1f, 1.0f );
 
@@ -1207,9 +1257,35 @@ void jellyfishTrainer () {
 
 
 
-void vote (b2World * m_world, b2ParticleSystem * m_particleSystem) { // select an animal as an evolutionary winner, passing its genes on to the next generation
+void vote (BonyFish * winner, b2World * m_world, b2ParticleSystem * m_particleSystem) { // select an animal as an evolutionary winner, passing its genes on to the next generation
+
+
+	// select the fish you clicked
+	// fishDescriptor_t winnerSyrup = body->userData->uData->p_owner->genes;
+
+	// uDataWrap * myUserDataStruct = (uDataWrap *)body->m_userData;
+
+	// BonyFish * winner = (BonyFish *)myUserDataStruct->uData;
+
+	printf("winner: %i\n", winner->slot);
+
+	if ( !fishSlotLoaded[winner->slot]) {
+		return;
+	}
+	else {
+
+
+
+	fann * wann = winner->ann;
+
+
 
 	// save the winner to file with a new name.
+	std::string nnfilename =  std::string("mostCurrentWinner.net");
+    // std::string fdescfilename =  std::string("225.fsh");
+    std::ofstream file { nnfilename };
+    // saveFishToFile (fdescfilename, ((BoneUserData *)(dataB.uData))->p_owner->genes);
+    fann_save(  wann , nnfilename.c_str()); 
 
 	// destroy all creatures in the world and delete them from memory. make sure their udata is deleted too.
 
@@ -1221,8 +1297,32 @@ void vote (b2World * m_world, b2ParticleSystem * m_particleSystem) { // select a
 
 	// create 8 mutant copies of the winner
 
-	// spawn them into the world to repeat the cycle
+		
+	for (int i = 0; i < 8; ++i)
+	{
+		// first load the winner as a fann ANN.
+		fann *wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
 
+		// then make a descriptor of it.
+		networkDescriptor mutantGimp = createNeurodescriptorFromFANN(wann);
+
+		// then you can mutate the descriptor.
+		mutateFishBrain(&mutantGimp, 0.1, 0.5);
+
+		// now you have to save it as a fann file, which is stupid, but at least you can do it in a temporary file.
+		createFANNFileFromDescriptor (mutantGimp) ;
+
+		// now you can load the mutant ANN.
+		fann *mann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+
+		loadFish (i, koiCarp, m_world, m_particleSystem, mann) ;
+
+		totalFishIncorporator(i, m_world, m_particleSystem);
+
+	}
+
+	// spawn them into the world to repeat the cycle
+}
 
 
 }
@@ -1427,7 +1527,7 @@ void deepSeaLoop () {
 				// feed information into brain
 				float * motorSignals = fann_run(fishes[i]->ann, sensorium);
 
-				printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
+				// printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
 
 				if (true) {
 					// float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
@@ -1445,7 +1545,7 @@ void deepSeaLoop () {
 
 							if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
 								fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
-								printf("the joint speed was set");
+								// printf("the joint speed was set");
 
 							}
 
@@ -1554,11 +1654,6 @@ void collisionHandler (void * userDataA, void * userDataB) {
 			exit(EXIT_SUCCESS);
 		}
 
-	    std::string nnfilename =  std::string("225.net");
-	    std::string fdescfilename =  std::string("225.fsh");
-	    std::ofstream file { nnfilename };
-	    saveFishToFile (fdescfilename, ((BoneUserData *)(dataA.uData))->p_owner->genes);
-	    fann_save(((BoneUserData *)(dataA.uData))->p_owner->ann, nnfilename.c_str()); 
-		exit(EXIT_SUCCESS);
+	 
 	}
 }

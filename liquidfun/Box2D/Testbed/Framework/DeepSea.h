@@ -168,7 +168,7 @@ struct BonyFish {
 
 	struct fann *ann;
 
-	uint8_t name; // the fish has a short number like a barcode for a name. it is used to unify the body and mind files among other things.
+	uint8_t slot; // for reference, the slot the fish is loaded into
 
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
 	
@@ -221,6 +221,6 @@ extern int currentNumberOfFish;
 
 void collisionHandler (void * boneA, void * boneB) ;
 
-void vote(b2World * m_world, b2ParticleSystem * m_particleSystem);
+void vote(BonyFish * winner, b2World * m_world, b2ParticleSystem * m_particleSystem);
 
 #endif

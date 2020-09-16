@@ -264,7 +264,11 @@ void Test::MouseDown(const b2Vec2& p)
 		m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
 		body->SetAwake(true);
 
-		vote(m_world,  m_particleSystem);
+		uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
+		BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
+		BonyFish * winner = wishBone->p_owner;
+
+		vote(winner, m_world,  m_particleSystem);
 
 	}
 }
