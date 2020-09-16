@@ -149,9 +149,22 @@ struct BonyFish {
 	BoneUserData * bones[N_FINGERS]; // for now, let's just gnetworkDet fish working with a small, hard-linked, flat level set of bones.
 	uint8_t n_bones_used;
 
-	uint8_t heartCount; 	// the heart is a neuro input used for timing and frequency control. 
+	uint8_t heartCountA; 	// the heart is a neuro input used for timing and frequency control. 
 	uint8_t heartSpeed; 	//  
-	float heartOutput;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+	float heartOutputA;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+
+	uint8_t heartCountB; 	// the heart is a neuro input used for timing and frequency control. 
+	// uint8_t heartSpeedB; 	//  
+	float heartOutputB;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+
+	uint8_t heartCountC; 	// the heart is a neuro input used for timing and frequency control. 
+	// uint8_t heartSpeedC; 	//  
+	float heartOutputC;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+
+	uint8_t heartCountD; 	// the heart is a neuro input used for timing and frequency control. 
+	// uint8_t heartSpeedD; 	//  
+	float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+
 
 	struct fann *ann;
 

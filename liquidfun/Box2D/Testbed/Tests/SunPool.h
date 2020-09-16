@@ -12,7 +12,7 @@ public:
 
 		{
 
-			m_world->SetGravity(b2Vec2(0.0f,0.0f));
+			m_world->SetGravity(b2Vec2(0.0f,-1.0f));
 
 			b2BodyDef bd;
 			b2Body* ground = m_world->CreateBody(&bd);

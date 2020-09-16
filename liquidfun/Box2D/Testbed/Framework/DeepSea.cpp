@@ -90,7 +90,7 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 		jointDef.enableLimit = true;
 		jointDef.lowerAngle = lowerAngle;
 		jointDef.upperAngle = upperAngle;
-		jointDef.enableMotor = false;
+		jointDef.enableMotor = true;
 	    jointDef.maxMotorTorque = torque;
 	}
     jointDef.userData = this;
@@ -280,7 +280,7 @@ foodParticle_t::foodParticle_t ( b2Vec2 position, b2World * m_world, b2ParticleS
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
 	p_body = m_world->CreateBody(&bodyDef);
-	shape.SetAsBox(0.025f, 0.025f, position,0.0f);	
+	shape.SetAsBox(0.25f, 0.25f, position,0.0f);	
 	p_body->CreateFixture(&shape, 1.0f);
 	init = true;
 	isUsed = true;
@@ -332,15 +332,15 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 
     if (nann == NULL) {
     	    unsigned int creationLayerCake[] = {
-	    	3,
-	    	3,
-	    	4,
-	    	2
+	    	12,
+	    	8,
+	    	8,
+	    	8
 	    };
 	    	ann = fann_create_standard_array(4, creationLayerCake);
 		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
 		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
-		    fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
+		    // fann_train_on_file(ann, "jellyfishTrainer.data", max_epochs, epochs_between_reports, desired_error);
 	    }
     else { // a brain is provided
     	ann = nann;
@@ -882,6 +882,45 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 	}
 }
 
+// void conformBrainToNewAnimal (networkDescriptor * newCake, fishDescriptor_t * newFish) {
+// 	// ok, so, what this does is
+// 	// updates a neurodescriptor to match the number of sensors, hearts, and motors on an animal.
+
+// 	// count the number of each thing on the animal.
+
+// 	uint8_t num_motors = 0;
+// 	uint8_t num_sensors = 0;
+
+// 	for (int i = 0; i < newFish->n_bones_used; ++i)
+// 	{
+// 		if (newFish->bones[i].isSensor) {
+// 			num_sensors ++;
+// 		}
+
+// 		// all bones are motor outputs now
+// 		num_motors ++ ;
+
+// 		// if (newFish->bones[i].isSensor) {
+
+// 		// }
+// 	}
+
+
+
+	// compare it to the input and output layer sizes of the ANN.
+
+	// if () {
+
+	// }
+
+	/**
+
+	DEVELOPMENT NOT COMPLETE!
+	**/
+
+
+// }
+
 void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 	fishDescriptor_t newFish;
@@ -900,18 +939,26 @@ void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * 
 
 	fann * ann  = loadFishBrainFromFile ("mouptut"); // load the mutated file
 
- 	loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, ann ) ;
+	bool loadWithBlankBrain = true;
+	if (loadWithBlankBrain) {
+		loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, NULL ) ;
+	}
+	else {
+		loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, ann ) ;
+	}
+
+ 	
 
 }
 
 void jellyfishTrainer () {
-	int n_inputs = 3;
-	int n_outputs = 2;
+	int n_inputs = 8;
+	int n_outputs = 8;
 	int n_examples = 10000;
 	// there are actually 6*n_examples examples.
 
 	float noise = 0.25f;
-	float maxSensation = 0.95f;
+	float maxSensation = 0.75f;
 
 	float bellAOpen = 0.3f;//0.9f;
 	float bellAClose = -0.9f; //0.3f;
@@ -922,7 +969,7 @@ void jellyfishTrainer () {
 	float bellBSoftClose = -0.3f;
 
 	FILE *fp;
-    fp = fopen("jellyfishTrainer.data","wb");
+    fp = fopen("koiTrainer.data","wb");
 
     fprintf(fp, "%i %i% i\n", n_examples*6, n_inputs, n_outputs );
 
@@ -989,7 +1036,7 @@ void jellyfishTrainer () {
 
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) {
 
-	// jellyfishTrainer();
+	jellyfishTrainer();
 
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
@@ -1006,8 +1053,8 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 		// this one is good to just load in a desfault fish from the descriptor.
 
-		fann * ann  = loadFishBrainFromFile ("mouptut"); // unfortunately you still need to load some kind of brain or it wont work.
-		loadFish ( i,  koiCarp, m_world,  m_particleSystem, ann ) ;
+		// fann * ann  = loadFishBrainFromFile ("mouptut"); // unfortunately you still need to load some kind of brain or it wont work.
+		loadFish ( i,  koiCarp, m_world,  m_particleSystem, NULL ) ;
 
 
 
@@ -1103,85 +1150,111 @@ void deepSeaLoop () {
 	}
 
 	for (int i = 0; i < N_FISHES; ++i) {
-		if (!fishSlotLoaded[i]) {
-			continue;
-		}
-
-		// cause heart to beat
-		if (fishes[i]->heartCount > fishes[i]->heartSpeed) {
-			fishes[i]->heartCount = 0;
-			if (fishes[i]->heartOutput > 0) {
-				fishes[i]->heartOutput = -0.95;
-			}
-			else {
-				fishes[i]->heartOutput = 0.95;
-			}
-
-		}
-		else {
-			fishes[i]->heartCount++;
-		}
-
-		for (int j = 0; j < N_FINGERS; ++j) {
-			// run sensors
-			nonRecursiveSensorUpdater (fishes[i]->bones[j]);
-		}
-
-
-		float senseA = 0;
-		float senseB = 0;
-		if (false) {
-		float range = fishes[i]->bones[1]->sensation - fishes[i]->bones[2]->sensation;
+		if (fishSlotLoaded[i]) {
 			
-			if (fishes[i]->bones[1]->sensation > fishes[i]->bones[2]->sensation) {
-				senseA=1.0f;
-			}
-			else {
-				senseB=1.0f;
-			}
 
-			if( abs(range) < 0.0001) {
-				senseA=1.0f + (RNG()* 0.5 * (RNG()-0.5f));
-				senseB=1.0f + (RNG() * 0.5 * (RNG()-0.5f));;
-			}
+				// cause heart to beat. Heart A is the slowest
+				if (fishes[i]->heartCountA > fishes[i]->heartSpeed) {
+					fishes[i]->heartCountA = 0;
+					if (fishes[i]->heartOutputA > 0) { fishes[i]->heartOutputA = -1; }
+					else { fishes[i]->heartOutputA = 1; }
+				}
+				else { fishes[i]->heartCountA++; }
+
+				if (fishes[i]->heartCountB > fishes[i]->heartSpeed/2) {
+					fishes[i]->heartCountB = 0;
+					if (fishes[i]->heartOutputB > 0) { fishes[i]->heartOutputB = -1; }
+					else { fishes[i]->heartOutputB = 1; }
+				}
+				else { fishes[i]->heartCountB++; }
+
+				if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
+					fishes[i]->heartCountC = 0;
+					if (fishes[i]->heartOutputC > 0) { fishes[i]->heartOutputC = -1; }
+					else { fishes[i]->heartOutputC = 1; }
+				}
+				else { fishes[i]->heartCountC++; }
+
+				if (fishes[i]->heartCountD > fishes[i]->heartSpeed/8) {
+					fishes[i]->heartCountD = 0;
+					if (fishes[i]->heartOutputD > 0) { fishes[i]->heartOutputD = -1; }
+					else { fishes[i]->heartOutputD = 1; }
+				}
+				else { fishes[i]->heartCountD++; }
+
+
+
+
+
+
+				// update the fish's senses
+				for (int j = 0; j < N_FINGERS; ++j) {
+					nonRecursiveSensorUpdater (fishes[i]->bones[j]);
+				}
+
+				// eight motors and four timing inputs
+				float sensorium[12] = {
+						fishes[i]->bones[0]->sensation, 
+						fishes[i]->bones[1]->sensation,
+						fishes[i]->bones[2]->sensation,
+						fishes[i]->bones[3]->sensation,
+						fishes[i]->bones[4]->sensation,
+						fishes[i]->bones[5]->sensation,
+						fishes[i]->bones[6]->sensation,
+						fishes[i]->bones[7]->sensation,
+
+						(float)fishes[i]->heartOutputA,
+						(float)fishes[i]->heartOutputB,
+						(float)fishes[i]->heartOutputC,
+						(float)fishes[i]->heartOutputD};
+
+
+				// printf("sense: %.2f %.2f\n", fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation);
+				// feed information into brain
+				float * motorSignals = fann_run(fishes[i]->ann, sensorium);
+
+				// printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
+
+				if (false) {
+					// float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
+					// float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
+
+					// printf("joint: %.2f %.2f\n", jointAngleA, jointAngleB);
+
+					for (int j = 0; j < 8; ++j)
+					{
+						fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
+					}
+
+					 //speedForJointA*10);
+					fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(motorSignals[1]*fishes[i]->bones[1]->joint->speedLimit);//speedForJointB*10);
+					fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(motorSignals[2]*fishes[i]->bones[2]->joint->speedLimit); //speedForJointA*10);
+					fishes[i]->bones[3]->joint->p_joint->SetMotorSpeed(motorSignals[3]*fishes[i]->bones[3]->joint->speedLimit);//speedForJointB*10);
+					fishes[i]->bones[4]->joint->p_joint->SetMotorSpeed(motorSignals[4]*fishes[i]->bones[4]->joint->speedLimit); //speedForJointA*10);
+					fishes[i]->bones[5]->joint->p_joint->SetMotorSpeed(motorSignals[5]*fishes[i]->bones[5]->joint->speedLimit);//speedForJointB*10);
+					fishes[i]->bones[6]->joint->p_joint->SetMotorSpeed(motorSignals[6]*fishes[i]->bones[6]->joint->speedLimit); //speedForJointA*10);
+					fishes[i]->bones[7]->joint->p_joint->SetMotorSpeed(motorSignals[7]*fishes[i]->bones[7]->joint->speedLimit);//speedForJointB*10);
+				}
+
+				// print the brainal output
+				drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i);
+
+
+
+
 		}
-		
-
-		if (i == 0) { // if fish is player, #0
-			if (userControlInputA || userControlInputB) {
-				senseA = 0;
-				senseB = 0;
-			}
-
-			if (userControlInputA) { 
-				senseA = 1.0;
-				userControlInputA = false;
-			}	
-			if (userControlInputB) { 
-				senseB = 1.0;
-				userControlInputB = false;
-			}
+		else{
+			;
 		}
 
-		float sensorium[3] = {senseA, senseB, (float)fishes[i]->heartOutput * 100};
 
-		// feed information into brain
-		float * motorSignals = fann_run(fishes[i]->ann, sensorium);
 
-		printf("motor: %.2f %.2f ", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
 
-		if (false) {
-			float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
-			float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
 
-			printf("joint: %.2f %.2f\n", jointAngleA, jointAngleB);
 
-			fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(motorSignals[0]*fishes[i]->bones[1]->joint->speedLimit); //speedForJointA*10);
-			fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(motorSignals[1]*fishes[i]->bones[2]->joint->speedLimit);//speedForJointB*10);
-		}
 
-		// print the brainal output
-		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i);
+
+
 	}
 }
 
