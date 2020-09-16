@@ -102,6 +102,10 @@ uDataWrap::uDataWrap(void * dat, uint8_t typ) {
 		dataType = typ;
 }
 
+void printab2Vec2(b2Vec2 v) {
+	printf("x%f y%f\n", v.x, v.y);
+}
+
 BoneUserData::BoneUserData(
 		boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
@@ -111,6 +115,8 @@ BoneUserData::BoneUserData(
 	if (!boneDescription.used) {
 		return;
 	}
+
+	printf("creating a bone\n");
 
 	p_owner = fish;
 	BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
@@ -129,25 +135,25 @@ BoneUserData::BoneUserData(
 
 	tipCenter = b2Vec2(0.0f,0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	rootCenter = b2Vec2(0.0f,0.0f); 		
+	int count = 4;
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 	if (isRoot) {
+		printf("its a root bone\n");
 
-		tipCenter = b2Vec2(0.0f, 0.0f + 2* length);
-		b2Vec2 rootVertexA = b2Vec2(0.0f + (rootThickness/2), 0.0f);
-		b2Vec2 rootVertexB = b2Vec2(0.0f - (rootThickness/2), 0.0f);
-		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
-		b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
+		tipCenter = b2Vec2(0.0f, 0.0f +  length);
 
-		int count = 4;
-		b2Vec2 vertices[count];
-		vertices[0].Set(rootVertexB.x, rootVertexB.y);
-		vertices[1].Set(tipVertexB.x, tipVertexB.y);
-		vertices[2].Set(tipVertexA.x, tipVertexB.y);
-		vertices[3].Set(rootVertexA.x, rootVertexA.y);
-
+		b2Vec2 vertices[] = {
+			b2Vec2(0.0f + (rootThickness/2), 0.0f), //b2Vec2 rootVertexA = 
+			b2Vec2(0.0f - (rootThickness/2), 0.0f), // b2Vec2 rootVertexB =
+			b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y), //b2Vec2 tipVertexA = 
+			b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
+		};
+		
+		
+		
 		// figure out the center point.
-		b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (0.5*length));
+		// b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (0.5*length));
 	
 		if (isMouth) {
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
@@ -162,28 +168,30 @@ BoneUserData::BoneUserData(
 		bodyDef.type = b2_dynamicBody;
 		p_body = m_world->CreateBody(&bodyDef);
 		
-		shape.SetAsBox(rootThickness, length, boneCenter,0.0f);	
+		// shape.SetAsBox(rootThickness, length, boneCenter,0.0f);	
+		shape.Set(vertices, count);
 
 		// reference the physics object from the user data.
 		tipCenter = tipCenter;
 		rootCenter = b2Vec2(0.0f, 0.0f);
 	}
 	else {
+		printf("its not a root bone\n");
 		tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
-		b2Vec2 rootVertexA = b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y);
-		b2Vec2 rootVertexB = b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y);
-		b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
-		b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
+		// b2Vec2 rootVertexA = b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y);
+		// b2Vec2 rootVertexB = b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y);
+		// b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
+		// b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
 
-		int count = 4;
-		b2Vec2 vertices[count];
-		vertices[0].Set(rootVertexB.x, rootVertexB.y);
-		vertices[1].Set(tipVertexB.x, tipVertexB.y);
-		vertices[2].Set(tipVertexA.x, tipVertexB.y);
-		vertices[3].Set(rootVertexA.x, rootVertexA.y);
+		b2Vec2 vertices[] = {
+			b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y), //b2Vec2 rootVertexA = 
+			b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y), // b2Vec2 rootVertexB =
+			b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y), //b2Vec2 tipVertexA = 
+			b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
+		};
 
 		// figure out the center point.
-		b2Vec2 boneCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + (2*length));
+		// b2Vec2 boneCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + (2*length));
 
 		// attach user data to the body
 		
@@ -199,8 +207,18 @@ BoneUserData::BoneUserData(
 
 		bodyDef.type = b2_dynamicBody;
 		p_body = m_world->CreateBody(&bodyDef);
+
+		printf("tip center: ");
+		printab2Vec2(tipCenter);
 		
-		shape.SetAsBox(rootThickness, length, boneCenter, 0.0f);	
+		for (int i = 0; i < 4; ++i)
+		{
+			printf(" ");
+			printab2Vec2(vertices[i]);
+		}
+		
+		// shape.SetAsBox(rootThickness, length, boneCenter, 0.0f);	
+		shape.Set(vertices, count);
 
 		// reference the physics object from the user data.
 		tipCenter = tipCenter;
@@ -213,13 +231,17 @@ BoneUserData::BoneUserData(
 
 	init = true;
 	isUsed=  false;
+	printf("\n");
 };
 
-void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem, uint8_t boneIndex) {
 	if (!p_bone->init) {
 		return;
 	}
-	p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
+	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
+
+	// uint16_t mask = 1;
+	// p_fixture->filter->maskbits = mask << boneIndex; // shift the mask up by 1 on each bone so that none of them 
 
 	if (!p_bone->isRoot) {
             p_bone->joint->isUsed = true;
@@ -228,9 +250,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2Pa
 	p_bone->isUsed = true;
 }
 
-void printab2Vec2(b2Vec2 v) {
-	printf("x%f y%f\n", v.x, v.y);
-}
+
 
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	if (!p_bone->init || !p_bone->isUsed) {
@@ -398,9 +418,9 @@ fishDescriptor_t koiCarp = {
 	{
 		{		// root mouth bone
 				0,		// attachesTo
-				0.1f,	// length
-				0.015f,	// rootThickness
-				0.01f,	// tipThickness
+				0.2f,	// length
+				0.1f,	// rootThickness
+				0.3f,	// tipThickness
 				true,	// isRoot
 				true,	// isMouth
 				false,	// isSensor
@@ -412,86 +432,88 @@ fishDescriptor_t koiCarp = {
 				0.0f,	// lowerAngle
 				true
 		},
-		//  {		// pec fin A
-		// 		0,		// attachesTo
-		// 		0.15f,	// length
-		// 		0.015f,	// rootThickness
-		// 		0.01f,	// tipThickness
-		// 		false,	// isRoot
-		// 		false,	// isMouth
-		// 		true,	// isSensor
-		// 		false,	// isWeapon
-		// 		0.5f,	// torque
-		// 		10.0f,	// speedLimit
-		// 		(2* 3.1415) -0.075f,// upperAngle
-		// 		(2* 3.1415) -0.15f,	// normalAngle
-		// 		(2* 3.1415) -0.5f,	// lowerAngle
-		// 		true
-		// },
-		// {		// pec fin B
-		// 		0,		// attachesTo
-		// 		0.15f,	// length
-		// 		0.015f,	// rootThickness
-		// 		0.01f,	// tipThickness
-		// 		false,	// isRoot
-		// 		false,	// isMouth
-		// 		true,	// isSensor
-		// 		false,	// isWeapon
-		// 		0.5f,	// torque
-		// 		10.0f,	// speedLimit
-		// 		0.50f,	// upperAngle
-		// 		0.15f,	// normalAngle
-		// 		0.075f,	// lowerAngle
-		// 		true
-		// },
+		
 
 		{		// body segment
 				0,		// attachesTo
-				0.15f,	// length
-				0.015f,	// rootThickness
-				0.01f,	// tipThickness
+				0.5f,	// length
+				0.3f,	// rootThickness
+				0.5f,	// tipThickness
 				false,	// isRoot
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
 				0.005f,	// torque
 				10.0f,	// speedLimit
-				pi * 1.0f,// upperAngle
+				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
-				pi * -1.0f,	// lowerAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
 				true
 		},
 
+		//  {		// pec fin A
+		// 		1,		// attachesTo
+		// 		0.5f,	// length
+		// 		0.1f,	// rootThickness
+		// 		0.1f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		true,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		(0.75f * pi) + (pi * 0.5f),// upperAngle
+		// 		(0.75f * pi) + (0.0f),	// normalAngle
+		// 		(0.75f * pi) + (pi * -0.5f),	// lowerAngle
+		// 		true
+		// },
+		// {		// pec fin B
+		// 		1,		// attachesTo
+		// 		0.5f,	// length
+		// 		0.1f,	// rootThickness
+		// 		0.1f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		true,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		(-0.75f * pi) + (pi * 0.5f),// upperAngle
+		// 		(-0.75f * pi) + (0.0f),	// normalAngle
+		// 		(-0.75f * pi) + (pi * -0.5f),	// lowerAngle
+		// 		true
+		// },
+
 		{		// tail segment 1 segment
 				1,		// attachesTo
-				0.15f,	// length
-				0.015f,	// rootThickness
-				0.01f,	// tipThickness
+				1.5f,	// length
+				0.5f,	// rootThickness
+				0.25f,	// tipThickness
 				false,	// isRoot
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
 				0.005f,	// torque
 				10.0f,	// speedLimit
-				pi * 1.0f,// upperAngle
+				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
-				pi * -1.0f,	// lowerAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
 				true
 		},
-		{		// tail segment 1 segment
+		{		// tail segment 2 segment
 				2,		// attachesTo
-				0.15f,	// length
-				0.015f,	// rootThickness
-				0.01f,	// tipThickness
+				1.5f,	// length
+				0.25f,	// rootThickness
+				0.1f,	// tipThickness
 				false,	// isRoot
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
 				0.005f,	// torque
 				10.0f,	// speedLimit
-				pi * 1.0f,// upperAngle
+				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
-				pi * -1.0f,	// lowerAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
 				true
 		}//,//,,
 
@@ -539,7 +561,7 @@ fishDescriptor_t koiCarp = {
 void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fishes[fishIndex]->bones[i]->init) {
-			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , m_world, m_particleSystem);
+			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , m_world, m_particleSystem, i);
 		}
 	}
 }
@@ -974,7 +996,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
 
-	int howManyNewFishToAdd = 3;
+	int howManyNewFishToAdd = 1;
 	for (int i = 0; i < howManyNewFishToAdd; ++i) {
 
 
@@ -1173,6 +1195,13 @@ void deepSeaControlB () {
 void collisionHandler (void * userDataA, void * userDataB) {
 	bool et = false;
 	bool fud = false;
+
+
+	if (true) {
+		return;   // this function ends the program so nice to turn it off
+	}
+
+
 
 	if (userDataA == nullptr || userDataB == nullptr) {
 		return;

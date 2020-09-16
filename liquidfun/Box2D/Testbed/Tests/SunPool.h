@@ -21,26 +21,26 @@ public:
 
 			// an octagon
 			const b2Vec2 vertices[8] = {
-				b2Vec2(1, -2),
-				b2Vec2(2, -1),
-				b2Vec2(2, 1),
-				b2Vec2(1, 2),
-				b2Vec2(-1, 2),
-				b2Vec2(-2, 1),
-				b2Vec2(-2, -1),
-				b2Vec2(-1, -2)};
+				b2Vec2(10, -20),
+				b2Vec2(20, -10),
+				b2Vec2(20, 10),
+				b2Vec2(10, 20),
+				b2Vec2(-10, 20),
+				b2Vec2(-20, 10),
+				b2Vec2(-20, -10),
+				b2Vec2(-10, -20)};
 			shape.CreateLoop(vertices, 8);
 			ground->CreateFixture(&shape, 0.0f);
 
 		}
 
-		m_particleSystem->SetRadius(0.0375f);
+		m_particleSystem->SetRadius(0.25f);
 		m_particleSystem->SetDamping(0.2f);
 
 		{
 			// the water
 			b2PolygonShape shape;
-			shape.SetAsBox(1.5f, 1.5f, b2Vec2(0.0f, 0.0f), 0);
+			shape.SetAsBox(15.0f, 15.0f, b2Vec2(0.0f, 0.0f), 0);
 			b2ParticleGroupDef pd;
 			pd.flags = TestMain::GetParticleParameterValue();
 

@@ -86,6 +86,7 @@ struct BoneUserData {
 	b2Body * p_body;
 	b2PolygonShape shape;
 	BonyFish * p_owner;
+	b2Fixture * p_fixture;
 
 	b2Vec2 position;
 	bool init;		// if the struct has been created properly
