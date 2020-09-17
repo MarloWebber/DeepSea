@@ -742,7 +742,17 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
   	
 	// get the layer cake.
 	unsigned int layerCake[num_layers];
-	fann_get_layer_array(temp_ann, layerCake);
+
+	// flip the cake 
+	unsigned int flipCake[num_layers];
+
+	fann_get_layer_array(temp_ann, flipCake);
+
+	for (unsigned int i = 0; i < num_layers; ++i)
+	{
+		layerCake[i] = flipCake[num_layers-i-1];
+	}
+
 
 	// build everything in memory and link it together.
 	networkDescriptor * newCake = new networkDescriptor();	//
