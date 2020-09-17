@@ -1445,7 +1445,7 @@ std::ofstream outFile("mutantGimp.net");
 
  		// int countUp = 0;
  
- 		outFile << std::string("neurons (num_inputs, activation_function, activation_steepness)=");
+ 		// outFile << std::string("neurons (num_inputs, activation_function, activation_steepness)=");
 
  		char desireCharacter = '=';
  	
@@ -1466,9 +1466,21 @@ std::ofstream outFile("mutantGimp.net");
 	 				}
 	 				// charCount ++;
 
-					char sciNumber[27];
-					memset(sciNumber, 0x00, 27);
-					memcpy(sciNumber, &c, 27);
+	 				// you need to find out how long the number is.
+
+	 				int sciNumberLength = 0;
+
+	 				while(1) {
+	 					if (*((&c) +sciNumberLength) == ')') {
+	 						break;
+	 					}else {
+	 						sciNumberLength++;
+	 					}
+	 				}
+
+					char sciNumber[sciNumberLength];
+					memset(sciNumber, 0x00, sciNumberLength);
+					memcpy(sciNumber, &c, sciNumberLength);
 
 					// if (sciNumber[26] == ')') {
 					// 	sciNumber[26] = '0';	
@@ -1476,6 +1488,10 @@ std::ofstream outFile("mutantGimp.net");
 
 					printf("%s\n", sciNumber);
 				    float val = std::stof(sciNumber); 
+
+				    if (RNG() < 0.2) {		// chance of a mutation occurring
+					    val += ( (RNG() -0.5f) * 1.0f ); // how much mutation to apply
+				    }
 
 			    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
 		 			my_print_scientific(sciNotationBuffer,val);
@@ -1699,7 +1715,7 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 
 
-		    // mutateFANNFileDirectly();
+		    mutateFANNFileDirectly();
 
 
 		// now you can load the mutant ANN.
