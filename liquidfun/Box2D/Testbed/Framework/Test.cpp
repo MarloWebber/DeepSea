@@ -256,19 +256,19 @@ void Test::MouseDown(const b2Vec2& p)
 	if (callback.m_fixture)
 	{
 		b2Body* body = callback.m_fixture->GetBody();
-		b2MouseJointDef md;
-		md.bodyA = m_groundBody;
-		md.bodyB = body;
-		md.target = p;
-		md.maxForce = 1000.0f * body->GetMass();
-		m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
-		body->SetAwake(true);
+		// b2MouseJointDef md;
+		// md.bodyA = m_groundBody;
+		// md.bodyB = body;
+		// md.target = p;
+		// md.maxForce = 1000.0f * body->GetMass();
+		// m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
+		// body->SetAwake(true);
 
+		// find fish struct from user data and save its genetic material.
 		uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
 		BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
 		BonyFish * winner = wishBone->p_owner;
-
-		vote(winner, m_world,  m_particleSystem);
+		vote(winner);
 
 	}
 }

@@ -79,7 +79,7 @@ struct BoneUserData {
 	bool isSensor ;
 	// uint8_t sensorType; 
 	float sensation;
-	bool isWeapon ;					// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
+	bool isWeapon ;					// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect such as an explosion.
 	float energy; 					// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
 	b2BodyDef bodyDef;
@@ -166,6 +166,9 @@ struct BonyFish {
 	float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
 
+	bool flagDelete; // flag this whole animal for deletion at the next convenient time.
+	// bool flagWinner; // flag the animal as winner for this turn.
+
 	struct fann *ann;
 
 	uint8_t slot; // for reference, the slot the fish is loaded into
@@ -221,6 +224,6 @@ extern int currentNumberOfFish;
 
 void collisionHandler (void * boneA, void * boneB) ;
 
-void vote(BonyFish * winner, b2World * m_world, b2ParticleSystem * m_particleSystem);
+void vote(BonyFish * winner);
 
 #endif

@@ -15,12 +15,16 @@ int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 
 int generationsThisGame = 0;
+bool startNextGeneration = false;
 
 bool fishSlotLoaded[N_FISHES];
 bool foodSlotLoaded[N_FOODPARTICLES];
 
 bool userControlInputA;
 bool userControlInputB;
+
+b2World * local_m_world = nullptr;
+b2ParticleSystem * local_m_particleSystem = nullptr;
 
 float pi = 3.14159f;
 
@@ -307,6 +311,8 @@ void loadFishFromFile(const std::string& file_name, fishDescriptor_t& data) {
 BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann) {
 	genes = driedFish;
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
+
+	flagDelete = false;
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 
@@ -1255,29 +1261,43 @@ void jellyfishTrainer () {
 }
 
 
+void removeDeletableFish() {
+	for (int i = 0; i < N_FISHES; ++i)
+	{
+		// if ( !fishSlotLoaded[winner->slot]) {
+		// 	return;
+		// }
+		// else {
+		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
+		// if ( !fishes[i]->isUsed || !fishes[i]->init) { 		continue; } else if (fishes[i]->isUsed && fishes[i]->init) {
+
+			if (fishes[i]->flagDelete) {
+				deleteFish (i, local_m_world, local_m_particleSystem) ;
+			}
+
+			// for (int i = 0; i < N_FISHES; ++i)
+			// {
+				
+			// }
+ 
+		// }
+	}
+}
 
 
-void vote (BonyFish * winner, b2World * m_world, b2ParticleSystem * m_particleSystem) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
-
-	// select the fish you clicked
-	// fishDescriptor_t winnerSyrup = body->userData->uData->p_owner->genes;
-
-	// uDataWrap * myUserDataStruct = (uDataWrap *)body->m_userData;
-
-	// BonyFish * winner = (BonyFish *)myUserDataStruct->uData;
-
-	printf("winner: %i\n", winner->slot);
-
-	if ( !fishSlotLoaded[winner->slot]) {
+//  prints the winner to file immediately.
+void  vote (BonyFish * winner) {
+if ( !fishSlotLoaded[winner->slot]) {
 		return;
 	}
 	else {
 
+		printf("winner: %i\n", winner->slot);
 
+		// printf("winner: %i\n", winner->slot);
 
 	fann * wann = winner->ann;
-
 
 
 	// save the winner to file with a new name.
@@ -1287,14 +1307,64 @@ void vote (BonyFish * winner, b2World * m_world, b2ParticleSystem * m_particleSy
     // saveFishToFile (fdescfilename, ((BoneUserData *)(dataB.uData))->p_owner->genes);
     fann_save(  wann , nnfilename.c_str()); 
 
-	// destroy all creatures in the world and delete them from memory. make sure their udata is deleted too.
+	}
 
+
+
+	// label every fish as delete.
 	for (int i = 0; i < N_FISHES; ++i)
 	{
-		deleteFish (i, m_world, m_particleSystem) ;
-	}
- 
 
+		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
+		// if ( !fishes[i]->isUsed || !fishes[i]->init) { 		continue; } else if (fishes[i]->isUsed && fishes[i]->init) {
+			fishes[i]->flagDelete = true;
+		// }
+	}
+
+
+	startNextGeneration = true;
+}
+
+
+
+void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) { // select an animal as an evolutionary winner, passing its genes on to the next generation
+
+
+	// select the fish you clicked
+	// fishDescriptor_t winnerSyrup = body->userData->uData->p_owner->genes;
+
+	// uDataWrap * myUserDataStruct = (uDataWrap *)body->m_userData;
+
+	// BonyFish * winner = (BonyFish *)myUserDataStruct->uData;
+
+	
+	// if ( !fishSlotLoaded[winner->slot]) {
+	// 	return;
+	// }
+	// else {
+
+
+	// 	printf("winner: %i\n", winner->slot);
+
+	// fann * wann = winner->ann;
+
+
+
+	// // save the winner to file with a new name.
+	// std::string nnfilename =  std::string("mostCurrentWinner.net");
+ //    // std::string fdescfilename =  std::string("225.fsh");
+ //    std::ofstream file { nnfilename };
+ //    // saveFishToFile (fdescfilename, ((BoneUserData *)(dataB.uData))->p_owner->genes);
+ //    fann_save(  wann , nnfilename.c_str()); 
+
+	// destroy all creatures in the world and delete them from memory. make sure their udata is deleted too.
+
+	removeDeletableFish();
+	// for (int i = 0; i < N_FISHES; ++i)
+	// {
+	// 	deleteFish (i, m_world, m_particleSystem) ;
+	// }
+ 
 	// create 8 mutant copies of the winner
 
 		
@@ -1322,7 +1392,9 @@ void vote (BonyFish * winner, b2World * m_world, b2ParticleSystem * m_particleSy
 	}
 
 	// spawn them into the world to repeat the cycle
-}
+
+	startNextGeneration = false;
+// }
 
 
 }
@@ -1333,10 +1405,12 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	// jellyfishTrainer();
 
-	wormTrainer();
+	// wormTrainer();
 
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
+	local_m_world = m_world;
+	local_m_particleSystem = m_particleSystem;
 
 	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
 
@@ -1350,8 +1424,8 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 		// this one is good to just load in a desfault fish from the descriptor.
 
-		// fann * ann  = loadFishBrainFromFile ("mouptut"); // unfortunately you still need to load some kind of brain or it wont work.
-		loadFish ( i,  koiCarp, m_world,  m_particleSystem, NULL ) ;
+		fann * ann  = loadFishBrainFromFile (std::string("mostCurrentWinner")); // unfortunately you still need to load some kind of brain or it wont work.
+		loadFish ( i,  koiCarp, m_world,  m_particleSystem, ann ) ;
 
 
 
@@ -1403,15 +1477,13 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 	*spacesUsedSoFar += sizeOfBiggestLayer;
 
 
-	for (uint8_t j = 0; j < layerArray[0]; ++j)
-	{
+	for (uint8_t j = 0; j < layerArray[0]; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
 
 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
 	}
 
-	for (uint8_t j = 0; j < layerArray[n_layers-1]; ++j)
-	{
+	for (uint8_t j = 0; j < layerArray[n_layers-1]; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
 	}
@@ -1451,6 +1523,10 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 }
 
 void deepSeaLoop () {
+
+	if (startNextGeneration) {
+		beginGeneration ( local_m_world,local_m_particleSystem);
+	}
 
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
 		if (!foodSlotLoaded[i]) {

@@ -186,7 +186,7 @@ static void SimulationLoop()
 	B2_NOT_USED(changed);
 
 
-	// the DeepSea main loop
+	// the DeepSea main loop. after physics but before UI.
 	deepSeaLoop();
 
 
