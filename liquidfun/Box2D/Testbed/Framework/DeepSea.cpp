@@ -1433,24 +1433,186 @@ void printConnectionArrayForDebug (networkDescriptor * network) {
 
 void mutateFANNFileDirectly () {
 
+std::ofstream outFile("mutantGimp.net");
+ std::string line;
 
-	// open the FANN file line 35
+ std::ifstream inFile("mostCurrentWinner.net");
+ int count = 0;
+ int amountCount = 0;
+ while(getline(inFile, line)){
 
-	goToLine(36);
+ 	if (count == 35) { // its that crazy line.
 
-	// advanced forward to the first closing bracket
-	seekUntil('=');
+ 		// int countUp = 0;
+ 
+ 		outFile << std::string("neurons (num_inputs, activation_function, activation_steepness)=");
 
-	// the following code is repeated until end of line?
-	advanceCursor(5);
+ 		char desireCharacter = '=';
+ 	
+ 		bool skipTheRest = false;
+ 		for(char& c : line) {
 
-	bool thisWeightIsNegative = false;
+ 			// skip over the 27 scientific notation characters you copied.
+		    if (!skipTheRest) {
 
-	if (<the character> == '-') {
-		thisWeightIsNegative = true;
-	} 
+		    	// if you're not skipping or writing down the character, forward the information into the new file.
+ 				outFile << c;
+	 			
+	 			// if you find the ' ', you're ready to copy over the next 27 characters.
+	 			if (c == desireCharacter) {
+	 				desireCharacter = ' ';
+	 				if (c == '=' || *((&c) +1) == '(' )  {
+	 					continue;
+	 				}
+	 				// charCount ++;
 
-	
+					char sciNumber[27];
+					memset(sciNumber, 0x00, 27);
+					memcpy(sciNumber, &c, 27);
+
+					// if (sciNumber[26] == ')') {
+					// 	sciNumber[26] = '0';	
+					// }
+
+					printf("%s\n", sciNumber);
+				    float val = std::stof(sciNumber); 
+
+			    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
+		 			my_print_scientific(sciNotationBuffer,val);
+		 			outFile << sciNotationBuffer;
+		 			outFile << ") ";
+
+		 			amountCount ++;
+
+		 			if (amountCount >= 248) {
+		 				return;
+		 			}
+
+		 			skipTheRest = true;
+	 			}
+	 			
+			}
+			else  {
+
+				if (c == ' ') {
+					skipTheRest = false;
+				}
+
+				// if (countUp >= 27) {
+				// 	countUp = 0;
+				// 	// gimmeSomeSpace = false;
+				// 	skipTheRest = false;
+				// }
+
+				// countUp ++;
+
+			}
+		}
+
+ 	}
+ 	else {
+ 		 outFile << line;
+        outFile << "\n";
+
+ 	}
+
+ 	
+     count++;
+ }
+ outFile.close();
+ inFile.close();
+
+			// //copy a file.
+			// //https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
+			// std::ifstream  src("mostCurrentWinner.net", std::ios::binary);
+		 //    std::ofstream  dst("muntante.net",   std::ios::binary);
+	// 	 //    dst << src.rdbuf();
+
+ //    printf("mutating FANN file");
+
+
+	// // FILE *fp;
+ // //    fp = fopen("muntante.net","wb");
+
+ //    FILE *rp;
+ //    rp = fopen("mostCurrentWinner.net","r");
+
+ //    std::string messyBumFuck = std::string("");
+
+ //    // fprintf(fp, "FANN_FLO_2.1\nnum_layers=4\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00 \nlayer_sizes=13 9 9 9 \nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=(0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (0, 5, 0.00000000000000000000e+00) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (0, 5, 0.00000000000000000000e+00) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (0, 5, 0.00000000000000000000e+00) \nconnections (connected_to_neuron, weight)="  );
+
+
+
+
+	// // open the FANN file line 35
+
+	// goToLine(rp, 36);
+
+	// // // advanced forward to the first closing bracket
+	// seekUntil(rp, '=');
+
+	// for (unsigned int i = 0; i < 10; ++i)
+	// {
+ //   printf("%i\n", i);
+
+	// 	/* code */
+	// 	seekUntil(rp, '(');
+	// 	// advanceCursor(5);
+
+
+	// 	for (int j = 0; j < 5; ++j)
+	// 	{
+	// 		/* code */
+	// 		// fprintf(fp, "%c", fgetc(rp));
+	// 		messyBumFuck += fgetc(rp);
+	// 	}
+
+
+
+	// 	char sciNumber[27];
+	// 	memset(sciNumber, 0x00, 27);
+
+
+
+
+	// 	for (unsigned int j = 0; j < 27; ++j)
+	// 	{
+	// 		// char c;
+	// sciNumber[i] = fgetc(rp);
+
+	// 	}
+
+	// 	// std::string str = "100.80"; 
+  
+ //    // val to store parsed floating type number 
+ //    float val = std::stof(sciNumber); 
+
+
+
+ //    // (mutate the number 'val')
+
+
+ //    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
+ // 			my_print_scientific(sciNotationBuffer,val);
+ // 			messyBumFuck += sciNotationBuffer;
+ // 			// fprintf(fp, "%s)", sciNotationBuffer);
+
+
+
+		
+
+	// }
+
+	// // // the following code is repeated until end of line?
+	// 
+
+	// bool thisWeightIsNegative = false;
+
+	// if (<the character> == '-') {
+	// 	thisWeightIsNegative = true;
+	// } 
+
+
 
 
 }
@@ -1498,7 +1660,7 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 		
 	for (int i = 0; i < 8; ++i)
 	{
-		fann *wann;
+		
 
 		bool thereIsAFile = false;
 		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
@@ -1512,7 +1674,8 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 
 		if (thereIsAFile ) {
-			wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+			// fann *wann;
+			// wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
 			// thereWasAFile = true;
 
 
@@ -1535,14 +1698,8 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 
 
-			//copy a file.
-			//https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
-			std::ifstream  src("mostCurrentWinner.net", std::ios::binary);
-		    std::ofstream  dst("mutantGimp.net",   std::ios::binary);
-		    dst << src.rdbuf();
 
-
-		    mutateFANNFileDirectly();
+		    // mutateFANNFileDirectly();
 
 
 		// now you can load the mutant ANN.

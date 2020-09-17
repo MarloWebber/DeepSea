@@ -227,4 +227,5 @@ void collisionHandler (void * boneA, void * boneB) ;
 
 void vote(BonyFish * winner);
 
+void  mutateFANNFileDirectly();
 #endif

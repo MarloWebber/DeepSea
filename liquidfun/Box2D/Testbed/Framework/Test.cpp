@@ -264,7 +264,7 @@ void Test::MouseDown(const b2Vec2& p)
 		// m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
 		// body->SetAwake(true);
 
-	
+
 		// find fish struct from user data and save its genetic material.
 		uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
 		BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
@@ -359,19 +359,24 @@ void Test::drawSegment(b2Vec2 p1, b2Vec2 p2, b2Color color) {
 
 void Test::jointMotorSetpoint()
 {
+
+
+
 	deepSeaSetup(  m_world, m_particleSystem, &m_debugDraw);
 }
 
 void Test::controlA()
 {
+
+	mutateFANNFileDirectly();
 	// deepSeaControlA();
-	setUserControlInputA();
+	// setUserControlInputA();
 }
 void Test::controlB()
 {
 	// deepSeaControlB();
 	// userControlInputB = true;
-	setUserControlInputB();
+	// setUserControlInputB();
 }
 
 
