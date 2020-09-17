@@ -856,7 +856,7 @@ return newCake;
 
 // from: https://stackoverflow.com/questions/7132957/c-scientific-notation-format-number
 void my_print_scientific(char *dest, double value) {
-    snprintf(dest, 20, "%.0e", value); // 20 digits between the decimal place and the e
+    snprintf(dest, 28, "%.20e", value); // 20 digits between the decimal place and the e
 }
 
 // method to create a fann save file from a network descriptor
@@ -882,11 +882,23 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
 
 	// print activation information
  	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
- 	for (unsigned int i = 0; i < network.n_layers; ++i) 	{
- 		for (unsigned int j = 0; j < network.layers[i].n_neurons; ++j) {
+ 	for (unsigned int i = network.n_layers-1; i > 0; --i)	{
+ 		for (unsigned int j = 0; j<network.layers[i].n_neurons ; ++j) {
  			char chalkboard[9];
- 			sprintf(chalkboard, "(%u, %u, ", network.layers[i].neurons[j].n_inputs, network.layers[i].neurons[j].activation_function);	
+
+ 			printf("%i of %i\n", j, network.layers[i].n_neurons);
+
+ 			// one of the layers in the file is supposed to have 0 inputs.
+ 			if (i == 0) {
+					sprintf(chalkboard, "(%u, %u, ", 0, 0);	
  			s += chalkboard;
+ 			}
+ 			else {
+ 					sprintf(chalkboard, "(%u, %u, ", network.layers[i].neurons[j].n_inputs, network.layers[i].neurons[j].activation_function);	
+	 			s += chalkboard;
+ 			}
+
+ 			
  			char sciNotationBuffer[] = "0.00000000000000000000e+00";
  			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].activation_steepness);
  			s += sciNotationBuffer;
@@ -898,13 +910,13 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
  	printf("print connection information\n");
  	// 
 	s += "\nconnections (connected_to_neuron, weight)=";
-	for (unsigned int i = 0; i < network.n_layers; ++i) 	{
- 		for (unsigned int j = 0; j < network.layers[i].n_neurons; ++j) {
+	for (unsigned int i = network.n_layers-1; i > 0; --i) 	{
+ 		for (unsigned int j = 0; j < network.layers[i].n_neurons;  ++j) {
  			for (unsigned int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
 
- 				if (k >= 8) {
- 					break;
- 				}
+ 				// if (k >= 8) {
+ 				// 	break;
+ 				// }
 
  				char chalkboard[5];
 
@@ -912,7 +924,7 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
 
  				sprintf(chalkboard, "(%u, ", network.layers[i].neurons[j].connections[k].connectedTo);
  				s += chalkboard;
- 				char sciNotationBuffer[] = "0.00000000000000000000e+00";
+ 				char sciNotationBuffer[30];
 	 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].connections[k].connectionWeight);
 	 			s+= sciNotationBuffer;
 	 			s.append(") ");
@@ -1419,6 +1431,30 @@ void printConnectionArrayForDebug (networkDescriptor * network) {
 	printf("\n");
 }
 
+void mutateFANNFileDirectly () {
+
+
+	// open the FANN file line 35
+
+	goToLine(36);
+
+	// advanced forward to the first closing bracket
+	seekUntil('=');
+
+	// the following code is repeated until end of line?
+	advanceCursor(5);
+
+	bool thisWeightIsNegative = false;
+
+	if (<the character> == '-') {
+		thisWeightIsNegative = true;
+	} 
+
+	
+
+
+}
+
 void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
 
@@ -1462,32 +1498,76 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 		
 	for (int i = 0; i < 8; ++i)
 	{
+		fann *wann;
+
+		bool thereIsAFile = false;
+		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
+
+
+
+		 if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
+	        fclose(file);
+	        thereIsAFile = true;
+	    } 
+
+
+		if (thereIsAFile ) {
+			wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+			// thereWasAFile = true;
+
+
 		// first load the winner as a fann ANN.
-		fann *wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+		// fann *wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
 
 		// then make a descriptor of it.
-		networkDescriptor * mutantGimp = createNeurodescriptorFromFANN(wann);
-		printf("check 01\n");
-		printConnectionArrayForDebug (mutantGimp);
+		// networkDescriptor * mutantGimp = createNeurodescriptorFromFANN(wann);
+		// printf("check 01\n");
+		// printConnectionArrayForDebug (mutantGimp);
 
 		// then you can mutate the descriptor.
-		mutateFishBrain(mutantGimp, 0.1f, 0.1f);
+		// mutateFishBrain(mutantGimp, 0.1f, 0.1f);
 
 
-		printf("check 02\n");	printConnectionArrayForDebug (mutantGimp);
+		// printf("check 02\n");	printConnectionArrayForDebug (mutantGimp);
 
 		// now you have to save it as a fann file, which is stupid, but at least you can do it in a temporary file.
-		createFANNFileFromDescriptor (*mutantGimp) ;
+		// createFANNFileFromDescriptor (*mutantGimp) ;
 
+
+
+			//copy a file.
+			//https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
+			std::ifstream  src("mostCurrentWinner.net", std::ios::binary);
+		    std::ofstream  dst("mutantGimp.net",   std::ios::binary);
+		    dst << src.rdbuf();
+
+
+		    mutateFANNFileDirectly();
 
 
 		// now you can load the mutant ANN.
 		fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-
-		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
-
+		
 		loadFish (i, koiCarp, m_world, m_particleSystem, mann, positionalRandomness) ;
+
+		}
+		else {
+		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
+		loadFish (i, koiCarp, m_world, m_particleSystem, NULL, positionalRandomness) ;
+
+		}
+
+		// if (thereWasAFile) {
+
+			
+		// }
+		// else {
+
+			
+		// }
+
+		// unused_variable((void*) mann);
 
 		totalFishIncorporator(i, m_world, m_particleSystem);
 

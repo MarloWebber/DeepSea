@@ -113,7 +113,7 @@ struct neuronDescriptor {
 	float activation_steepness;
 
 	unsigned int n_connections;
-	connectionDescriptor connections[12];
+	connectionDescriptor connections[16];
 
 	neuronDescriptor();
 };
@@ -121,7 +121,7 @@ struct neuronDescriptor {
 struct layerDescriptor {
 	bool isUsed;
 	unsigned int n_neurons;
-	neuronDescriptor neurons[12]; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
+	neuronDescriptor neurons[16]; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
 	layerDescriptor();
 };

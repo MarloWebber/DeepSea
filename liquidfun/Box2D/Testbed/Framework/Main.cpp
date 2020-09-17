@@ -186,9 +186,7 @@ static void SimulationLoop()
 	B2_NOT_USED(changed);
 
 
-	// the DeepSea main loop. after physics but before UI.
-	deepSeaLoop();
-
+	
 
 	if (fullscreenUI.GetEnabled())
 	{
@@ -271,6 +269,10 @@ static void SimulationLoop()
 		st.Clear();
 		s_printCount++;
 	}
+
+	// the DeepSea main loop. after physics but before UI.
+	deepSeaLoop();
+
 }
 
 static void Keyboard(unsigned char key, int x, int y)
