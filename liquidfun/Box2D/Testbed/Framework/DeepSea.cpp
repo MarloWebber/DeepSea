@@ -662,7 +662,7 @@ neuronDescriptor::neuronDescriptor() {
 	n_connections = 0;
 	n_inputs = 0;
 	isUsed = false;
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < 12; ++i)
 	{
 		connections[i] = connectionDescriptor();
 	};
@@ -744,14 +744,8 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 	unsigned int layerCake[num_layers];
 
 	// flip the cake 
-	unsigned int flipCake[num_layers];
+	fann_get_layer_array(temp_ann, layerCake);
 
-	fann_get_layer_array(temp_ann, flipCake);
-
-	for (unsigned int i = 0; i < num_layers; ++i)
-	{
-		layerCake[i] = flipCake[num_layers-i-1];
-	}
 
 
 	// build everything in memory and link it together.
@@ -762,10 +756,13 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
   	unsigned int sumOfNeurons = 0;
   	for (unsigned int i = 0; i < num_layers; ++i) {
   		sumOfNeurons += layerCake[i];
+  		printf("a LAYER %i has %i neurons!\n", i, layerCake[i]);
   	}
 
   	for (unsigned int i = 0; i < num_layers; ++i) {
   		newCake->layers[i].n_neurons = layerCake[i];
+  		// printf("LAYER %i has %i neurons!\n", i, layerCake[i]);
+
   		newCake->layers[i].isUsed = true;
   		printf ("created layer descriptor %i\n", layerCake[i]) ;
 
@@ -1398,13 +1395,16 @@ if ( !fishSlotLoaded[winner->slot]) {
 }
 
 
-void printConnectionArrayForDebug (networkDescriptor network) {
-	printf(" printConnectionArrayForDebug: %i layers\n", network.n_layers);
-	for (unsigned int i = 0; i < network.n_layers; ++i) 	{
-		printf(" layer %i neurons: %i\n", i, network.layers[i].n_neurons);
- 		for (unsigned int j = 0; j < network.layers[i].n_neurons; ++j) {
- 			printf(" neuron %i connections: %i\n", j, network.layers[i].neurons[j].n_connections);
- 			for (unsigned int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
+void printConnectionArrayForDebug (networkDescriptor * network) {
+	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
+
+	for (unsigned int i = 0; i < network->n_layers; ++i) 	{
+		printf(" layer %i neurons: %i\n", i, network->layers[i].n_neurons);
+
+ 		for (unsigned int j = 0; j < network->layers[i].n_neurons; ++j) {
+
+ 			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
+ 			for (unsigned int k = 0; k < network->layers[i].neurons[j].n_connections; ++k) {
 
  				// if (k >= 8) {
  				// 	continue;
@@ -1412,7 +1412,7 @@ void printConnectionArrayForDebug (networkDescriptor network) {
 
  				// char chalkboard[5];
 
- 				printf(" |%u|, ", network.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
+ 				printf(" |%u|, ", network->layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
 			}
 		}
 	}
@@ -1468,13 +1468,13 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 		// then make a descriptor of it.
 		networkDescriptor * mutantGimp = createNeurodescriptorFromFANN(wann);
 		printf("check 01\n");
-		printConnectionArrayForDebug (*mutantGimp);
+		printConnectionArrayForDebug (mutantGimp);
 
 		// then you can mutate the descriptor.
-		mutateFishBrain(mutantGimp, 0.5f, 10.0f);
+		mutateFishBrain(mutantGimp, 0.1f, 0.1f);
 
 
-		printf("check 02\n");	printConnectionArrayForDebug (*mutantGimp);
+		printf("check 02\n");	printConnectionArrayForDebug (mutantGimp);
 
 		// now you have to save it as a fann file, which is stupid, but at least you can do it in a temporary file.
 		createFANNFileFromDescriptor (*mutantGimp) ;
@@ -1532,8 +1532,8 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
 
-	beginGeneration ( local_m_world,local_m_particleSystem);
-
+	// beginGeneration ( local_m_world,local_m_particleSystem);
+	startNextGeneration = true;
 
 
 	// int howManyNewFishToAdd = 3;
