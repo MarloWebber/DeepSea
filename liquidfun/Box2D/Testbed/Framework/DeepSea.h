@@ -94,7 +94,8 @@ struct BoneUserData {
 
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
-		b2World * m_world, b2ParticleSystem * m_particleSystem );
+		b2World * m_world, b2ParticleSystem * m_particleSystem,
+		b2Vec2 positionOffset);
 } ;
 
 struct connectionDescriptor {
@@ -175,7 +176,7 @@ struct BonyFish {
 
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
 	
-	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann);
+	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann, b2Vec2 startingPosition);
 
 };
 

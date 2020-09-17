@@ -264,12 +264,23 @@ void Test::MouseDown(const b2Vec2& p)
 		// m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
 		// body->SetAwake(true);
 
+	
 		// find fish struct from user data and save its genetic material.
 		uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
 		BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
 		BonyFish * winner = wishBone->p_owner;
-		vote(winner);
 
+		
+			// if (!winner->init || !winner->isUsed) {
+			// 	;
+			// } 
+			// else {
+					vote(winner);
+			// }
+		
+	
+
+	
 	}
 }
 

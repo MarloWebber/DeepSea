@@ -115,7 +115,8 @@ void printab2Vec2(b2Vec2 v) {
 BoneUserData::BoneUserData(
 		boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
-		b2World * m_world, b2ParticleSystem * m_particleSystem // primarily needed to create the body
+		b2World * m_world, b2ParticleSystem * m_particleSystem, // primarily needed to create the body
+		b2Vec2 positionOffset
 	) {
 
 	if (!boneDescription.used) {
@@ -139,19 +140,19 @@ BoneUserData::BoneUserData(
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
-	tipCenter = b2Vec2(0.0f,0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
-	rootCenter = b2Vec2(0.0f,0.0f); 		
+	tipCenter = b2Vec2(positionOffset.x,positionOffset.y+0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
+	rootCenter = b2Vec2(positionOffset.x,positionOffset.y); 		
 	int count = 4;
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 	if (isRoot) {
 		printf("its a root bone\n");
 
-		tipCenter = b2Vec2(0.0f, 0.0f +  length);
+		tipCenter = b2Vec2(positionOffset.x, positionOffset.y +  length);
 
 		b2Vec2 vertices[] = {
-			b2Vec2(0.0f + (rootThickness/2), 0.0f), //b2Vec2 rootVertexA = 
-			b2Vec2(0.0f - (rootThickness/2), 0.0f), // b2Vec2 rootVertexB =
+			b2Vec2(rootCenter.x + (rootThickness/2), rootCenter.y), //b2Vec2 rootVertexA = 
+			b2Vec2(rootCenter.x - (rootThickness/2), rootCenter.y), // b2Vec2 rootVertexB =
 			b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y), //b2Vec2 tipVertexA = 
 			b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
 		};
@@ -287,7 +288,7 @@ foodParticle_t::foodParticle_t ( b2Vec2 position, b2World * m_world, b2ParticleS
 	bodyDef.type = b2_dynamicBody;
 	p_body = m_world->CreateBody(&bodyDef);
 	shape.SetAsBox(0.25f, 0.25f, position,0.0f);	
-	p_body->CreateFixture(&shape, 1.0f);
+	p_body->CreateFixture(&shape, 4.0f);
 	init = true;
 	isUsed = true;
 };
@@ -308,11 +309,14 @@ void loadFishFromFile(const std::string& file_name, fishDescriptor_t& data) {
   in.read(reinterpret_cast<char*>(&data), sizeof(fishDescriptor_t));
 }
 
-BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann) {
+BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann, b2Vec2 startingPosition) {
 	genes = driedFish;
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
 
 	flagDelete = false;
+
+
+
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 
@@ -320,7 +324,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 			driedFish.bones[i].isRoot = true;
 		}
 
-		bones[i] = new BoneUserData(driedFish.bones[i], this,  m_world, m_particleSystem);
+		bones[i] = new BoneUserData(driedFish.bones[i], this,  m_world, m_particleSystem, startingPosition);
 	}
 
 	n_bones_used = 0;
@@ -563,10 +567,21 @@ fishDescriptor_t koiCarp = {
 
 
 
-
+void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
+	if ( fishes[fishIndex] == NULL || fishes[fishIndex] == nullptr) { 	return; }
+		if (fishSlotLoaded[fishIndex] ) {
+			for (int i = 0; i < N_FINGERS; ++i)
+			{
+				fishes[fishIndex]->bones[i]->p_body->SetTransform(position, 0.0f);
+			}
+		}
+}
 
 
 void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+
+
+
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fishes[fishIndex]->bones[i]->init) {
 			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , m_world, m_particleSystem, i);
@@ -603,7 +618,13 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 
 							else if (fishes[fishIndex]->bones[i]->isUsed && fishes[fishIndex]->bones[i]->init) {
 								printf("deleting bone %i of 8.", i);
-								m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
+
+
+								try { m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);} catch (...) {printf("a fuckup occurred while deleting something from the world\n");
+}
+
+
+								// m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
 
 								fishes[fishIndex]->bones[i]->init = false;
 								fishes[fishIndex]->bones[i]->isUsed = false;
@@ -621,8 +642,8 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 	}
 }
 
-void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann) {
-	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem, nann);
+void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann, b2Vec2 startingPosition) {
+	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem, nann, startingPosition);
 	fishes[fishIndex]->slot = fishIndex;
 	fishSlotLoaded[fishIndex] = true;
 }
@@ -761,6 +782,9 @@ networkDescriptor createNeurodescriptorFromFANN (fann * temp_ann) {
   	fann_get_connection_array(temp_ann, con);
 
   	for (unsigned int c = 0; c < num_connections; ++c) {
+
+  		// printf("alert: bush mong titties; %u %u\n", con[c].from_neuron, con[c].to_neuron );
+// 
   		if (con[c].from_neuron < 0 || con[c].from_neuron > sumOfNeurons ) {
   			// unsigned int newDestination = RNG() * num_connections;
   			// con[c].from_neuron = newDestination;
@@ -789,15 +813,16 @@ networkDescriptor createNeurodescriptorFromFANN (fann * temp_ann) {
   		}
   		index--;
  
-  		printf("%u %u\n", index, layer);
+  		printf("%u %u ", con[c].to_neuron, con[c].from_neuron);
   		unsigned int newestConnectionIndex = newCake.layers[layer].neurons[index].n_connections;
 
   		if (newestConnectionIndex > sumOfNeurons) {
   			continue;
   		}
 
-  		printf("%u\n", newestConnectionIndex);
+  		// printf("%u\n", newestConnectionIndex);
   		newCake.layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo = con[c].to_neuron;
+  		printf("%u ", newCake.layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo);
   		newCake.layers[layer].neurons[index].connections[newestConnectionIndex].connectionWeight = con[c].weight;
   		newCake.layers[layer].neurons[index].connections[newestConnectionIndex].isUsed = true;
   		newCake.layers[layer].neurons[index].n_connections ++;
@@ -896,6 +921,41 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
 
 void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float mutationSeverity) {
 
+
+	// count connections.
+	unsigned int sumOfConnections = 0;
+	for (unsigned int i = 0; i < newCake->n_layers; ++i) 	{
+		
+ 		for (unsigned int j = 0; j < newCake->layers[i].n_neurons; ++j) {
+
+
+
+			if (newCake->layers[i].neurons[j].n_connections > 8) {
+				continue;
+			}
+			if (i > newCake->n_layers) {
+				continue;
+			}
+			if (j > newCake->layers[i].n_neurons) {
+				continue;
+			}
+			// if (n > newCake->layers[l].neurons[m].n_connections) {
+			// 	continue;
+			// }
+
+
+
+ 			sumOfConnections += newCake->layers[i].neurons[j].n_connections;
+ 			// for (unsigned int k = 0; k < newCake->layers[i].neurons[j].n_connections; ++k) {
+
+ 			// }
+ 		}
+
+ 	}
+
+ 	printf("sum of connections: %i\n", sumOfConnections);
+
+ 	// while(1) {;}
 	// traverse the mutated body and count the total number of sensors and hearts and limbs.
 	// make sure the number of inputs matches the number of sensors and hearts
 	// make sure the number of outputs matches the number of joint motors
@@ -910,9 +970,9 @@ void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float m
 	// chance to lose a connection
 
 	// chance to modify the weight of an existing connection .. s
-	for (int i = 0; i < 50; ++i)
+	for (unsigned int i = 0; i < sumOfConnections; ++i)
 	{
-		if ( RNG() > mutationChance) {
+		if ( RNG() < mutationChance) {
 			unsigned int l =  RNG() * newCake->n_layers ;
 			unsigned int m =  RNG() * newCake->layers[l].n_neurons ;
 			unsigned int n =  RNG() * newCake->layers[l].neurons[m].n_connections ;
@@ -924,7 +984,6 @@ void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float m
 			printf("max l:%u m:%u n:%u", newCake->n_layers ,  newCake->layers[l].n_neurons, newCake->layers[l].neurons[m].n_connections );
 
 			float mutationAmount = ((RNG() -0.5) *mutationSeverity  );
-			printf("warped layer %u neuron %u connection %u by %f\n", l, m, n,  mutationAmount);
 
 			if (l > newCake->n_layers) {
 				continue;
@@ -937,6 +996,8 @@ void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float m
 			}
 
 			newCake->layers[l].neurons[m].connections[n].connectionWeight += mutationAmount;
+
+			printf("warped layer %u neuron %u connection %u by %f\n", l, m, n,  mutationAmount);
 
 		}
 	}
@@ -1035,10 +1096,10 @@ void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * 
 
 	bool loadWithBlankBrain = true;
 	if (loadWithBlankBrain) {
-		loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, NULL ) ;
+		loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, NULL, b2Vec2(0.0f, 0.0f) ) ;
 	}
 	else {
-		loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, ann ) ;
+		loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, ann , b2Vec2(0.0f, 0.0f)) ;
 	}
 
  	
@@ -1377,19 +1438,29 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 		networkDescriptor mutantGimp = createNeurodescriptorFromFANN(wann);
 
 		// then you can mutate the descriptor.
-		mutateFishBrain(&mutantGimp, 0.1, 0.5);
+		mutateFishBrain(&mutantGimp, 0.5f, 10.0f);
 
 		// now you have to save it as a fann file, which is stupid, but at least you can do it in a temporary file.
 		createFANNFileFromDescriptor (mutantGimp) ;
 
 		// now you can load the mutant ANN.
-		fann *mann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+		fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-		loadFish (i, koiCarp, m_world, m_particleSystem, mann) ;
+
+		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
+
+		loadFish (i, koiCarp, m_world, m_particleSystem, mann, positionalRandomness) ;
 
 		totalFishIncorporator(i, m_world, m_particleSystem);
 
+
+		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 5, (RNG()-0.5) * 5  );
+
+		// moveAWholeFish (i, positionalRandomness) ;
+
 	}
+
+
 
 	// spawn them into the world to repeat the cycle
 
@@ -1397,6 +1468,15 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 // }
 
 
+}
+
+inline bool exists_test1 (const std::string& name) {
+    if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }   
 }
 
 
@@ -1414,23 +1494,31 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
 
-	int howManyNewFishToAdd = 3;
-	for (int i = 0; i < howManyNewFishToAdd; ++i) {
-
-
-		//  loadFishFromName is used to load the named files associated with the evolution system.
-		// LoadFishFromName(i, m_world, m_particleSystem);
-
-
-		// this one is good to just load in a desfault fish from the descriptor.
-
-		fann * ann  = loadFishBrainFromFile (std::string("mostCurrentWinner")); // unfortunately you still need to load some kind of brain or it wont work.
-		loadFish ( i,  koiCarp, m_world,  m_particleSystem, ann ) ;
+	beginGeneration ( local_m_world,local_m_particleSystem);
 
 
 
-		totalFishIncorporator(i, m_world, m_particleSystem);
-	}
+	// int howManyNewFishToAdd = 3;
+	// for (int i = 0; i < howManyNewFishToAdd; ++i) {
+
+
+	// 	//  loadFishFromName is used to load the named files associated with the evolution system.
+	// 	// LoadFishFromName(i, m_world, m_particleSystem);
+
+
+	// 	// this one is good to just load in a desfault fish from the descriptor.
+
+	// 	if (exists_test1("mostCurrentWinner.net")) {
+	// 		fann * ann  = loadFishBrainFromFile (std::string("mostCurrentWinner")); // unfortunately you still need to load some kind of brain or it wont work.
+	// 		loadFish ( i,  koiCarp, m_world,  m_particleSystem, ann , b2Vec2(0.0f, 0.0f)) ;
+
+
+
+	// 		totalFishIncorporator(i, m_world, m_particleSystem);
+	// 	}
+
+		
+	// }
 }
 
 void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar) {
