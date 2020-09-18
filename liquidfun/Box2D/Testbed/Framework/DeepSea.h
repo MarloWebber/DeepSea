@@ -62,7 +62,7 @@ struct JointUserData {
 	BoneUserData * attaches;
 	BoneUserData * attachedTo;
 
-	JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+	JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish) ;
 } ;
 
 struct BoneUserData {
@@ -94,7 +94,6 @@ struct BoneUserData {
 
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
-		b2World * m_world, b2ParticleSystem * m_particleSystem,
 		b2Vec2 positionOffset);
 } ;
 
@@ -140,7 +139,7 @@ struct networkDescriptor {
 };
 
 
-void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+void LoadFishFromName (uint8_t fishIndex) ;
 
 struct BonyFish {
 	float hunger; 	// the animal spends energy to move and must replenish it by eating
@@ -176,7 +175,7 @@ struct BonyFish {
 
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
 	
-	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann, b2Vec2 startingPosition);
+	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition);
 
 };
 
@@ -191,7 +190,7 @@ struct foodParticle_t {
 	bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;
 
-	foodParticle_t(b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem);
+	foodParticle_t(b2Vec2 position);
 };
 
 #define TYPE_DEFAULT 0
@@ -209,13 +208,13 @@ struct uDataWrap {
 void deepSeaControlA () ;
 void deepSeaControlB () ;
 
-void addFoodParticle ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
-void fishIncorporator (BonyFish * p_fish,  b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+void addFoodParticle ( b2Vec2 position) ;
+void fishIncorporator (BonyFish * p_fish) ;
 
 void deepSeaSetup(b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) ;
 void deepSeaLoop () ;
 
-void makeAJellyfish (BonyFish * p_fish, b2World * m_world, b2ParticleSystem * m_particleSystem) ;
+void makeAJellyfish (BonyFish * p_fish) ;
 
 extern foodParticle_t * food[N_FOODPARTICLES];
 extern BonyFish * fishes[N_FISHES];
@@ -228,6 +227,9 @@ void collisionHandler (void * boneA, void * boneB) ;
 void vote(BonyFish * winner);
 
 void  mutateFANNFileDirectly();
+
+
+extern bool startNextGeneration;
 
 // if (startNextGeneration ) {
 void		beginGeneration ();

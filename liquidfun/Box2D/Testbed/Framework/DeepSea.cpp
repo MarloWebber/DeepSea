@@ -76,7 +76,7 @@ float RNG() { //
     return dis(e);
 }
 
-JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish) {
 	torque = boneDescription.torque;
 	speedLimit = boneDescription.speedLimit;
 	upperAngle = boneDescription.upperAngle;
@@ -115,7 +115,6 @@ void printab2Vec2(b2Vec2 v) {
 BoneUserData::BoneUserData(
 		boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
-		b2World * m_world, b2ParticleSystem * m_particleSystem, // primarily needed to create the body
 		b2Vec2 positionOffset
 	) {
 
@@ -173,7 +172,7 @@ BoneUserData::BoneUserData(
 		}
 		
 		bodyDef.type = b2_dynamicBody;
-		p_body = m_world->CreateBody(&bodyDef);
+		p_body = local_m_world->CreateBody(&bodyDef);
 		
 		// shape.SetAsBox(rootThickness, length, boneCenter,0.0f);	
 		shape.Set(vertices, count);
@@ -213,7 +212,7 @@ BoneUserData::BoneUserData(
 		}
 
 		bodyDef.type = b2_dynamicBody;
-		p_body = m_world->CreateBody(&bodyDef);
+		p_body = local_m_world->CreateBody(&bodyDef);
 
 		printf("tip center: ");
 		printab2Vec2(tipCenter);
@@ -233,7 +232,7 @@ BoneUserData::BoneUserData(
 	}
 
 	if (!isRoot) {
-		joint = new JointUserData( boneDescription, this, fish, m_world, m_particleSystem); 	// the joint that attaches it into its socket 
+		joint = new JointUserData( boneDescription, this, fish); 	// the joint that attaches it into its socket 
 	}	
 
 	init = true;
@@ -241,7 +240,7 @@ BoneUserData::BoneUserData(
 	printf("\n");
 };
 
-void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2ParticleSystem * m_particleSystem, uint8_t boneIndex) {
+void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
 	if (!p_bone->init) {
 		return;
 	}
@@ -252,7 +251,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone, b2World * m_world, b2Pa
 
 	if (!p_bone->isRoot) {
             p_bone->joint->isUsed = true;
-			p_bone->joint->p_joint = (b2RevoluteJoint*)m_world->CreateJoint( &(p_bone->joint->jointDef) );
+			p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
 	}
 	p_bone->isUsed = true;
 }
@@ -281,20 +280,20 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 }
 
 // add a food particle to the world and register it so the game knows it exists.
-foodParticle_t::foodParticle_t ( b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) {	
+foodParticle_t::foodParticle_t ( b2Vec2 position) {	
 	energy = 1.0f;
 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
-	p_body = m_world->CreateBody(&bodyDef);
+	p_body = local_m_world->CreateBody(&bodyDef);
 	shape.SetAsBox(0.25f, 0.25f, position,0.0f);	
 	p_body->CreateFixture(&shape, 4.0f);
 	init = true;
 	isUsed = true;
 };
 
-void addFoodParticle(b2Vec2 position, b2World * m_world, b2ParticleSystem * m_particleSystem) {
-	food[currentNumberOfFood] = new foodParticle_t( position, m_world,  m_particleSystem);
+void addFoodParticle(b2Vec2 position) {
+	food[currentNumberOfFood] = new foodParticle_t( position);
 	foodSlotLoaded[currentNumberOfFood] = true;
 	currentNumberOfFood++;
 }
@@ -309,7 +308,7 @@ void loadFishFromFile(const std::string& file_name, fishDescriptor_t& data) {
   in.read(reinterpret_cast<char*>(&data), sizeof(fishDescriptor_t));
 }
 
-BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann, b2Vec2 startingPosition) {
+BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition) {
 	genes = driedFish;
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
 
@@ -324,7 +323,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, b2World * m_wo
 			driedFish.bones[i].isRoot = true;
 		}
 
-		bones[i] = new BoneUserData(driedFish.bones[i], this,  m_world, m_particleSystem, startingPosition);
+		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition);
 	}
 
 	n_bones_used = 0;
@@ -578,19 +577,19 @@ void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
 }
 
 
-void totalFishIncorporator (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+void totalFishIncorporator (uint8_t fishIndex) {
 
 
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fishes[fishIndex]->bones[i]->init) {
-			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , m_world, m_particleSystem, i);
+			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , i);
 		}
 	}
 }
 
 // delete a fish from the game world and remove it from memory
-void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_particleSystem) {
+void deleteFish (uint8_t fishIndex) {
 
 
 
@@ -600,9 +599,47 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 		printf("deleting %i of 8.", fishIndex);
 
 		
-		// fishes[fishIndex]->init = false; // doesn't unint the fish, just takes it out of the world. but you can overwrite the inited fish anyway without needing to delete it.
-		fishes[fishIndex]->isUsed = false;
-		fishSlotLoaded[fishIndex] = false;
+	
+		for (int i = 0; i < N_FINGERS; ++i) {
+					if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
+								continue;
+							}
+
+		// 					else if (fishes[fishIndex]->bones[i]->init && !fishes[fishIndex]->bones[i]->isUsed) { // if the object is initialized, but not applied in the game world, you can still delete it from the game logic.
+		// 						delete fishes[fishIndex]->bones[i]->joint;
+		// 						delete fishes[fishIndex]->bones[i];
+		// 					}
+
+
+							// delete the finger joint
+							// if (fishes[fishIndex]->bones[i]->joint->p_joint == nullptr || fishes[fishIndex]->bones[i]->joint->p_joint == NULL) {
+
+							// 	;
+							// }
+							// else {
+
+								if (!fishes[fishIndex]->bones[i]->isRoot) { // root bones dont have joints
+
+									if (fishes[fishIndex]->bones[i]->joint->isUsed) {
+										
+										try {
+											local_m_world->DestroyJoint(fishes[fishIndex]->bones[i]->joint->p_joint);	
+											fishes[fishIndex]->bones[i]->joint = nullptr;
+										}
+										catch (...) {
+											printf("borked while trying to delete joint\n");
+										}
+									}
+
+
+								}
+
+								
+							// }
+
+		}
+
+
 
 		for (int i = 0; i < N_FINGERS; ++i) {
 
@@ -615,23 +652,52 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 		// 						delete fishes[fishIndex]->bones[i];
 		// 					}
 
-							else if (fishes[fishIndex]->bones[i]->isUsed && fishes[fishIndex]->bones[i]->init) {
+
+							// delete the finger joint
+							// if (fishes[fishIndex]->bones[i]->joint->p_joint == nullptr || fishes[fishIndex]->bones[i]->joint->p_joint == NULL) {
+
+							// 	;
+							// }
+							// else {
+
+							// 	if (!fishes[fishIndex]->bones[i]->isRoot) { // root bones dont have joints
+
+							// 		if (fishes[fishIndex]->bones[i]->joint->isUsed && fishes[fishIndex]->bones[i]->joint->init) {
+										
+							// 			try {
+							// 				local_m_world->DestroyJoint(fishes[fishIndex]->bones[i]->joint->p_joint);	
+							// 			}
+							// 			catch (...) {
+							// 				printf("borked while trying to delete joint\n");
+							// 			}
+							// 		}
+
+
+							// 	}
+
+								
+							// }
+							
+					
+								
+
+
+							if (fishes[fishIndex]->bones[i]->isUsed && fishes[fishIndex]->bones[i]->init) {
 								printf("deleting bone %i of 8.", i);
 
-
-
-
-
 								// try {
-								 m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
+								 local_m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
+								 fishes[fishIndex]->bones[i]->p_body = nullptr;
+								 fishes[fishIndex]->bones[i]->isUsed = false;
+								 fishes[fishIndex]->bones[i]->init = false;
 								// } catch (...) {printf("a fuckup occurred while deleting something from the world\n");
-}
+							}
 
 
 								// m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
 
 								// fishes[fishIndex]->bones[i]->init = false;
-								fishes[fishIndex]->bones[i]->isUsed = false;
+								
 
 
 
@@ -644,10 +710,15 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 		// fishSlotLoaded[fishIndex] = false;
 
 	}
+
+		// fishes[fishIndex]->init = false; // doesn't unint the fish, just takes it out of the world. but you can overwrite the inited fish anyway without needing to delete it.
+		fishes[fishIndex]->isUsed = false;
+		fishSlotLoaded[fishIndex] = false;
+
 }
 
-void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, b2World * m_world, b2ParticleSystem * m_particleSystem, fann * nann, b2Vec2 startingPosition) {
-	fishes[fishIndex] = new BonyFish(driedFish, fishIndex , m_world, m_particleSystem, nann, startingPosition);
+void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
+	fishes[fishIndex] = new BonyFish(driedFish, fishIndex, nann, startingPosition);
 	fishes[fishIndex]->slot = fishIndex;
 	fishSlotLoaded[fishIndex] = true;
 }
@@ -1098,7 +1169,7 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 
 // }
 
-void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * m_particleSystem) {
+void LoadFishFromName (uint8_t fishIndex) {
 
 	fishDescriptor_t newFish;
 
@@ -1120,10 +1191,10 @@ void LoadFishFromName (uint8_t fishIndex, b2World * m_world, b2ParticleSystem * 
 
 	bool loadWithBlankBrain = true;
 	if (loadWithBlankBrain) {
-		loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, NULL, b2Vec2(0.0f, 0.0f) ) ;
+		loadFish ( fishIndex,  newFish, NULL, b2Vec2(0.0f, 0.0f) ) ;
 	}
 	else {
-		loadFish ( fishIndex,  newFish, m_world,  m_particleSystem, ann , b2Vec2(0.0f, 0.0f)) ;
+		loadFish ( fishIndex,  newFish, ann , b2Vec2(0.0f, 0.0f)) ;
 	}
 
  	
@@ -1357,7 +1428,7 @@ void removeDeletableFish() {
 		// if ( !fishes[i]->isUsed || !fishes[i]->init) { 		continue; } else if (fishes[i]->isUsed && fishes[i]->init) {
 
 			if (fishes[i]->flagDelete) {
-				deleteFish (i, local_m_world, local_m_particleSystem) ;
+				deleteFish (i) ;
 			}
 
 			// for (int i = 0; i < N_FISHES; ++i)
@@ -1670,7 +1741,14 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 	// destroy all creatures in the world and delete them from memory. make sure their udata is deleted too.
 
+	
+
+
 	removeDeletableFish();
+
+
+
+
 	// for (int i = 0; i < N_FISHES; ++i)
 	// {
 	// 	deleteFish (i, m_world, m_particleSystem) ;
@@ -1727,12 +1805,12 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
 		
-		loadFish (i, koiCarp, local_m_world, local_m_particleSystem, mann, positionalRandomness) ;
+		loadFish (i, koiCarp, mann, positionalRandomness) ;
 
 		}
 		else {
 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
-		loadFish (i, koiCarp, local_m_world, local_m_particleSystem, NULL, positionalRandomness) ;
+		loadFish (i, koiCarp, NULL, positionalRandomness) ;
 
 		}
 
@@ -1747,7 +1825,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 		// unused_variable((void*) mann);
 
-		totalFishIncorporator(i, local_m_world, local_m_particleSystem);
+		totalFishIncorporator(i);
 
 
 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 5, (RNG()-0.5) * 5  );
@@ -1788,7 +1866,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
 
-	addFoodParticle(b2Vec2(2.5f, 3.5f), m_world, m_particleSystem);
+	addFoodParticle(b2Vec2(2.5f, 3.5f));
 
 	// beginGeneration ( local_m_world,local_m_particleSystem);
 	startNextGeneration = true;
@@ -1909,146 +1987,157 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 void deepSeaLoop () {
 
 
-	// printf("%i lookc", local_m_world->IsLocked());
 
 
-	// if (startNextGeneration ) {
-	// 	beginGeneration ( local_m_world,local_m_particleSystem);
-	// }
+	if (!local_m_world->IsLocked()) {
 
-	for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (!foodSlotLoaded[i]) {
-			break;
+		
+
+
+
+		// printf("%i lookc", local_m_world->IsLocked() );
+
+		if (startNextGeneration ) {
+			beginGeneration ( );
 		}
-		else {
-			food[i]->position = food[i]->p_body->GetPosition(); // update positions of all the food particles
+
+		
+
+
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+			if (!foodSlotLoaded[i]) {
+				break;
+			}
+			else {
+				food[i]->position = food[i]->p_body->GetPosition(); // update positions of all the food particles
+			}
 		}
-	}
 
-	unsigned int spacesUsedSoFar =0;
+		unsigned int spacesUsedSoFar =0;
 
-	for (int i = 0; i < N_FISHES; ++i) {
-		if (fishSlotLoaded[i]) {
-			
+		for (int i = 0; i < N_FISHES; ++i) {
+			if (fishSlotLoaded[i]) {
+				
 
-				// cause heart to beat. Heart A is the slowest
-				if (fishes[i]->heartCountA > fishes[i]->heartSpeed) {
-					fishes[i]->heartCountA = 0;
-					if (fishes[i]->heartOutputA > 0) { fishes[i]->heartOutputA = -1; }
-					else { fishes[i]->heartOutputA = 1; }
-				}
-				else { fishes[i]->heartCountA++; }
+					// cause heart to beat. Heart A is the slowest
+					if (fishes[i]->heartCountA > fishes[i]->heartSpeed) {
+						fishes[i]->heartCountA = 0;
+						if (fishes[i]->heartOutputA > 0) { fishes[i]->heartOutputA = -1; }
+						else { fishes[i]->heartOutputA = 1; }
+					}
+					else { fishes[i]->heartCountA++; }
 
-				if (fishes[i]->heartCountB > fishes[i]->heartSpeed/2) {
-					fishes[i]->heartCountB = 0;
-					if (fishes[i]->heartOutputB > 0) { fishes[i]->heartOutputB = -1; }
-					else { fishes[i]->heartOutputB = 1; }
-				}
-				else { fishes[i]->heartCountB++; }
+					if (fishes[i]->heartCountB > fishes[i]->heartSpeed/2) {
+						fishes[i]->heartCountB = 0;
+						if (fishes[i]->heartOutputB > 0) { fishes[i]->heartOutputB = -1; }
+						else { fishes[i]->heartOutputB = 1; }
+					}
+					else { fishes[i]->heartCountB++; }
 
-				if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
-					fishes[i]->heartCountC = 0;
-					if (fishes[i]->heartOutputC > 0) { fishes[i]->heartOutputC = -1; }
-					else { fishes[i]->heartOutputC = 1; }
-				}
-				else { fishes[i]->heartCountC++; }
+					if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
+						fishes[i]->heartCountC = 0;
+						if (fishes[i]->heartOutputC > 0) { fishes[i]->heartOutputC = -1; }
+						else { fishes[i]->heartOutputC = 1; }
+					}
+					else { fishes[i]->heartCountC++; }
 
-				if (fishes[i]->heartCountD > fishes[i]->heartSpeed/8) {
-					fishes[i]->heartCountD = 0;
-					if (fishes[i]->heartOutputD > 0) { fishes[i]->heartOutputD = -1; }
-					else { fishes[i]->heartOutputD = 1; }
-				}
-				else { fishes[i]->heartCountD++; }
-
+					if (fishes[i]->heartCountD > fishes[i]->heartSpeed/8) {
+						fishes[i]->heartCountD = 0;
+						if (fishes[i]->heartOutputD > 0) { fishes[i]->heartOutputD = -1; }
+						else { fishes[i]->heartOutputD = 1; }
+					}
+					else { fishes[i]->heartCountD++; }
 
 
 
 
 
-				// update the fish's senses
-				for (int j = 0; j < N_FINGERS; ++j) {
-					nonRecursiveSensorUpdater (fishes[i]->bones[j]);
-				}
 
-				// eight motors and four timing inputs
-				float sensorium[12] = {
-						fishes[i]->bones[0]->sensation, 
-						fishes[i]->bones[1]->sensation,
-						fishes[i]->bones[2]->sensation,
-						fishes[i]->bones[3]->sensation,
-						fishes[i]->bones[4]->sensation,
-						fishes[i]->bones[5]->sensation,
-						fishes[i]->bones[6]->sensation,
-						fishes[i]->bones[7]->sensation,
-
-						(float)fishes[i]->heartOutputA,
-						(float)fishes[i]->heartOutputB,
-						(float)fishes[i]->heartOutputC,
-						(float)fishes[i]->heartOutputD};
-
-
-				// printf("sense: %.2f %.2f\n", fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation);
-				// feed information into brain
-				float * motorSignals = fann_run(fishes[i]->ann, sensorium);
-
-				// printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
-
-				if (true) {
-					// float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
-					// float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
-
-					// printf("joint: %.2f %.2f\n", jointAngleA, jointAngleB);
-
-					for (int j = 1; j < 8; ++j) // dont even try to move the 0th one
-					{
-
-						if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
-							continue;
-						}
-						else if (fishes[i]->bones[j]->isUsed && fishes[i]->bones[j]->init) {
-
-							if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
-								fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
-								// printf("the joint speed was set");
-
-							}
-
-							
-							
-						}
-						
-						
+					// update the fish's senses
+					for (int j = 0; j < N_FINGERS; ++j) {
+						nonRecursiveSensorUpdater (fishes[i]->bones[j]);
 					}
 
-					 //speedForJointA*10);
-					// fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(motorSignals[1]*fishes[i]->bones[1]->joint->speedLimit);//speedForJointB*10);
-					// fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(motorSignals[2]*fishes[i]->bones[2]->joint->speedLimit); //speedForJointA*10);
-					// fishes[i]->bones[3]->joint->p_joint->SetMotorSpeed(motorSignals[3]*fishes[i]->bones[3]->joint->speedLimit);//speedForJointB*10);
-					// fishes[i]->bones[4]->joint->p_joint->SetMotorSpeed(motorSignals[4]*fishes[i]->bones[4]->joint->speedLimit); //speedForJointA*10);
-					// fishes[i]->bones[5]->joint->p_joint->SetMotorSpeed(motorSignals[5]*fishes[i]->bones[5]->joint->speedLimit);//speedForJointB*10);
-					// fishes[i]->bones[6]->joint->p_joint->SetMotorSpeed(motorSignals[6]*fishes[i]->bones[6]->joint->speedLimit); //speedForJointA*10);
-					// fishes[i]->bones[7]->joint->p_joint->SetMotorSpeed(motorSignals[7]*fishes[i]->bones[7]->joint->speedLimit);//speedForJointB*10);
-				}
+					// eight motors and four timing inputs
+					float sensorium[12] = {
+							fishes[i]->bones[0]->sensation, 
+							fishes[i]->bones[1]->sensation,
+							fishes[i]->bones[2]->sensation,
+							fishes[i]->bones[3]->sensation,
+							fishes[i]->bones[4]->sensation,
+							fishes[i]->bones[5]->sensation,
+							fishes[i]->bones[6]->sensation,
+							fishes[i]->bones[7]->sensation,
 
-				// print the brainal output
-				drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
+							(float)fishes[i]->heartOutputA,
+							(float)fishes[i]->heartOutputB,
+							(float)fishes[i]->heartOutputC,
+							(float)fishes[i]->heartOutputD};
+
+
+					// printf("sense: %.2f %.2f\n", fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation);
+					// feed information into brain
+					float * motorSignals = fann_run(fishes[i]->ann, sensorium);
+
+					// printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
+
+					if (true) {
+						// float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
+						// float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
+
+						// printf("joint: %.2f %.2f\n", jointAngleA, jointAngleB);
+
+						for (int j = 1; j < 8; ++j) // dont even try to move the 0th one
+						{
+
+							if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
+								continue;
+							}
+							else if (fishes[i]->bones[j]->isUsed && fishes[i]->bones[j]->init) {
+
+								if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
+									fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
+									// printf("the joint speed was set");
+
+								}
+
+								
+								
+							}
+							
+							
+						}
+
+						 //speedForJointA*10);
+						// fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(motorSignals[1]*fishes[i]->bones[1]->joint->speedLimit);//speedForJointB*10);
+						// fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(motorSignals[2]*fishes[i]->bones[2]->joint->speedLimit); //speedForJointA*10);
+						// fishes[i]->bones[3]->joint->p_joint->SetMotorSpeed(motorSignals[3]*fishes[i]->bones[3]->joint->speedLimit);//speedForJointB*10);
+						// fishes[i]->bones[4]->joint->p_joint->SetMotorSpeed(motorSignals[4]*fishes[i]->bones[4]->joint->speedLimit); //speedForJointA*10);
+						// fishes[i]->bones[5]->joint->p_joint->SetMotorSpeed(motorSignals[5]*fishes[i]->bones[5]->joint->speedLimit);//speedForJointB*10);
+						// fishes[i]->bones[6]->joint->p_joint->SetMotorSpeed(motorSignals[6]*fishes[i]->bones[6]->joint->speedLimit); //speedForJointA*10);
+						// fishes[i]->bones[7]->joint->p_joint->SetMotorSpeed(motorSignals[7]*fishes[i]->bones[7]->joint->speedLimit);//speedForJointB*10);
+					}
+
+					// print the brainal output
+					drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
+
+
+
+
+			}
+			else{
+				;
+			}
+
+
+
+
+
 
 
 
 
 		}
-		else{
-			;
-		}
-
-
-
-
-
-
-
-
-
 	}
 }
 

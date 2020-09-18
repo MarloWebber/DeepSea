@@ -167,6 +167,11 @@ static void Timer(int)
 
 static void SimulationLoop()
 {
+
+
+
+
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -572,6 +577,19 @@ static void Restart(int)
 	Resize(width, height);
 }
 #endif  // ENABLE_GLUI
+
+
+ void Pause2()
+{
+	settings.pause = false;
+}
+// #endif  // ENABLE_GLUI
+
+ void Resume2()
+{
+	settings.pause = false;
+}
+
 
 #if ENABLE_GLUI
 static void Pause(int)

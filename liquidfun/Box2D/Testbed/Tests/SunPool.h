@@ -45,7 +45,7 @@ public:
 			pd.flags = TestMain::GetParticleParameterValue();
 
 			// pastel red
-			pd.color.Set(250, 20, 50, 255);
+			pd.color.Set(255, 20, 50, 255);
 			pd.shape = &shape;
 
 			b2ParticleGroup * const group = m_particleSystem->CreateParticleGroup(pd);
@@ -63,8 +63,8 @@ public:
 			b2ParticleGroupDef pd;
 			pd.flags = TestMain::GetParticleParameterValue();
 
-			// pastel red
-			pd.color.Set(220, 120, 0, 255);
+			// pastel gold
+			pd.color.Set(255, 200, 0, 255);
 			pd.shape = &shape;
 
 			b2ParticleGroup * const group = m_particleSystem->CreateParticleGroup(pd);

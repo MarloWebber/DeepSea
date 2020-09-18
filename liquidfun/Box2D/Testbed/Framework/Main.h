@@ -41,6 +41,16 @@ void SetParticleParameters(
 	const ParticleParameter::Definition * const particleParameterDef,
 	const uint32 particleParameterDefCount);
 
+
+ void Pause2();
+ void Resume2();
+
 }  // namespace TestMain
+
+
+// #if ENABLE_GLUI
+
+// #endif  // ENABLE_GLUI
+
 
 #endif  // MAIN_H

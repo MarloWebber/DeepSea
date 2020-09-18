@@ -103,6 +103,8 @@ Test::Test()
 	memset(&m_totalProfile, 0, sizeof(b2Profile));
 
 	m_particleParameters = NULL;
+
+	deepSeaSetup(  m_world, m_particleSystem, &m_debugDraw);
 }
 
 Test::~Test()
@@ -275,9 +277,15 @@ void Test::MouseDown(const b2Vec2& p)
 			// 	;
 			// } 
 			// else {
+
+
+			TestMain::Pause2();
+
 					vote(winner);
 			// }
 		
+
+		// Settings.pause = true;
 	
 
 	
@@ -362,7 +370,7 @@ void Test::jointMotorSetpoint()
 
 
 
-	deepSeaSetup(  m_world, m_particleSystem, &m_debugDraw);
+	
 }
 
 void Test::controlA()
@@ -419,6 +427,8 @@ void Test::LaunchBomb(const b2Vec2& position, const b2Vec2& velocity)
 
 	m_bomb->CreateFixture(&fd);
 }
+
+// void Test::Pause()
 
 void Test::Step(Settings* settings)
 {
