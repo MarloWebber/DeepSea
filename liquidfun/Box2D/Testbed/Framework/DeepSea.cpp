@@ -1568,7 +1568,7 @@ std::ofstream outFile("mutantGimp.net");
 				    float val = std::stof(sciNumber); 
 
 				    if (RNG() < 0.2) {		// chance of a mutation occurring
-					    val += ( (RNG() -0.5f) * 1.0f ); // how much mutation to apply
+					    val += ( (RNG() -0.5f) * 0.5f ); // how much mutation to apply
 				    }
 
 			    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
@@ -1765,14 +1765,14 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		
 
 		bool thereIsAFile = false;
-		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 5, (RNG()-0.5) * 15  );
+		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
 
 
 		fishDescriptor_t newFishBody;
 		loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-		mutateFishDescriptor (&newFishBody, 0.1, 0.5);
+		mutateFishDescriptor (&newFishBody, 0.1, 0.25);
 
 
 
