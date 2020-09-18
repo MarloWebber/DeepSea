@@ -600,9 +600,8 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 		printf("deleting %i of 8.", fishIndex);
 
 		
-		fishes[fishIndex]->init = false;
+		// fishes[fishIndex]->init = false; // doesn't unint the fish, just takes it out of the world. but you can overwrite the inited fish anyway without needing to delete it.
 		fishes[fishIndex]->isUsed = false;
-
 		fishSlotLoaded[fishIndex] = false;
 
 		for (int i = 0; i < N_FINGERS; ++i) {
@@ -620,20 +619,25 @@ void deleteFish (uint8_t fishIndex,  b2World * m_world, b2ParticleSystem * m_par
 								printf("deleting bone %i of 8.", i);
 
 
-								try { m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);} catch (...) {printf("a fuckup occurred while deleting something from the world\n");
+
+
+
+								// try {
+								 m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
+								// } catch (...) {printf("a fuckup occurred while deleting something from the world\n");
 }
 
 
 								// m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
 
-								fishes[fishIndex]->bones[i]->init = false;
+								// fishes[fishIndex]->bones[i]->init = false;
 								fishes[fishIndex]->bones[i]->isUsed = false;
 
 
 
 								// delete fishes[fishIndex]->bones[i]->joint;
 								// delete fishes[fishIndex]->bones[i];
-							}
+							// }
 		}
 		// delete fishes[fishIndex];	 // delete does, in fact, take a pointer
 
@@ -1633,8 +1637,9 @@ std::ofstream outFile("mutantGimp.net");
 
 }
 
-void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) { // select an animal as an evolutionary winner, passing its genes on to the next generation
-
+void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
+// b2World * m_world, 
+// b2ParticleSystem * m_particleSystem
 
 	// select the fish you clicked
 	// fishDescriptor_t winnerSyrup = body->userData->uData->p_owner->genes;
@@ -1722,12 +1727,12 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 		fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
 		
-		loadFish (i, koiCarp, m_world, m_particleSystem, mann, positionalRandomness) ;
+		loadFish (i, koiCarp, local_m_world, local_m_particleSystem, mann, positionalRandomness) ;
 
 		}
 		else {
 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
-		loadFish (i, koiCarp, m_world, m_particleSystem, NULL, positionalRandomness) ;
+		loadFish (i, koiCarp, local_m_world, local_m_particleSystem, NULL, positionalRandomness) ;
 
 		}
 
@@ -1742,7 +1747,7 @@ void beginGeneration ( b2World * m_world, b2ParticleSystem * m_particleSystem) {
 
 		// unused_variable((void*) mann);
 
-		totalFishIncorporator(i, m_world, m_particleSystem);
+		totalFishIncorporator(i, local_m_world, local_m_particleSystem);
 
 
 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 5, (RNG()-0.5) * 5  );
@@ -1903,9 +1908,13 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 
 void deepSeaLoop () {
 
-	if (startNextGeneration) {
-		beginGeneration ( local_m_world,local_m_particleSystem);
-	}
+
+	// printf("%i lookc", local_m_world->IsLocked());
+
+
+	// if (startNextGeneration ) {
+	// 	beginGeneration ( local_m_world,local_m_particleSystem);
+	// }
 
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
 		if (!foodSlotLoaded[i]) {

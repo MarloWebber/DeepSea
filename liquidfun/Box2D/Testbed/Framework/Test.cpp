@@ -368,7 +368,7 @@ void Test::jointMotorSetpoint()
 void Test::controlA()
 {
 
-	mutateFANNFileDirectly();
+	// mutateFANNFileDirectly();
 	// deepSeaControlA();
 	// setUserControlInputA();
 }

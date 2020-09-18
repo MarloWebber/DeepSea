@@ -228,4 +228,8 @@ void collisionHandler (void * boneA, void * boneB) ;
 void vote(BonyFish * winner);
 
 void  mutateFANNFileDirectly();
+
+// if (startNextGeneration ) {
+void		beginGeneration ();
+	// }
 #endif

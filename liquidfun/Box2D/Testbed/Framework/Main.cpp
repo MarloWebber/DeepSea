@@ -270,7 +270,7 @@ static void SimulationLoop()
 		s_printCount++;
 	}
 
-	// the DeepSea main loop. after physics but before UI.
+
 	deepSeaLoop();
 
 }
