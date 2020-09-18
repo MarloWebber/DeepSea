@@ -86,7 +86,7 @@
 #include "Faucet.h"
 
 #include "SunPool.h"
-
+#include "OlympicPool.h"
 // #include "Fracker.h"
 // #include "Impulse.h"
 // #include "LiquidTimer.h"
@@ -107,6 +107,7 @@ TestEntry g_testEntries[] =
 {
 	// {"Sandbox", Sandbox::Create},
 	// {"Sparky", Sparky::Create},
+	{"Olympic Pool", OlympicPool::Create},
 	{"Jellyfish Simulator", DamBreak::Create},
 	// {"Liquid Timer", LiquidTimer::Create},
 	// {"Wave Machine", WaveMachine::Create},

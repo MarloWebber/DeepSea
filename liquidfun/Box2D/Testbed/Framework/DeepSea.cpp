@@ -131,7 +131,7 @@ BoneUserData::BoneUserData(
 	length = boneDescription.length;
 	rootThickness = boneDescription.rootThickness;
 	tipThickness = boneDescription.tipThickness;
-	density = 1.5f;
+	density = 1.2f; // the original density of the water is 1.2f
 	isRoot = boneDescription.isRoot;
 	isMouth = boneDescription.isMouth;
 	isSensor = boneDescription.isSensor;
@@ -336,7 +336,10 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false; // only true when the part is added to the world
 
-	heartSpeed = driedFish.heartSpeed;
+	// heartSpeed = driedFish.heartSpeed;
+
+	heartSpeed = RNG() * driedFish.heartSpeed;
+
 	if (heartSpeed < 1) {
 		heartSpeed = 50;
 	}
@@ -454,7 +457,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				50.0f,	// torque
+				100.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -504,7 +507,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				50.0f,	// torque
+				100.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -520,7 +523,7 @@ fishDescriptor_t koiCarp = {
 				false,	// isMouth
 				false,	// isSensor
 				false,	// isWeapon
-				50.0f,	// torque
+				100.0f,	// torque
 				10.0f,	// speedLimit
 				pi * 1.0f * 0.5f,// upperAngle
 				0.0f,	// normalAngle
@@ -1762,7 +1765,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		
 
 		bool thereIsAFile = false;
-		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
+		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 5, (RNG()-0.5) * 15  );
 
 
 
@@ -1866,7 +1869,15 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
 
-	addFoodParticle(b2Vec2(2.5f, 3.5f));
+	if (RNG() > 0.5f) {
+
+		addFoodParticle(b2Vec2(24.0f, 3.5f));
+	}
+	else {
+
+		addFoodParticle(b2Vec2(-24.0f, 3.5f));
+	}
+
 
 	// beginGeneration ( local_m_world,local_m_particleSystem);
 	startNextGeneration = true;
