@@ -23,7 +23,7 @@
 #include "../Tests/DamBreak.h"
 
 #include "DeepSea.h"
-
+bool voting_mode;
 // float pi = 3.141f;
 
 void DestructionListener::SayGoodbye(b2Joint* joint)
@@ -156,6 +156,11 @@ void Test::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	}
 }
 
+void Test::EnableVotingMode()
+{
+	voting_mode = true;
+}
+
 void Test::DrawTitle(const char *string)
 {
     m_debugDraw.DrawString(5, DRAW_STRING_NEW_LINE, string);
@@ -257,17 +262,12 @@ void Test::MouseDown(const b2Vec2& p)
 
 	if (callback.m_fixture)
 	{
+
+
 		b2Body* body = callback.m_fixture->GetBody();
-		// b2MouseJointDef md;
-		// md.bodyA = m_groundBody;
-		// md.bodyB = body;
-		// md.target = p;
-		// md.maxForce = 1000.0f * body->GetMass();
-		// m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
-		// body->SetAwake(true);
 
-
-		// find fish struct from user data and save its genetic material.
+		if (voting_mode) {
+			// find fish struct from user data and save its genetic material.
 		uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
 		BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
 		BonyFish * winner = wishBone->p_owner;
@@ -279,7 +279,7 @@ void Test::MouseDown(const b2Vec2& p)
 			// else {
 
 
-			TestMain::Pause2();
+			// TestMain::Pause2();
 
 					vote(winner);
 			// }
@@ -288,6 +288,22 @@ void Test::MouseDown(const b2Vec2& p)
 		// Settings.pause = true;
 	
 
+		}
+		else {
+
+
+
+		
+		b2MouseJointDef md;
+		md.bodyA = m_groundBody;
+		md.bodyB = body;
+		md.target = p;
+		md.maxForce = 1000.0f * body->GetMass();
+		m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
+		body->SetAwake(true);
+
+	}
+		
 	
 	}
 }
@@ -432,6 +448,8 @@ void Test::LaunchBomb(const b2Vec2& position, const b2Vec2& velocity)
 
 void Test::Step(Settings* settings)
 {
+
+	voting_mode = false;
 	float32 timeStep = settings->hz > 0.0f ? 1.0f / settings->hz : float32(0.0f);
 
 	if (settings->pause)

@@ -378,6 +378,13 @@ static void Keyboard(unsigned char key, int x, int y)
 		particleParameter.Increment();
 		break;
 
+	case 'w':
+		// particleParameter.Increment();
+	// voting_mode = true;
+	test->EnableVotingMode();
+		break;
+
+
 	default:
 		if (test)
 		{

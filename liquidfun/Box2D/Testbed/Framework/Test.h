@@ -169,7 +169,7 @@ public:
 	virtual void MouseMove(const b2Vec2& p);
 	void LaunchBomb();
 	void LaunchBomb(const b2Vec2& position, const b2Vec2& velocity);
-
+	void EnableVotingMode();
 	// void addFoodParticle();
 	void jointMotorSetpoint();
 	void controlA();

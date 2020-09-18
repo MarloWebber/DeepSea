@@ -1461,9 +1461,9 @@ if ( !fishSlotLoaded[winner->slot]) {
 
 	// save the winner to file with a new name.
 	std::string nnfilename =  std::string("mostCurrentWinner.net");
-    // std::string fdescfilename =  std::string("225.fsh");
+    std::string fdescfilename =  std::string("mostCurrentWinner.fsh");
     std::ofstream file { nnfilename };
-    // saveFishToFile (fdescfilename, ((BoneUserData *)(dataB.uData))->p_owner->genes);
+    saveFishToFile (fdescfilename, winner->genes);
     fann_save(  wann , nnfilename.c_str()); 
 
 	}
@@ -1769,6 +1769,13 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 
 
+		fishDescriptor_t newFishBody;
+		loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+
+		mutateFishDescriptor (&newFishBody, 0.1, 0.5);
+
+
+
 		 if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
 	        fclose(file);
 	        thereIsAFile = true;
@@ -1808,12 +1815,12 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
 		
-		loadFish (i, koiCarp, mann, positionalRandomness) ;
+		loadFish (i, newFishBody, mann, positionalRandomness) ;
 
 		}
 		else {
 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
-		loadFish (i, koiCarp, NULL, positionalRandomness) ;
+		loadFish (i, newFishBody, NULL, positionalRandomness) ;
 
 		}
 
@@ -1823,7 +1830,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		// }
 		// else {
 
-			
+		 
 		// }
 
 		// unused_variable((void*) mann);
@@ -2150,6 +2157,7 @@ void deepSeaLoop () {
 
 		}
 	}
+
 }
 
 void deepSeaControlA () {
@@ -2202,20 +2210,22 @@ void collisionHandler (void * userDataA, void * userDataB) {
 
 		// save the fish that touched the food as 225
 		if( dataB.dataType == TYPE_MOUTH ) {
-			std::string nnfilename =  std::string("225.net");
-		    std::string fdescfilename =  std::string("225.fsh");
-		    std::ofstream file { nnfilename };
-		    saveFishToFile (fdescfilename, ((BoneUserData *)(dataB.uData))->p_owner->genes);
-		    fann_save(((BoneUserData *)(dataB.uData))->p_owner->ann, nnfilename.c_str()); 
-			exit(EXIT_SUCCESS);
+			// std::string nnfilename =  std::string("225.net");
+		 //    std::string fdescfilename =  std::string("225.fsh");
+		 //    std::ofstream file { nnfilename };
+		    // saveFishToFile (fdescfilename, ((BoneUserData *)(dataB.uData))->p_owner->genes);
+		    vote(((BoneUserData *)(dataB.uData))->p_owner);
+		//     fann_save(((BoneUserData *)(dataB.uData))->p_owner->ann, nnfilename.c_str()); 
+		// 	exit(EXIT_SUCCESS);
 		}
 		else if (dataA.dataType == TYPE_MOUTH) {
-			std::string nnfilename =  std::string("225.net");
-		    std::string fdescfilename =  std::string("225.fsh");
-		    std::ofstream file { nnfilename };
-		    saveFishToFile (fdescfilename, ((BoneUserData *)(dataA.uData))->p_owner->genes);
-		    fann_save(((BoneUserData *)(dataA.uData))->p_owner->ann, nnfilename.c_str()); 
-			exit(EXIT_SUCCESS);
+		// 	std::string nnfilename =  std::string("225.net");
+		//     std::string fdescfilename =  std::string("225.fsh");
+		//     std::ofstream file { nnfilename };
+		//     saveFishToFile (fdescfilename, ((BoneUserData *)(dataA.uData))->p_owner->genes);
+		//     fann_save(((BoneUserData *)(dataA.uData))->p_owner->ann, nnfilename.c_str()); 
+		// 	exit(EXIT_SUCCESS);
+			vote(((BoneUserData *)(dataB.uData))->p_owner);
 		}
 
 	 
