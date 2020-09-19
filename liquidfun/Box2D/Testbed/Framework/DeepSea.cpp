@@ -1962,7 +1962,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 	// create 8 mutant copies of the winner
 
 		
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 8; ++i)
 	{
 		
 
@@ -2319,7 +2319,7 @@ void deepSeaLoop () {
 							(float)fishes[i]->heartOutputD};
 
 
-							printf("%f %f %f %f\n", sensorium[0], sensorium[1], sensorium[2], sensorium[3] );
+							// printf("%f %f %f %f\n", sensorium[0], sensorium[1], sensorium[2], sensorium[3] );
 
 
 					// printf("sense: %.2f %.2f\n", fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation);
