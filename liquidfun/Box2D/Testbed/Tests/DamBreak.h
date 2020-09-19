@@ -28,15 +28,18 @@ public:
 	{
 
 		{
+
+			m_world->SetGravity(b2Vec2(0.0f,0.0f));
+
 			b2BodyDef bd;
 			b2Body* ground = m_world->CreateBody(&bd);
 
 			b2ChainShape shape;
 			const b2Vec2 vertices[4] = {
-				b2Vec2(-3, 0),
-				b2Vec2(3, 0),
-				b2Vec2(3, 4),
-				b2Vec2(-3, 4)};
+				b2Vec2(-30, -40),
+				b2Vec2(30, -40),
+				b2Vec2(30, 40),
+				b2Vec2(-30, 40)};
 			shape.CreateLoop(vertices, 4);
 			ground->CreateFixture(&shape, 0.0f);
 
@@ -52,7 +55,7 @@ public:
 		{
 			// the water
 			b2PolygonShape shape;
-			shape.SetAsBox(2.9f, 1.5f, b2Vec2(0.0f, 1.6f), 0);
+			shape.SetAsBox(0.1f, 0.1f, b2Vec2(0.0f, 100.0f), 0);
 			b2ParticleGroupDef pd;
 			pd.flags = TestMain::GetParticleParameterValue();
 
@@ -69,7 +72,7 @@ public:
 		// some weird blue oil
 		{
 			b2PolygonShape shape_gravel;
-			shape_gravel.SetAsBox(0.2f, 0.2f, b2Vec2(0.0f, 2.6f), 0);
+			shape_gravel.SetAsBox(0.1f, 0.1f, b2Vec2(0.0f, 100.0f), 0);
 			b2ParticleGroupDef pd_gravel;
 
 			pd_gravel.color.Set(0, 0, 255, 255);
@@ -85,31 +88,31 @@ public:
 		}
 
 		// two rows of rocks at the bottom of your tank
-		for (int i = 0; i < 50; i++)
+		// for (int i = 0; i < 50; i++)
 
-			{
+		// 	{
 
-				float xPos = 0 ; 
-				float yPos = 0.5f;
+		// 		float xPos = 0 ; 
+		// 		float yPos = 0.5f;
 
-				if (i > 25) {
-					yPos += 0.5;
-					xPos = -2.5+(i-25)*(0.2);
-				}
-				else {
-					xPos = -2.5+i*(0.2);
-				}
+		// 		if (i > 25) {
+		// 			yPos += 0.5;
+		// 			xPos = -2.5+(i-25)*(0.2);
+		// 		}
+		// 		else {
+		// 			xPos = -2.5+i*(0.2);
+		// 		}
 
-				b2BodyDef bd;
-				bd.type = b2_dynamicBody;
-				b2Body* body = m_world->CreateBody(&bd);
-				b2CircleShape shape;
-				shape.m_p.Set(xPos,yPos );
-				shape.m_radius = 0.1f;
-				body->CreateFixture(&shape, 4.0f);
-				m_particleSystem->DestroyParticlesInShape(shape,
-														  body->GetTransform());
-			}
+		// 		b2BodyDef bd;
+		// 		bd.type = b2_dynamicBody;
+		// 		b2Body* body = m_world->CreateBody(&bd);
+		// 		b2CircleShape shape;
+		// 		shape.m_p.Set(xPos,yPos );
+		// 		shape.m_radius = 0.1f;
+		// 		body->CreateFixture(&shape, 4.0f);
+		// 		m_particleSystem->DestroyParticlesInShape(shape,
+		// 												  body->GetTransform());
+		// 	}
 
 
 

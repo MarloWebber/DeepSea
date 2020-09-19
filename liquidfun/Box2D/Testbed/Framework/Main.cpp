@@ -183,6 +183,8 @@ static void SimulationLoop()
 	// the GL Context without us asking for it
 	Resize(width, height);
 
+	
+
 	test->Step(&settings);
 
 	// Update the state of the particle parameter.
@@ -192,6 +194,8 @@ static void SimulationLoop()
 
 
 	
+	deepSeaLoop();
+
 
 	if (fullscreenUI.GetEnabled())
 	{
@@ -275,8 +279,6 @@ static void SimulationLoop()
 		s_printCount++;
 	}
 
-
-	deepSeaLoop();
 
 }
 

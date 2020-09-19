@@ -25,6 +25,7 @@ bool userControlInputB;
 
 b2World * local_m_world = nullptr;
 b2ParticleSystem * local_m_particleSystem = nullptr;
+DebugDraw * local_debugDraw_pointer = nullptr;
 
 float pi = 3.14159f;
 
@@ -37,7 +38,6 @@ userControlInputB = true;
 }
 
 
-DebugDraw * local_debugDraw_pointer;
 
 // these FANN parameters should be common to all networks.
 const float desired_error = (const float) 0.01;
@@ -341,7 +341,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 	heartSpeed = RNG() * driedFish.heartSpeed;
 
 	if (heartSpeed < 1) {
-		heartSpeed = 50;
+		heartSpeed = 25;
 	}
 
     if (nann == NULL) {
@@ -519,6 +519,146 @@ fishDescriptor_t koiCarp = {
 				1.5f,	// length
 				0.25f,	// rootThickness
 				0.1f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				false,	// isWeapon
+				100.0f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.0f * 0.5f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
+				true
+		}//,//,,
+
+		// {		// tail segment 1
+		// 		1,		// attachesTo
+		// 		0.15f,	// length
+		// 		0.015f,	// rootThickness
+		// 		0.01f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		false,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		 0.5f,// upperAngle
+		// 		 0.0f,	// normalAngle
+		// 		-0.5f,	// lowerAngle
+		// 		true
+		// },
+		// {		// tail segment 2
+		// 		3,		// attachesTo
+		// 		0.15f,	// length
+		// 		0.015f,	// rootThickness
+		// 		0.01f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		false,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		0.5f,// upperAngle
+		// 		0.0f,	// normalAngle
+		// 		-0.5f,	// lowerAngle
+		// 		true
+		// }
+
+	}
+};
+
+
+fishDescriptor_t nematode = {
+	{
+		{		// root mouth bone
+				0,		// attachesTo
+				0.5f,	// length
+				0.2f,	// rootThickness
+				0.2f,	// tipThickness
+				true,	// isRoot
+				true,	// isMouth
+				false,	// isSensor
+				false,	// isWeapon
+				0.0f,	// torque
+				0.0f,	// speedLimit
+				0.0f,	// upperAngle
+				0.0f,	// normalAngle
+				0.0f,	// lowerAngle
+				true
+		},
+		
+
+		{		// body segment
+				0,		// attachesTo
+				0.5f,	// length
+				0.2f,	// rootThickness
+				0.2f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				false,	// isWeapon
+				100.0f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.0f * 0.5f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
+				true
+		},
+
+		//  {		// pec fin A
+		// 		1,		// attachesTo
+		// 		0.5f,	// length
+		// 		0.1f,	// rootThickness
+		// 		0.1f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		true,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		(0.75f * pi) + (pi * 0.5f),// upperAngle
+		// 		(0.75f * pi) + (0.0f),	// normalAngle
+		// 		(0.75f * pi) + (pi * -0.5f),	// lowerAngle
+		// 		true
+		// },
+		// {		// pec fin B
+		// 		1,		// attachesTo
+		// 		0.5f,	// length
+		// 		0.1f,	// rootThickness
+		// 		0.1f,	// tipThickness
+		// 		false,	// isRoot
+		// 		false,	// isMouth
+		// 		true,	// isSensor
+		// 		false,	// isWeapon
+		// 		0.5f,	// torque
+		// 		10.0f,	// speedLimit
+		// 		(-0.75f * pi) + (pi * 0.5f),// upperAngle
+		// 		(-0.75f * pi) + (0.0f),	// normalAngle
+		// 		(-0.75f * pi) + (pi * -0.5f),	// lowerAngle
+		// 		true
+		// },
+
+		{		// tail segment 1 segment
+				1,		// attachesTo
+				0.5f,	// length
+				0.2f,	// rootThickness
+				0.2f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				false,	// isWeapon
+				100.0f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.0f * 0.5f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
+				true
+		},
+		{		// tail segment 2 segment
+				2,		// attachesTo
+				0.5f,	// length
+				0.2f,	// rootThickness
+				0.2f,	// tipThickness
 				false,	// isRoot
 				false,	// isMouth
 				false,	// isSensor
@@ -1711,6 +1851,16 @@ std::ofstream outFile("mutantGimp.net");
 
 }
 
+
+// void doTheNasty (fileNameA, fileNameB) {
+
+// 	// produce an offspring combining the genetic information of both parents
+
+// 	// no idea how to implement gene dominance, maybe just roll to see if the trait is inherited from A or B?
+
+	
+// }
+
 void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 // b2World * m_world, 
 // b2ParticleSystem * m_particleSystem
@@ -1760,7 +1910,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 	// create 8 mutant copies of the winner
 
 		
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		
 
@@ -1769,20 +1919,25 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 
 
-		fishDescriptor_t newFishBody;
+		
+
+		if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
+	        fclose(file);
+	        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
+		        thereIsAFile = true;
+		        fclose(file);
+		    }
+	    } 
+
+
+		if (thereIsAFile ) {
+
+			fishDescriptor_t newFishBody;
 		loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
 		mutateFishDescriptor (&newFishBody, 0.1, 0.25);
 
 
-
-		 if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
-	        fclose(file);
-	        thereIsAFile = true;
-	    } 
-
-
-		if (thereIsAFile ) {
 			// fann *wann;
 			// wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
 			// thereWasAFile = true;
@@ -1820,7 +1975,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		}
 		else {
 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
-		loadFish (i, newFishBody, NULL, positionalRandomness) ;
+		loadFish (i, nematode, NULL, positionalRandomness) ;
 
 		}
 
@@ -1915,6 +2070,9 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar) {
 
+
+	printf("drawn neural net\n");
+
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
 	unsigned int n_layers = fann_get_num_layers(ann);
 
@@ -1956,6 +2114,8 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 	}
 	*spacesUsedSoFar += sizeOfBiggestLayer;
 
+	// printf("ready to draw point\n");
+
 
 	for (uint8_t j = 0; j < layerArray[0]; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
@@ -1966,6 +2126,8 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 	for (uint8_t j = 0; j < layerArray[n_layers-1]; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
+
+
 	}
 
     /* Print weight matrix */
@@ -1998,6 +2160,10 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 
     	b2Color segmentColor = b2Color(con[i].weight*10,con[i].weight*10,con[i].weight*10);
 	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB,segmentColor );
+	    // printf("drawn neural net\n");
+	    // printab2Vec2(printConnectionSideA);
+	    // printab2Vec2(printConnectionSideB);
+
     }
     free(con);
 }
@@ -2038,28 +2204,28 @@ void deepSeaLoop () {
 				
 
 					// cause heart to beat. Heart A is the slowest
-					if (fishes[i]->heartCountA > fishes[i]->heartSpeed) {
+					if (fishes[i]->heartCountA > fishes[i]->heartSpeed/2) {
 						fishes[i]->heartCountA = 0;
 						if (fishes[i]->heartOutputA > 0) { fishes[i]->heartOutputA = -1; }
 						else { fishes[i]->heartOutputA = 1; }
 					}
 					else { fishes[i]->heartCountA++; }
 
-					if (fishes[i]->heartCountB > fishes[i]->heartSpeed/2) {
+					if (fishes[i]->heartCountB > fishes[i]->heartSpeed/4) {
 						fishes[i]->heartCountB = 0;
 						if (fishes[i]->heartOutputB > 0) { fishes[i]->heartOutputB = -1; }
 						else { fishes[i]->heartOutputB = 1; }
 					}
 					else { fishes[i]->heartCountB++; }
 
-					if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
+					if (fishes[i]->heartCountC > fishes[i]->heartSpeed/8) {
 						fishes[i]->heartCountC = 0;
 						if (fishes[i]->heartOutputC > 0) { fishes[i]->heartOutputC = -1; }
 						else { fishes[i]->heartOutputC = 1; }
 					}
 					else { fishes[i]->heartCountC++; }
 
-					if (fishes[i]->heartCountD > fishes[i]->heartSpeed/8) {
+					if (fishes[i]->heartCountD > fishes[i]->heartSpeed/16) {
 						fishes[i]->heartCountD = 0;
 						if (fishes[i]->heartOutputD > 0) { fishes[i]->heartOutputD = -1; }
 						else { fishes[i]->heartOutputD = 1; }
@@ -2099,7 +2265,7 @@ void deepSeaLoop () {
 
 					// printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
 
-					if (true) {
+					if (false) { // use to disable all joint motors
 						// float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
 						// float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
 
