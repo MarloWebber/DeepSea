@@ -2253,7 +2253,7 @@ void deepSeaLoop () {
 				break;
 			}
 			else {
-				food[i]->position = food[i]->p_body->GetPosition(); // update positions of all the food particles
+				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
 			}
 		}
 
