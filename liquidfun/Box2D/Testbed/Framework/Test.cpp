@@ -237,6 +237,10 @@ public:
 	b2Vec2 m_velocity;
 };
 
+bool Test::IsWorldLocked() {
+	return m_world->IsLocked();
+}
+
 void Test::MouseDown(const b2Vec2& p)
 {
 	m_mouseWorld = p;
@@ -386,7 +390,8 @@ void Test::jointMotorSetpoint()
 
 
 
-	
+	startNextGeneration = true;
+
 }
 
 void Test::controlA()

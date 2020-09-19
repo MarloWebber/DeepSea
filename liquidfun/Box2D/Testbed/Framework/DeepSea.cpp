@@ -139,15 +139,19 @@ BoneUserData::BoneUserData(
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
+	// tipCenter = b2Vec2(positionOffset.x,positionOffset.y+0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
+	// rootCenter = b2Vec2(positionOffset.x,positionOffset.y); 	
+
 	tipCenter = b2Vec2(positionOffset.x,positionOffset.y+0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
-	rootCenter = b2Vec2(positionOffset.x,positionOffset.y); 		
+	rootCenter = b2Vec2(positionOffset.x,positionOffset.y); 	
+
 	int count = 4;
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 	if (isRoot) {
 		printf("its a root bone\n");
 
-		tipCenter = b2Vec2(positionOffset.x, positionOffset.y +  length);
+		tipCenter = b2Vec2(positionOffset.x,positionOffset.y+  length);
 
 		b2Vec2 vertices[] = {
 			b2Vec2(rootCenter.x + (rootThickness/2), rootCenter.y), //b2Vec2 rootVertexA = 
@@ -262,7 +266,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	if (!p_bone->init || !p_bone->isUsed) {
 		return;
 	}
-	p_bone->position = p_bone->p_body->GetPosition();
+	p_bone->position = p_bone->p_body->GetWorldCenter();
 	p_bone->sensation = 0.0f;
 
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
@@ -286,8 +290,46 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
 	p_body = local_m_world->CreateBody(&bodyDef);
-	shape.SetAsBox(0.25f, 0.25f, position,0.0f);	
-	p_body->CreateFixture(&shape, 4.0f);
+
+
+
+
+
+
+
+
+
+
+		b2Vec2 vertices[] = {
+			b2Vec2(-0.25, -0.25), 
+			b2Vec2(0.25, -0.25), 
+			b2Vec2(0.25, 0.25), 
+			b2Vec2(-0.25, 0.25)
+		};
+		
+		
+		
+		// figure out the center point.
+		// b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (0.5*length));
+	
+				
+		// bodyDef.type = b2_dynamicBody;
+		// p_body = local_m_world->CreateBody(&bodyDef);
+		
+		// shape.SetAsBox(rootThickness, length, boneCenter,0.0f);	
+		shape.Set(vertices, 4);
+
+
+
+
+
+
+
+
+
+	// shape.Set(vertices);
+
+	p_body->CreateFixture(&shape, 1.2f);
 	init = true;
 	isUsed = true;
 };
@@ -340,9 +382,9 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 
 	heartSpeed = RNG() * driedFish.heartSpeed;
 
-	if (heartSpeed < 1) {
-		heartSpeed = 25;
-	}
+	// if (heartSpeed < 1) {
+		// heartSpeed = 25;
+	// }
 
     if (nann == NULL) {
     	    unsigned int creationLayerCake[] = {
@@ -370,58 +412,58 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 };
 
 // this describes the original 3 boned jellyfish.
-fishDescriptor_t simpleJellyfish = {
-	{
-		{
-				0,		// attachesTo
-				0.175f,	// length
-				0.015f,	// rootThickness
-				0.01f,	// tipThickness
-				true,	// isRoot
-				true,	// isMouth
-				false,	// isSensor
-				false,	// isWeapon
-				0.0f,	// torque
-				0.0f,	// speedLimit
-				0.0f,	// upperAngle
-				0.0f,	// normalAngle
-				0.0f,	// lowerAngle
-				true
-		},
-		 {
-				0,		// attachesTo
-				0.15f,	// length
-				0.015f,	// rootThickness
-				0.01f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				true,	// isSensor
-				false,	// isWeapon
-				0.5f,	// torque
-				10.0f,	// speedLimit
-				(2* 3.1415) -0.075f,// upperAngle
-				(2* 3.1415) -0.15f,	// normalAngle
-				(2* 3.1415) -0.5f,	// lowerAngle
-				true
-		},
-		{
-				0,		// attachesTo
-				0.15f,	// length
-				0.015f,	// rootThickness
-				0.01f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				true,	// isSensor
-				false,	// isWeapon
-				0.5f,	// torque
-				10.0f,	// speedLimit
-				0.50f,	// upperAngle
-				0.15f,	// normalAngle
-				0.075f,	// lowerAngle
-				true
-		}
-	}
-};
+// fishDescriptor_t simpleJellyfish = {
+// 	{
+// 		{
+// 				0,		// attachesTo
+// 				0.175f,	// length
+// 				0.015f,	// rootThickness
+// 				0.01f,	// tipThickness
+// 				true,	// isRoot
+// 				true,	// isMouth
+// 				false,	// isSensor
+// 				false,	// isWeapon
+// 				0.0f,	// torque
+// 				0.0f,	// speedLimit
+// 				0.0f,	// upperAngle
+// 				0.0f,	// normalAngle
+// 				0.0f,	// lowerAngle
+// 				true
+// 		},
+// 		 {
+// 				0,		// attachesTo
+// 				0.15f,	// length
+// 				0.015f,	// rootThickness
+// 				0.01f,	// tipThickness
+// 				false,	// isRoot
+// 				false,	// isMouth
+// 				true,	// isSensor
+// 				false,	// isWeapon
+// 				0.5f,	// torque
+// 				10.0f,	// speedLimit
+// 				(2* 3.1415) -0.075f,// upperAngle
+// 				(2* 3.1415) -0.15f,	// normalAngle
+// 				(2* 3.1415) -0.5f,	// lowerAngle
+// 				true
+// 		},
+// 		{
+// 				0,		// attachesTo
+// 				0.15f,	// length
+// 				0.015f,	// rootThickness
+// 				0.01f,	// tipThickness
+// 				false,	// isRoot
+// 				false,	// isMouth
+// 				true,	// isSensor
+// 				false,	// isWeapon
+// 				0.5f,	// torque
+// 				10.0f,	// speedLimit
+// 				0.50f,	// upperAngle
+// 				0.15f,	// normalAngle
+// 				0.075f,	// lowerAngle
+// 				true
+// 		}
+// 	}
+// };
 
 
 
@@ -430,6 +472,7 @@ fishDescriptor_t simpleJellyfish = {
 // this describes the original 3 boned jellyfish.
 fishDescriptor_t koiCarp = {
 	{
+		// heartSpeed = 50;
 		{		// root mouth bone
 				0,		// attachesTo
 				0.2f,	// length
@@ -570,6 +613,7 @@ fishDescriptor_t koiCarp = {
 
 fishDescriptor_t nematode = {
 	{
+		// heartSpeed = 25;
 		{		// root mouth bone
 				0,		// attachesTo
 				0.5f,	// length
@@ -706,6 +750,14 @@ fishDescriptor_t nematode = {
 
 	}
 };
+
+
+
+
+fishDescriptor_t prepareNematode() {
+	nematode.heartSpeed = 50;
+	return nematode;
+}
 
 
 
@@ -1975,7 +2027,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		}
 		else {
 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
-		loadFish (i, nematode, NULL, positionalRandomness) ;
+		loadFish (i, prepareNematode(), NULL,  positionalRandomness) ;
 
 		}
 
@@ -1990,12 +2042,14 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 		// unused_variable((void*) mann);
 
-		totalFishIncorporator(i);
-
-
 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 5, (RNG()-0.5) * 5  );
 
 		// moveAWholeFish (i, positionalRandomness) ;
+
+		totalFishIncorporator(i);
+
+
+		
 
 	}
 
@@ -2042,7 +2096,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 
 	// beginGeneration ( local_m_world,local_m_particleSystem);
-	startNextGeneration = true;
+	// startNextGeneration = true;
 
 
 	// int howManyNewFishToAdd = 3;
@@ -2071,7 +2125,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar) {
 
 
-	printf("drawn neural net\n");
+	// printf("drawn neural net\n");
 
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
 	unsigned int n_layers = fann_get_num_layers(ann);
@@ -2175,6 +2229,12 @@ void deepSeaLoop () {
 
 	if (!local_m_world->IsLocked()) {
 
+
+
+		// if (Test::IsWorldLocked() ) {
+		// 	return;
+		// }
+
 		
 
 
@@ -2204,21 +2264,21 @@ void deepSeaLoop () {
 				
 
 					// cause heart to beat. Heart A is the slowest
-					if (fishes[i]->heartCountA > fishes[i]->heartSpeed/2) {
+					if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 4) {
 						fishes[i]->heartCountA = 0;
 						if (fishes[i]->heartOutputA > 0) { fishes[i]->heartOutputA = -1; }
 						else { fishes[i]->heartOutputA = 1; }
 					}
 					else { fishes[i]->heartCountA++; }
 
-					if (fishes[i]->heartCountB > fishes[i]->heartSpeed/4) {
+					if (fishes[i]->heartCountB > fishes[i]->heartSpeed) {
 						fishes[i]->heartCountB = 0;
 						if (fishes[i]->heartOutputB > 0) { fishes[i]->heartOutputB = -1; }
 						else { fishes[i]->heartOutputB = 1; }
 					}
 					else { fishes[i]->heartCountB++; }
 
-					if (fishes[i]->heartCountC > fishes[i]->heartSpeed/8) {
+					if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
 						fishes[i]->heartCountC = 0;
 						if (fishes[i]->heartOutputC > 0) { fishes[i]->heartOutputC = -1; }
 						else { fishes[i]->heartOutputC = 1; }
@@ -2259,13 +2319,16 @@ void deepSeaLoop () {
 							(float)fishes[i]->heartOutputD};
 
 
+							printf("%f %f %f %f\n", sensorium[0], sensorium[1], sensorium[2], sensorium[3] );
+
+
 					// printf("sense: %.2f %.2f\n", fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation);
 					// feed information into brain
 					float * motorSignals = fann_run(fishes[i]->ann, sensorium);
 
 					// printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
 
-					if (false) { // use to disable all joint motors
+					if (true) { // use to disable all joint motors
 						// float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
 						// float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
 

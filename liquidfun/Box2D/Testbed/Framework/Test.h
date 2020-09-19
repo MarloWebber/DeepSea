@@ -176,6 +176,7 @@ public:
 	void controlB();
 	void drawPoint (b2Vec2 position) ;
 	void drawSegment(b2Vec2 p1, b2Vec2 p2, b2Color color);
+	bool IsWorldLocked() ;
 
 	void SpawnBomb(const b2Vec2& worldPt);
 	void CompleteBombSpawn(const b2Vec2& p);

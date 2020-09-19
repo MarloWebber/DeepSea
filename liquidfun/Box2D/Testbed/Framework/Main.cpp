@@ -183,6 +183,15 @@ static void SimulationLoop()
 	// the GL Context without us asking for it
 	Resize(width, height);
 
+
+
+	
+		
+	// }
+
+	if (test->IsWorldLocked() == false) {
+		deepSeaLoop();
+	}
 	
 
 	test->Step(&settings);
@@ -194,7 +203,6 @@ static void SimulationLoop()
 
 
 	
-	deepSeaLoop();
 
 
 	if (fullscreenUI.GetEnabled())
