@@ -27,6 +27,7 @@ struct boneAndJointDescriptor_t {
 		bool isRoot = false;
 		bool isMouth = false;
 		bool isSensor = false;
+		bool isTouchSensor = false;
 		bool isWeapon  = false;
 		float torque = 0.0f;
 		float speedLimit = 0.0f;
@@ -76,9 +77,12 @@ struct BoneUserData {
 	uint8_t attachedTo;	
 	bool isRoot ;
 	bool isMouth ;
-	bool isSensor ;
+	bool isSensor ; // like an olfactory sensor . senses distance from food
+	bool isTouchSensor; // like how you can feel when things touch your skin.
+
 	// uint8_t sensorType; 
 	float sensation;
+	float touchSensation;
 	bool isWeapon ;					// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect such as an explosion.
 	float energy; 					// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
@@ -87,6 +91,8 @@ struct BoneUserData {
 	b2PolygonShape shape;
 	BonyFish * p_owner;
 	b2Fixture * p_fixture;
+
+	int collisionGroup;
 
 	b2Vec2 position;
 	bool init;		// if the struct has been created properly
@@ -196,7 +202,7 @@ struct foodParticle_t {
 #define TYPE_DEFAULT 0
 #define TYPE_MOUTH 1
 #define TYPE_FOOD 2
-#define TYPE_DANGER 3
+#define TYPE_TOUCHSENSOR 3
 
 struct uDataWrap {
 	void * uData;
@@ -222,7 +228,7 @@ extern BonyFish * fishes[N_FISHES];
 extern int currentNumberOfFood;
 extern int currentNumberOfFish;
 
-void collisionHandler (void * boneA, void * boneB) ;
+void collisionHandler (void * boneA, void * boneB, b2Contact * p_contact) ;
 
 void vote(BonyFish * winner);
 
