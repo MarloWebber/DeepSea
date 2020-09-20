@@ -13,7 +13,6 @@
 
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
-
 int generationsThisGame = 0;
 bool startNextGeneration = false;
 
@@ -36,8 +35,6 @@ userControlInputA = true;
 void setUserControlInputB () {
 userControlInputB = true;
 }
-
-
 
 // these FANN parameters should be common to all networks.
 const float desired_error = (const float) 0.01;
@@ -139,9 +136,6 @@ BoneUserData::BoneUserData(
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
-	// tipCenter = b2Vec2(positionOffset.x,positionOffset.y+0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
-	// rootCenter = b2Vec2(positionOffset.x,positionOffset.y); 	
-
 	tipCenter = b2Vec2(positionOffset.x,positionOffset.y+0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	rootCenter = b2Vec2(positionOffset.x,positionOffset.y); 	
 
@@ -160,11 +154,6 @@ BoneUserData::BoneUserData(
 			b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
 		};
 		
-		
-		
-		// figure out the center point.
-		// b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (0.5*length));
-	
 		if (isMouth) {
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
 			bodyDef.userData = (void *)p_dataWrapper;
@@ -172,13 +161,11 @@ BoneUserData::BoneUserData(
 		else {
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
 			bodyDef.userData = (void *)p_dataWrapper;
-
 		}
 		
 		bodyDef.type = b2_dynamicBody;
 		p_body = local_m_world->CreateBody(&bodyDef);
 		
-		// shape.SetAsBox(rootThickness, length, boneCenter,0.0f);	
 		shape.Set(vertices, count);
 
 		// reference the physics object from the user data.
@@ -188,10 +175,6 @@ BoneUserData::BoneUserData(
 	else {
 		printf("its not a root bone\n");
 		tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
-		// b2Vec2 rootVertexA = b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y);
-		// b2Vec2 rootVertexB = b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y);
-		// b2Vec2 tipVertexA = b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y);
-		// b2Vec2 tipVertexB = b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y);
 
 		b2Vec2 vertices[] = {
 			b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y), //b2Vec2 rootVertexA = 
@@ -200,11 +183,7 @@ BoneUserData::BoneUserData(
 			b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
 		};
 
-		// figure out the center point.
-		// b2Vec2 boneCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + (2*length));
-
 		// attach user data to the body
-		
 		if (isMouth) {
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
 			bodyDef.userData = (void *)p_dataWrapper;
@@ -212,7 +191,6 @@ BoneUserData::BoneUserData(
 		else {
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
 			bodyDef.userData = (void *)p_dataWrapper;
-
 		}
 
 		bodyDef.type = b2_dynamicBody;
@@ -260,8 +238,6 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
 	p_bone->isUsed = true;
 }
 
-
-
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	if (!p_bone->init || !p_bone->isUsed) {
 		return;
@@ -277,6 +253,9 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[i]->position.x),(p_bone->position.y - food[i]->position.y));
 			float distance = magnitude (positionalDifference);
 			if (distance > 0) {
+
+				printf("%f\n", distance);
+
 				p_bone->sensation += 1/distance;
 			}
 		}
@@ -291,43 +270,14 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 	bodyDef.type = b2_dynamicBody;
 	p_body = local_m_world->CreateBody(&bodyDef);
 
-
-
-
-
-
-
-
-
-
-		b2Vec2 vertices[] = {
-			b2Vec2(-0.25, -0.25), 
-			b2Vec2(0.25, -0.25), 
-			b2Vec2(0.25, 0.25), 
-			b2Vec2(-0.25, 0.25)
-		};
+	b2Vec2 vertices[] = {
+		b2Vec2(-0.25, -0.25), 
+		b2Vec2(0.25, -0.25), 
+		b2Vec2(0.25, 0.25), 
+		b2Vec2(-0.25, 0.25)
+	};
 		
-		
-		
-		// figure out the center point.
-		// b2Vec2 boneCenter = b2Vec2(0.0f, 0.0f + (0.5*length));
-	
-				
-		// bodyDef.type = b2_dynamicBody;
-		// p_body = local_m_world->CreateBody(&bodyDef);
-		
-		// shape.SetAsBox(rootThickness, length, boneCenter,0.0f);	
-		shape.Set(vertices, 4);
-
-
-
-
-
-
-
-
-
-	// shape.Set(vertices);
+	shape.Set(vertices, 4);
 
 	p_body->CreateFixture(&shape, 1.2f);
 	init = true;
@@ -356,15 +306,10 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 
 	flagDelete = false;
 
-
-
-
 	for (int i = 0; i < N_FINGERS; ++i) {
-
 		if (i == 0) {
 			driedFish.bones[i].isRoot = true;
 		}
-
 		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition);
 	}
 
@@ -378,13 +323,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false; // only true when the part is added to the world
 
-	// heartSpeed = driedFish.heartSpeed;
-
-	heartSpeed = RNG() * driedFish.heartSpeed;
-
-	// if (heartSpeed < 1) {
-		// heartSpeed = 25;
-	// }
+	heartSpeed = driedFish.heartSpeed +  ((RNG()-0.5) * driedFish.heartSpeed * 0.5);
 
     if (nann == NULL) {
     	    unsigned int creationLayerCake[] = {
@@ -401,75 +340,9 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
     else { // a brain is provided
     	ann = nann;
     }
-    
-    // make a random but sane file name. It would be better to have sequential, but i can't be assed to code it.
-    // name = RNG() * 255;
-    // std::string nnfilename =  std::to_string(name).c_str() + std::string(".net");
-    // std::string fdescfilename =  std::to_string(name).c_str() + std::string(".fsh");
-    // std::ofstream file { nnfilename };
-    // saveFishToFile (fdescfilename, genes);
-    // fann_save(ann, nnfilename.c_str()); 
 };
 
-// this describes the original 3 boned jellyfish.
-// fishDescriptor_t simpleJellyfish = {
-// 	{
-// 		{
-// 				0,		// attachesTo
-// 				0.175f,	// length
-// 				0.015f,	// rootThickness
-// 				0.01f,	// tipThickness
-// 				true,	// isRoot
-// 				true,	// isMouth
-// 				false,	// isSensor
-// 				false,	// isWeapon
-// 				0.0f,	// torque
-// 				0.0f,	// speedLimit
-// 				0.0f,	// upperAngle
-// 				0.0f,	// normalAngle
-// 				0.0f,	// lowerAngle
-// 				true
-// 		},
-// 		 {
-// 				0,		// attachesTo
-// 				0.15f,	// length
-// 				0.015f,	// rootThickness
-// 				0.01f,	// tipThickness
-// 				false,	// isRoot
-// 				false,	// isMouth
-// 				true,	// isSensor
-// 				false,	// isWeapon
-// 				0.5f,	// torque
-// 				10.0f,	// speedLimit
-// 				(2* 3.1415) -0.075f,// upperAngle
-// 				(2* 3.1415) -0.15f,	// normalAngle
-// 				(2* 3.1415) -0.5f,	// lowerAngle
-// 				true
-// 		},
-// 		{
-// 				0,		// attachesTo
-// 				0.15f,	// length
-// 				0.015f,	// rootThickness
-// 				0.01f,	// tipThickness
-// 				false,	// isRoot
-// 				false,	// isMouth
-// 				true,	// isSensor
-// 				false,	// isWeapon
-// 				0.5f,	// torque
-// 				10.0f,	// speedLimit
-// 				0.50f,	// upperAngle
-// 				0.15f,	// normalAngle
-// 				0.075f,	// lowerAngle
-// 				true
-// 		}
-// 	}
-// };
-
-
-
-
-
-// this describes the original 3 boned jellyfish.
+// this describes the teardrop shaped, swimming animal.
 fishDescriptor_t koiCarp = {
 	{
 		// heartSpeed = 50;
@@ -610,11 +483,10 @@ fishDescriptor_t koiCarp = {
 	}
 };
 
-
+// this describes a basic creature with 4 equal-length segments.
 fishDescriptor_t nematode = {
 	{
-		// heartSpeed = 25;
-		{		// root mouth bone
+		{	
 				0,		// attachesTo
 				0.5f,	// length
 				0.2f,	// rootThickness
@@ -630,9 +502,7 @@ fishDescriptor_t nematode = {
 				0.0f,	// lowerAngle
 				true
 		},
-		
-
-		{		// body segment
+		{
 				0,		// attachesTo
 				0.5f,	// length
 				0.2f,	// rootThickness
@@ -648,41 +518,7 @@ fishDescriptor_t nematode = {
 				pi * -1.0f * 0.5f,	// lowerAngle
 				true
 		},
-
-		//  {		// pec fin A
-		// 		1,		// attachesTo
-		// 		0.5f,	// length
-		// 		0.1f,	// rootThickness
-		// 		0.1f,	// tipThickness
-		// 		false,	// isRoot
-		// 		false,	// isMouth
-		// 		true,	// isSensor
-		// 		false,	// isWeapon
-		// 		0.5f,	// torque
-		// 		10.0f,	// speedLimit
-		// 		(0.75f * pi) + (pi * 0.5f),// upperAngle
-		// 		(0.75f * pi) + (0.0f),	// normalAngle
-		// 		(0.75f * pi) + (pi * -0.5f),	// lowerAngle
-		// 		true
-		// },
-		// {		// pec fin B
-		// 		1,		// attachesTo
-		// 		0.5f,	// length
-		// 		0.1f,	// rootThickness
-		// 		0.1f,	// tipThickness
-		// 		false,	// isRoot
-		// 		false,	// isMouth
-		// 		true,	// isSensor
-		// 		false,	// isWeapon
-		// 		0.5f,	// torque
-		// 		10.0f,	// speedLimit
-		// 		(-0.75f * pi) + (pi * 0.5f),// upperAngle
-		// 		(-0.75f * pi) + (0.0f),	// normalAngle
-		// 		(-0.75f * pi) + (pi * -0.5f),	// lowerAngle
-		// 		true
-		// },
-
-		{		// tail segment 1 segment
+		{
 				1,		// attachesTo
 				0.5f,	// length
 				0.2f,	// rootThickness
@@ -698,7 +534,7 @@ fishDescriptor_t nematode = {
 				pi * -1.0f * 0.5f,	// lowerAngle
 				true
 		},
-		{		// tail segment 2 segment
+		{
 				2,		// attachesTo
 				0.5f,	// length
 				0.2f,	// rootThickness
@@ -713,53 +549,14 @@ fishDescriptor_t nematode = {
 				0.0f,	// normalAngle
 				pi * -1.0f * 0.5f,	// lowerAngle
 				true
-		}//,//,,
-
-		// {		// tail segment 1
-		// 		1,		// attachesTo
-		// 		0.15f,	// length
-		// 		0.015f,	// rootThickness
-		// 		0.01f,	// tipThickness
-		// 		false,	// isRoot
-		// 		false,	// isMouth
-		// 		false,	// isSensor
-		// 		false,	// isWeapon
-		// 		0.5f,	// torque
-		// 		10.0f,	// speedLimit
-		// 		 0.5f,// upperAngle
-		// 		 0.0f,	// normalAngle
-		// 		-0.5f,	// lowerAngle
-		// 		true
-		// },
-		// {		// tail segment 2
-		// 		3,		// attachesTo
-		// 		0.15f,	// length
-		// 		0.015f,	// rootThickness
-		// 		0.01f,	// tipThickness
-		// 		false,	// isRoot
-		// 		false,	// isMouth
-		// 		false,	// isSensor
-		// 		false,	// isWeapon
-		// 		0.5f,	// torque
-		// 		10.0f,	// speedLimit
-		// 		0.5f,// upperAngle
-		// 		0.0f,	// normalAngle
-		// 		-0.5f,	// lowerAngle
-		// 		true
-		// }
-
+		}
 	}
 };
-
-
-
 
 fishDescriptor_t prepareNematode() {
 	nematode.heartSpeed = 50;
 	return nematode;
 }
-
-
 
 void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
 	if ( fishes[fishIndex] == NULL || fishes[fishIndex] == nullptr) { 	return; }
@@ -771,11 +568,7 @@ void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
 		}
 }
 
-
 void totalFishIncorporator (uint8_t fishIndex) {
-
-
-
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fishes[fishIndex]->bones[i]->init) {
 			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , i);
@@ -786,130 +579,40 @@ void totalFishIncorporator (uint8_t fishIndex) {
 // delete a fish from the game world and remove it from memory
 void deleteFish (uint8_t fishIndex) {
 
-
-
-
 	if (fishSlotLoaded[fishIndex]) {
 
 		printf("deleting %i of 8.", fishIndex);
-
-		
 	
 		for (int i = 0; i < N_FINGERS; ++i) {
-					if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
-								continue;
-							}
-
-		// 					else if (fishes[fishIndex]->bones[i]->init && !fishes[fishIndex]->bones[i]->isUsed) { // if the object is initialized, but not applied in the game world, you can still delete it from the game logic.
-		// 						delete fishes[fishIndex]->bones[i]->joint;
-		// 						delete fishes[fishIndex]->bones[i];
-		// 					}
-
-
-							// delete the finger joint
-							// if (fishes[fishIndex]->bones[i]->joint->p_joint == nullptr || fishes[fishIndex]->bones[i]->joint->p_joint == NULL) {
-
-							// 	;
-							// }
-							// else {
-
-								if (!fishes[fishIndex]->bones[i]->isRoot) { // root bones dont have joints
-
-									if (fishes[fishIndex]->bones[i]->joint->isUsed) {
-										
-										try {
-											local_m_world->DestroyJoint(fishes[fishIndex]->bones[i]->joint->p_joint);	
-											fishes[fishIndex]->bones[i]->joint = nullptr;
-										}
-										catch (...) {
-											printf("borked while trying to delete joint\n");
-										}
-									}
-
-
-								}
-
-								
-							// }
-
+			if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
+						continue;
+			}
+			if (!fishes[fishIndex]->bones[i]->isRoot) { // root bones dont have joints
+				if (fishes[fishIndex]->bones[i]->joint->isUsed) {
+						local_m_world->DestroyJoint(fishes[fishIndex]->bones[i]->joint->p_joint);	
+						fishes[fishIndex]->bones[i]->joint = nullptr;
+				}
+			}
 		}
-
-
 
 		for (int i = 0; i < N_FINGERS; ++i) {
+			if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
+				continue;
+			}
 
-							if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
-								continue;
-							}
+			if (fishes[fishIndex]->bones[i]->isUsed && fishes[fishIndex]->bones[i]->init) {
+				printf("deleting bone %i of 8.", i);
 
-		// 					else if (fishes[fishIndex]->bones[i]->init && !fishes[fishIndex]->bones[i]->isUsed) { // if the object is initialized, but not applied in the game world, you can still delete it from the game logic.
-		// 						delete fishes[fishIndex]->bones[i]->joint;
-		// 						delete fishes[fishIndex]->bones[i];
-		// 					}
-
-
-							// delete the finger joint
-							// if (fishes[fishIndex]->bones[i]->joint->p_joint == nullptr || fishes[fishIndex]->bones[i]->joint->p_joint == NULL) {
-
-							// 	;
-							// }
-							// else {
-
-							// 	if (!fishes[fishIndex]->bones[i]->isRoot) { // root bones dont have joints
-
-							// 		if (fishes[fishIndex]->bones[i]->joint->isUsed && fishes[fishIndex]->bones[i]->joint->init) {
-										
-							// 			try {
-							// 				local_m_world->DestroyJoint(fishes[fishIndex]->bones[i]->joint->p_joint);	
-							// 			}
-							// 			catch (...) {
-							// 				printf("borked while trying to delete joint\n");
-							// 			}
-							// 		}
-
-
-							// 	}
-
-								
-							// }
-							
-					
-								
-
-
-							if (fishes[fishIndex]->bones[i]->isUsed && fishes[fishIndex]->bones[i]->init) {
-								printf("deleting bone %i of 8.", i);
-
-								// try {
-								 local_m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
-								 fishes[fishIndex]->bones[i]->p_body = nullptr;
-								 fishes[fishIndex]->bones[i]->isUsed = false;
-								 fishes[fishIndex]->bones[i]->init = false;
-								// } catch (...) {printf("a fuckup occurred while deleting something from the world\n");
-							}
-
-
-								// m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
-
-								// fishes[fishIndex]->bones[i]->init = false;
-								
-
-
-
-								// delete fishes[fishIndex]->bones[i]->joint;
-								// delete fishes[fishIndex]->bones[i];
-							// }
+				 local_m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
+				 fishes[fishIndex]->bones[i]->p_body = nullptr;
+				 fishes[fishIndex]->bones[i]->isUsed = false;
+				 fishes[fishIndex]->bones[i]->init = false;
+			}
 		}
-		// delete fishes[fishIndex];	 // delete does, in fact, take a pointer
-
-		// fishSlotLoaded[fishIndex] = false;
-
 	}
 
-		// fishes[fishIndex]->init = false; // doesn't unint the fish, just takes it out of the world. but you can overwrite the inited fish anyway without needing to delete it.
-		fishes[fishIndex]->isUsed = false;
-		fishSlotLoaded[fishIndex] = false;
-
+	fishes[fishIndex]->isUsed = false;
+	fishSlotLoaded[fishIndex] = false;
 }
 
 void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
@@ -994,21 +697,16 @@ void seekUntil (FILE * cursor, char trigger) {
 }
 
 networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
-	// making a descriptor from a file was too hard
-	// you can make a FANN from the file and then query it for information you need to build the model.
-	// std::string fileName = "225";
-
-	// fann * temp_ann  = loadFishBrainFromFile (fileName);
 
 	// query the number of layers.
 	unsigned int num_layers = fann_get_num_layers(temp_ann);
 	printf("new %u layer networkDescriptor\n", num_layers);
 
 	 // get activation function information
-  	unsigned int activation_function_hidden = 5; //fann::fann_get_activation_function_hidden(temp_ann);
-  	float activation_steepness_hidden = 0.5f;//fann::fann_get_activation_steepness_hidden(temp_ann);
-  	unsigned int activation_function_output = 0; //fann::fann_get_activation_function_output(temp_ann);
-  	float activation_steepness_output = 0; //fann::fann_get_activation_steepness_output(temp_ann);
+  	unsigned int activation_function_hidden = 5;
+  	float activation_steepness_hidden = 0.5f;
+  	unsigned int activation_function_output = 0;
+  	float activation_steepness_output = 0; 
   	
 	// get the layer cake.
 	unsigned int layerCake[num_layers];
@@ -1016,10 +714,8 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 	// flip the cake 
 	fann_get_layer_array(temp_ann, layerCake);
 
-
-
 	// build everything in memory and link it together.
-	networkDescriptor * newCake = new networkDescriptor();	//
+	networkDescriptor * newCake = new networkDescriptor();
   	newCake->n_layers = num_layers;
   	printf ("\ncreated network descriptor\n") ;
 
@@ -1031,17 +727,15 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 
   	for (unsigned int i = 0; i < num_layers; ++i) {
   		newCake->layers[i].n_neurons = layerCake[i];
-  		// printf("LAYER %i has %i neurons!\n", i, layerCake[i]);
 
   		newCake->layers[i].isUsed = true;
   		printf ("created layer descriptor %i\n", layerCake[i]) ;
 
 		for (unsigned int j = 0; j < layerCake[i]; ++j) {
-  			// newCake.layers[i].neurons[j] = new neuronDescriptor();//*(new neuronDescriptor());
   			newCake->layers[i].neurons[j].activation_function = activation_function_hidden;
   			newCake->layers[i].neurons[j].activation_steepness = activation_steepness_hidden;
-  			newCake->layers[i].neurons[j].n_connections = 0; // so not used uninitialized
-  			newCake->layers[i].neurons[j].n_inputs = 0; // so not used uninitialized
+  			newCake->layers[i].neurons[j].n_connections = 0; 	// so not used uninitialized
+  			newCake->layers[i].neurons[j].n_inputs = 0; 
   			newCake->layers[i].neurons[j].isUsed = true;
 
   			if (i == num_layers-1) {
@@ -1059,23 +753,14 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
   	struct fann_connection *con = margles; 
   	fann_get_connection_array(temp_ann, con);
 
-  	for (unsigned int c = 0; c < num_connections; ++c) {
-
-  		// printf("alert: bush mong titties; %u %u\n", con[c].from_neuron, con[c].to_neuron );
-// 
+  	for (unsigned int c = 0; c < num_connections; ++c) { 
   		if (con[c].from_neuron < 0 || con[c].from_neuron > sumOfNeurons ) {
-  			// unsigned int newDestination = RNG() * num_connections;
-  			// con[c].from_neuron = newDestination;
   			continue;
   		}
   		if (con[c].to_neuron < 0 || con[c].to_neuron > sumOfNeurons ) {
-  			// unsigned int newDestination = RNG() * num_connections;
-  			// con[c].to_neuron = newDestination;
   			continue;
   		}
   	}
-
-
 
   	// create connections
   	for (unsigned int c = 0; c < num_connections; ++c) {
@@ -1098,7 +783,6 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
   			continue;
   		}
 
-  		// printf("%u\n", newestConnectionIndex);
   		newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo = con[c].to_neuron;
   		printf("%u ", newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo);
   		newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectionWeight = con[c].weight;
@@ -1130,12 +814,9 @@ void my_print_scientific(char *dest, double value) {
 }
 
 // method to create a fann save file from a network descriptor
+// this function is buggy, and the whole neurodescriptor scheme does not really work yet. At the moment I am modifying the FANN text file directly.
 void createFANNFileFromDescriptor (networkDescriptor network) {
-
-	printf("createFANNFileFromDescriptor\n");
-
 	std::string s = std::string("FANN_FLO_2.1\nnum_layers=");; // string to hold the information.
-
 	s.append(std::to_string(network.n_layers));
 
 	// print this
@@ -1148,15 +829,11 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
 		s.append(" ");
 	}
 
-	printf("print activation information\n");
-
 	// print activation information
  	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
  	for (unsigned int i = network.n_layers-1; i > 0; --i)	{
  		for (unsigned int j = 0; j<network.layers[i].n_neurons ; ++j) {
  			char chalkboard[9];
-
- 			printf("%i of %i\n", j, network.layers[i].n_neurons);
 
  			// one of the layers in the file is supposed to have 0 inputs.
  			if (i == 0) {
@@ -1168,30 +845,18 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
 	 			s += chalkboard;
  			}
 
- 			
  			char sciNotationBuffer[] = "0.00000000000000000000e+00";
  			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].activation_steepness);
  			s += sciNotationBuffer;
-
  			s.append(") ");
  		}
  	}
 
- 	printf("print connection information\n");
- 	// 
 	s += "\nconnections (connected_to_neuron, weight)=";
 	for (unsigned int i = network.n_layers-1; i > 0; --i) 	{
  		for (unsigned int j = 0; j < network.layers[i].n_neurons;  ++j) {
  			for (unsigned int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
-
- 				// if (k >= 8) {
- 				// 	break;
- 				// }
-
  				char chalkboard[5];
-
- 				printf(" |%u|, ", network.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
-
  				sprintf(chalkboard, "(%u, ", network.layers[i].neurons[j].connections[k].connectedTo);
  				s += chalkboard;
  				char sciNotationBuffer[30];
@@ -1202,24 +867,16 @@ void createFANNFileFromDescriptor (networkDescriptor network) {
  		}
  	}
 
- 	printf("print to file\n");
-
     std::ofstream out("mutantGimp.net");
     out << s;
     out.close();
 }
 
 void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float mutationSeverity) {
-
-
 	// count connections.
 	unsigned int sumOfConnections = 0;
 	for (unsigned int i = 0; i < newCake->n_layers; ++i) 	{
-		
  		for (unsigned int j = 0; j < newCake->layers[i].n_neurons; ++j) {
-
-
-
 			if (newCake->layers[i].neurons[j].n_connections > 8) {
 				continue;
 			}
@@ -1229,21 +886,9 @@ void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float m
 			if (j > newCake->layers[i].n_neurons) {
 				continue;
 			}
-			// if (n > newCake->layers[l].neurons[m].n_connections) {
-			// 	continue;
-			// }
-
-
-
  			sumOfConnections += newCake->layers[i].neurons[j].n_connections;
- 			// for (unsigned int k = 0; k < newCake->layers[i].neurons[j].n_connections; ++k) {
-
- 			// }
  		}
-
  	}
-
- 	printf("sum of connections: %i\n", sumOfConnections);
 
  	// while(1) {;}
 	// traverse the mutated body and count the total number of sensors and hearts and limbs.
@@ -1266,13 +911,10 @@ void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float m
 			unsigned int l =  RNG() * newCake->n_layers ;
 			unsigned int m =  RNG() * newCake->layers[l].n_neurons ;
 			unsigned int n =  RNG() * newCake->layers[l].neurons[m].n_connections ;
-
 			if (newCake->layers[l].neurons[m].n_connections > 8) {
 				continue;
 			}
-
 			printf("max l:%u m:%u n:%u", newCake->n_layers ,  newCake->layers[l].n_neurons, newCake->layers[l].neurons[m].n_connections );
-
 			float mutationAmount = ((RNG() -0.5) *mutationSeverity  );
 
 			if (l > newCake->n_layers) {
@@ -1284,16 +926,11 @@ void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float m
 			if (n > newCake->layers[l].neurons[m].n_connections) {
 				continue;
 			}
-
 			newCake->layers[l].neurons[m].connections[n].connectionWeight += mutationAmount;
-
 			printf("warped layer %u neuron %u connection %u by %f\n", l, m, n,  mutationAmount);
-
 		}
 	}
-	
 	// chance to change the target of an existing connection
-	
 }
 
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
@@ -1301,8 +938,7 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 	// mutate heart rate
 	if (RNG() > mutationChance) {	fish->heartSpeed += fish->heartSpeed *mutationSeverity*(RNG()-0.5); }
 
-	for (int i = 0; i < N_FINGERS; ++i)
-	{
+	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fish->bones[i].used) {
 
 			// mutate floats
@@ -1320,68 +956,21 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			// mutate bools
 			if (RNG() > mutationChance) {	fish->bones[i].isMouth = !fish->bones[i].isMouth; }
 			if (RNG() > mutationChance) {	fish->bones[i].isSensor = !fish->bones[i].isSensor; }
-
 		}
 	}
 }
 
-// void conformBrainToNewAnimal (networkDescriptor * newCake, fishDescriptor_t * newFish) {
-// 	// ok, so, what this does is
-// 	// updates a neurodescriptor to match the number of sensors, hearts, and motors on an animal.
-
-// 	// count the number of each thing on the animal.
-
-// 	uint8_t num_motors = 0;
-// 	uint8_t num_sensors = 0;
-
-// 	for (int i = 0; i < newFish->n_bones_used; ++i)
-// 	{
-// 		if (newFish->bones[i].isSensor) {
-// 			num_sensors ++;
-// 		}
-
-// 		// all bones are motor outputs now
-// 		num_motors ++ ;
-
-// 		// if (newFish->bones[i].isSensor) {
-
-// 		// }
-// 	}
-
-
-
-	// compare it to the input and output layer sizes of the ANN.
-
-	// if () {
-
-	// }
-
-	/**
-
-	DEVELOPMENT NOT COMPLETE!
-	**/
-
-
-// }
-
 void LoadFishFromName (uint8_t fishIndex) {
-
 	fishDescriptor_t newFish;
-
 	std::string fileName = "225";
 
 	loadFishFromFile(fileName + std::string(".fsh"), newFish);
-
 	mutateFishDescriptor (&newFish, 0.1, 0.1) ;
 
 	fann *wann = loadFishBrainFromFile (fileName) ;	
-
 	networkDescriptor * tamberlina = createNeurodescriptorFromFANN(wann);
-	
 	mutateFishBrain(tamberlina, 0.1f, 1.0f );
-
 	createFANNFileFromDescriptor(*tamberlina);
-
 	fann * ann  = loadFishBrainFromFile ("mouptut"); // load the mutated file
 
 	bool loadWithBlankBrain = true;
@@ -1391,53 +980,19 @@ void LoadFishFromName (uint8_t fishIndex) {
 	else {
 		loadFish ( fishIndex,  newFish, ann , b2Vec2(0.0f, 0.0f)) ;
 	}
-
- 	
-
 }
 
-
-
-
-
 void wormTrainer () {
-
 	int n_examples = 1000;
-
-
-
-	// float inputValues[12]; 
-	// float outputValues[8];
-
-
-	// float bodysegments = 4;
 
 	FILE *fp;
     fp = fopen("wormTrainer.data","wb");
 
     fprintf(fp, "%i %i% i\n", n_examples*4, 12, 8 );
 
-
-	// for (int i = 0; i < 12; ++i)
-	// {
-	// 	inputValues[i] = 0.0f;
-	// }
-	// for (int i = 0; i < 8; ++i)
-	// {
-	// 	outputValues[i] = 0.0f;
-	// }
-
-
-	for (int i = 0; i < 2*n_examples; ++i)
-	{
-		
-
+	for (int i = 0; i < 2*n_examples; ++i) {
 		float senseDiffPerSegment = RNG() * 0.25;
-
 		float noize = RNG() * 0.5;
-
-		// four samples that show a swimming motion when the food is ahead
-		// ------- SEQ 1
 	
 		// four samples that show a swimming motion when the food is ahead
 		// ------- SEQ 1
@@ -1449,7 +1004,6 @@ void wormTrainer () {
 			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize),
 			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize)
 			);
-
 		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
 			0  + (RNG() * noize),
 			1 + (RNG() * noize),
@@ -1476,7 +1030,7 @@ void wormTrainer () {
 			);
 		// -------- SEQ 3
 		
-fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
+		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
 			4*senseDiffPerSegment + (RNG() * noize),
 			3*senseDiffPerSegment + (RNG() * noize),
 			2*senseDiffPerSegment + (RNG() * noize),
@@ -1494,7 +1048,7 @@ fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n",
 			);
 		// -------- SEQ 4
 		
-fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
+		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
 			4*senseDiffPerSegment + (RNG() * noize),
 			3*senseDiffPerSegment + (RNG() * noize),
 			2*senseDiffPerSegment + (RNG() * noize),
@@ -1511,22 +1065,8 @@ fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n",
 			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
 			);
 		// --------
-		
-
-
-
-
-
-
 	}
-
-
-
 }
-
-
-
-
 
 void jellyfishTrainer () {
 	int n_inputs = 8;
@@ -1611,45 +1151,22 @@ void jellyfishTrainer () {
 	fclose(fp);
 }
 
-
 void removeDeletableFish() {
-	for (int i = 0; i < N_FISHES; ++i)
-	{
-		// if ( !fishSlotLoaded[winner->slot]) {
-		// 	return;
-		// }
-		// else {
+	for (int i = 0; i < N_FISHES; ++i) {
 		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
-		// if ( !fishes[i]->isUsed || !fishes[i]->init) { 		continue; } else if (fishes[i]->isUsed && fishes[i]->init) {
-
-			if (fishes[i]->flagDelete) {
-				deleteFish (i) ;
-			}
-
-			// for (int i = 0; i < N_FISHES; ++i)
-			// {
-				
-			// }
- 
-		// }
+		if (fishes[i]->flagDelete) {
+			deleteFish (i) ;
+		}
 	}
 }
 
-
-
 //  prints the winner to file immediately.
 void  vote (BonyFish * winner) {
-if ( !fishSlotLoaded[winner->slot]) {
-		return;
-	}
+	if ( !fishSlotLoaded[winner->slot]) { return; }
 	else {
-
-		printf("winner: %i\n", winner->slot);
-
-		// printf("winner: %i\n", winner->slot);
+	printf("winner: %i\n", winner->slot);
 
 	fann * wann = winner->ann;
-
 
 	// save the winner to file with a new name.
 	std::string nnfilename =  std::string("mostCurrentWinner.net");
@@ -1660,22 +1177,14 @@ if ( !fishSlotLoaded[winner->slot]) {
 
 	}
 
-
-
 	// label every fish as delete.
-	for (int i = 0; i < N_FISHES; ++i)
-	{
-
+	for (int i = 0; i < N_FISHES; ++i) {
 		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
-		// if ( !fishes[i]->isUsed || !fishes[i]->init) { 		continue; } else if (fishes[i]->isUsed && fishes[i]->init) {
-			fishes[i]->flagDelete = true;
-		// }
+		fishes[i]->flagDelete = true;
 	}
-
 
 	startNextGeneration = true;
 }
-
 
 void printConnectionArrayForDebug (networkDescriptor * network) {
 	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
@@ -1687,13 +1196,6 @@ void printConnectionArrayForDebug (networkDescriptor * network) {
 
  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
  			for (unsigned int k = 0; k < network->layers[i].neurons[j].n_connections; ++k) {
-
- 				// if (k >= 8) {
- 				// 	continue;
- 				// }
-
- 				// char chalkboard[5];
-
  				printf(" |%u|, ", network->layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
 			}
 		}
@@ -1702,276 +1204,95 @@ void printConnectionArrayForDebug (networkDescriptor * network) {
 }
 
 void mutateFANNFileDirectly () {
+	std::ofstream outFile("mutantGimp.net");
+	std::string line;
 
-std::ofstream outFile("mutantGimp.net");
- std::string line;
+	std::ifstream inFile("mostCurrentWinner.net");
+	int count = 0;
+	int amountCount = 0;
+	while(getline(inFile, line)){
 
- std::ifstream inFile("mostCurrentWinner.net");
- int count = 0;
- int amountCount = 0;
- while(getline(inFile, line)){
+	 	if (count == 35) { // its that crazy line.
+	 		char desireCharacter = '=';
+	 		bool skipTheRest = false;
+	 		for(char& c : line) {
 
- 	if (count == 35) { // its that crazy line.
+	 			// skip over the 27 scientific notation characters you copied.
+			    if (!skipTheRest) {
 
- 		// int countUp = 0;
- 
- 		// outFile << std::string("neurons (num_inputs, activation_function, activation_steepness)=");
+			    	// if you're not skipping or writing down the character, forward the information into the new file.
+	 				outFile << c;
+		 			
+		 			// if you find the ' ', you're ready to copy over the next 27 characters.
+		 			if (c == desireCharacter) {
+		 				desireCharacter = ' ';
+		 				if (c == '=' || *((&c) +1) == '(' )  {
+		 					continue;
+		 				}
 
- 		char desireCharacter = '=';
- 	
- 		bool skipTheRest = false;
- 		for(char& c : line) {
+		 				// you need to find out how long the number is.
+		 				int sciNumberLength = 0;
 
- 			// skip over the 27 scientific notation characters you copied.
-		    if (!skipTheRest) {
+		 				while(1) {
+		 					if (*((&c) +sciNumberLength) == ')') {
+		 						break;
+		 					}else {
+		 						sciNumberLength++;
+		 					}
+		 				}
 
-		    	// if you're not skipping or writing down the character, forward the information into the new file.
- 				outFile << c;
-	 			
-	 			// if you find the ' ', you're ready to copy over the next 27 characters.
-	 			if (c == desireCharacter) {
-	 				desireCharacter = ' ';
-	 				if (c == '=' || *((&c) +1) == '(' )  {
-	 					continue;
-	 				}
-	 				// charCount ++;
+						char sciNumber[sciNumberLength];
+						memset(sciNumber, 0x00, sciNumberLength);
+						memcpy(sciNumber, &c, sciNumberLength);
 
-	 				// you need to find out how long the number is.
+						printf("%s\n", sciNumber);
+					    float val = std::stof(sciNumber); 
 
-	 				int sciNumberLength = 0;
+					    if (RNG() < 0.2) {		// chance of a mutation occurring
+						    val += ( (RNG() -0.5f) * 0.5f ); // how much mutation to apply
+					    }
 
-	 				while(1) {
-	 					if (*((&c) +sciNumberLength) == ')') {
-	 						break;
-	 					}else {
-	 						sciNumberLength++;
-	 					}
-	 				}
+				    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
+			 			my_print_scientific(sciNotationBuffer,val);
+			 			outFile << sciNotationBuffer;
+			 			outFile << ") ";
 
-					char sciNumber[sciNumberLength];
-					memset(sciNumber, 0x00, sciNumberLength);
-					memcpy(sciNumber, &c, sciNumberLength);
+			 			amountCount ++;
 
-					// if (sciNumber[26] == ')') {
-					// 	sciNumber[26] = '0';	
-					// }
+			 			if (amountCount >= 248) {
+			 				return;
+			 			}
 
-					printf("%s\n", sciNumber);
-				    float val = std::stof(sciNumber); 
-
-				    if (RNG() < 0.2) {		// chance of a mutation occurring
-					    val += ( (RNG() -0.5f) * 0.5f ); // how much mutation to apply
-				    }
-
-			    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
-		 			my_print_scientific(sciNotationBuffer,val);
-		 			outFile << sciNotationBuffer;
-		 			outFile << ") ";
-
-		 			amountCount ++;
-
-		 			if (amountCount >= 248) {
-		 				return;
+			 			skipTheRest = true;
 		 			}
-
-		 			skipTheRest = true;
-	 			}
-	 			
-			}
-			else  {
-
-				if (c == ' ') {
-					skipTheRest = false;
+		 			
 				}
+				else  {
 
-				// if (countUp >= 27) {
-				// 	countUp = 0;
-				// 	// gimmeSomeSpace = false;
-				// 	skipTheRest = false;
-				// }
-
-				// countUp ++;
-
+					if (c == ' ') {
+						skipTheRest = false;
+					}
+				}
 			}
-		}
-
- 	}
- 	else {
- 		 outFile << line;
-        outFile << "\n";
-
- 	}
-
- 	
-     count++;
- }
- outFile.close();
- inFile.close();
-
-			// //copy a file.
-			// //https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
-			// std::ifstream  src("mostCurrentWinner.net", std::ios::binary);
-		 //    std::ofstream  dst("muntante.net",   std::ios::binary);
-	// 	 //    dst << src.rdbuf();
-
- //    printf("mutating FANN file");
-
-
-	// // FILE *fp;
- // //    fp = fopen("muntante.net","wb");
-
- //    FILE *rp;
- //    rp = fopen("mostCurrentWinner.net","r");
-
- //    std::string messyBumFuck = std::string("");
-
- //    // fprintf(fp, "FANN_FLO_2.1\nnum_layers=4\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00 \nlayer_sizes=13 9 9 9 \nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=(0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (0, 0, 0.00000000000000000000e+00) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (13, 5, 5.00000000000000000000e-01) (0, 5, 0.00000000000000000000e+00) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (0, 5, 0.00000000000000000000e+00) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (9, 5, 5.00000000000000000000e-01) (0, 5, 0.00000000000000000000e+00) \nconnections (connected_to_neuron, weight)="  );
-
-
-
-
-	// // open the FANN file line 35
-
-	// goToLine(rp, 36);
-
-	// // // advanced forward to the first closing bracket
-	// seekUntil(rp, '=');
-
-	// for (unsigned int i = 0; i < 10; ++i)
-	// {
- //   printf("%i\n", i);
-
-	// 	/* code */
-	// 	seekUntil(rp, '(');
-	// 	// advanceCursor(5);
-
-
-	// 	for (int j = 0; j < 5; ++j)
-	// 	{
-	// 		/* code */
-	// 		// fprintf(fp, "%c", fgetc(rp));
-	// 		messyBumFuck += fgetc(rp);
-	// 	}
-
-
-
-	// 	char sciNumber[27];
-	// 	memset(sciNumber, 0x00, 27);
-
-
-
-
-	// 	for (unsigned int j = 0; j < 27; ++j)
-	// 	{
-	// 		// char c;
-	// sciNumber[i] = fgetc(rp);
-
-	// 	}
-
-	// 	// std::string str = "100.80"; 
-  
- //    // val to store parsed floating type number 
- //    float val = std::stof(sciNumber); 
-
-
-
- //    // (mutate the number 'val')
-
-
- //    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
- // 			my_print_scientific(sciNotationBuffer,val);
- // 			messyBumFuck += sciNotationBuffer;
- // 			// fprintf(fp, "%s)", sciNotationBuffer);
-
-
-
-		
-
-	// }
-
-	// // // the following code is repeated until end of line?
-	// 
-
-	// bool thisWeightIsNegative = false;
-
-	// if (<the character> == '-') {
-	// 	thisWeightIsNegative = true;
-	// } 
-
-
-
-
+	 	}
+	 	else {
+	 		outFile << line;
+	        outFile << "\n";
+	 	}
+	    count++;
+	}
+	outFile.close();
+	inFile.close();
 }
 
-
-// void doTheNasty (fileNameA, fileNameB) {
-
-// 	// produce an offspring combining the genetic information of both parents
-
-// 	// no idea how to implement gene dominance, maybe just roll to see if the trait is inherited from A or B?
-
-	
-// }
-
 void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
-// b2World * m_world, 
-// b2ParticleSystem * m_particleSystem
-
-	// select the fish you clicked
-	// fishDescriptor_t winnerSyrup = body->userData->uData->p_owner->genes;
-
-	// uDataWrap * myUserDataStruct = (uDataWrap *)body->m_userData;
-
-	// BonyFish * winner = (BonyFish *)myUserDataStruct->uData;
-
-	
-	// if ( !fishSlotLoaded[winner->slot]) {
-	// 	return;
-	// }
-	// else {
-
-
-	// 	printf("winner: %i\n", winner->slot);
-
-	// fann * wann = winner->ann;
-
-
-
-	// // save the winner to file with a new name.
-	// std::string nnfilename =  std::string("mostCurrentWinner.net");
- //    // std::string fdescfilename =  std::string("225.fsh");
- //    std::ofstream file { nnfilename };
- //    // saveFishToFile (fdescfilename, ((BoneUserData *)(dataB.uData))->p_owner->genes);
- //    fann_save(  wann , nnfilename.c_str()); 
-
-	// destroy all creatures in the world and delete them from memory. make sure their udata is deleted too.
-
-	
-
 
 	removeDeletableFish();
-
-
-
-
-	// for (int i = 0; i < N_FISHES; ++i)
-	// {
-	// 	deleteFish (i, m_world, m_particleSystem) ;
-	// }
- 
-	// create 8 mutant copies of the winner
-
 		
-	for (int i = 0; i < 8; ++i)
-	{
+	for (int i = 0; i < N_FISHES; ++i) {
 		
-
 		bool thereIsAFile = false;
 		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
-
-
-
-		
 
 		if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
 	        fclose(file);
@@ -1981,86 +1302,27 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		    }
 	    } 
 
-
-		if (thereIsAFile ) {
+		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
 
 			fishDescriptor_t newFishBody;
-		loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-		mutateFishDescriptor (&newFishBody, 0.1, 0.25);
-
-
-			// fann *wann;
-			// wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
-			// thereWasAFile = true;
-
-
-		// first load the winner as a fann ANN.
-		// fann *wann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
-
-		// then make a descriptor of it.
-		// networkDescriptor * mutantGimp = createNeurodescriptorFromFANN(wann);
-		// printf("check 01\n");
-		// printConnectionArrayForDebug (mutantGimp);
-
-		// then you can mutate the descriptor.
-		// mutateFishBrain(mutantGimp, 0.1f, 0.1f);
-
-
-		// printf("check 02\n");	printConnectionArrayForDebug (mutantGimp);
-
-		// now you have to save it as a fann file, which is stupid, but at least you can do it in a temporary file.
-		// createFANNFileFromDescriptor (*mutantGimp) ;
-
-
-
-
+			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
 		    mutateFANNFileDirectly();
 
+			// now you can load the mutant ANN.
+			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-		// now you can load the mutant ANN.
-		fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
-
-		
-		loadFish (i, newFishBody, mann, positionalRandomness) ;
+			loadFish (i, newFishBody, mann, positionalRandomness) ;
 
 		}
-		else {
-		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 15, (RNG()-0.5) * 15  );
-		loadFish (i, prepareNematode(), NULL,  positionalRandomness) ;
-
+		else { 						// if there is no winner, its probably a reset or new install. make one up
+			loadFish (i, prepareNematode(), NULL,  positionalRandomness) ;
 		}
 
-		// if (thereWasAFile) {
-
-			
-		// }
-		// else {
-
-		 
-		// }
-
-		// unused_variable((void*) mann);
-
-		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 5, (RNG()-0.5) * 5  );
-
-		// moveAWholeFish (i, positionalRandomness) ;
-
-		totalFishIncorporator(i);
-
-
-		
-
+		totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
 	}
-
-
-
-	// spawn them into the world to repeat the cycle
-
 	startNextGeneration = false;
-// }
-
-
 }
 
 inline bool exists_test1 (const std::string& name) {
@@ -2072,13 +1334,7 @@ inline bool exists_test1 (const std::string& name) {
     }   
 }
 
-
-
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) {
-
-	// jellyfishTrainer();
-
-	// wormTrainer();
 
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
@@ -2086,46 +1342,14 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	local_m_particleSystem = m_particleSystem;
 
 	if (RNG() > 0.5f) {
-
 		addFoodParticle(b2Vec2(24.0f, 3.5f));
 	}
 	else {
-
 		addFoodParticle(b2Vec2(-24.0f, 3.5f));
 	}
-
-
-	// beginGeneration ( local_m_world,local_m_particleSystem);
-	// startNextGeneration = true;
-
-
-	// int howManyNewFishToAdd = 3;
-	// for (int i = 0; i < howManyNewFishToAdd; ++i) {
-
-
-	// 	//  loadFishFromName is used to load the named files associated with the evolution system.
-	// 	// LoadFishFromName(i, m_world, m_particleSystem);
-
-
-	// 	// this one is good to just load in a desfault fish from the descriptor.
-
-	// 	if (exists_test1("mostCurrentWinner.net")) {
-	// 		fann * ann  = loadFishBrainFromFile (std::string("mostCurrentWinner")); // unfortunately you still need to load some kind of brain or it wont work.
-	// 		loadFish ( i,  koiCarp, m_world,  m_particleSystem, ann , b2Vec2(0.0f, 0.0f)) ;
-
-
-
-	// 		totalFishIncorporator(i, m_world, m_particleSystem);
-	// 	}
-
-		
-	// }
 }
 
 void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar) {
-
-
-	// printf("drawn neural net\n");
 
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
 	unsigned int n_layers = fann_get_num_layers(ann);
@@ -2158,7 +1382,6 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 	b2Vec2 drawingStartingPosition = b2Vec2(  fcompatiblespaces + 1 ,4.0f);
 	float spacingDistance = 0.5f;
 
-
 	// compute the size of biggest layer so you know how far to move over all subsequent layers.
 	for (uint8_t j = 0; j < n_layers; ++j)
 	{
@@ -2168,20 +1391,14 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 	}
 	*spacesUsedSoFar += sizeOfBiggestLayer;
 
-	// printf("ready to draw point\n");
-
-
 	for (uint8_t j = 0; j < layerArray[0]; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
-
 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
 	}
 
 	for (uint8_t j = 0; j < layerArray[n_layers-1]; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
-
-
 	}
 
     /* Print weight matrix */
@@ -2214,39 +1431,17 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 
     	b2Color segmentColor = b2Color(con[i].weight*10,con[i].weight*10,con[i].weight*10);
 	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB,segmentColor );
-	    // printf("drawn neural net\n");
-	    // printab2Vec2(printConnectionSideA);
-	    // printab2Vec2(printConnectionSideB);
-
     }
     free(con);
 }
 
 void deepSeaLoop () {
 
-
-
-
 	if (!local_m_world->IsLocked()) {
-
-
-
-		// if (Test::IsWorldLocked() ) {
-		// 	return;
-		// }
-
-		
-
-
-
-		// printf("%i lookc", local_m_world->IsLocked() );
 
 		if (startNextGeneration ) {
 			beginGeneration ( );
 		}
-
-		
-
 
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 			if (!foodSlotLoaded[i]) {
@@ -2261,151 +1456,94 @@ void deepSeaLoop () {
 
 		for (int i = 0; i < N_FISHES; ++i) {
 			if (fishSlotLoaded[i]) {
-				
+			
+				// cause heart to beat. Heart A is the slowest
+				if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 4) {
+					fishes[i]->heartCountA = 0;
+					if (fishes[i]->heartOutputA > 0) { fishes[i]->heartOutputA = -1; }
+					else { fishes[i]->heartOutputA = 1; }
+				}
+				else { fishes[i]->heartCountA++; }
 
-					// cause heart to beat. Heart A is the slowest
-					if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 4) {
-						fishes[i]->heartCountA = 0;
-						if (fishes[i]->heartOutputA > 0) { fishes[i]->heartOutputA = -1; }
-						else { fishes[i]->heartOutputA = 1; }
-					}
-					else { fishes[i]->heartCountA++; }
+				if (fishes[i]->heartCountB > fishes[i]->heartSpeed) {
+					fishes[i]->heartCountB = 0;
+					if (fishes[i]->heartOutputB > 0) { fishes[i]->heartOutputB = -1; }
+					else { fishes[i]->heartOutputB = 1; }
+				}
+				else { fishes[i]->heartCountB++; }
 
-					if (fishes[i]->heartCountB > fishes[i]->heartSpeed) {
-						fishes[i]->heartCountB = 0;
-						if (fishes[i]->heartOutputB > 0) { fishes[i]->heartOutputB = -1; }
-						else { fishes[i]->heartOutputB = 1; }
-					}
-					else { fishes[i]->heartCountB++; }
+				if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
+					fishes[i]->heartCountC = 0;
+					if (fishes[i]->heartOutputC > 0) { fishes[i]->heartOutputC = -1; }
+					else { fishes[i]->heartOutputC = 1; }
+				}
+				else { fishes[i]->heartCountC++; }
 
-					if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
-						fishes[i]->heartCountC = 0;
-						if (fishes[i]->heartOutputC > 0) { fishes[i]->heartOutputC = -1; }
-						else { fishes[i]->heartOutputC = 1; }
-					}
-					else { fishes[i]->heartCountC++; }
+				if (fishes[i]->heartCountD > fishes[i]->heartSpeed/16) {
+					fishes[i]->heartCountD = 0;
+					if (fishes[i]->heartOutputD > 0) { fishes[i]->heartOutputD = -1; }
+					else { fishes[i]->heartOutputD = 1; }
+				}
+				else { fishes[i]->heartCountD++; }
 
-					if (fishes[i]->heartCountD > fishes[i]->heartSpeed/16) {
-						fishes[i]->heartCountD = 0;
-						if (fishes[i]->heartOutputD > 0) { fishes[i]->heartOutputD = -1; }
-						else { fishes[i]->heartOutputD = 1; }
-					}
-					else { fishes[i]->heartCountD++; }
+				// update the fish's senses
+				for (int j = 0; j < N_FINGERS; ++j) {
+					nonRecursiveSensorUpdater (fishes[i]->bones[j]);
+				}
 
+				// eight motors and four timing inputs
+				float sensorium[12] = {
+						fishes[i]->bones[0]->sensation, 
+						fishes[i]->bones[1]->sensation,
+						fishes[i]->bones[2]->sensation,
+						fishes[i]->bones[3]->sensation,
+						fishes[i]->bones[4]->sensation,
+						fishes[i]->bones[5]->sensation,
+						fishes[i]->bones[6]->sensation,
+						fishes[i]->bones[7]->sensation,
 
+						(float)fishes[i]->heartOutputA,
+						(float)fishes[i]->heartOutputB,
+						(float)fishes[i]->heartOutputC,
+						(float)fishes[i]->heartOutputD};
 
+				// feed information into brain
+				float * motorSignals = fann_run(fishes[i]->ann, sensorium);
 
-
-
-					// update the fish's senses
-					for (int j = 0; j < N_FINGERS; ++j) {
-						nonRecursiveSensorUpdater (fishes[i]->bones[j]);
-					}
-
-					// eight motors and four timing inputs
-					float sensorium[12] = {
-							fishes[i]->bones[0]->sensation, 
-							fishes[i]->bones[1]->sensation,
-							fishes[i]->bones[2]->sensation,
-							fishes[i]->bones[3]->sensation,
-							fishes[i]->bones[4]->sensation,
-							fishes[i]->bones[5]->sensation,
-							fishes[i]->bones[6]->sensation,
-							fishes[i]->bones[7]->sensation,
-
-							(float)fishes[i]->heartOutputA,
-							(float)fishes[i]->heartOutputB,
-							(float)fishes[i]->heartOutputC,
-							(float)fishes[i]->heartOutputD};
-
-
-							// printf("%f %f %f %f\n", sensorium[0], sensorium[1], sensorium[2], sensorium[3] );
-
-
-					// printf("sense: %.2f %.2f\n", fishes[i]->bones[1]->sensation, fishes[i]->bones[2]->sensation);
-					// feed information into brain
-					float * motorSignals = fann_run(fishes[i]->ann, sensorium);
-
-					// printf("motor: %.2f %.2f\n", motorSignals[0], motorSignals[1]);//, motorSignals[2], motorSignals[3]);
-
-					if (true) { // use to disable all joint motors
-						// float jointAngleA = fishes[i]->bones[1]->joint->p_joint->GetJointAngle();
-						// float jointAngleB = fishes[i]->bones[2]->joint->p_joint->GetJointAngle();
-
-						// printf("joint: %.2f %.2f\n", jointAngleA, jointAngleB);
-
-						for (int j = 1; j < 8; ++j) // dont even try to move the 0th one
-						{
-
-							if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
-								continue;
-							}
-							else if (fishes[i]->bones[j]->isUsed && fishes[i]->bones[j]->init) {
-
-								if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
-									fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
-									// printf("the joint speed was set");
-
-								}
-
-								
-								
-							}
-							
-							
+				if (true) { // use to disable all joint motors
+					for (int j = 1; j < 8; ++j) { // dont even try to move the 0th one
+						if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
+							continue;
 						}
-
-						 //speedForJointA*10);
-						// fishes[i]->bones[1]->joint->p_joint->SetMotorSpeed(motorSignals[1]*fishes[i]->bones[1]->joint->speedLimit);//speedForJointB*10);
-						// fishes[i]->bones[2]->joint->p_joint->SetMotorSpeed(motorSignals[2]*fishes[i]->bones[2]->joint->speedLimit); //speedForJointA*10);
-						// fishes[i]->bones[3]->joint->p_joint->SetMotorSpeed(motorSignals[3]*fishes[i]->bones[3]->joint->speedLimit);//speedForJointB*10);
-						// fishes[i]->bones[4]->joint->p_joint->SetMotorSpeed(motorSignals[4]*fishes[i]->bones[4]->joint->speedLimit); //speedForJointA*10);
-						// fishes[i]->bones[5]->joint->p_joint->SetMotorSpeed(motorSignals[5]*fishes[i]->bones[5]->joint->speedLimit);//speedForJointB*10);
-						// fishes[i]->bones[6]->joint->p_joint->SetMotorSpeed(motorSignals[6]*fishes[i]->bones[6]->joint->speedLimit); //speedForJointA*10);
-						// fishes[i]->bones[7]->joint->p_joint->SetMotorSpeed(motorSignals[7]*fishes[i]->bones[7]->joint->speedLimit);//speedForJointB*10);
+						else if (fishes[i]->bones[j]->isUsed && fishes[i]->bones[j]->init) {
+							if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
+								fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
+							}
+						}							
 					}
+				}
 
-					// print the brainal output
-					drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
-
-
-
-
+				// print the brainal output
+				drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
 			}
-			else{
-				;
-			}
-
-
-
-
-
-
-
-
-
 		}
 	}
-
 }
 
 void deepSeaControlA () {
-	// fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(1.0f);
+	;
 }
 void deepSeaControlB () {
-	// fishes[0]->bones[2]->joint->p_joint->SetMotorSpeed(-1.0f);
+	;
 }
 
 void collisionHandler (void * userDataA, void * userDataB) {
 	bool et = false;
 	bool fud = false;
 
-
-	if (true) {
+	if (false) {
 		return;   // this function ends the program so nice to turn it off
 	}
-
-
 
 	if (userDataA == nullptr || userDataB == nullptr) {
 		return;
@@ -2416,7 +1554,6 @@ void collisionHandler (void * userDataA, void * userDataB) {
 
 	uDataWrap * p_dataA = (uDataWrap *) userDataA;
 	uDataWrap * p_dataB = (uDataWrap *) userDataB;
-
 	uDataWrap dataA = *p_dataA;
 	uDataWrap dataB = *p_dataB;
 
@@ -2439,24 +1576,10 @@ void collisionHandler (void * userDataA, void * userDataB) {
 
 		// save the fish that touched the food as 225
 		if( dataB.dataType == TYPE_MOUTH ) {
-			// std::string nnfilename =  std::string("225.net");
-		 //    std::string fdescfilename =  std::string("225.fsh");
-		 //    std::ofstream file { nnfilename };
-		    // saveFishToFile (fdescfilename, ((BoneUserData *)(dataB.uData))->p_owner->genes);
 		    vote(((BoneUserData *)(dataB.uData))->p_owner);
-		//     fann_save(((BoneUserData *)(dataB.uData))->p_owner->ann, nnfilename.c_str()); 
-		// 	exit(EXIT_SUCCESS);
 		}
 		else if (dataA.dataType == TYPE_MOUTH) {
-		// 	std::string nnfilename =  std::string("225.net");
-		//     std::string fdescfilename =  std::string("225.fsh");
-		//     std::ofstream file { nnfilename };
-		//     saveFishToFile (fdescfilename, ((BoneUserData *)(dataA.uData))->p_owner->genes);
-		//     fann_save(((BoneUserData *)(dataA.uData))->p_owner->ann, nnfilename.c_str()); 
-		// 	exit(EXIT_SUCCESS);
 			vote(((BoneUserData *)(dataB.uData))->p_owner);
 		}
-
-	 
 	}
 }
