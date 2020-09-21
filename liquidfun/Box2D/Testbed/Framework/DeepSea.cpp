@@ -1355,6 +1355,33 @@ void mutateFANNFileDirectly () {
 	inFile.close();
 }
 
+int getSciNumberLength (char * c) {
+	// you need to find out how long the number is. Some have - sign, some have 2 digits in front of the decimal place.
+	int sciNumberLength = 0;
+
+	while(1) {
+		if (*((&c) +sciNumberLength) == ')') {
+			break;
+		}else {
+			sciNumberLength++;
+		}
+	}
+
+	return sciNumberLength;
+}
+
+float  getSciNumberFromFANNFile (char * c) {
+	int sciNumberLength = getSciNumberLength(c);
+
+	char sciNumber[sciNumberLength];
+	memset(sciNumber, 0x00, sciNumberLength);
+	memcpy(sciNumber, &c, sciNumberLength);
+
+	printf("%s\n", sciNumber);
+	float val = std::stof(sciNumber);
+	return val;
+}
+
 // create an offspring with a mix of traits.
 void reproduceSexually (std::string fileNameA, std::string fileNameB) {
 	std::ofstream offspring("offspring.net");
@@ -1370,67 +1397,89 @@ void reproduceSexually (std::string fileNameA, std::string fileNameB) {
 	while(getline(partnerA, lineA)){
 		getline(partnerB, lineB);
 	 	if (count == 35) { // its that crazy line.
-	//  		char desireCharacter = '=';
-	//  		bool skipTheRest = false;
-	//  		for(char& c : line) {
+	 		char desireCharacter = '=';
+	 		bool skipTheRest = false;
+	 		bool skipTheRestB = false;
+	 		for(char& c : lineA) {
 
-	//  			// skip over the 27 scientific notation characters you copied.
-	// 		    if (!skipTheRest) {
+	 			// skip over the 27 scientific notation characters you copied.
+			    if (!skipTheRest) {
 
-	// 		    	// if you're not skipping or writing down the character, forward the information into the new file.
-	//  				outFile << c;
+			    	// if you're not skipping or writing down the character, forward the information into the new file.
+	 				offspring << c;
 		 			
-	// 	 			// if you find the ' ', you're ready to copy over the next 27 characters.
-	// 	 			if (c == desireCharacter) {
-	// 	 				desireCharacter = ' ';
-	// 	 				if (c == '=' || *((&c) +1) == '(' )  {
-	// 	 					continue;
-	// 	 				}
+		 			// if you find the ' ', you're ready to copy over the next 27 characters all in one go.
+		 			// but you need to skip all the BS at the start of the line. So first we set desirecharacter to =, to skip everything up to the = sign.
+		 			// then we change it back to ' ' for the rest of the line.
+		 			if (c == desireCharacter) {
+		 				desireCharacter = ' ';
+		 				if (c == '=' || *((&c) +1) == '(' )  { // 
+		 					continue;
+		 				}
 
-	// 	 				// you need to find out how long the number is.
-	// 	 				int sciNumberLength = 0;
+		 				// // you need to find out how long the number is. Some have - sign, some have 2 digits in front of the decimal place.
+		 				// int sciNumberLength = 0;
 
-	// 	 				while(1) {
-	// 	 					if (*((&c) +sciNumberLength) == ')') {
-	// 	 						break;
-	// 	 					}else {
-	// 	 						sciNumberLength++;
-	// 	 					}
-	// 	 				}
+		 				// while(1) {
+		 				// 	if (*((&c) +sciNumberLength) == ')') {
+		 				// 		break;
+		 				// 	}else {
+		 				// 		sciNumberLength++;
+		 				// 	}
+		 				// }
+		 				float partnerAValue =  getSciNumberFromFANNFile(c);
 
-	// 					char sciNumber[sciNumberLength];
-	// 					memset(sciNumber, 0x00, sciNumberLength);
-	// 					memcpy(sciNumber, &c, sciNumberLength);
+		 				// ok now scroll the other file forward and get the number out of it.
 
-	// 					printf("%s\n", sciNumber);
-	// 				    float val = std::stof(sciNumber); 
+		 				for(char& d : lineB) {
+						    if (!skipTheRestB) {
+									offspring << d;
+									if (c == desireCharacter) {
+										desireCharacter = ' ';
+										if (d == '=' || *((&d) +1) == '(' )  { // 
+											continue;
+										}
+									float partnerBValue =  getSciNumberFromFANNFile(c);
+						 			skipTheRestB = true;
+									}
+							}
+							else  {
+								if (d == ' ') {
+									skipTheRestB = false;
+								}
+							}
+						}
 
-	// 				    if (RNG() < 0.2) {		// chance of a mutation occurring
-	// 					    val += ( (RNG() -0.5f) * 0.5f ); // how much mutation to apply
-	// 				    }
 
-	// 			    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
-	// 		 			my_print_scientific(sciNotationBuffer,val);
-	// 		 			outFile << sciNotationBuffer;
-	// 		 			outFile << ") ";
+								 				//
 
-	// 		 			amountCount ++;
 
-	// 		 			if (amountCount >= 248) {
-	// 		 				return;
-	// 		 			}
+					    if (RNG() < 0.2) {		// chance of a mutation occurring
+						    val += ( (RNG() -0.5f) * 0.5f ); // how much mutation to apply
+					    }
 
-	// 		 			skipTheRest = true;
-	// 	 			}
+				    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
+			 			my_print_scientific(sciNotationBuffer,val);
+			 			outFile << sciNotationBuffer;
+			 			outFile << ") ";
+
+			 			// expected number of connections in the file. This was only true for a certain version and should be removed.
+			 			amountCount ++;
+			 			if (amountCount >= 248) {
+			 				return;
+			 			}
+
+			 			skipTheRest = true;
+		 			}
 		 			
-	// 			}
-	// 			else  {
+				}
+				else  {
 
-	// 				if (c == ' ') {
-	// 					skipTheRest = false;
-	// 				}
-	// 			}
-	// 		}
+					if (c == ' ') {
+						skipTheRest = false;
+					}
+				}
+			}
 	 	}
 	 	else {
 	 		offspring << lineA;
