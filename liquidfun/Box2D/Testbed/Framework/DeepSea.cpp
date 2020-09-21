@@ -1355,7 +1355,7 @@ void mutateFANNFileDirectly () {
 	inFile.close();
 }
 
-int getSciNumberLength (char * c) {
+int getSciNumberLength (char c) {
 	// you need to find out how long the number is. Some have - sign, some have 2 digits in front of the decimal place.
 	int sciNumberLength = 0;
 
@@ -1370,7 +1370,7 @@ int getSciNumberLength (char * c) {
 	return sciNumberLength;
 }
 
-float  getSciNumberFromFANNFile (char * c) {
+float  getSciNumberFromFANNFile (char c) {
 	int sciNumberLength = getSciNumberLength(c);
 
 	char sciNumber[sciNumberLength];
@@ -1393,7 +1393,7 @@ void reproduceSexually (std::string fileNameA, std::string fileNameB) {
 	std::string lineB;
 
 	int count = 0;
-	// int amountCount = 0;
+	int amountCount = 0;
 	while(getline(partnerA, lineA)){
 		getline(partnerB, lineB);
 	 	if (count == 35) { // its that crazy line.
@@ -1428,6 +1428,8 @@ void reproduceSexually (std::string fileNameA, std::string fileNameB) {
 		 				// 	}
 		 				// }
 		 				float partnerAValue =  getSciNumberFromFANNFile(c);
+		 				float partnerBValue = 0.0f;
+		 				float val = 0.0f;
 
 		 				// ok now scroll the other file forward and get the number out of it.
 
@@ -1439,7 +1441,7 @@ void reproduceSexually (std::string fileNameA, std::string fileNameB) {
 										if (d == '=' || *((&d) +1) == '(' )  { // 
 											continue;
 										}
-									float partnerBValue =  getSciNumberFromFANNFile(c);
+									partnerBValue =  getSciNumberFromFANNFile(c);
 						 			skipTheRestB = true;
 									}
 							}
@@ -1451,7 +1453,13 @@ void reproduceSexually (std::string fileNameA, std::string fileNameB) {
 						}
 
 
-								 				//
+						// roll for inheritance
+						if (RNG() > 0.5) {
+							val = partnerAValue;
+						}
+						else {
+							val = partnerBValue;
+						}
 
 
 					    if (RNG() < 0.2) {		// chance of a mutation occurring
@@ -1460,8 +1468,8 @@ void reproduceSexually (std::string fileNameA, std::string fileNameB) {
 
 				    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
 			 			my_print_scientific(sciNotationBuffer,val);
-			 			outFile << sciNotationBuffer;
-			 			outFile << ") ";
+			 			offspring << sciNotationBuffer;
+			 			offspring << ") ";
 
 			 			// expected number of connections in the file. This was only true for a certain version and should be removed.
 			 			amountCount ++;
