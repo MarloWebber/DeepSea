@@ -199,7 +199,7 @@ BoneUserData::BoneUserData(
 			collisionGroup = -2;
 		}
 
-		printf("its not a root bone\n");
+		// printf("its not a root bone\n");
 		tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
 
 		b2Vec2 vertices[] = {
@@ -230,12 +230,12 @@ BoneUserData::BoneUserData(
 	
 		p_body = local_m_world->CreateBody(&bodyDef);
 
-		printf("tip center: ");
+		// printf("tip center: ");
 		printab2Vec2(tipCenter);
 		
 		for (int i = 0; i < 4; ++i)
 		{
-			printf(" ");
+			// printf(" ");
 			printab2Vec2(vertices[i]);
 		}
 		
@@ -253,7 +253,7 @@ BoneUserData::BoneUserData(
 
 	init = true;
 	isUsed=  false;
-	printf("\n");
+	// printf("\n");
 };
 
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
@@ -651,7 +651,7 @@ void deleteFish (uint8_t fishIndex) {
 
 	if (fishSlotLoaded[fishIndex]) {
 
-		printf("deleting %i of 8.", fishIndex);
+		// printf("deleting %i of 8.", fishIndex);
 	
 		for (int i = 0; i < N_FINGERS; ++i) {
 			if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
@@ -671,7 +671,7 @@ void deleteFish (uint8_t fishIndex) {
 			}
 
 			if (fishes[fishIndex]->bones[i]->isUsed && fishes[fishIndex]->bones[i]->init) {
-				printf("deleting bone %i of 8.", i);
+				// printf("deleting bone %i of 8.", i);
 
 				 local_m_world->DestroyBody(fishes[fishIndex]->bones[i]->p_body);
 				 fishes[fishIndex]->bones[i]->p_body = nullptr;
@@ -1356,20 +1356,20 @@ void mutateFANNFileDirectly () {
 }
 
 // create an offspring with a mix of traits.
-// void reproduceSexually (fileNameA, fileNameB) {
-// 	std::ofstream outFile("offspring.net");
-// 	std::string line;
+void reproduceSexually (std::string fileNameA, std::string fileNameB) {
+	std::ofstream offspring("offspring.net");
+	
+	std::ifstream partnerA(fileNameA);
+	std::string lineA;
 
-// 	std::ifstream partnerA(fileNameA);
-// 	std::ifstream partnerB(fileNameB);
+	std::ifstream partnerB(fileNameB);
+	std::string lineB;
 
-
-
-// 	int count = 0;
+	int count = 0;
 	// int amountCount = 0;
-	// while(getline(inFile, line)){
-
-	//  	if (count == 35) { // its that crazy line.
+	while(getline(partnerA, lineA)){
+		getline(partnerB, lineB);
+	 	if (count == 35) { // its that crazy line.
 	//  		char desireCharacter = '=';
 	//  		bool skipTheRest = false;
 	//  		for(char& c : line) {
@@ -1431,17 +1431,19 @@ void mutateFANNFileDirectly () {
 	// 				}
 	// 			}
 	// 		}
-	//  	}
-	//  	else {
-	//  		outFile << line;
-	//         outFile << "\n";
-	//  	}
-	//     count++;
-	// }
-	// outFile.close();
-	// inFile.close();
+	 	}
+	 	else {
+	 		offspring << lineA;
+	        offspring << "\n";
+	 	}
+	    count++;
+	}
+	partnerA.close();
+	partnerB.close();
+	offspring.close();
 
-// }
+return;
+}
 
 void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
