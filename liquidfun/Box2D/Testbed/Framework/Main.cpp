@@ -272,20 +272,20 @@ static void SimulationLoop()
 	}
 
 	// print world step time stats every 600 frames
-	static int s_printCount = 0;
-	static b2Stat st;
-	st.Record(settings.stepTimeOut);
+	// static int s_printCount = 0;
+	// static b2Stat st;
+	// st.Record(settings.stepTimeOut);
 
-	const int STAT_PRINT_INTERVAL = 600;
-	if ( settings.printStepTimeStats && st.GetCount() == STAT_PRINT_INTERVAL )
-	{
-		printf("World Step Time samples %i-%i: %fmin %fmax %favg (ms)\n",
-			s_printCount*STAT_PRINT_INTERVAL,
-			(s_printCount+1)*STAT_PRINT_INTERVAL-1,
-			st.GetMin(), st.GetMax(), st.GetMean());
-		st.Clear();
-		s_printCount++;
-	}
+	// const int STAT_PRINT_INTERVAL = 600;
+	// if ( settings.printStepTimeStats && st.GetCount() == STAT_PRINT_INTERVAL )
+	// {
+	// 	printf("World Step Time samples %i-%i: %fmin %fmax %favg (ms)\n",
+	// 		s_printCount*STAT_PRINT_INTERVAL,
+	// 		(s_printCount+1)*STAT_PRINT_INTERVAL-1,
+	// 		st.GetMin(), st.GetMax(), st.GetMean());
+	// 	st.Clear();
+	// 	s_printCount++;
+	// }
 
 
 }

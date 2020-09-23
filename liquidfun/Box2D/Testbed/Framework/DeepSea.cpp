@@ -67,6 +67,14 @@ b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p) {
 	return b2Vec2(p.x,p.y);
 };
 
+// modifies the array you point it at
+void rotatePolygon(b2Vec2 rotationCenter, b2Vec2 * vertices, int count, float angle) {
+	for (int i = 0; i < count; ++i)
+	{
+		vertices[i] = rotatePoint(rotationCenter.x, rotationCenter.y, angle, vertices[i]);
+	}
+}
+
 float RNG() { //
     static std::default_random_engine e;
     static std::uniform_real_distribution<> dis(0, 1); // rage 0 - 1
@@ -1382,8 +1390,26 @@ float  getSciNumberFromFANNFile (char c) {
 	return val;
 }
 
+void sexBetweenTwoBodies (fishDescriptor_t partnerA, fishDescriptor_t partnerB) {
+
+	fishDescriptor_t offspring;
+
+	for (int i = 0; i < N_FINGERS; ++i)
+	{
+		if (RNG() > 0.5) {
+			offspring.bones[i] = partnerA.bones[i];
+		}
+		else {
+			offspring.bones[i] = partnerB.bones[i];
+		}
+	}
+
+	// mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+
+}
+
 // create an offspring with a mix of traits.
-void reproduceSexually (std::string fileNameA, std::string fileNameB) {
+void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 	std::ofstream offspring("offspring.net");
 	
 	std::ifstream partnerA(fileNameA);
@@ -1501,6 +1527,64 @@ void reproduceSexually (std::string fileNameA, std::string fileNameB) {
 
 return;
 }
+
+void drawingTest(unsigned int fishIndex) {
+	/* the following code actually works for drawing.
+	b2Color testColor = b2Color(0.85f,0.21f,0.11f);
+
+	b2Vec2 vertexA = b2Vec2(0.0f,0.0f);
+	b2Vec2 vertexB = b2Vec2(1.0f,0.0f);
+	b2Vec2 vertexC = b2Vec2(1.0f,1.0f);
+	b2Vec2 vertexD = b2Vec2(0.0f,1.0f);
+
+	b2Vec2 vertices[4] = {vertexA, vertexB, vertexC, vertexD};
+
+	local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , testColor);
+	*/
+
+	// for each bone, get the vertices, then add the body's world location to them, and rotate by the body angle around the body world location.
+	// to do this you will need to extend the rotate point method to rotate a polygon.
+
+	if (fishSlotLoaded[fishIndex]) {
+
+		for (int i = 0; i < N_FINGERS; ++i)
+		{
+			if (!fishes[fishIndex]->bones[i]->init || !fishes[fishIndex]->bones[i]->isUsed) {
+				;
+			}
+			else {
+
+
+				if (fishes[fishIndex]->bones[i]->p_body == NULL || fishes[fishIndex]->bones[i]->p_body == nullptr) {
+					continue;
+				}
+				int32_t vertexCount = fishes[fishIndex]->bones[i]->shape.GetVertexCount(); // spolier alert, it's 4
+				b2Vec2 vertices[vertexCount];
+
+				b2Vec2 boneCenterWorldPosition = fishes[fishIndex]->bones[i]->p_body->GetWorldCenter();
+
+				for (int j = 0; j < vertexCount; ++j)
+				{	
+
+					// printab2Vec2(
+					b2Vec2 adjustedVertex = fishes[fishIndex]->bones[i]->shape.GetVertex(j);
+					adjustedVertex.x += boneCenterWorldPosition.x;
+					adjustedVertex.y += boneCenterWorldPosition.y;
+
+					vertices[j] = rotatePoint(boneCenterWorldPosition.x, boneCenterWorldPosition.y, fishes[fishIndex]->bones[i]->p_body->GetAngle(), adjustedVertex);
+				}
+
+				local_debugDraw_pointer->DrawFlatPolygon(vertices, vertexCount , fishes[fishIndex]->bones[i]->color);
+				// printf("mnjunglbal: %i\n", vertexCount);
+			}
+			
+
+		}
+
+	}
+
+}
+
 
 void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
@@ -1681,7 +1765,11 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 
 void deepSeaLoop () {
 
+
+
 	if (!local_m_world->IsLocked()) {
+
+		drawingTest(0);
 
 		if (startNextGeneration ) {
 			beginGeneration ( );
@@ -1795,7 +1883,7 @@ void deepSeaLoop () {
 								sensorium[j+8] = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
 							}
 
-							printf("touchSensation: %f\n", fishes[i]->bones[j]->touchSensation);
+							// printf("touchSensation: %f\n", fishes[i]->bones[j]->touchSensation);
 						
 							sensorium[j+16] = fishes[i]->bones[j]->touchSensation;
 							fishes[i]->bones[j]->touchSensation = 0.0f;

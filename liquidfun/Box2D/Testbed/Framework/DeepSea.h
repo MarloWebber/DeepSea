@@ -98,6 +98,8 @@ struct BoneUserData {
 	bool init;		// if the struct has been created properly
 	bool isUsed;	// if the bone is actually used in the game, presumably not all animals will use all 8
 
+	b2Color color;
+
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
 		b2Vec2 positionOffset);
