@@ -497,6 +497,8 @@ void Test::Step(Settings* settings)
 
 	m_world->DrawDebugData(); // this the one
 
+	drawingTest(0);
+
 	if (timeStep > 0.0f)
 	{
 		++m_stepCount;

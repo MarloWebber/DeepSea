@@ -96,8 +96,8 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 	else {
 		jointDef.bodyA = fish->bones[boneDescription.attachedTo]->p_body;
 		jointDef.bodyB = p_bone->p_body;
-		jointDef.localAnchorA =  fish->bones[boneDescription.attachedTo]->tipCenter;
-		jointDef.localAnchorB =  fish->bones[boneDescription.attachedTo]->tipCenter;
+		jointDef.localAnchorA =  b2Vec2(0.0f, fish->bones[boneDescription.attachedTo]->length/2);
+		jointDef.localAnchorB =  b2Vec2(0.0f, -p_bone->length/2);
 		jointDef.enableLimit = true;
 		jointDef.lowerAngle = lowerAngle;
 		jointDef.upperAngle = upperAngle;
@@ -146,8 +146,13 @@ BoneUserData::BoneUserData(
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
-	tipCenter = b2Vec2(positionOffset.x,positionOffset.y+0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
-	rootCenter = b2Vec2(positionOffset.x,positionOffset.y); 	
+	// position = positionOffset;
+
+
+
+
+	tipCenter = b2Vec2(0.0f,0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
+	rootCenter = b2Vec2(0.0f,0.0f); 	
 
 	int count = 4;
 
@@ -155,16 +160,17 @@ BoneUserData::BoneUserData(
 	if (isRoot) {
 
 		collisionGroup = -2;
+			offsetOnBody = b2Vec2(0.0f, 0.0f);
 
 		printf("its a root bone\n");
 
-		tipCenter = b2Vec2(positionOffset.x,positionOffset.y+  length);
+		tipCenter = b2Vec2(0.0f, length);
 
 		b2Vec2 vertices[] = {
-			b2Vec2(rootCenter.x + (rootThickness/2), rootCenter.y), //b2Vec2 rootVertexA = 
-			b2Vec2(rootCenter.x - (rootThickness/2), rootCenter.y), // b2Vec2 rootVertexB =
-			b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y), //b2Vec2 tipVertexA = 
-			b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
+			b2Vec2( + (rootThickness/2),  -(length/2)), //b2Vec2 rootVertexA = 
+			b2Vec2(- (rootThickness/2),  -(length/2)), // b2Vec2 rootVertexB =
+			b2Vec2( + (tipThickness/2),  +(length/2)), //b2Vec2 tipVertexA = 
+			b2Vec2(- (tipThickness/2),  +(length/2)) // b2Vec2 tipVertexB = 
 		};
 		
 		if (isMouth) {
@@ -198,6 +204,8 @@ BoneUserData::BoneUserData(
 	}
 	else {
 
+			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;
+
 		// bones in a set can't collide with each other.
 		if (attachesTo->collisionGroup == -2) {
 			collisionGroup = -4;
@@ -208,13 +216,19 @@ BoneUserData::BoneUserData(
 		}
 
 		// printf("its not a root bone\n");
-		tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
+		// tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
+		 tipCenter = b2Vec2(0.0f,  length);
 
 		b2Vec2 vertices[] = {
-			b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y), //b2Vec2 rootVertexA = 
-			b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y), // b2Vec2 rootVertexB =
-			b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y), //b2Vec2 tipVertexA = 
-			b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
+			// b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y), //b2Vec2 rootVertexA = 
+			// b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y), // b2Vec2 rootVertexB =
+			// b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y), //b2Vec2 tipVertexA = 
+			// b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
+
+			b2Vec2( + (rootThickness/2), -(length/2)), //b2Vec2 rootVertexA = 
+			b2Vec2( - (rootThickness/2),  -(length/2)), // b2Vec2 rootVertexB =
+			b2Vec2( + tipThickness/2, +(length/2)), //b2Vec2 tipVertexA = 
+			b2Vec2( - tipThickness/2, +(length/2)) // b2Vec2 tipVertexB = 
 		};
 
 		// attach user data to the body
@@ -235,8 +249,14 @@ BoneUserData::BoneUserData(
 
 		bodyDef.type = b2_dynamicBody;
 
+		// move the body to the appropriate position on the model.
+
 	
 		p_body = local_m_world->CreateBody(&bodyDef);
+
+
+		p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
+
 
 		// printf("tip center: ");
 		printab2Vec2(tipCenter);
@@ -309,7 +329,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	if (!p_bone->init || !p_bone->isUsed) {
 		return;
 	}
-	p_bone->position = p_bone->p_body->GetWorldCenter();
+	// p_bone->position = p_bone->p_body->GetWorldCenter();
 	p_bone->sensation = 0.0f;
 
 	for  (int i = 0; i < N_FOODPARTICLES; i++) {
@@ -317,7 +337,8 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 			break;
 		}
 		if (food[i]->init && food[i]->isUsed) {
-			b2Vec2 positionalDifference = b2Vec2((p_bone->position.x - food[i]->position.x),(p_bone->position.y - food[i]->position.y));
+			b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
+			b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
 			float distance = magnitude (positionalDifference);
 			if (distance > 0) {
 
@@ -1558,23 +1579,44 @@ void drawingTest(unsigned int fishIndex) {
 				if (fishes[fishIndex]->bones[i]->p_body == NULL || fishes[fishIndex]->bones[i]->p_body == nullptr) {
 					continue;
 				}
-				int32_t vertexCount = fishes[fishIndex]->bones[i]->shape.GetVertexCount(); // spolier alert, it's 4
-				b2Vec2 vertices[vertexCount];
+				// int32_t vertexCount = fishes[fishIndex]->bones[i]->shape.GetVertexCount(); // spolier alert, it's 4
+				b2Vec2 vertices[4];
 
 				b2Vec2 boneCenterWorldPosition = fishes[fishIndex]->bones[i]->p_body->GetWorldCenter();
+				local_debugDraw_pointer->DrawPoint(boneCenterWorldPosition, 8.0f, b2Color( 1,1, 1));
+				// printab2Vec2(boneCenterWorldPosition);
 
-				for (int j = 0; j < vertexCount; ++j)
+				for (int j = 0; j < 4; ++j)
 				{	
 
-					// printab2Vec2(
+					
 					b2Vec2 adjustedVertex = fishes[fishIndex]->bones[i]->shape.GetVertex(j);
-					adjustedVertex.x += boneCenterWorldPosition.x;
-					adjustedVertex.y += boneCenterWorldPosition.y;
 
-					vertices[j] = rotatePoint(boneCenterWorldPosition.x, boneCenterWorldPosition.y, fishes[fishIndex]->bones[i]->p_body->GetAngle(), adjustedVertex);
+					b2Vec2 boneLocalCenter =fishes[fishIndex]->bones[i]->p_body->GetLocalCenter();
+
+					b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, fishes[fishIndex]->bones[i]->p_body->GetAngle(), adjustedVertex);
+					
+
+					// adjustedVertex = 
+					
+					// adjustedVertex.x += boneCenterWorldPosition.x;// - fishes[fishIndex]->bones[i]->position.x;
+					 // += boneCenterWorldPosition.y;// 
+
+					 // rotatedVertex.x -= fishes[fishIndex]->bones[i]->position.x;
+					  // rotatedVertex.y -= fishes[fishIndex]->bones[i]->position.y ;
+
+					  rotatedVertex.x += boneCenterWorldPosition.x;
+					  rotatedVertex.y +=boneCenterWorldPosition.y;
+
+
+					
+					// adjustedVertex.y -=1;
+					
+					vertices[j] = rotatedVertex;
+
 				}
 
-				local_debugDraw_pointer->DrawFlatPolygon(vertices, vertexCount , fishes[fishIndex]->bones[i]->color);
+				local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
 				// printf("mnjunglbal: %i\n", vertexCount);
 			}
 			
@@ -1769,7 +1811,7 @@ void deepSeaLoop () {
 
 	if (!local_m_world->IsLocked()) {
 
-		drawingTest(0);
+		// drawingTest(0);
 
 		if (startNextGeneration ) {
 			beginGeneration ( );

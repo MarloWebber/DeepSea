@@ -80,6 +80,8 @@ struct BoneUserData {
 	bool isSensor ; // like an olfactory sensor . senses distance from food
 	bool isTouchSensor; // like how you can feel when things touch your skin.
 
+	b2Vec2 offsetOnBody;
+
 	// uint8_t sensorType; 
 	float sensation;
 	float touchSensation;
@@ -236,7 +238,7 @@ void vote(BonyFish * winner);
 
 void  mutateFANNFileDirectly();
 
-
+void drawingTest(unsigned int fishIndex) ;
 extern bool startNextGeneration;
 
 // if (startNextGeneration ) {
