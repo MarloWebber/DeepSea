@@ -11,6 +11,8 @@
 #include <chrono>
 #include <thread>
 
+#include <math.h>
+
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 int generationsThisGame = 0;
@@ -149,7 +151,7 @@ BoneUserData::BoneUserData(
 	// position = positionOffset;
 
 
-
+	color = boneDescription.color;
 
 	tipCenter = b2Vec2(0.0f,0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	rootCenter = b2Vec2(0.0f,0.0f); 	
@@ -394,6 +396,12 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 
 	flagDelete = false;
 
+heartCountA = 0;
+heartCountB = 0;
+heartCountC = 0;
+heartCountD = 0;
+	// color = driedFish.color;
+
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (i == 0) {
 			driedFish.bones[i].isRoot = true;
@@ -405,17 +413,23 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (driedFish.bones[i].used) {
 			n_bones_used ++;
+
 		}
 	}
 
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false; // only true when the part is added to the world
 
-	heartSpeed = driedFish.heartSpeed +  ((RNG()-0.5) * driedFish.heartSpeed * 0.5);
+	heartSpeed = driedFish.heartSpeed;// +  ((RNG()-0.5) * driedFish.heartSpeed * 0.5);
 
     if (nann == NULL) {
+
+    		for (int i = 0; i < N_FINGERS; ++i) {
+				driedFish.bones[i].color = b2Color(RNG(), RNG(), RNG());
+			}
+
     	    unsigned int creationLayerCake[] = {
-	    	20,
+	    	28,
 	    	8,
 	    	8,
 	    	8,
@@ -662,7 +676,11 @@ void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
 		if (fishSlotLoaded[fishIndex] ) {
 			for (int i = 0; i < N_FINGERS; ++i)
 			{
+				if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
+						continue;
+				}
 				fishes[fishIndex]->bones[i]->p_body->SetTransform(position, 0.0f);
+				// p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
 			}
 		}
 }
@@ -1035,26 +1053,37 @@ void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float m
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
 
 	// mutate heart rate
-	if (RNG() > mutationChance) {	fish->heartSpeed += fish->heartSpeed *mutationSeverity*(RNG()-0.5); }
+	if (RNG() > mutationChance) {	fish->heartSpeed += fish->heartSpeed * mutationSeverity *(RNG()-0.5); }
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fish->bones[i].used) {
 
+			// mutate color
+			if (RNG() < mutationChance) {
+				fish->bones[i].color.Set(fish->bones[i].color.r + mutationSeverity*(RNG()-0.5),  fish->bones[i].color.g, fish->bones[i].color.b);
+			}
+			if (RNG() < mutationChance) {
+				fish->bones[i].color.Set(fish->bones[i].color.r,	 fish->bones[i].color.g + mutationSeverity*(RNG()-0.5), fish->bones[i].color.b );
+			}
+			if (RNG() < mutationChance) {
+				fish->bones[i].color.Set(	fish->bones[i].color.r, fish->bones[i].color.g,  fish->bones[i].color.b + mutationSeverity*(RNG()-0.5));
+			}	
+
 			// mutate floats
-			if (RNG() > mutationChance) {	fish->bones[i].length += fish->bones[i].length 				*mutationSeverity*(RNG()-0.5); }
-			if (RNG() > mutationChance) {	fish->bones[i].rootThickness += fish->bones[i].rootThickness *mutationSeverity*(RNG()-0.5); }
-			if (RNG() > mutationChance) {	fish->bones[i].tipThickness += fish->bones[i].tipThickness 	*mutationSeverity*(RNG()-0.5); }
-			if (RNG() > mutationChance) {	fish->bones[i].torque += fish->bones[i].torque 				*mutationSeverity*(RNG()-0.5); }
-			if (RNG() > mutationChance) {	fish->bones[i].speedLimit += fish->bones[i].speedLimit 		*mutationSeverity*(RNG()-0.5); }
-			if (RNG() > mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
-			if (RNG() > mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
+			if (RNG() < mutationChance) {	fish->bones[i].length += fish->bones[i].length 				*mutationSeverity*(RNG()-0.5); }
+			if (RNG() < mutationChance) {	fish->bones[i].rootThickness += fish->bones[i].rootThickness *mutationSeverity*(RNG()-0.5); }
+			if (RNG() < mutationChance) {	fish->bones[i].tipThickness += fish->bones[i].tipThickness 	*mutationSeverity*(RNG()-0.5); }
+			if (RNG() < mutationChance) {	fish->bones[i].torque += fish->bones[i].torque 				*mutationSeverity*(RNG()-0.5); }
+			if (RNG() < mutationChance) {	fish->bones[i].speedLimit += fish->bones[i].speedLimit 		*mutationSeverity*(RNG()-0.5); }
+			if (RNG() < mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
+			if (RNG() < mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
 
 			// mutate attachment points
 			// if (RNG() > mutationChance) {	fish->bones[i].attachedTo = (RNG() * fish->n_bones_used ) }
 
 			// mutate bools
-			if (RNG() > mutationChance) {	fish->bones[i].isMouth = !fish->bones[i].isMouth; }
-			if (RNG() > mutationChance) {	fish->bones[i].isSensor = !fish->bones[i].isSensor; }
+			if (RNG() < mutationChance) {	fish->bones[i].isMouth = !fish->bones[i].isMouth; }
+			if (RNG() < mutationChance) {	fish->bones[i].isSensor = !fish->bones[i].isSensor; }
 		}
 	}
 }
@@ -1549,7 +1578,7 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 return;
 }
 
-void drawingTest(unsigned int fishIndex) {
+void drawingTest() {
 	/* the following code actually works for drawing.
 	b2Color testColor = b2Color(0.85f,0.21f,0.11f);
 
@@ -1558,73 +1587,103 @@ void drawingTest(unsigned int fishIndex) {
 	b2Vec2 vertexC = b2Vec2(1.0f,1.0f);
 	b2Vec2 vertexD = b2Vec2(0.0f,1.0f);
 
+
+
 	b2Vec2 vertices[4] = {vertexA, vertexB, vertexC, vertexD};
 
 	local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , testColor);
 	*/
 
+
+	// local_m_world->DrawParticleSystem(local_m_particleSystem);
+
+	int32 particleCount = local_m_particleSystem->GetParticleCount();
+	if (particleCount)
+	{
+		float32 radius = local_m_particleSystem->GetRadius();
+		const b2Vec2* positionBuffer = local_m_particleSystem->GetPositionBuffer();
+		// if (local_m_particleSystem->m_colorBuffer.data)
+		// {
+		// 	const b2ParticleColor* colorBuffer = local_m_particleSystem->GetColorBuffer();
+		// 	local_debugDraw_pointer->DrawParticles(positionBuffer, radius, colorBuffer, particleCount);
+		// }
+		// else
+		// {
+			local_debugDraw_pointer->DrawParticles(positionBuffer, radius, NULL, particleCount);
+		// }
+	}
+
 	// for each bone, get the vertices, then add the body's world location to them, and rotate by the body angle around the body world location.
 	// to do this you will need to extend the rotate point method to rotate a polygon.
+	for (unsigned int fishIndex = 0; fishIndex < N_FISHES; ++fishIndex)
+	{
+		/* code */
+		
 
-	if (fishSlotLoaded[fishIndex]) {
+		if (fishSlotLoaded[fishIndex]) {
 
-		for (int i = 0; i < N_FINGERS; ++i)
-		{
-			if (!fishes[fishIndex]->bones[i]->init || !fishes[fishIndex]->bones[i]->isUsed) {
-				;
-			}
-			else {
-
-
-				if (fishes[fishIndex]->bones[i]->p_body == NULL || fishes[fishIndex]->bones[i]->p_body == nullptr) {
-					continue;
+			for (int i = 0; i < N_FINGERS; ++i)
+			{
+				if (!fishes[fishIndex]->bones[i]->init || !fishes[fishIndex]->bones[i]->isUsed) {
+					;
 				}
-				// int32_t vertexCount = fishes[fishIndex]->bones[i]->shape.GetVertexCount(); // spolier alert, it's 4
-				b2Vec2 vertices[4];
-
-				b2Vec2 boneCenterWorldPosition = fishes[fishIndex]->bones[i]->p_body->GetWorldCenter();
-				local_debugDraw_pointer->DrawPoint(boneCenterWorldPosition, 8.0f, b2Color( 1,1, 1));
-				// printab2Vec2(boneCenterWorldPosition);
-
-				for (int j = 0; j < 4; ++j)
-				{	
-
-					
-					b2Vec2 adjustedVertex = fishes[fishIndex]->bones[i]->shape.GetVertex(j);
-
-					b2Vec2 boneLocalCenter =fishes[fishIndex]->bones[i]->p_body->GetLocalCenter();
-
-					b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, fishes[fishIndex]->bones[i]->p_body->GetAngle(), adjustedVertex);
-					
-
-					// adjustedVertex = 
-					
-					// adjustedVertex.x += boneCenterWorldPosition.x;// - fishes[fishIndex]->bones[i]->position.x;
-					 // += boneCenterWorldPosition.y;// 
-
-					 // rotatedVertex.x -= fishes[fishIndex]->bones[i]->position.x;
-					  // rotatedVertex.y -= fishes[fishIndex]->bones[i]->position.y ;
-
-					  rotatedVertex.x += boneCenterWorldPosition.x;
-					  rotatedVertex.y +=boneCenterWorldPosition.y;
+				else {
 
 
-					
-					// adjustedVertex.y -=1;
-					
-					vertices[j] = rotatedVertex;
+					if (fishes[fishIndex]->bones[i]->p_body == NULL || fishes[fishIndex]->bones[i]->p_body == nullptr) {
+						continue;
+					}
+					// int32_t vertexCount = fishes[fishIndex]->bones[i]->shape.GetVertexCount(); // spolier alert, it's 4
+					b2Vec2 vertices[4];
 
+					b2Vec2 boneCenterWorldPosition = fishes[fishIndex]->bones[i]->p_body->GetWorldCenter();
+					// local_debugDraw_pointer->DrawPoint(boneCenterWorldPosition, 8.0f, b2Color( 1,1, 1));
+					// printab2Vec2(boneCenterWorldPosition);
+
+					for (int j = 0; j < 4; ++j)
+					{	
+
+						
+						b2Vec2 adjustedVertex = fishes[fishIndex]->bones[i]->shape.GetVertex(j);
+
+						b2Vec2 boneLocalCenter =fishes[fishIndex]->bones[i]->p_body->GetLocalCenter();
+
+						b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, fishes[fishIndex]->bones[i]->p_body->GetAngle(), adjustedVertex);
+						
+
+						// adjustedVertex = 
+						
+						// adjustedVertex.x += boneCenterWorldPosition.x;// - fishes[fishIndex]->bones[i]->position.x;
+						 // += boneCenterWorldPosition.y;// 
+
+						 // rotatedVertex.x -= fishes[fishIndex]->bones[i]->position.x;
+						  // rotatedVertex.y -= fishes[fishIndex]->bones[i]->position.y ;
+
+						  rotatedVertex.x += boneCenterWorldPosition.x;
+						  rotatedVertex.y +=boneCenterWorldPosition.y;
+
+
+						
+						// adjustedVertex.y -=1;
+						
+						vertices[j] = rotatedVertex;
+
+					}
+
+					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
+					// printf("mnjunglbal: %i\n", vertexCount);
+
+
+					// draw a color outline
+					local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
 				}
+				
 
-				local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
-				// printf("mnjunglbal: %i\n", vertexCount);
 			}
-			
 
 		}
 
 	}
-
 }
 
 
@@ -1663,7 +1722,11 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 			loadFish (i, prepareNematode(), NULL,  positionalRandomness) ;
 		}
 
+
+
 		totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
+
+		// moveAWholeFish(i, positionalRandomness);
 	}
 	startNextGeneration = false;
 }
@@ -1828,37 +1891,58 @@ void deepSeaLoop () {
 
 		unsigned int spacesUsedSoFar =0;
 
+		float flotCount = 0.0f;
+		float flotSpeed = 0.0f;
+		float ratio = 0.0f;
+
 		for (int i = 0; i < N_FISHES; ++i) {
 			if (fishSlotLoaded[i]) {
+
 			
 				// cause heart to beat. Heart A is the slowest
 				if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 4) {
 					fishes[i]->heartCountA = 0;
-					if (fishes[i]->heartOutputA > 0) { fishes[i]->heartOutputA = -1; }
-					else { fishes[i]->heartOutputA = 1; }
 				}
-				else { fishes[i]->heartCountA++; }
+				else { 
+					fishes[i]->heartCountA++;
+					flotCount = fishes[i]->heartCountA;
+					flotSpeed = fishes[i]->heartSpeed*4;
+					ratio = flotCount/ flotSpeed ;
+					fishes[i]->heartOutputA = sin(ratio* pi );
+				}
 
 				if (fishes[i]->heartCountB > fishes[i]->heartSpeed) {
 					fishes[i]->heartCountB = 0;
-					if (fishes[i]->heartOutputB > 0) { fishes[i]->heartOutputB = -1; }
-					else { fishes[i]->heartOutputB = 1; }
 				}
-				else { fishes[i]->heartCountB++; }
+				else { 
+					fishes[i]->heartCountB++;
+					flotCount = fishes[i]->heartCountB;
+					flotSpeed = fishes[i]->heartSpeed;
+					ratio = flotCount/ flotSpeed ;
+					fishes[i]->heartOutputB = sin(ratio* pi );
+				}
 
 				if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
 					fishes[i]->heartCountC = 0;
-					if (fishes[i]->heartOutputC > 0) { fishes[i]->heartOutputC = -1; }
-					else { fishes[i]->heartOutputC = 1; }
 				}
-				else { fishes[i]->heartCountC++; }
+				else { 
+					fishes[i]->heartCountC++;
+					flotCount = fishes[i]->heartCountC;
+					flotSpeed = fishes[i]->heartSpeed/4;
+					ratio = flotCount/ flotSpeed ;
+					fishes[i]->heartOutputC = sin(ratio* pi );
+				}
 
 				if (fishes[i]->heartCountD > fishes[i]->heartSpeed/16) {
 					fishes[i]->heartCountD = 0;
-					if (fishes[i]->heartOutputD > 0) { fishes[i]->heartOutputD = -1; }
-					else { fishes[i]->heartOutputD = 1; }
 				}
-				else { fishes[i]->heartCountD++; }
+				else { 
+					fishes[i]->heartCountD++;
+					flotCount = fishes[i]->heartCountD;
+					flotSpeed = fishes[i]->heartSpeed/16;
+					ratio = flotCount/ flotSpeed ;
+					fishes[i]->heartOutputD = sin(ratio* pi );
+				}
 
 				// update the fish's senses
 				for (int j = 0; j < N_FINGERS; ++j) {

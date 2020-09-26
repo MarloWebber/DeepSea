@@ -495,9 +495,9 @@ void Test::Step(Settings* settings)
 		settings->particleIterations);
 	settings->stepTimeOut = timer.GetMilliseconds();
 
-	m_world->DrawDebugData(); // this the one
+	// m_world->DrawDebugData(); // this the one
 
-	drawingTest(0);
+	drawingTest();
 
 	if (timeStep > 0.0f)
 	{

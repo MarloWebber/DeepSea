@@ -35,6 +35,7 @@ struct boneAndJointDescriptor_t {
 		float normalAngle = 0.0f;
 		float lowerAngle = 0.0f;
 		bool used = false;
+		b2Color color;
 };
 
 struct fishDescriptor_t {
@@ -238,7 +239,7 @@ void vote(BonyFish * winner);
 
 void  mutateFANNFileDirectly();
 
-void drawingTest(unsigned int fishIndex) ;
+void drawingTest() ;
 extern bool startNextGeneration;
 
 // if (startNextGeneration ) {
