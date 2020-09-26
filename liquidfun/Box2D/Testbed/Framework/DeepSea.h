@@ -227,7 +227,7 @@ void deepSeaControlB () ;
 void addFoodParticle ( b2Vec2 position) ;
 void fishIncorporator (BonyFish * p_fish) ;
 
-void deepSeaSetup(b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) ;
+void deepSeaSetup(b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw, b2World * m_world_sci, b2ParticleSystem * m_particleSystem_sci) ;
 void deepSeaLoop () ;
 
 void makeAJellyfish (BonyFish * p_fish) ;
@@ -243,7 +243,9 @@ extern int currentNumberOfFish;
 void collisionHandler (void * boneA, void * boneB, b2Contact * p_contact) ;
 
 void reloadTheSim();
-
+bool queryScienceMode () ;
+void enterScienceMode();
+void exitScienceMode ();
 void vote(BonyFish * winner);
 
 void  mutateFANNFileDirectly();

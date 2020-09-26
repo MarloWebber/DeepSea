@@ -185,16 +185,17 @@ static void SimulationLoop()
 
 
 
-	
-		
-	// }
-
-	if (test->IsWorldLocked() == false) {
-		deepSeaLoop();
+	if (!queryScienceMode()) {
+		if (test->IsWorldLocked() == false && !settings.pause) {
+			deepSeaLoop();
+		}
+		test->Step(&settings);
 	}
-	
+	else {
+		;
+	}
 
-	test->Step(&settings);
+	
 
 	// Update the state of the particle parameter.
 	bool restartTest;
@@ -323,6 +324,18 @@ static void Keyboard(unsigned char key, int x, int y)
 		// test = entry->createFcn();
 		reloadTheSim();
 		break;
+
+	case 's':
+		if (queryScienceMode()) {
+			exitScienceMode();
+			settings.pause = false;
+		}
+		else {
+			enterScienceMode();
+			settings.pause = true;
+		}
+		break;
+
 
 		// Press space to launch a bomb.
 	case ' ':

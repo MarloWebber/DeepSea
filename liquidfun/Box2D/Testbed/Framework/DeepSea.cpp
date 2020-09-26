@@ -18,6 +18,8 @@ int currentNumberOfFish = 0;
 int generationsThisGame = 0;
 bool startNextGeneration = false;
 
+bool scienceMode = false;
+
 bool fishSlotLoaded[N_FISHES];
 bool foodSlotLoaded[N_FOODPARTICLES];
 
@@ -27,6 +29,10 @@ bool userControlInputB;
 b2World * local_m_world = nullptr;
 b2ParticleSystem * local_m_particleSystem = nullptr;
 DebugDraw * local_debugDraw_pointer = nullptr;
+
+b2World * local_m_world_sci = nullptr;
+b2ParticleSystem * local_m_particleSystem_sci = nullptr;
+DebugDraw * local_debugDraw_pointer_sci = nullptr;
 
 float pi = 3.14159f;
 
@@ -1873,12 +1879,15 @@ inline bool exists_test1 (const std::string& name) {
     }   
 }
 
-void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) {
+void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw, b2World * m_world_sci, b2ParticleSystem * m_particleSystem_sci) {
 
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
+
+	local_m_world_sci = m_world_sci;
+	local_m_particleSystem_sci = m_particleSystem_sci;
 
 	if (RNG() > 0.5f) {
 		addFoodParticle(b2Vec2(24.0f, 3.5f));
@@ -2001,11 +2010,93 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     free(con);
 }
 
+
+void enterScienceMode ( ) {
+
+	
+		
+		scienceMode = true;
+	// for (int i = 0; i < N_FISHES; ++i) {
+		
+		bool thereIsAFile = false;
+		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+
+		if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
+	        fclose(file);
+	        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
+		        thereIsAFile = true;
+		        fclose(file);
+		    }
+	    } 
+
+		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
+
+			// removeDeletableFish();
+
+			fishDescriptor_t newFishBody;
+			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+
+			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+		    mutateFANNFileDirectly();
+
+			// now you can load the mutant ANN.
+			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+			// fann *mann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+
+			// loadFish (i, newFishBody, mann, positionalRandomness) ;
+
+			// totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
+
+
+		}
+		// else { 						// if there is no winner, its probably a reset or new install. make one up
+		// 	prepareNematode(&nematode);
+
+		// 	loadFish (i, nematode, NULL,  positionalRandomness) ;
+		// }
+
+
+
+	
+		// moveAWholeFish(i, positionalRandomness);
+	// }
+	// startNextGeneration = false;
+
+
+}
+
+
+void exitScienceMode () {
+	scienceMode = false;
+}
+
+bool queryScienceMode () {
+	return scienceMode;
+}
+
+// the science menu allows you to study and modify individual organisms.
+// a single copy of the selected organism is pinned to the center of the screen
+void scienceMenuLoop () {
+
+
+
+// the user modifies the descriptor
+
+// the new descriptor is created into an organism
+
+// the organism is shown in the view and in the world
+
+
+
+
+}
+
+
 void deepSeaLoop () {
 
 
 
-	if (!local_m_world->IsLocked()) {
+	if (!local_m_world->IsLocked() ) {
 
 		// drawingTest(0);
 

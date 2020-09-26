@@ -228,7 +228,9 @@ protected:
 	DebugDraw m_debugDraw;
 	int32 m_textLine;
 	b2World* m_world;
+	b2World* m_world_sci;
 	b2ParticleSystem* m_particleSystem;
+	b2ParticleSystem* m_particleSystem_sci;
 
 	// b2ParticleSystem* m_particleSystemGravel;
 	b2Body* m_bomb;

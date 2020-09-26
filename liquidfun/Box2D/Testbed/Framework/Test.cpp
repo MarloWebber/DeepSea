@@ -62,14 +62,11 @@ Test::Test()
 	b2Vec2 gravity;
 	gravity.Set(0.0f, -10.0f);
 	m_world = new b2World(gravity);
+	m_world_sci = new b2World(gravity);
 
 	// water?
 	m_particleSystem = m_world->CreateParticleSystem(&particleSystemDef);
-
-
-	// m_particleSystemGravel = m_world->CreateParticleSystem(&particleSystemDef);
-
-
+	m_particleSystem_sci = m_world->CreateParticleSystem(&particleSystemDef);
 
 	m_bomb = NULL;
 	m_textLine = 30;
@@ -83,6 +80,8 @@ Test::Test()
 
 	m_particleSystem->SetGravityScale(0.4f);
 	m_particleSystem->SetDensity(1.2f);
+	m_particleSystem_sci->SetGravityScale(0.4f);
+	m_particleSystem_sci->SetDensity(1.2f);
 
 	// m_particleSystemGravel->SetGravityScale(0.4f);
 	// m_particleSystemGravel->SetDensity(2.4f);
@@ -104,7 +103,7 @@ Test::Test()
 
 	m_particleParameters = NULL;
 
-	deepSeaSetup(  m_world, m_particleSystem, &m_debugDraw);
+	deepSeaSetup(  m_world, m_particleSystem, &m_debugDraw, m_world_sci, m_particleSystem_sci);
 }
 
 Test::~Test()
