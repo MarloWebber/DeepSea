@@ -189,6 +189,8 @@ struct BonyFish {
 
 	uint8_t slot; // for reference, the slot the fish is loaded into
 
+	bool selected;
+
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
 	
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition);

@@ -18,6 +18,7 @@ int currentNumberOfFish = 0;
 int generationsThisGame = 0;
 bool startNextGeneration = false;
 
+// int selected = 0;
 bool scienceMode = false;
 
 bool fishSlotLoaded[N_FISHES];
@@ -51,7 +52,7 @@ const unsigned int epochs_between_reports = 100;
 
 foodParticle_t * food[N_FOODPARTICLES];
 BonyFish * fishes[N_FISHES];
-
+BonyFish * sciFish;
 float magnitude (b2Vec2 vector) {
 	return sqrt( (vector.x * vector.x) + (vector.y * vector.y));
 }
@@ -297,7 +298,7 @@ BoneUserData::BoneUserData(
 	// printf("\n");
 };
 
-void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
+void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex, bool sciWorld) {
 	if (!p_bone->init) {
 		return;
 	}
@@ -333,6 +334,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
 
 	if (!p_bone->isRoot) {
             p_bone->joint->isUsed = true;
+
 			p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
 	}
 	p_bone->isUsed = true;
@@ -515,6 +517,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
 
 	flagDelete = false;
+	selected = false;
 
 heartCountA = 0;
 heartCountB = 0;
@@ -898,7 +901,7 @@ void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
 void totalFishIncorporator (uint8_t fishIndex) {
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fishes[fishIndex]->bones[i]->init) {
-			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , i);
+			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , i, false);
 		}
 	}
 }
@@ -946,6 +949,11 @@ void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, fann * nann, b2Vec
 	fishes[fishIndex] = new BonyFish(driedFish, fishIndex, nann, startingPosition);
 	fishes[fishIndex]->slot = fishIndex;
 	fishSlotLoaded[fishIndex] = true;
+}
+
+void loadFishForScience (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
+	// return new BonyFish(driedFish, fishIndex, nann, startingPosition);
+	// sciFish = new BonyFish(driedFish, fishIndex, nann, startingPosition);
 }
 
 fann * loadFishBrainFromFile (std::string fileName) {
@@ -1816,6 +1824,11 @@ void drawingTest() {
 
 					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
 					local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->outlineColor);
+
+					if (fishes[fishIndex]->selected) {
+
+						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(1,1,1));
+					}
 				}
 			}
 		}
@@ -2036,12 +2049,16 @@ void enterScienceMode ( ) {
 			fishDescriptor_t newFishBody;
 			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
-		    mutateFANNFileDirectly();
+			fann *mann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+
+
+			 loadFishForScience (newFishBody, mann,  b2Vec2(0.0f, 0.0f)) ;
+
+			// mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+		 //    mutateFANNFileDirectly();
 
 			// now you can load the mutant ANN.
 			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
-			// fann *mann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
 
 			// loadFish (i, newFishBody, mann, positionalRandomness) ;
 
