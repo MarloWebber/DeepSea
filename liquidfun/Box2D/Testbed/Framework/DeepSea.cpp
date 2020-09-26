@@ -2126,10 +2126,46 @@ void deepSeaLoop () {
 								if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
 
 							if (fishes[i]->bones[j]->joint->isUsed) {
-								sensorium[j+8] = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
-							}
+								// i don't think you should feed the joint angle in radians directly in...
 
-							// printf("touchSensation: %f\n", fishes[i]->bones[j]->touchSensation);
+								// float angleRange= - (fishes[i]->bones[j]->joint->lowerAngle - fishes[i]->bones[j]->joint->upperAngle);
+								float ratio = 0.0f;
+								float jointAngle = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
+
+								// if (jointAngle >angleRange/2 ) {
+								// 	ratio =(angleRange/jointAngle) * pi;
+								// }
+								// else {
+								// ratio =(fishes[i]->bones[j]->joint->upperAngle/jointAngle)  + (fishes[i]->bones[j]->joint->lowerAngle/jointAngle) ;//* pi;
+								// }
+// 
+								
+
+								float midpoint =( fishes[i]->bones[j]->joint->lowerAngle + fishes[i]->bones[j]->joint->upperAngle)/2;
+
+								if (jointAngle > midpoint) {
+												// jointAngle -= midpoint;
+												ratio =( jointAngle / (fishes[i]->bones[j]->joint->upperAngle - midpoint));
+
+								}
+								else {
+										// jointAngle -= midpoint;
+												ratio = - ( jointAngle / (fishes[i]->bones[j]->joint->lowerAngle - midpoint));
+
+											// ratio += 1;
+												
+												// ratio = ratio* -1;
+
+								}
+// printf("lower: %f, upper: %f, jointAngle: %f, ratio: %f\n",fishes[i]->bones[j]->joint->lowerAngle , fishes[i]->bones[j]->joint->upperAngle,fishes[i]->bones[j]->joint->p_joint->GetJointAngle(),ratio);
+
+
+								sensorium[j+8] = ratio;// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
+
+							// printf("ratio: %f\n", ratio);
+
+
+							}
 						
 							sensorium[j+16] = fishes[i]->bones[j]->touchSensation;
 							fishes[i]->bones[j]->touchSensation = 0.0f;
