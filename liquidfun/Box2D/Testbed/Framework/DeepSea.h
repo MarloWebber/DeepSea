@@ -107,7 +107,8 @@ struct BoneUserData {
 
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
-		b2Vec2 positionOffset);
+		b2Vec2 positionOffset,
+		int collisionGroup);
 } ;
 
 struct connectionDescriptor {

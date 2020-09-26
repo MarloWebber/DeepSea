@@ -122,7 +122,8 @@ void printab2Vec2(b2Vec2 v) {
 BoneUserData::BoneUserData(
 		boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
-		b2Vec2 positionOffset
+		b2Vec2 positionOffset,
+		int newCollisionGroup
 	) {
 
 	if (!boneDescription.used) {
@@ -159,10 +160,13 @@ BoneUserData::BoneUserData(
 
 	int count = 4;
 
+		// int randomCollisionGroup = - (RNG() * 16.0f);
+		collisionGroup = newCollisionGroup;//randomCollisionGroup ;
+
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 	if (isRoot) {
 
-		collisionGroup = -2;
+	
 			offsetOnBody = b2Vec2(0.0f, 0.0f);
 
 		printf("its a root bone\n");
@@ -210,13 +214,13 @@ BoneUserData::BoneUserData(
 			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;
 
 		// bones in a set can't collide with each other.
-		if (attachesTo->collisionGroup == -2) {
-			collisionGroup = -4;
-		}
+		// if (attachesTo->collisionGroup == -2) {
+		// 	collisionGroup = -4;
+		// }
 
-		else {
-			collisionGroup = -2;
-		}
+		// else {
+			// collisionGroup = -2;
+		// }
 
 		// printf("its not a root bone\n");
 		// tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
@@ -391,6 +395,115 @@ void loadFishFromFile(const std::string& file_name, fishDescriptor_t& data) {
   in.read(reinterpret_cast<char*>(&data), sizeof(fishDescriptor_t));
 }
 
+// makes sure that the starting creature at least has senses wired up to something near the motor controls.
+// prevents generations of completely braindead creatures
+void wormTrainer () {
+	int n_examples = 1000;
+
+	FILE *fp;
+    fp = fopen("wormTrainer.data","wb");
+
+    fprintf(fp, "%i %i% i\n", n_examples*4, 28, 8 );
+
+	for (int i = 0; i < 2*n_examples; ++i) {
+		float senseDiffPerSegment = RNG() * 0.25;
+		float noize = RNG() * 0.5;
+	
+		// four samples that show a swimming motion when the food is ahead
+		// ------- SEQ 1
+		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", 
+			4*senseDiffPerSegment + (RNG() * noize),
+			3*senseDiffPerSegment + (RNG() * noize),
+			2*senseDiffPerSegment + (RNG() * noize),
+			1*senseDiffPerSegment + (RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize)
+
+			);
+		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+			0  + (RNG() * noize),
+			1 + (RNG() * noize),
+			-1 + (RNG() * noize),
+			0 + (RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize)
+			);
+		// -------- SEQ 2
+		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n", 
+			4*senseDiffPerSegment + (RNG() * noize),
+			3*senseDiffPerSegment + (RNG() * noize),
+			2*senseDiffPerSegment + (RNG() * noize),
+			1*senseDiffPerSegment + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize)
+			);
+
+		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+			-1 + (RNG() * noize),
+			0 + (RNG() * noize),
+			0 + (RNG() * noize),
+			1 + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
+			);
+		// -------- SEQ 3
+		
+		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",  
+			4*senseDiffPerSegment + (RNG() * noize),
+			3*senseDiffPerSegment + (RNG() * noize),
+			2*senseDiffPerSegment + (RNG() * noize),
+			1*senseDiffPerSegment + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
+			0 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize),1 + (RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize)
+			);
+
+		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+			1 + (RNG() * noize),
+			0 + (RNG() * noize),
+			0 + (RNG() * noize),
+			-1 + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
+			);
+		// -------- SEQ 4
+		
+		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f\n",  
+			4*senseDiffPerSegment + (RNG() * noize),
+			3*senseDiffPerSegment + (RNG() * noize),
+			2*senseDiffPerSegment + (RNG() * noize),
+			1*senseDiffPerSegment + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
+			0 + (RNG() * noize),1 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize),
+
+			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize)
+			);
+
+		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
+			0 + (RNG() * noize),
+			-1 + (RNG() * noize),
+			1 + (RNG() * noize),
+			0 + (RNG() * noize),
+			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
+			);
+		// --------
+	}
+}
+
+
 BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition) {
 	genes = driedFish;
 	hunger = 0.0f; // the animal spends energy to move and must replenish it by eating
@@ -403,11 +516,18 @@ heartCountC = 0;
 heartCountD = 0;
 	// color = driedFish.color;
 
+
+		int randomCollisionGroup = - (RNG() * 16.0f);
+		// collisionGroup = newCollisionGroup;//randomCollisionGroup ;
+
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (i == 0) {
 			driedFish.bones[i].isRoot = true;
 		}
-		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition);
+
+
+
+		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup);
 	}
 
 	n_bones_used = 0;
@@ -440,6 +560,10 @@ heartCountD = 0;
 	    	ann = fann_create_standard_array(5, creationLayerCake);
 		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
 		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
+
+
+		    wormTrainer();
+
 		    fann_train_on_file(ann, "wormTrainer.data", max_epochs, epochs_between_reports, desired_error);
 	    }
     else { // a brain is provided
@@ -1140,13 +1264,13 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 
 			// mutate color
 			if (RNG() < mutationChance) {
-				fish->bones[i].color.Set(fish->bones[i].color.r + mutationSeverity*(RNG()-0.5),  fish->bones[i].color.g, fish->bones[i].color.b);
+				fish->bones[i].color.Set(fish->bones[i].color.r +( mutationSeverity*(RNG()-0.5 )),  fish->bones[i].color.g, fish->bones[i].color.b);
 			}
 			if (RNG() < mutationChance) {
-				fish->bones[i].color.Set(fish->bones[i].color.r,	 fish->bones[i].color.g + mutationSeverity*(RNG()-0.5), fish->bones[i].color.b );
+				fish->bones[i].color.Set(fish->bones[i].color.r,	 fish->bones[i].color.g + (mutationSeverity*(RNG()-0.5)), fish->bones[i].color.b );
 			}
 			if (RNG() < mutationChance) {
-				fish->bones[i].color.Set(	fish->bones[i].color.r, fish->bones[i].color.g,  fish->bones[i].color.b + mutationSeverity*(RNG()-0.5));
+				fish->bones[i].color.Set(	fish->bones[i].color.r, fish->bones[i].color.g,  fish->bones[i].color.b + (mutationSeverity*(RNG()-0.5)));
 			}	
 
 			// mutate floats
@@ -1187,92 +1311,6 @@ void LoadFishFromName (uint8_t fishIndex) {
 	}
 	else {
 		loadFish ( fishIndex,  newFish, ann , b2Vec2(0.0f, 0.0f)) ;
-	}
-}
-
-void wormTrainer () {
-	int n_examples = 1000;
-
-	FILE *fp;
-    fp = fopen("wormTrainer.data","wb");
-
-    fprintf(fp, "%i %i% i\n", n_examples*4, 12, 8 );
-
-	for (int i = 0; i < 2*n_examples; ++i) {
-		float senseDiffPerSegment = RNG() * 0.25;
-		float noize = RNG() * 0.5;
-	
-		// four samples that show a swimming motion when the food is ahead
-		// ------- SEQ 1
-		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
-			4*senseDiffPerSegment + (RNG() * noize),
-			3*senseDiffPerSegment + (RNG() * noize),
-			2*senseDiffPerSegment + (RNG() * noize),
-			1*senseDiffPerSegment + (RNG() * noize),
-			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize),
-			(RNG() * noize),(RNG() * noize),(RNG() * noize),1+(RNG() * noize)
-			);
-		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
-			0  + (RNG() * noize),
-			1 + (RNG() * noize),
-			-1 + (RNG() * noize),
-			0 + (RNG() * noize),
-			(RNG() * noize),(RNG() * noize),(RNG() * noize),(RNG() * noize)
-			);
-		// -------- SEQ 2
-		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
-			4*senseDiffPerSegment + (RNG() * noize),
-			3*senseDiffPerSegment + (RNG() * noize),
-			2*senseDiffPerSegment + (RNG() * noize),
-			1*senseDiffPerSegment + (RNG() * noize),
-			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
-			0 + (RNG() * noize),0 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize)
-			);
-
-		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
-			-1 + (RNG() * noize),
-			0 + (RNG() * noize),
-			0 + (RNG() * noize),
-			1 + (RNG() * noize),
-			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
-			);
-		// -------- SEQ 3
-		
-		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
-			4*senseDiffPerSegment + (RNG() * noize),
-			3*senseDiffPerSegment + (RNG() * noize),
-			2*senseDiffPerSegment + (RNG() * noize),
-			1*senseDiffPerSegment + (RNG() * noize),
-			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
-			0 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize),1 + (RNG() * noize)
-			);
-
-		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
-			1 + (RNG() * noize),
-			0 + (RNG() * noize),
-			0 + (RNG() * noize),
-			-1 + (RNG() * noize),
-			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
-			);
-		// -------- SEQ 4
-		
-		fprintf(fp, "%f %f %f %f %f %f %f %f %f %f %f %f\n", 
-			4*senseDiffPerSegment + (RNG() * noize),
-			3*senseDiffPerSegment + (RNG() * noize),
-			2*senseDiffPerSegment + (RNG() * noize),
-			1*senseDiffPerSegment + (RNG() * noize),
-			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),
-			0 + (RNG() * noize),1 + (RNG() * noize),1 + (RNG() * noize),0 + (RNG() * noize)
-			);
-
-		fprintf(fp, "%f %f %f %f %f %f %f %f\n", 
-			0 + (RNG() * noize),
-			-1 + (RNG() * noize),
-			1 + (RNG() * noize),
-			0 + (RNG() * noize),
-			0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize),0 + (RNG() * noize)
-			);
-		// --------
 	}
 }
 
@@ -1420,10 +1458,14 @@ void mutateFANNFileDirectly () {
 	int amountCount = 0;
 	while(getline(inFile, line)){
 
+			if (inFile.eof()){
+	 				break;
+	 			} 
 	 	if (count == 35) { // its that crazy line.
 	 		char desireCharacter = '=';
 	 		bool skipTheRest = false;
 	 		for(char& c : line) {
+
 
 	 			// skip over the 27 scientific notation characters you copied.
 			    if (!skipTheRest) {
@@ -1751,7 +1793,7 @@ void drawingTest() {
 						vertices[j] = rotatedVertex;
 					}
 
-					printf("eafe: %f\n", fishes[fishIndex]->bones[i]->outlineColor.r);
+					// printf("eafe: %f\n", fishes[fishIndex]->bones[i]->outlineColor.r);
 
 					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
 					local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->outlineColor);
@@ -1788,7 +1830,8 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 		    mutateFANNFileDirectly();
 
 			// now you can load the mutant ANN.
-			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+			fann *mann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
 
 			loadFish (i, newFishBody, mann, positionalRandomness) ;
 
