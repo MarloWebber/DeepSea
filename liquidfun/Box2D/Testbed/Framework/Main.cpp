@@ -319,8 +319,9 @@ static void Keyboard(unsigned char key, int x, int y)
 
 		// Press 'r' to reset.
 	case 'r':
-		delete test;
-		test = entry->createFcn();
+		// delete test;
+		// test = entry->createFcn();
+		reloadTheSim();
 		break;
 
 		// Press space to launch a bomb.

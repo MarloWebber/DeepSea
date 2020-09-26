@@ -1406,6 +1406,18 @@ void removeDeletableFish() {
 	}
 }
 
+// random new generation from the old winner. reset
+void reloadTheSim  () {
+	// label every fish as delete.
+	for (int i = 0; i < N_FISHES; ++i) {
+		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
+		fishes[i]->flagDelete = true;
+	}
+
+	startNextGeneration = true;
+}
+
+
 //  prints the winner to file immediately.
 void  vote (BonyFish * winner) {
 	if ( !fishSlotLoaded[winner->slot]) { return; }
@@ -1424,12 +1436,13 @@ void  vote (BonyFish * winner) {
 	}
 
 	// label every fish as delete.
-	for (int i = 0; i < N_FISHES; ++i) {
-		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
-		fishes[i]->flagDelete = true;
-	}
+	// for (int i = 0; i < N_FISHES; ++i) {
+	// 	if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
+	// 	fishes[i]->flagDelete = true;
+	// }
 
-	startNextGeneration = true;
+	// startNextGeneration = true;
+	reloadTheSim();	
 }
 
 void printConnectionArrayForDebug (networkDescriptor * network) {
@@ -2209,6 +2222,7 @@ void deepSeaControlA () {
 void deepSeaControlB () {
 	;
 }
+
 
 void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) {
 	bool et = false;

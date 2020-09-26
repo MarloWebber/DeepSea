@@ -46,6 +46,8 @@ struct fishDescriptor_t {
 	uint8_t heartSpeed;
 };
 
+
+
 struct JointUserData {
 	float torque; 	
 	float speed; 	
@@ -230,6 +232,8 @@ void deepSeaLoop () ;
 
 void makeAJellyfish (BonyFish * p_fish) ;
 
+
+
 extern foodParticle_t * food[N_FOODPARTICLES];
 extern BonyFish * fishes[N_FISHES];
 
@@ -237,6 +241,8 @@ extern int currentNumberOfFood;
 extern int currentNumberOfFish;
 
 void collisionHandler (void * boneA, void * boneB, b2Contact * p_contact) ;
+
+void reloadTheSim();
 
 void vote(BonyFish * winner);
 
