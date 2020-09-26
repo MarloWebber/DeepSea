@@ -152,6 +152,7 @@ BoneUserData::BoneUserData(
 
 
 	color = boneDescription.color;
+	outlineColor = boneDescription.outlineColor;
 
 	tipCenter = b2Vec2(0.0f,0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	rootCenter = b2Vec2(0.0f,0.0f); 	
@@ -425,7 +426,8 @@ heartCountD = 0;
     if (nann == NULL) {
 
     		for (int i = 0; i < N_FINGERS; ++i) {
-				driedFish.bones[i].color = b2Color(RNG(), RNG(), RNG());
+				driedFish.bones[i].color = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
+				driedFish.bones[i].outlineColor = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
 			}
 
     	    unsigned int creationLayerCake[] = {
@@ -438,7 +440,7 @@ heartCountD = 0;
 	    	ann = fann_create_standard_array(5, creationLayerCake);
 		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
 		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
-		    // fann_train_on_file(ann, "wormTrainer.data", max_epochs, epochs_between_reports, desired_error);
+		    fann_train_on_file(ann, "wormTrainer.data", max_epochs, epochs_between_reports, desired_error);
 	    }
     else { // a brain is provided
     	ann = nann;
@@ -657,13 +659,91 @@ fishDescriptor_t nematode = {
 				0.0f,	// normalAngle
 				pi * -1.0f * 0.5f,	// lowerAngle
 				true
+		},
+		{
+				2,		// attachesTo
+				0.5f,	// length
+				0.2f,	// rootThickness
+				0.2f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				true,
+				false,	// isWeapon
+				100.0f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.0f * 0.5f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
+				false
+		},
+		{
+				2,		// attachesTo
+				0.5f,	// length
+				0.2f,	// rootThickness
+				0.2f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				true,
+				false,	// isWeapon
+				100.0f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.0f * 0.5f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
+				false
+		},
+		{
+				2,		// attachesTo
+				0.5f,	// length
+				0.2f,	// rootThickness
+				0.2f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				true,
+				false,	// isWeapon
+				100.0f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.0f * 0.5f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
+				false
+		},
+		{
+				2,		// attachesTo
+				0.5f,	// length
+				0.2f,	// rootThickness
+				0.2f,	// tipThickness
+				false,	// isRoot
+				false,	// isMouth
+				false,	// isSensor
+				true,
+				false,	// isWeapon
+				100.0f,	// torque
+				10.0f,	// speedLimit
+				pi * 1.0f * 0.5f,// upperAngle
+				0.0f,	// normalAngle
+				pi * -1.0f * 0.5f,	// lowerAngle
+				false
 		}
 	}
 };
 
-fishDescriptor_t prepareNematode() {
-	nematode.heartSpeed = 50;
-	return nematode;
+
+void prepareNematode(fishDescriptor_t * nematode) {
+	nematode->heartSpeed = 50;
+
+	for (int i = 0; i < N_FINGERS; ++i)
+	{
+		nematode->bones[i].color.r = 0.5f;
+		nematode->bones[i].color.g = 0.5f;
+		nematode->bones[i].color.b = 0.5f;
+	}
+
+
+	// return nematode;
 }
 
 // fishDescriptor_t prepareKoi() {
@@ -1597,6 +1677,7 @@ void drawingTest() {
 
 	// local_m_world->DrawParticleSystem(local_m_particleSystem);
 
+	// draw the particle system
 	int32 particleCount = local_m_particleSystem->GetParticleCount();
 	if (particleCount)
 	{
@@ -1613,76 +1694,70 @@ void drawingTest() {
 		// }
 	}
 
+
+	// draw the food particles
+
+	b2Color fishFoodDye 		= b2Color(0.2f, 0.6f, 0.1f);
+	b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
+
+	for (int i = 0; i < N_FOODPARTICLES; ++i) {
+		if (!foodSlotLoaded[i] || !food[i]->init || !food[i]->isUsed) {
+			continue;
+		}
+		else {
+			// food[i]->position 
+			// food[i]->p_body->GetAngle()
+
+			b2Vec2 vertices[4];
+
+
+					// b2Vec2 boneCenterWorldPosition = ;
+					for (int j = 0; j < 4; ++j) {	
+						b2Vec2 adjustedVertex = food[i]->shape.GetVertex(j);//vertices[j];
+						b2Vec2 boneLocalCenter =food[i]->p_body->GetLocalCenter();
+						b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i]->p_body->GetAngle(), adjustedVertex);
+						rotatedVertex.x += food[i]->position.x;
+						rotatedVertex.y +=food[i]->position.y;
+						vertices[j] = rotatedVertex;
+					}
+					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 ,fishFoodDye );
+					local_debugDraw_pointer->DrawPolygon(vertices, 4 ,fishFoodDyeOutline );
+					// local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDye);
+
+
+		}
+	}
+
 	// for each bone, get the vertices, then add the body's world location to them, and rotate by the body angle around the body world location.
 	// to do this you will need to extend the rotate point method to rotate a polygon.
-	for (unsigned int fishIndex = 0; fishIndex < N_FISHES; ++fishIndex)
-	{
-		/* code */
-		
-
+	for (unsigned int fishIndex = 0; fishIndex < N_FISHES; ++fishIndex) {
 		if (fishSlotLoaded[fishIndex]) {
-
-			for (int i = 0; i < N_FINGERS; ++i)
-			{
+			for (int i = 0; i < N_FINGERS; ++i) {
 				if (!fishes[fishIndex]->bones[i]->init || !fishes[fishIndex]->bones[i]->isUsed) {
 					;
 				}
 				else {
-
-
 					if (fishes[fishIndex]->bones[i]->p_body == NULL || fishes[fishIndex]->bones[i]->p_body == nullptr) {
 						continue;
 					}
-					// int32_t vertexCount = fishes[fishIndex]->bones[i]->shape.GetVertexCount(); // spolier alert, it's 4
 					b2Vec2 vertices[4];
-
 					b2Vec2 boneCenterWorldPosition = fishes[fishIndex]->bones[i]->p_body->GetWorldCenter();
-					// local_debugDraw_pointer->DrawPoint(boneCenterWorldPosition, 8.0f, b2Color( 1,1, 1));
-					// printab2Vec2(boneCenterWorldPosition);
-
-					for (int j = 0; j < 4; ++j)
-					{	
-
-						
+					for (int j = 0; j < 4; ++j) {	
 						b2Vec2 adjustedVertex = fishes[fishIndex]->bones[i]->shape.GetVertex(j);
-
 						b2Vec2 boneLocalCenter =fishes[fishIndex]->bones[i]->p_body->GetLocalCenter();
-
 						b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, fishes[fishIndex]->bones[i]->p_body->GetAngle(), adjustedVertex);
-						
-
-						// adjustedVertex = 
-						
-						// adjustedVertex.x += boneCenterWorldPosition.x;// - fishes[fishIndex]->bones[i]->position.x;
-						 // += boneCenterWorldPosition.y;// 
-
-						 // rotatedVertex.x -= fishes[fishIndex]->bones[i]->position.x;
-						  // rotatedVertex.y -= fishes[fishIndex]->bones[i]->position.y ;
-
-						  rotatedVertex.x += boneCenterWorldPosition.x;
-						  rotatedVertex.y +=boneCenterWorldPosition.y;
-
-
-						
-						// adjustedVertex.y -=1;
-						
+						rotatedVertex.x += boneCenterWorldPosition.x;
+						rotatedVertex.y +=boneCenterWorldPosition.y;
 						vertices[j] = rotatedVertex;
-
 					}
 
+					printf("eafe: %f\n", fishes[fishIndex]->bones[i]->outlineColor.r);
+
 					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
-					// printf("mnjunglbal: %i\n", vertexCount);
-
-
-					// draw a color outline
-					local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
+					local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->outlineColor);
 				}
-				
-
 			}
-
 		}
-
 	}
 }
 
@@ -1719,7 +1794,9 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 		}
 		else { 						// if there is no winner, its probably a reset or new install. make one up
-			loadFish (i, prepareNematode(), NULL,  positionalRandomness) ;
+			prepareNematode(&nematode);
+
+			loadFish (i, nematode, NULL,  positionalRandomness) ;
 		}
 
 

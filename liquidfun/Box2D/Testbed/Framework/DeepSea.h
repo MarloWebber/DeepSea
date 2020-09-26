@@ -36,6 +36,7 @@ struct boneAndJointDescriptor_t {
 		float lowerAngle = 0.0f;
 		bool used = false;
 		b2Color color;
+		b2Color outlineColor;
 };
 
 struct fishDescriptor_t {
@@ -102,6 +103,7 @@ struct BoneUserData {
 	bool isUsed;	// if the bone is actually used in the game, presumably not all animals will use all 8
 
 	b2Color color;
+	b2Color outlineColor;
 
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
