@@ -3,6 +3,7 @@
 
 #include "Test.h"
 #include "Main.h"
+#include <list>
 
 #define N_FINGERS 8 // the amount of bones a fish can have. you know, fish fingers.
 #define N_FISHES 8
@@ -128,7 +129,9 @@ struct neuronDescriptor {
 	float activation_steepness;
 
 	unsigned int n_connections;
-	connectionDescriptor connections[16];
+	std::list<connectionDescriptor> connections;
+
+	b2Vec2 position;
 
 	neuronDescriptor();
 };
@@ -136,7 +139,7 @@ struct neuronDescriptor {
 struct layerDescriptor {
 	bool isUsed;
 	unsigned int n_neurons;
-	neuronDescriptor neurons[16]; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
+	std::list<neuronDescriptor> neurons; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
 	layerDescriptor();
 };
@@ -149,7 +152,9 @@ struct networkDescriptor {
 	*/
 
 	unsigned int n_layers;
-	layerDescriptor layers[8];
+	std::list<layerDescriptor> layers;
+
+	b2AABB networkWindow;
 
 	networkDescriptor( );
 };
@@ -187,12 +192,14 @@ struct BonyFish {
 
 	struct fann *ann;
 
+
 	uint8_t slot; // for reference, the slot the fish is loaded into
 
 	bool selected;
 
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
-	
+	networkDescriptor brain;
+
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition);
 
 };
