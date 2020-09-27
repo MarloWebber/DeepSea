@@ -1476,13 +1476,13 @@ void printConnectionArrayForDebug (networkDescriptor * network) {
 	printf("\n");
 }
 
-void mutateFANNFileDirectly () {
+void mutateFANNFileDirectly (std::string filename) {
 	std::ofstream outFile("mutantGimp.net");
 	std::string line;
 
-	std::ifstream inFile("mostCurrentWinner.net");
+	std::ifstream inFile(filename);
 	int count = 0;
-	int amountCount = 0;
+	// int amountCount = 0;
 	while(getline(inFile, line)){
 
 			if (inFile.eof()){
@@ -1534,11 +1534,11 @@ void mutateFANNFileDirectly () {
 			 			outFile << sciNotationBuffer;
 			 			outFile << ") ";
 
-			 			amountCount ++;
+			 			// amountCount ++;
 
-			 			if (amountCount >= 248) {
-			 				return;
-			 			}
+			 			// if (amountCount >= 248) {
+			 			// 	return;
+			 			// }
 
 			 			skipTheRest = true;
 		 			}
@@ -1589,7 +1589,7 @@ float  getSciNumberFromFANNFile (char c) {
 	return val;
 }
 
-void sexBetweenTwoBodies (fishDescriptor_t partnerA, fishDescriptor_t partnerB) {
+fishDescriptor_t sexBetweenTwoBodies (fishDescriptor_t partnerA, fishDescriptor_t partnerB) {
 
 	fishDescriptor_t offspring;
 
@@ -1604,6 +1604,7 @@ void sexBetweenTwoBodies (fishDescriptor_t partnerA, fishDescriptor_t partnerB) 
 	}
 
 	// mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+	return offspring;
 
 }
 
@@ -1620,12 +1621,21 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 	int count = 0;
 	int amountCount = 0;
 	while(getline(partnerA, lineA)){
+
 		getline(partnerB, lineB);
+
+		int lineALength = lineA.length();
+		int lineBLength = lineB.length();
+
 	 	if (count == 35) { // its that crazy line.
 	 		char desireCharacter = '=';
 	 		bool skipTheRest = false;
 	 		bool skipTheRestB = false;
 	 		for(char& c : lineA) {
+
+	 			if (c == '\n' || partnerA.eof()) {
+	 				break;
+	 			}
 
 	 			// skip over the 27 scientific notation characters you copied.
 			    if (!skipTheRest) {
@@ -1642,6 +1652,8 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 		 					continue;
 		 				}
 
+		 				
+
 		 				// // you need to find out how long the number is. Some have - sign, some have 2 digits in front of the decimal place.
 		 				// int sciNumberLength = 0;
 
@@ -1652,10 +1664,24 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 		 				// 		sciNumberLength++;
 		 				// 	}
 		 				// }
+
+		 				// if (c == '\n' || partnerA.eof() || (amountCount + 25) > lineALength) { // sci number never less than25
+			 			// 	break;
+			 			// }
+
+			 			printf("amountCount: %i, lineALength: %i, lineBLength: %i\n", amountCount, lineALength, lineBLength);
+
+			 			int sciNumberLength = getSciNumberLength(c);
+
+			 			// if (c == '\n' || partnerA.eof() || (amountCount + sciNumberLength) > lineALength) {
+			 			// 	break;
+			 			// }
+
 		 				float partnerAValue =  getSciNumberFromFANNFile(c);
 		 				float partnerBValue = 0.0f;
 		 				float val = 0.0f;
 
+		 				printf("%c", c);
 		 				// ok now scroll the other file forward and get the number out of it.
 
 		 				for(char& d : lineB) {
@@ -1697,10 +1723,10 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 			 			offspring << ") ";
 
 			 			// expected number of connections in the file. This was only true for a certain version and should be removed.
-			 			amountCount ++;
-			 			if (amountCount >= 248) {
-			 				return;
-			 			}
+			 			// amountCount ++;
+			 			// if (amountCount >= 248) {
+			 			// 	return;
+			 			// }
 
 			 			skipTheRest = true;
 		 			}
@@ -1712,9 +1738,11 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 						skipTheRest = false;
 					}
 				}
+				amountCount ++;
 			}
 	 	}
 	 	else {
+	 		// if its not a target line, just copy the line directly into the file without editing it, and replace the newline that got stripped out.
 	 		offspring << lineA;
 	        offspring << "\n";
 	 	}
@@ -1838,48 +1866,115 @@ void drawingTest() {
 
 void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
-	removeDeletableFish();
-		
+	// bool romance = false;
+	int n_selected  = 0;
+	int partner1index = 0;
+	int partner2index = 0;
+
+	// count the number of selected fish to see if you can do a fish fucking.
 	for (int i = 0; i < N_FISHES; ++i) {
-		
-		bool thereIsAFile = false;
-		b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
-
-		if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
-	        fclose(file);
-	        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
-		        thereIsAFile = true;
-		        fclose(file);
-		    }
-	    } 
-
-		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
-
-			fishDescriptor_t newFishBody;
-			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
-
-			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
-		    mutateFANNFileDirectly();
-
-			// now you can load the mutant ANN.
-			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
-			fann *mann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
-
-			loadFish (i, newFishBody, mann, positionalRandomness) ;
-
+		if (fishSlotLoaded[i]) {
+			if (fishes[i]->selected) {
+				if (partner1index == 0) {
+					partner1index = i;
+				}
+				else {
+					partner2index = i;
+				}
+				n_selected ++;
+				fishes[i]->selected = false;
+			}
 		}
-		else { 						// if there is no winner, its probably a reset or new install. make one up
-			prepareNematode(&nematode);
-
-			loadFish (i, nematode, NULL,  positionalRandomness) ;
-		}
-
-
-
-		totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
-
-		// moveAWholeFish(i, positionalRandomness);
 	}
+
+
+
+	if (n_selected >= 2) {
+
+		// save partners information to file
+		 saveFishToFile(std::string("partner1.fsh"), fishes[partner1index]->genes);
+		 saveFishToFile(std::string("partner2.fsh"), fishes[partner2index]->genes);
+		 fann_save(  fishes[partner1index]->ann , std::string("partner1.net").c_str()); 
+		 fann_save(  fishes[partner2index]->ann , std::string("partner2.net").c_str()); 
+
+		 // empty the world
+		removeDeletableFish();
+
+		// create new generation
+		for (int i = 0; i < N_FISHES; ++i) {
+
+			printf("SEX THEYRE HAVING SEX LOOK THEYRE HAVING SEX");
+
+			fishDescriptor_t newBabyFish = sexBetweenTwoBodies(fishes[partner1index]->genes, fishes[partner2index]->genes);
+
+			sexBetweenTwoMinds(std::string("partner1.net"), std::string("partner1.net"));
+
+			mutateFishDescriptor (&newBabyFish, 0.1, 0.25);
+
+		    mutateFANNFileDirectly(std::string("offspring.net"));
+// 
+		    b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+
+		    fann *wowGeezBoye = loadFishBrainFromFile (std::string("mutantGimp")) ;
+		    loadFish (i, newBabyFish, wowGeezBoye, positionalRandomness) ;
+
+			totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
+		}
+
+	}
+	else {
+
+
+			printf("LOOK HES WANKING HE WANKING OFF LOOK");
+			// otherwise just reproduce 1 of them asexually
+
+			// clear out the old generation
+			removeDeletableFish();
+			
+		
+			for (int i = 0; i < N_FISHES; ++i) {
+				
+				bool thereIsAFile = false;
+				b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+
+				if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
+			        fclose(file);
+			        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
+				        thereIsAFile = true;
+				        fclose(file);
+				    }
+			    } 
+
+				if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
+
+					fishDescriptor_t newFishBody;
+					loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+
+					mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+				    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
+
+					// now you can load the mutant ANN.
+					// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+					loadFish (i, newFishBody, mann, positionalRandomness) ;
+
+				}
+				else { 						// if there is no winner, its probably a reset or new install. make one up
+					prepareNematode(&nematode);
+
+					loadFish (i, nematode, NULL,  positionalRandomness) ;
+				}
+
+
+
+				totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
+
+				// moveAWholeFish(i, positionalRandomness);
+			}
+
+	}
+
+
 	startNextGeneration = false;
 }
 
