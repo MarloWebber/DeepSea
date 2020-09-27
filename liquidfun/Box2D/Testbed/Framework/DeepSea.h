@@ -245,10 +245,10 @@ extern int currentNumberOfFish;
 void collisionHandler (void * boneA, void * boneB, b2Contact * p_contact) ;
 
 void reloadTheSim();
-bool queryScienceMode () ;
-void enterScienceMode();
-void exitScienceMode ();
-void enterScienceModeInterruptableEntry();
+// bool queryScienceMode () ;
+// void enterScienceMode();
+// void exitScienceMode ();
+// void enterScienceModeInterruptableEntry();
 void vote(BonyFish * winner);
 
 void  mutateFANNFileDirectly();

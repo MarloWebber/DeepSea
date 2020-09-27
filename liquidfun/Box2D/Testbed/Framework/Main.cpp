@@ -185,15 +185,18 @@ static void SimulationLoop()
 
 
 
-	if (!queryScienceMode()) {
+	// if (!queryScienceMode()) {
 		if (test->IsWorldLocked() == false && !settings.pause) {
 			deepSeaLoop();
 		}
 		test->Step(&settings);
-	}
-	else {
-		;
-	}
+	// }
+	// else {
+	// 	if (test->IsWorldLocked() == false && !settings.pause) {
+	// 		scienceModeLoop();
+	// 	}
+	// 	test->Step(&settings);
+	// }
 
 	
 
@@ -333,7 +336,7 @@ static void Keyboard(unsigned char key, int x, int y)
 		else {
 
 			enterScienceModeInterruptableEntry();
-			// enterScienceMode();
+			// enterScienceMode();	
 			// settings.pause = true;
 		}
 		break;

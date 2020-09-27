@@ -17,10 +17,10 @@ int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 int generationsThisGame = 0;
 bool startNextGeneration = false;
-bool readyToEnterScienceMode = false;
+// bool readyToEnterScienceMode = false;
 
-// int selected = 0;
-bool scienceMode = false;
+// // int selected = 0;
+// bool scienceMode = false;
 
 bool fishSlotLoaded[N_FISHES];
 bool foodSlotLoaded[N_FOODPARTICLES];
@@ -125,6 +125,11 @@ uDataWrap::uDataWrap(void * dat, uint8_t typ) {
 
 void printab2Vec2(b2Vec2 v) {
 	printf("x%f y%f\n", v.x, v.y);
+}
+
+b2Vec2 getRandomPosition() {
+
+		   return  b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 }
 
 BoneUserData::BoneUserData(
@@ -1928,10 +1933,10 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 		    mutateFANNFileDirectly(std::string("offspring.net"));
 // 
-		    b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+		    // b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
 		    fann *wowGeezBoye = loadFishBrainFromFile (std::string("mutantGimp")) ;
-		    loadFish (i, newBabyFish, wowGeezBoye, positionalRandomness) ;
+		    loadFish (i, newBabyFish, wowGeezBoye, getRandomPosition()) ;
 
 			totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
 		}
@@ -1950,7 +1955,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 			for (int i = 0; i < N_FISHES; ++i) {
 				
 				bool thereIsAFile = false;
-				b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+				// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
 				if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
 			        fclose(file);
@@ -1971,13 +1976,13 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					// now you can load the mutant ANN.
 					// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
-					loadFish (i, newFishBody, mann, positionalRandomness) ;
+					loadFish (i, newFishBody, mann, getRandomPosition()) ;
 
 				}
 				else { 						// if there is no winner, its probably a reset or new install. make one up
 					prepareNematode(&nematode);
 
-					loadFish (i, nematode, NULL,  positionalRandomness) ;
+					loadFish (i, nematode, NULL,  getRandomPosition()) ;
 				}
 
 
@@ -2133,129 +2138,125 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     free(con);
 }
 
-void enterScienceModeInterruptableEntry () {
-	printf("enterScienceModeInterruptableEntry\n");
+// void enterScienceModeInterruptableEntry () {
+// 	printf("enterScienceModeInterruptableEntry\n");
 
-	for (int i = 0; i < N_FISHES; ++i) {
-		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
-		fishes[i]->flagDelete = true;
-	}
+// 	for (int i = 0; i < N_FISHES; ++i) {
+// 		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
+// 		fishes[i]->flagDelete = true;
+// 	}
 
-	readyToEnterScienceMode = true;
-}
-
-
-void enterScienceMode ( ) {
+// 	readyToEnterScienceMode = true;
+// }
 
 
-	printf("enterScienceMode\n");
-	removeDeletableFish();
+// void enterScienceMode ( ) {
 
 
+// 	printf("enterScienceMode\n");
+// 	removeDeletableFish();
+
+
+// 				// addFoodParticle(getRandomPosition());
 	
 		
-		scienceMode = true;
-	// for (int i = 0; i < N_FISHES; ++i) {
+// 		scienceMode = true;
+// 	// for (int i = 0; i < N_FISHES; ++i) {
 		
-		bool thereIsAFile = false;
-		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+// 		bool thereIsAFile = false;
+// 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
-		if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
-	        fclose(file);
-	        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
-		        thereIsAFile = true;
-		        fclose(file);
-		    }
-	    } 
+// 		if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
+// 	        fclose(file);
+// 	        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
+// 		        thereIsAFile = true;
+// 		        fclose(file);
+// 		    }
+// 	    } 
 
-		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
-			fishDescriptor_t newFishBody;
-			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+// 		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
+// 			fishDescriptor_t newFishBody;
+// 			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
-		    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
+// 			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+// 		    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
-			// now you can load the mutant ANN.
-			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
-			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+// 			// now you can load the mutant ANN.
+// 			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+// 			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-		    b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+// 		    b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
-			loadFish (0, newFishBody, mann, positionalRandomness) ;
+// 			loadFish (0, newFishBody, mann, positionalRandomness) ;
 			
 
-		}
-		// else { 						// if there is no winner, its probably a reset or new install. make one up
-		// 	prepareNematode(&nematode);
+// 		}
+// 		// else { 						// if there is no winner, its probably a reset or new install. make one up
+// 		// 	prepareNematode(&nematode);
 
-		// 	loadFish (i, nematode, NULL,  positionalRandomness) ;
-		// }
+// 		// 	loadFish (i, nematode, NULL,  positionalRandomness) ;
+// 		// }
 
 
 
 	
-		// moveAWholeFish(i, positionalRandomness);
-	// }
-	// startNextGeneration = false;
+// 		// moveAWholeFish(i, positionalRandomness);
+// 	// }
+// 	// startNextGeneration = false;
 
 
-}
+// }
 
 
-void exitScienceMode () {
-	scienceMode = false;
-}
+// // void exitScienceMode () {
+// // 	scienceMode = false;
+// // }
 
-bool queryScienceMode () {
-	return scienceMode;
-}
+// // bool queryScienceMode () {
+// // 	return scienceMode;
+// // }
+
+
+// // void scienceModeGraphics () {
+// // 		unsigned int spacesUsedSoFar =0;
+
+
+// 		// print the brainal output
+// 		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
+
+
+// }
+
 
 // the science menu allows you to study and modify individual organisms.
 // a single copy of the selected organism is pinned to the center of the screen
-void scienceMenuLoop () {
+// void scienceModeLoop () {
+// if (!local_m_world->IsLocked() ) {
+
+
+// for  (int i = 0; i < 1; i++) {
+// 			if (!foodSlotLoaded[i]) {
+// 				break;
+// 			}
+// 			else {
+// 				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
+// 			}
+// 		}
+
+// // the user modifies the descriptor
+
+// // the new descriptor is created into an organism
+
+// // the organism is shown in the view and in the world
 
 
 
-// the user modifies the descriptor
-
-// the new descriptor is created into an organism
-
-// the organism is shown in the view and in the world
+// }
+// }
 
 
+void runBiomechanicalFunctions () {
 
-
-}
-
-
-void deepSeaLoop () {
-
-
-
-	if (!local_m_world->IsLocked() ) {
-
-		// drawingTest(0);
-
-		if (readyToEnterScienceMode) {
-			readyToEnterScienceMode = false;
-			enterScienceMode () ;
-			return;
-		}
-
-		if (startNextGeneration ) {
-			beginGeneration ( );
-		}
-
-		for  (int i = 0; i < N_FOODPARTICLES; i++) {
-			if (!foodSlotLoaded[i]) {
-				break;
-			}
-			else {
-				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
-			}
-		}
-
-		unsigned int spacesUsedSoFar =0;
 
 		float flotCount = 0.0f;
 		float flotSpeed = 0.0f;
@@ -2441,11 +2442,53 @@ void deepSeaLoop () {
 					}
 				}
 
-				// print the brainal output
-				drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
 			}
 			// clearTouchSensations
 		}
+
+}
+
+
+
+void regularModeGraphics () {
+		unsigned int spacesUsedSoFar =0;
+
+
+		// print the brainal output
+		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
+
+
+}
+
+
+void deepSeaLoop () {
+
+
+
+	if (!local_m_world->IsLocked() ) {
+
+		// drawingTest(0);
+
+		// if (readyToEnterScienceMode) {
+		// 	readyToEnterScienceMode = false;
+		// 	enterScienceMode () ;
+		// 	return;
+		// }
+
+		if (startNextGeneration ) {
+			beginGeneration ( );
+		}
+
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+			if (!foodSlotLoaded[i]) {
+				break;
+			}
+			else {
+				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
+			}
+		}
+
+		regularModeGraphics();
 	}
 }
 
