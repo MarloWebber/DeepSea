@@ -329,16 +329,16 @@ static void Keyboard(unsigned char key, int x, int y)
 		break;
 
 	case 's':
-		if (queryScienceMode()) {
-			exitScienceMode();
-			// settings.pause = false;
-		}
-		else {
+		// if (queryScienceMode()) {
+		// 	exitScienceMode();
+		// 	// settings.pause = false;
+		// }
+		// else {
 
-			enterScienceModeInterruptableEntry();
-			// enterScienceMode();	
-			// settings.pause = true;
-		}
+		// 	enterScienceModeInterruptableEntry();
+		// 	// enterScienceMode();	
+		// 	// settings.pause = true;
+		// }
 		break;
 
 

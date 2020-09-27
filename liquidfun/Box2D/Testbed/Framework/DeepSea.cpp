@@ -868,6 +868,16 @@ void prepareNematode(fishDescriptor_t * nematode) {
 // 	return koiCarp;
 // }
 
+bool fishChecker(unsigned int fishIndex) {
+	if ( fishes[fishIndex] == NULL || fishes[fishIndex] == nullptr) { 	return false; }
+		if (fishSlotLoaded[fishIndex] ) {
+			return true;
+		}
+		else {
+			return false;
+		}
+}
+
 void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
 	if ( fishes[fishIndex] == NULL || fishes[fishIndex] == nullptr) { 	return; }
 		if (fishSlotLoaded[fishIndex] ) {
@@ -2094,6 +2104,20 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 	}
 	*spacesUsedSoFar += sizeOfBiggestLayer;
 
+
+	// make a black color window that the drawing sits in.
+	b2Vec2 windowVertices[] = {
+		b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance), 
+		b2Vec2(drawingStartingPosition.x - spacingDistance, drawingStartingPosition.y + ((n_layers *spacingDistance ) + ( spacingDistance) ) ), 
+		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) )), 
+		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + ( spacingDistance) ), drawingStartingPosition.y- spacingDistance)
+	};
+
+
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+
+
 	for (uint8_t j = 0; j < layerArray[0]; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
@@ -2261,6 +2285,9 @@ void runBiomechanicalFunctions () {
 		float flotCount = 0.0f;
 		float flotSpeed = 0.0f;
 		float ratio = 0.0f;
+
+
+		unsigned int spacesUsedSoFar =0;
 
 		for (int i = 0; i < N_FISHES; ++i) {
 			if (fishSlotLoaded[i]) {
@@ -2442,6 +2469,15 @@ void runBiomechanicalFunctions () {
 					}
 				}
 
+				if (fishChecker(i)) {
+					if (fishes[i]->selected) {
+						// print the brainal output
+						drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
+
+
+					}
+				}
+
 			}
 			// clearTouchSensations
 		}
@@ -2450,15 +2486,17 @@ void runBiomechanicalFunctions () {
 
 
 
-void regularModeGraphics () {
-		unsigned int spacesUsedSoFar =0;
+// void regularModeGraphics () {
 
+// 		for (int i = 0; i < N_FISHES; ++i)
+// 		{
+// 			/* code */
+		
 
-		// print the brainal output
-		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
-
-
-}
+// 			}
+// 		}
+		
+// }
 
 
 void deepSeaLoop () {
@@ -2488,7 +2526,9 @@ void deepSeaLoop () {
 			}
 		}
 
-		regularModeGraphics();
+		runBiomechanicalFunctions();
+
+		// regularModeGraphics();
 	}
 }
 

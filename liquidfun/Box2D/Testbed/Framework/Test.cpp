@@ -275,7 +275,14 @@ void Test::MouseDown(const b2Vec2& p)
 		BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
 		BonyFish * winner = wishBone->p_owner;
 
-		winner->selected = true;
+		if (winner->selected) {
+			winner->selected = false;
+		}
+		else {
+			winner->selected = true;
+		}
+
+		
 			// if (!winner->init || !winner->isUsed) {
 			// 	;
 			// } 
