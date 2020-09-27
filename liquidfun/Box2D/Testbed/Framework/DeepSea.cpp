@@ -17,6 +17,7 @@ int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 int generationsThisGame = 0;
 bool startNextGeneration = false;
+bool readyToEnterScienceMode = false;
 
 // int selected = 0;
 bool scienceMode = false;
@@ -156,9 +157,6 @@ BoneUserData::BoneUserData(
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
-	// position = positionOffset;
-
-
 	color = boneDescription.color;
 	outlineColor = boneDescription.outlineColor;
 
@@ -167,14 +165,13 @@ BoneUserData::BoneUserData(
 
 	int count = 4;
 
-		// int randomCollisionGroup = - (RNG() * 16.0f);
-		collisionGroup = newCollisionGroup;//randomCollisionGroup ;
+	// int randomCollisionGroup = - (RNG() * 16.0f);
+	collisionGroup = newCollisionGroup;//randomCollisionGroup ;
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 	if (isRoot) {
 
-	
-			offsetOnBody = b2Vec2(0.0f, 0.0f);
+		offsetOnBody = b2Vec2(0.0f, 0.0f);
 
 		printf("its a root bone\n");
 
@@ -221,24 +218,10 @@ BoneUserData::BoneUserData(
 			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;
 
 		// bones in a set can't collide with each other.
-		// if (attachesTo->collisionGroup == -2) {
-		// 	collisionGroup = -4;
-		// }
 
-		// else {
-			// collisionGroup = -2;
-		// }
-
-		// printf("its not a root bone\n");
-		// tipCenter = b2Vec2(attachesTo->tipCenter.x, attachesTo->tipCenter.y + length);
 		 tipCenter = b2Vec2(0.0f,  length);
 
 		b2Vec2 vertices[] = {
-			// b2Vec2(attachesTo->tipCenter.x + (rootThickness/2), attachesTo->tipCenter.y), //b2Vec2 rootVertexA = 
-			// b2Vec2(attachesTo->tipCenter.x - (rootThickness/2), attachesTo->tipCenter.y), // b2Vec2 rootVertexB =
-			// b2Vec2(tipCenter.x + (tipThickness/2), tipCenter.y), //b2Vec2 tipVertexA = 
-			// b2Vec2(tipCenter.x - (tipThickness/2), tipCenter.y) // b2Vec2 tipVertexB = 
-
 			b2Vec2( + (rootThickness/2), -(length/2)), //b2Vec2 rootVertexA = 
 			b2Vec2( - (rootThickness/2),  -(length/2)), // b2Vec2 rootVertexB =
 			b2Vec2( + tipThickness/2, +(length/2)), //b2Vec2 tipVertexA = 
@@ -264,13 +247,9 @@ BoneUserData::BoneUserData(
 		bodyDef.type = b2_dynamicBody;
 
 		// move the body to the appropriate position on the model.
-
-	
 		p_body = local_m_world->CreateBody(&bodyDef);
 
-
 		p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
-
 
 		// printf("tip center: ");
 		printab2Vec2(tipCenter);
@@ -298,7 +277,7 @@ BoneUserData::BoneUserData(
 	// printf("\n");
 };
 
-void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex, bool sciWorld) {
+void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
 	if (!p_bone->init) {
 		return;
 	}
@@ -901,10 +880,18 @@ void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
 void totalFishIncorporator (uint8_t fishIndex) {
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fishes[fishIndex]->bones[i]->init) {
-			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , i, false);
+			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , i);
 		}
 	}
 }
+
+// void incorporateFishForScience () {
+// 	for (int i = 0; i < N_FINGERS; ++i) {
+// 		if (sciFish->bones[i]->init) {
+// 			nonRecursiveBoneIncorporator( sciFish->bones[i] , i);
+// 		}
+// 	}
+// }
 
 // delete a fish from the game world and remove it from memory
 void deleteFish (uint8_t fishIndex) {
@@ -951,10 +938,10 @@ void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, fann * nann, b2Vec
 	fishSlotLoaded[fishIndex] = true;
 }
 
-void loadFishForScience (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
-	// return new BonyFish(driedFish, fishIndex, nann, startingPosition);
-	// sciFish = new BonyFish(driedFish, fishIndex, nann, startingPosition);
-}
+// void loadFishForScience (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
+// 	// return new BonyFish(driedFish, fishIndex, nann, startingPosition);
+// 	sciFish = new BonyFish(driedFish, 0, nann, startingPosition);
+// }
 
 fann * loadFishBrainFromFile (std::string fileName) {
 	return fann_create_from_file( (fileName + std::string(".net")).c_str() );
@@ -1567,9 +1554,15 @@ int getSciNumberLength (char c) {
 	int sciNumberLength = 0;
 
 	while(1) {
-		if (*((&c) +sciNumberLength) == ')') {
+
+		char fugnutz = *((&c) +sciNumberLength);
+
+		printf("%c ", fugnutz);
+
+		if (fugnutz == ')') {
 			break;
 		}else {
+			// printf("%i ", sciNumberLength);
 			sciNumberLength++;
 		}
 	}
@@ -1633,6 +1626,8 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 	 		bool skipTheRestB = false;
 	 		for(char& c : lineA) {
 
+	 			printf("%c",c);
+
 	 			if (c == '\n' || partnerA.eof()) {
 	 				break;
 	 			}
@@ -1671,10 +1666,30 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 
 			 			printf("amountCount: %i, lineALength: %i, lineBLength: %i\n", amountCount, lineALength, lineBLength);
 
-			 			int sciNumberLength = getSciNumberLength(c);
+			 			// int sciNumberLength = getSciNumberLength(c);
+
+			 			//---------------------------------------
+			 				int sciNumberLength = 0;
+			 				bool gettingLength = false;
+
+							while(gettingLength) {
+
+								char fugnutz = lineA[amountCount + sciNumberLength]; //*((&c) +sciNumberLength); // <<this broken AF
+
+								printf("%c ", fugnutz);
+
+								if (fugnutz == ')') {
+									printf("PFETHECHETCH");
+									gettingLength = true;
+								}else {
+									// printf("%i ", sciNumberLength);
+									sciNumberLength++;
+								}
+							}
+						// -----------------------------------
 
 			 			// if (c == '\n' || partnerA.eof() || (amountCount + sciNumberLength) > lineALength) {
-			 			// 	break;
+			 			// 	// break;
 			 			// }
 
 		 				float partnerAValue =  getSciNumberFromFANNFile(c);
@@ -1987,15 +2002,15 @@ inline bool exists_test1 (const std::string& name) {
     }   
 }
 
-void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw, b2World * m_world_sci, b2ParticleSystem * m_particleSystem_sci) {
+void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) { //, b2World * m_world_sci, b2ParticleSystem * m_particleSystem_sci) {
 
 	// store the debugdraw pointer in here so we can use it.
 	local_debugDraw_pointer = p_debugDraw;
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
 
-	local_m_world_sci = m_world_sci;
-	local_m_particleSystem_sci = m_particleSystem_sci;
+	// local_m_world_sci = m_world_sci;
+	// local_m_particleSystem_sci = m_particleSystem_sci;
 
 	if (RNG() > 0.5f) {
 		addFoodParticle(b2Vec2(24.0f, 3.5f));
@@ -2118,8 +2133,24 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     free(con);
 }
 
+void enterScienceModeInterruptableEntry () {
+	printf("enterScienceModeInterruptableEntry\n");
+
+	for (int i = 0; i < N_FISHES; ++i) {
+		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
+		fishes[i]->flagDelete = true;
+	}
+
+	readyToEnterScienceMode = true;
+}
+
 
 void enterScienceMode ( ) {
+
+
+	printf("enterScienceMode\n");
+	removeDeletableFish();
+
 
 	
 		
@@ -2138,27 +2169,20 @@ void enterScienceMode ( ) {
 	    } 
 
 		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
-
-			// removeDeletableFish();
-
 			fishDescriptor_t newFishBody;
 			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-			fann *mann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
-
-
-			 loadFishForScience (newFishBody, mann,  b2Vec2(0.0f, 0.0f)) ;
-
-			// mutateFishDescriptor (&newFishBody, 0.1, 0.25);
-		 //    mutateFANNFileDirectly();
+			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+		    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
 			// now you can load the mutant ANN.
 			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-			// loadFish (i, newFishBody, mann, positionalRandomness) ;
+		    b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
-			// totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
-
+			loadFish (0, newFishBody, mann, positionalRandomness) ;
+			
 
 		}
 		// else { 						// if there is no winner, its probably a reset or new install. make one up
@@ -2211,6 +2235,12 @@ void deepSeaLoop () {
 	if (!local_m_world->IsLocked() ) {
 
 		// drawingTest(0);
+
+		if (readyToEnterScienceMode) {
+			readyToEnterScienceMode = false;
+			enterScienceMode () ;
+			return;
+		}
 
 		if (startNextGeneration ) {
 			beginGeneration ( );

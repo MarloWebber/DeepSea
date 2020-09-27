@@ -328,11 +328,13 @@ static void Keyboard(unsigned char key, int x, int y)
 	case 's':
 		if (queryScienceMode()) {
 			exitScienceMode();
-			settings.pause = false;
+			// settings.pause = false;
 		}
 		else {
-			enterScienceMode();
-			settings.pause = true;
+
+			enterScienceModeInterruptableEntry();
+			// enterScienceMode();
+			// settings.pause = true;
 		}
 		break;
 
