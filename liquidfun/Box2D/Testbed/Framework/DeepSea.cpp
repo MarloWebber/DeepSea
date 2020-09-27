@@ -92,7 +92,7 @@ float RNG() { //
 }
 
 JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish) {
-	torque = boneDescription.torque;
+	torque = boneDescription.torque / 2;
 	speedLimit = boneDescription.speedLimit;
 	upperAngle = boneDescription.upperAngle;
 	normalAngle = boneDescription.normalAngle;

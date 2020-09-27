@@ -114,6 +114,11 @@ struct BoneUserData {
 		int collisionGroup);
 } ;
 
+struct senseConnector {
+	unsigned int connectedTo;	// what limb the sense is coming from
+	unsigned int sensorType;  	// what kind of sense it is (touch, smell, etc.how the number will be treated)
+}
+
 struct connectionDescriptor {
 	bool isUsed;
 	unsigned int connectedTo;
@@ -155,6 +160,9 @@ struct networkDescriptor {
 	std::list<layerDescriptor> layers;
 
 	b2AABB networkWindow;
+
+
+	std::list<senseConnector> inputRouter; // keeps track of what sense input goes to what input neuron; necessary that each animal keeps track of its own routing, to allow animals with different routing to coexist.
 
 	networkDescriptor( );
 };
