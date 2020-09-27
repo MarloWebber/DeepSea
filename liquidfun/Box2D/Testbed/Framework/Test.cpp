@@ -263,6 +263,13 @@ void Test::MouseDown(const b2Vec2& p)
 	QueryCallback callback(p);
 	m_world->QueryAABB(&callback, aabb);
 
+
+
+
+	 checkNeuroWindow (aabb) ;
+
+
+
 	if (callback.m_fixture)
 	{
 

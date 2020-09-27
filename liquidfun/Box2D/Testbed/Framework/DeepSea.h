@@ -117,7 +117,7 @@ struct BoneUserData {
 struct senseConnector {
 	unsigned int connectedTo;	// what limb the sense is coming from
 	unsigned int sensorType;  	// what kind of sense it is (touch, smell, etc.how the number will be treated)
-}
+};
 
 struct connectionDescriptor {
 	bool isUsed;
@@ -269,6 +269,7 @@ void vote(BonyFish * winner);
 void  mutateFANNFileDirectly();
 
 void drawingTest() ;
+void checkNeuroWindow (b2AABB mousePointer) ;
 extern bool startNextGeneration;
 
 // if (startNextGeneration ) {

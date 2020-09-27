@@ -2062,7 +2062,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 // }
 
-void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar) {
+void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar, BonyFish * fish) {
 
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
 	unsigned int n_layers = fann_get_num_layers(ann);
@@ -2112,6 +2112,9 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) )), 
 		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + ( spacingDistance) ), drawingStartingPosition.y- spacingDistance)
 	};
+
+	fish->brain.networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
+	fish->brain.networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) ));
 
 
 	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
@@ -2278,6 +2281,20 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 // }
 // }
 
+void checkNeuroWindow (b2AABB mousePointer) {
+	// check to see if you're in a neuro window.
+	for (int i = 0; i < N_FISHES; ++i)
+	{
+		if (fishChecker(i)) {
+			if (fishes[i]->brain.networkWindow.Contains(mousePointer)) {
+			printf("melected!\n");
+		}
+		}
+		
+
+	}
+}
+
 
 void runBiomechanicalFunctions () {
 
@@ -2291,6 +2308,10 @@ void runBiomechanicalFunctions () {
 
 		for (int i = 0; i < N_FISHES; ++i) {
 			if (fishSlotLoaded[i]) {
+
+				// reset neuro bounding boxes... this isnt the right place to do this, should be in a graphics function
+				fishes[i]->brain.networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
+				fishes[i]->brain.networkWindow.upperBound = b2Vec2(0.0f,0.0f);
 
 			
 				// cause heart to beat. Heart A is the slowest
@@ -2472,7 +2493,7 @@ void runBiomechanicalFunctions () {
 				if (fishChecker(i)) {
 					if (fishes[i]->selected) {
 						// print the brainal output
-						drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
+						drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar, fishes[i]);
 
 
 					}
