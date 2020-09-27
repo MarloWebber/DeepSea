@@ -264,9 +264,17 @@ void Test::MouseDown(const b2Vec2& p)
 	m_world->QueryAABB(&callback, aabb);
 
 
+	int clickedFishy = checkNeuroWindow (aabb);
+
+	if (clickedFishy   >= 0) {
+		// u caught a fish
 
 
-	 checkNeuroWindow (aabb) ;
+		if (checkNeuronsInWindow(aabb, clickedFishy) >= 0) {
+			;
+		}
+
+	}
 
 
 

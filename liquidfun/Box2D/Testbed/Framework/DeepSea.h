@@ -269,7 +269,9 @@ void vote(BonyFish * winner);
 void  mutateFANNFileDirectly();
 
 void drawingTest() ;
-void checkNeuroWindow (b2AABB mousePointer) ;
+int checkNeuroWindow (b2AABB mousePointer) ;
+
+int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) ;
 extern bool startNextGeneration;
 
 // if (startNextGeneration ) {
