@@ -496,10 +496,10 @@ void wormTrainer () {
 }
 
 networkDescriptor * createEmptyNetworkOfCorrectSize (fann * temp_ann) {
-	unsigned int num_layers = fann_get_num_layers(temp_ann);
-	unsigned int layerCake[num_layers];
-	fann_get_layer_array(temp_ann, layerCake);
-	return new networkDescriptor(layerCake, num_layers);
+	// unsigned int num_layers = fann_get_num_layers(temp_ann);
+	// unsigned int layerCake[num_layers];
+	// fann_get_layer_array(temp_ann, layerCake);
+	return new networkDescriptor(temp_ann);
 }
 
 
@@ -997,15 +997,38 @@ layerDescriptor::layerDescriptor () {
 	// };
 }
 
+
+
+
 // method to create a network descriptor in memory
-networkDescriptor::networkDescriptor ( unsigned int * layerCake,  unsigned int n_layers) {
-	n_layers = 0;
+networkDescriptor::networkDescriptor (fann * pann) {
+	// n_layers = 0;
+
+		// query the number of layers.
+	unsigned int num_layers = fann_get_num_layers(pann);
+	printf("new %u layer networkDescriptor\n", num_layers);
+
+  	unsigned int activation_function_hidden = 5;
+  	float activation_steepness_hidden = 0.5f;
+  	unsigned int activation_function_output = 0;
+  	float activation_steepness_output = 0; 
+  	
+	// get the layer cake. because FANN provides layer information as an array of integers, this is just a temporary variable to hold it.
+	unsigned int layerCake[num_layers];
+
+	// flip the cake 
+	fann_get_layer_array(pann, layerCake);
+
+
 	
 	b2AABB partywaist;
 
 	networkWindow = partywaist;
 	partywaist.lowerBound = b2Vec2(0.0f,0.0f);
 	partywaist.upperBound = b2Vec2(0.0f,0.0f);
+
+
+	// unsigned int numberOfConnectionsCreated = 0;
 
 
 	for (unsigned int i = 0; i < n_layers; ++i)
@@ -1020,94 +1043,47 @@ networkDescriptor::networkDescriptor ( unsigned int * layerCake,  unsigned int n
 		{
 			neuronDescriptor neuron = neuronDescriptor();
 
+			neuron.activation_function = activation_function_hidden;
+  			neuron.activation_steepness = activation_steepness_hidden;
+  			neuron.n_connections = 0; 	// so not used uninitialized
+  			neuron.n_inputs = 0; 
+  			neuron.isUsed = true;
+
+  			// output neurons have a different function than the others. this applies to all in the last row.
+  			if (i == num_layers-1) {
+				neuron.activation_function = activation_function_output;
+  				neuron.activation_steepness = activation_steepness_output;
+  			}
+
 			layer.neurons.push_back(neuron);
 
-			if (i < n_layers-1) { // specifically exclude the last layer
-				for (unsigned int k = 0; k < layerCake[i+1]; ++k)
-				{
+			// if (i < n_layers-1) { // specifically exclude the last layer
+			// 	for (unsigned int k = 0; k < layerCake[i+1]; ++k)
+			// 	{
 
 
 
-					unsigned int toNeuronIndex = 0;
-					for (unsigned int l = 0; l < i+1; ++l) { toNeuronIndex += layerCake[l]; }
-					toNeuronIndex += k;
+			// 		unsigned int toNeuronIndex = 0;
+			// 		for (unsigned int l = 0; l < i+1; ++l) { toNeuronIndex += layerCake[l]; }
+			// 		toNeuronIndex += k;
 
-					connectionDescriptor connection = connectionDescriptor(toNeuronIndex);
+			// 		connectionDescriptor connection = connectionDescriptor(toNeuronIndex);
 
-					neuron.connections.push_back(connection);
-					
-				}
-			}
+			// 		neuron.connections.push_back(connection);
+			// 		numberOfConnectionsCreated ++;
+
+
+			// 	}
+			// }
 		}
 	}
 
-
-}
-
-void unused_variable(void * bullshit) {
-	; // do nothing
-}
-
-void advanceCursor(FILE * cursor, int charToMoveAhead) {
-	int c;
-	c = fgetc(cursor);
-	unused_variable((void *)&c);
-}
-
-void goToLine (FILE * cursor, int linesToMoveAhead) {
-	int linesMovedSoFar = 0;
-	while(1) {
-		int c;
-		c = fgetc(cursor);
-		if( feof(cursor) ) { 
-			break ;
-		}
-		unused_variable((void *)&c);
-		if (c == '\n') {
-			linesMovedSoFar ++;
-		}
-		if (linesMovedSoFar >= linesToMoveAhead) {
-			break;
-		}
-   	}
-}
-
-void seekUntil (FILE * cursor, char trigger) {
-	while(1) {
-		int c;
-		c = fgetc(cursor);
-		if( c == trigger ) { 
-			break ;
-		}
-	}
-}
+	// printf("numberOfConnectionsCreated: %u\n", numberOfConnectionsCreated);
 
 
+	// to create the connection map, you must read in from the file.
 
-
-
-
-// i have started converting this function from using arrays to using the list networkdescriptors, but i haven't finished yet.
-networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
-
-	// query the number of layers.
-	unsigned int num_layers = fann_get_num_layers(temp_ann);
-	printf("new %u layer networkDescriptor\n", num_layers);
-
-  	unsigned int activation_function_hidden = 5;
-  	float activation_steepness_hidden = 0.5f;
-  	unsigned int activation_function_output = 0;
-  	float activation_steepness_output = 0; 
-  	
-	// get the layer cake. because FANN provides layer information as an array of integers, this is just a temporary variable to hold it.
-	unsigned int layerCake[num_layers];
-
-	// flip the cake 
-	fann_get_layer_array(temp_ann, layerCake);
-
-	// build everything in memory and link it together.
-	networkDescriptor * newCake = new networkDescriptor(layerCake, num_layers);
-  	newCake->n_layers = num_layers;
+	// newCake->n_layers = num_layers;
 
   	// figure out the total number of neurons, which is how they are indexed in FANN file.
   	unsigned int sumOfNeurons = 0;
@@ -1119,7 +1095,14 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 
   	std::list<layerDescriptor>::iterator layer;
   	unsigned int i = 0;
-  	for (layer = newCake->layers.begin(); layer !=  newCake->layers.end(); ++layer)  {
+  	// unsigned int discoveredSize = newCake->layers.size();
+  	// printf("layers: %u\n",discoveredSize);
+	unsigned int num_connections = fann_get_total_connections(pann);
+  	printf("%i total connections required\n", num_connections);
+
+
+  	for (layer = layers.begin(); layer != layers.end(); ++layer)  {
+  		// printf("climbdamger\n");
   		layer->n_neurons = layerCake[i];
 
   		layer->isUsed = true;
@@ -1144,8 +1127,6 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
   	// }
 
 //   	// get connection and weight information.
-  	unsigned int num_connections = fann_get_total_connections(temp_ann);
-  	printf("%i total connections required\n", num_connections);
 
   	// while ( 1) {
   	// 	;
@@ -1208,6 +1189,62 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 // 		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections-1) ;	
 		i++; // i is used in this function to keep track of layer index
 	}
+
+
+					
+}
+
+void unused_variable(void * bullshit) {
+	; // do nothing
+}
+
+void advanceCursor(FILE * cursor, int charToMoveAhead) {
+	int c;
+	c = fgetc(cursor);
+	unused_variable((void *)&c);
+}
+
+void goToLine (FILE * cursor, int linesToMoveAhead) {
+	int linesMovedSoFar = 0;
+	while(1) {
+		int c;
+		c = fgetc(cursor);
+		if( feof(cursor) ) { 
+			break ;
+		}
+		unused_variable((void *)&c);
+		if (c == '\n') {
+			linesMovedSoFar ++;
+		}
+		if (linesMovedSoFar >= linesToMoveAhead) {
+			break;
+		}
+   	}
+}
+
+void seekUntil (FILE * cursor, char trigger) {
+	while(1) {
+		int c;
+		c = fgetc(cursor);
+		if( c == trigger ) { 
+			break ;
+		}
+	}
+}
+
+
+
+
+
+
+// i have started converting this function from using arrays to using the list networkdescriptors, but i haven't finished yet.
+networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
+
+
+
+	// build everything in memory and link it together.
+	networkDescriptor * newCake = new networkDescriptor(temp_ann);
+  	
 return newCake;
 }
 

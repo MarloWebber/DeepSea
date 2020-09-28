@@ -4,6 +4,7 @@
 #include "Test.h"
 #include "Main.h"
 #include <list>
+#include "fann.h"
 
 #define N_FINGERS 8 // the amount of bones a fish can have. you know, fish fingers.
 #define N_FISHES 8
@@ -164,7 +165,7 @@ struct networkDescriptor {
 
 	std::list<senseConnector> inputRouter; // keeps track of what sense input goes to what input neuron; necessary that each animal keeps track of its own routing, to allow animals with different routing to coexist.
 
-	networkDescriptor(unsigned int * layerCake, unsigned int n_layers );
+	networkDescriptor(fann* pann);
 };
 
 
