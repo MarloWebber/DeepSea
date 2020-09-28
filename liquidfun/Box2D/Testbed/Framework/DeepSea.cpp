@@ -1039,13 +1039,12 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 	unsigned int num_layers = fann_get_num_layers(temp_ann);
 	printf("new %u layer networkDescriptor\n", num_layers);
 
-	 // get activation function information
-  	// unsigned int activation_function_hidden = 5;
-  	// float activation_steepness_hidden = 0.5f;
-  	// unsigned int activation_function_output = 0;
-  	// float activation_steepness_output = 0; 
+  	unsigned int activation_function_hidden = 5;
+  	float activation_steepness_hidden = 0.5f;
+  	unsigned int activation_function_output = 0;
+  	float activation_steepness_output = 0; 
   	
-	// get the layer cake.
+	// get the layer cake. because FANN provides layer information as an array of integers, this is just a temporary variable to hold it.
 	unsigned int layerCake[num_layers];
 
 	// flip the cake 
@@ -1053,35 +1052,47 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 
 	// build everything in memory and link it together.
 	networkDescriptor * newCake = new networkDescriptor();
-//   	newCake->n_layers = num_layers;
-//   	printf ("\ncreated network descriptor\n") ;
+  	newCake->n_layers = num_layers;
 
-//   	unsigned int sumOfNeurons = 0;
-//   	for (unsigned int i = 0; i < num_layers; ++i) {
-//   		sumOfNeurons += layerCake[i];
-//   		printf("a LAYER %i has %i neurons!\n", i, layerCake[i]);
-//   	}
+  	// figure out the total number of neurons, which is how they are indexed in FANN file.
+  	unsigned int sumOfNeurons = 0;
+  	for (unsigned int i = 0; i < num_layers; ++i) {
+  		sumOfNeurons += layerCake[i];
+  		printf("a LAYER %i has %i neurons!\n", i, layerCake[i]);
+  	}
 
-//   	for (unsigned int i = 0; i < num_layers; ++i) {
-//   		newCake->layers[i].n_neurons = layerCake[i];
+  	// you are traversing the linked list structure, so you must use a proper iterator.
 
-//   		// newCake->layers[i].isUsed = true;
-//   		printf ("created layer descriptor %i\n", layerCake[i]) ;
+//   		std::list<layerDescriptor>::iterator layer;
+// 	for (layer = fishes[fishIndex]->brain.layers.begin(); layer !=  fishes[fishIndex]->brain.layers.end(); ++layer) 	{
+// /
 
-// 		for (unsigned int j = 0; j < layerCake[i]; ++j) {
-//   			// newCake->layers[i].neurons[j].activation_function = activation_function_hidden;
-//   			// newCake->layers[i].neurons[j].activation_steepness = activation_steepness_hidden;
-//   			// newCake->layers[i].neurons[j].n_connections = 0; 	// so not used uninitialized
-//   			// newCake->layers[i].neurons[j].n_inputs = 0; 
-//   			// newCake->layers[i].neurons[j].isUsed = true;
 
-//   			if (i == num_layers-1) {
-// 				// newCake->layers[i].neurons[j].activation_function = activation_function_output;
-//   		// 		newCake->layers[i].neurons[j].activation_steepness = activation_steepness_output;
-//   			}
-//   			printf ("created neuron descriptor\n") ;
-//   		}
-//   	}
+  	std::list<layerDescriptor>::iterator layer;
+  	unsigned int i = 0;
+  	for (layer = newCake->layers.begin(); layer !=  newCake->layers.end(); ++layer)  {
+  		layer->n_neurons = layerCake[i];
+
+  		layer->isUsed = true;
+  		printf ("created layer descriptor %i with %i neurons\n", layerCake[i], layer->n_neurons) ;
+
+  		// iterate neurons in layer.
+  		std::list<neuronDescriptor>::iterator neuron;
+		for (neuron = layer->neurons.begin(); neuron != layer->neurons.end(); ++neuron) {
+  			neuron->activation_function = activation_function_hidden;
+  			neuron->activation_steepness = activation_steepness_hidden;
+  			neuron->n_connections = 0; 	// so not used uninitialized
+  			neuron->n_inputs = 0; 
+  			neuron->isUsed = true;
+
+  			// output neurons have a different function than the others. this applies to all in the last row.
+  			if (i == num_layers-1) {
+				neuron->activation_function = activation_function_output;
+  				neuron->activation_steepness = activation_steepness_output;
+  			}
+  			printf ("created neuron descriptor\n") ;
+  		}
+  	// }
 
 //   	// get connection and weight information.
 //   	unsigned int num_connections = fann_get_total_connections(temp_ann);
@@ -1141,7 +1152,8 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 
 // 		// newCake->layers[toLayer].neurons[toIndex].n_inputs ++;
 // 		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections-1) ;	
-// 	}
+		i++; // i is used in this function to keep track of layer index
+	}
 return newCake;
 }
 
