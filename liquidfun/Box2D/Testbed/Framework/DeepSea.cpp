@@ -1040,10 +1040,10 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 	printf("new %u layer networkDescriptor\n", num_layers);
 
 	 // get activation function information
-  	unsigned int activation_function_hidden = 5;
-  	float activation_steepness_hidden = 0.5f;
-  	unsigned int activation_function_output = 0;
-  	float activation_steepness_output = 0; 
+  	// unsigned int activation_function_hidden = 5;
+  	// float activation_steepness_hidden = 0.5f;
+  	// unsigned int activation_function_output = 0;
+  	// float activation_steepness_output = 0; 
   	
 	// get the layer cake.
 	unsigned int layerCake[num_layers];
@@ -1053,95 +1053,95 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 
 	// build everything in memory and link it together.
 	networkDescriptor * newCake = new networkDescriptor();
-  	newCake->n_layers = num_layers;
-  	printf ("\ncreated network descriptor\n") ;
+//   	newCake->n_layers = num_layers;
+//   	printf ("\ncreated network descriptor\n") ;
 
-  	unsigned int sumOfNeurons = 0;
-  	for (unsigned int i = 0; i < num_layers; ++i) {
-  		sumOfNeurons += layerCake[i];
-  		printf("a LAYER %i has %i neurons!\n", i, layerCake[i]);
-  	}
+//   	unsigned int sumOfNeurons = 0;
+//   	for (unsigned int i = 0; i < num_layers; ++i) {
+//   		sumOfNeurons += layerCake[i];
+//   		printf("a LAYER %i has %i neurons!\n", i, layerCake[i]);
+//   	}
 
-  	for (unsigned int i = 0; i < num_layers; ++i) {
-  		newCake->layers[i].n_neurons = layerCake[i];
+//   	for (unsigned int i = 0; i < num_layers; ++i) {
+//   		newCake->layers[i].n_neurons = layerCake[i];
 
-  		// newCake->layers[i].isUsed = true;
-  		printf ("created layer descriptor %i\n", layerCake[i]) ;
+//   		// newCake->layers[i].isUsed = true;
+//   		printf ("created layer descriptor %i\n", layerCake[i]) ;
 
-		for (unsigned int j = 0; j < layerCake[i]; ++j) {
-  			// newCake->layers[i].neurons[j].activation_function = activation_function_hidden;
-  			// newCake->layers[i].neurons[j].activation_steepness = activation_steepness_hidden;
-  			// newCake->layers[i].neurons[j].n_connections = 0; 	// so not used uninitialized
-  			// newCake->layers[i].neurons[j].n_inputs = 0; 
-  			// newCake->layers[i].neurons[j].isUsed = true;
+// 		for (unsigned int j = 0; j < layerCake[i]; ++j) {
+//   			// newCake->layers[i].neurons[j].activation_function = activation_function_hidden;
+//   			// newCake->layers[i].neurons[j].activation_steepness = activation_steepness_hidden;
+//   			// newCake->layers[i].neurons[j].n_connections = 0; 	// so not used uninitialized
+//   			// newCake->layers[i].neurons[j].n_inputs = 0; 
+//   			// newCake->layers[i].neurons[j].isUsed = true;
 
-  			if (i == num_layers-1) {
-				// newCake->layers[i].neurons[j].activation_function = activation_function_output;
-  		// 		newCake->layers[i].neurons[j].activation_steepness = activation_steepness_output;
-  			}
-  			printf ("created neuron descriptor\n") ;
-  		}
-  	}
+//   			if (i == num_layers-1) {
+// 				// newCake->layers[i].neurons[j].activation_function = activation_function_output;
+//   		// 		newCake->layers[i].neurons[j].activation_steepness = activation_steepness_output;
+//   			}
+//   			printf ("created neuron descriptor\n") ;
+//   		}
+//   	}
 
-  	// get connection and weight information.
-  	unsigned int num_connections = fann_get_total_connections(temp_ann);
-  	static struct fann_connection margles[512] ;
-  	memset(&margles, 0x00, sizeof(fann_connection[512]));
-  	struct fann_connection *con = margles; 
-  	fann_get_connection_array(temp_ann, con);
+//   	// get connection and weight information.
+//   	unsigned int num_connections = fann_get_total_connections(temp_ann);
+//   	static struct fann_connection margles[512] ;
+//   	memset(&margles, 0x00, sizeof(fann_connection[512]));
+//   	struct fann_connection *con = margles; 
+//   	fann_get_connection_array(temp_ann, con);
 
-  	for (unsigned int c = 0; c < num_connections; ++c) { 
-  		if (con[c].from_neuron < 0 || con[c].from_neuron > sumOfNeurons ) {
-  			continue;
-  		}
-  		if (con[c].to_neuron < 0 || con[c].to_neuron > sumOfNeurons ) {
-  			continue;
-  		}
-  	}
+//   	for (unsigned int c = 0; c < num_connections; ++c) { 
+//   		if (con[c].from_neuron < 0 || con[c].from_neuron > sumOfNeurons ) {
+//   			continue;
+//   		}
+//   		if (con[c].to_neuron < 0 || con[c].to_neuron > sumOfNeurons ) {
+//   			continue;
+//   		}
+//   	}
 
-  	// create connections
-  	for (unsigned int c = 0; c < num_connections; ++c) {
-  		unsigned int layer = 0;
-  		unsigned int index = con[c].from_neuron +1; // so as to not start from 0
-  		while (1) {
-  			if (index <= layerCake[layer]) {
-  				break; }
-  			else {
-  				index -= layerCake[layer];
-  				layer ++;
-  			}
-  		}
-  		index--;
+//   	// create connections
+//   	for (unsigned int c = 0; c < num_connections; ++c) {
+//   		unsigned int layer = 0;
+//   		unsigned int index = con[c].from_neuron +1; // so as to not start from 0
+//   		while (1) {
+//   			if (index <= layerCake[layer]) {
+//   				break; }
+//   			else {
+//   				index -= layerCake[layer];
+//   				layer ++;
+//   			}
+//   		}
+//   		index--;
  
-  		printf("%u %u ", con[c].to_neuron, con[c].from_neuron);
-  		// unsigned int newestConnectionIndex = newCake->layers[layer].neurons[index].n_connections;
+//   		printf("%u %u ", con[c].to_neuron, con[c].from_neuron);
+//   		// unsigned int newestConnectionIndex = newCake->layers[layer].neurons[index].n_connections;
 
-  		if (newestConnectionIndex > sumOfNeurons) {
-  			continue;
-  		}
+//   		if (newestConnectionIndex > sumOfNeurons) {
+//   			continue;
+//   		}
 
-  		// newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo = con[c].to_neuron;
-  		// printf("%u ", newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo);
-  		// newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectionWeight = con[c].weight;
-  		// newCake->layers[layer].neurons[index].connections[newestConnectionIndex].isUsed = true;
-  		// newCake->layers[layer].neurons[index].n_connections ++;
+//   		// newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo = con[c].to_neuron;
+//   		// printf("%u ", newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectedTo);
+//   		// newCake->layers[layer].neurons[index].connections[newestConnectionIndex].connectionWeight = con[c].weight;
+//   		// newCake->layers[layer].neurons[index].connections[newestConnectionIndex].isUsed = true;
+//   		// newCake->layers[layer].neurons[index].n_connections ++;
  
-		unsigned int toLayer = 0;
-  		unsigned int toIndex = con[c].from_neuron +1; // so as to not start from 0
+// 		unsigned int toLayer = 0;
+//   		unsigned int toIndex = con[c].from_neuron +1; // so as to not start from 0
   		
-  		while (1) {
-  			if (toIndex <= layerCake[toLayer]) {
-  				break; }
-  			else {
-  				toIndex -= layerCake[toLayer];
-  				toLayer ++;
-  			}
-  		}
-  		toIndex--;
+//   		while (1) {
+//   			if (toIndex <= layerCake[toLayer]) {
+//   				break; }
+//   			else {
+//   				toIndex -= layerCake[toLayer];
+//   				toLayer ++;
+//   			}
+//   		}
+//   		toIndex--;
 
-		// newCake->layers[toLayer].neurons[toIndex].n_inputs ++;
-		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections-1) ;	
-	}
+// 		// newCake->layers[toLayer].neurons[toIndex].n_inputs ++;
+// 		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections-1) ;	
+// 	}
 return newCake;
 }
 
@@ -2302,20 +2302,28 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 	// void printConnectionArrayForDebug (networkDescriptor * network) {
 // 	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
 
-	for (unsigned int i = 0; i < fishes[fishIndex]->brain.n_layers; ++i) 	{
+	std::list<layerDescriptor>::iterator layer;
+	for (layer = fishes[fishIndex]->brain.layers.begin(); layer !=  fishes[fishIndex]->brain.layers.end(); ++layer) 	{
 // 		printf(" layer %i neurons: %i\n", i, network->layers[i].n_neurons);
 
- 		for (unsigned int j = 0; j < fishes[fishIndex]->brain.n_neurons; ++j) {
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = (*layer).neurons.begin(); neuron != (*layer).neurons.end() ; neuron++) {
 
 //  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
- 			for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
- 				
- 				printf(" |%u|, ", network->layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
+ 			for (connection = (*neuron).connections.begin(); connection != (*neuron).connections.end(); connection++) {
+
+ 				;
+ 				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
 // 			}
 			}
 		}
 // 	printf("\n");
 	}
+
+
+	return -1;
 }
 
 
