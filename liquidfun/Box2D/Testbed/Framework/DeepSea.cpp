@@ -495,6 +495,13 @@ void wormTrainer () {
 	}
 }
 
+networkDescriptor * createEmptyNetworkOfCorrectSize (fann * temp_ann) {
+	unsigned int num_layers = fann_get_num_layers(temp_ann);
+	unsigned int layerCake[num_layers];
+	fann_get_layer_array(temp_ann, layerCake);
+	return new networkDescriptor(layerCake, num_layers);
+}
+
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition) {
 	genes = driedFish;
@@ -554,6 +561,7 @@ heartCountD = 0;
 		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
 		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
+		    brain = createEmptyNetworkOfCorrectSize (ann) ;
 
 		    wormTrainer();
 
@@ -561,6 +569,8 @@ heartCountD = 0;
 	    }
     else { // a brain is provided
     	ann = nann;
+
+    	brain = createEmptyNetworkOfCorrectSize (nann) ;
     }
 };
 
@@ -962,9 +972,9 @@ fann * loadFishBrainFromFile (std::string fileName) {
 	return fann_create_from_file( (fileName + std::string(".net")).c_str() );
 }
 
-connectionDescriptor::connectionDescriptor () {
+connectionDescriptor::connectionDescriptor (int toNeuron) {
 	isUsed = false;
-	connectedTo = 0;
+	connectedTo = toNeuron;
 	connectionWeight = 0.0f;	
 }
 
@@ -988,11 +998,50 @@ layerDescriptor::layerDescriptor () {
 }
 
 // method to create a network descriptor in memory
-networkDescriptor::networkDescriptor () {
+networkDescriptor::networkDescriptor ( unsigned int * layerCake,  unsigned int n_layers) {
 	n_layers = 0;
-	// for (int i = 0; i < 8; ++i) {
-	// 	layers[i] = layerDescriptor();
-	// };
+	
+	b2AABB partywaist;
+
+	networkWindow = partywaist;
+	partywaist.lowerBound = b2Vec2(0.0f,0.0f);
+	partywaist.upperBound = b2Vec2(0.0f,0.0f);
+
+
+	for (unsigned int i = 0; i < n_layers; ++i)
+	{
+
+		layerDescriptor layer = layerDescriptor();
+
+		// add a new layer descriptor
+		layers.push_back(layer);
+
+		for (unsigned int j = 0; j < layerCake[i]; ++j)
+		{
+			neuronDescriptor neuron = neuronDescriptor();
+
+			layer.neurons.push_back(neuron);
+
+			if (i < n_layers-1) { // specifically exclude the last layer
+				for (unsigned int k = 0; k < layerCake[i+1]; ++k)
+				{
+
+
+
+					unsigned int toNeuronIndex = 0;
+					for (unsigned int l = 0; l < i+1; ++l) { toNeuronIndex += layerCake[l]; }
+					toNeuronIndex += k;
+
+					connectionDescriptor connection = connectionDescriptor(toNeuronIndex);
+
+					neuron.connections.push_back(connection);
+					
+				}
+			}
+		}
+	}
+
+
 }
 
 void unused_variable(void * bullshit) {
@@ -1033,6 +1082,12 @@ void seekUntil (FILE * cursor, char trigger) {
 	}
 }
 
+
+
+
+
+
+// i have started converting this function from using arrays to using the list networkdescriptors, but i haven't finished yet.
 networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 
 	// query the number of layers.
@@ -1051,7 +1106,7 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
 	fann_get_layer_array(temp_ann, layerCake);
 
 	// build everything in memory and link it together.
-	networkDescriptor * newCake = new networkDescriptor();
+	networkDescriptor * newCake = new networkDescriptor(layerCake, num_layers);
   	newCake->n_layers = num_layers;
 
   	// figure out the total number of neurons, which is how they are indexed in FANN file.
@@ -1060,12 +1115,6 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
   		sumOfNeurons += layerCake[i];
   		printf("a LAYER %i has %i neurons!\n", i, layerCake[i]);
   	}
-
-  	// you are traversing the linked list structure, so you must use a proper iterator.
-
-//   		std::list<layerDescriptor>::iterator layer;
-// 	for (layer = fishes[fishIndex]->brain.layers.begin(); layer !=  fishes[fishIndex]->brain.layers.end(); ++layer) 	{
-// /
 
 
   	std::list<layerDescriptor>::iterator layer;
@@ -1095,7 +1144,12 @@ networkDescriptor  * createNeurodescriptorFromFANN (fann * temp_ann) {
   	// }
 
 //   	// get connection and weight information.
-//   	unsigned int num_connections = fann_get_total_connections(temp_ann);
+  	unsigned int num_connections = fann_get_total_connections(temp_ann);
+  	printf("%i total connections required\n", num_connections);
+
+  	// while ( 1) {
+  	// 	;
+  	// }
 //   	static struct fann_connection margles[512] ;
 //   	memset(&margles, 0x00, sizeof(fann_connection[512]));
 //   	struct fann_connection *con = margles; 
@@ -1998,6 +2052,9 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					// now you can load the mutant ANN.
 					// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+
+					createNeurodescriptorFromFANN (mann) ;
+
 					loadFish (i, newFishBody, mann, getRandomPosition()) ;
 
 				}
@@ -2125,8 +2182,8 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + ( spacingDistance) ), drawingStartingPosition.y- spacingDistance)
 	};
 
-	fish->brain.networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
-	fish->brain.networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) ));
+	fish->brain->networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
+	fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) ));
 
 
 	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
@@ -2299,7 +2356,10 @@ int checkNeuroWindow (b2AABB mousePointer) {
 	for (int i = 0; i < N_FISHES; ++i)
 	{
 		if (fishChecker(i)) {
-			if (fishes[i]->brain.networkWindow.Contains(mousePointer)) {
+
+
+
+			if (fishes[i]->brain->networkWindow.Contains(mousePointer)) {
 			// printf("melected: %i\n", i);
 				return i;
 		}
@@ -2315,16 +2375,16 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 // 	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
 
 	std::list<layerDescriptor>::iterator layer;
-	for (layer = fishes[fishIndex]->brain.layers.begin(); layer !=  fishes[fishIndex]->brain.layers.end(); ++layer) 	{
+	for (layer = fishes[fishIndex]->brain->layers.begin(); layer !=  fishes[fishIndex]->brain->layers.end(); ++layer) 	{
 // 		printf(" layer %i neurons: %i\n", i, network->layers[i].n_neurons);
 
 		std::list<neuronDescriptor>::iterator neuron;
- 		for ( neuron = (*layer).neurons.begin(); neuron != (*layer).neurons.end() ; neuron++) {
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
 //  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
  			std::list<connectionDescriptor>::iterator connection;
  			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
- 			for (connection = (*neuron).connections.begin(); connection != (*neuron).connections.end(); connection++) {
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
  				;
  				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
@@ -2352,10 +2412,14 @@ void runBiomechanicalFunctions () {
 		for (int i = 0; i < N_FISHES; ++i) {
 			if (fishSlotLoaded[i]) {
 
-				// reset neuro bounding boxes... this isnt the right place to do this, should be in a graphics function
-				fishes[i]->brain.networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
-				fishes[i]->brain.networkWindow.upperBound = b2Vec2(0.0f,0.0f);
 
+				if (fishChecker(i)) {
+	// reset neuro bounding boxes... this isnt the right place to do this, should be in a graphics function
+				fishes[i]->brain->networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
+				fishes[i]->brain->networkWindow.upperBound = b2Vec2(0.0f,0.0f);
+
+			
+				}
 			
 				// cause heart to beat. Heart A is the slowest
 				if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 4) {

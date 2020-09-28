@@ -124,7 +124,7 @@ struct connectionDescriptor {
 	unsigned int connectedTo;
 	float connectionWeight;	
 
-	connectionDescriptor();
+	connectionDescriptor(int toNeuron);
 };
 
 struct neuronDescriptor {
@@ -164,7 +164,7 @@ struct networkDescriptor {
 
 	std::list<senseConnector> inputRouter; // keeps track of what sense input goes to what input neuron; necessary that each animal keeps track of its own routing, to allow animals with different routing to coexist.
 
-	networkDescriptor( );
+	networkDescriptor(unsigned int * layerCake, unsigned int n_layers );
 };
 
 
@@ -206,7 +206,7 @@ struct BonyFish {
 	bool selected;
 
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
-	networkDescriptor brain;
+	networkDescriptor * brain;
 
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition);
 
@@ -225,6 +225,8 @@ struct foodParticle_t {
 
 	foodParticle_t(b2Vec2 position);
 };
+
+
 
 #define TYPE_DEFAULT 0
 #define TYPE_MOUTH 1
