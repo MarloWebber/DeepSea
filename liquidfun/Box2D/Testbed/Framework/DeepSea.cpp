@@ -1019,8 +1019,13 @@ networkDescriptor::networkDescriptor (fann * pann) {
 	// flip the cake 
 	fann_get_layer_array(pann, layerCake);
 
-
+	// for (unsigned int i = 0; i < num_layers; ++i)
+	// {
+	// 	printf("pudding pie and dribbling cocks: %u\n", layerCake[i]);
+	// }
 	
+	// while(1){;}
+
 	b2AABB partywaist;
 
 	networkWindow = partywaist;
@@ -1029,10 +1034,12 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
 
 	// unsigned int numberOfConnectionsCreated = 0;
+printf("constructing into memory\n");
 
 
-	for (unsigned int i = 0; i < n_layers; ++i)
+	for (unsigned int i = 0; i < num_layers; ++i)
 	{
+printf("\n");
 
 		layerDescriptor layer = layerDescriptor();
 
@@ -1042,6 +1049,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 		for (unsigned int j = 0; j < layerCake[i]; ++j)
 		{
 			neuronDescriptor neuron = neuronDescriptor();
+
 
 			neuron.activation_function = activation_function_hidden;
   			neuron.activation_steepness = activation_steepness_hidden;
@@ -1056,6 +1064,8 @@ networkDescriptor::networkDescriptor (fann * pann) {
   			}
 
 			layer.neurons.push_back(neuron);
+			printf(".");
+
 
 			// if (i < n_layers-1) { // specifically exclude the last layer
 			// 	for (unsigned int k = 0; k < layerCake[i+1]; ++k)
@@ -1131,7 +1141,8 @@ networkDescriptor::networkDescriptor (fann * pann) {
   	// while ( 1) {
   	// 	;
   	// }
-//   	static struct fann_connection margles[512] ;
+	  	// struct fann_connection margles[num_connections] ;
+
 //   	memset(&margles, 0x00, sizeof(fann_connection[512]));
 //   	struct fann_connection *con = margles; 
 //   	fann_get_connection_array(temp_ann, con);
@@ -1146,7 +1157,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 //   	}
 
 //   	// create connections
-//   	for (unsigned int c = 0; c < num_connections; ++c) {
+  	for (unsigned int c = 0; c < num_connections; ++c) {
 //   		unsigned int layer = 0;
 //   		unsigned int index = con[c].from_neuron +1; // so as to not start from 0
 //   		while (1) {
@@ -1182,7 +1193,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 //   				toIndex -= layerCake[toLayer];
 //   				toLayer ++;
 //   			}
-//   		}
+  		}
 //   		toIndex--;
 
 // 		// newCake->layers[toLayer].neurons[toIndex].n_inputs ++;
@@ -2406,6 +2417,43 @@ int checkNeuroWindow (b2AABB mousePointer) {
 	}
 	return -1;
 }
+
+void verifyNetworkDescriptor (networkDescriptor * network) {
+	// void printConnectionArrayForDebug (networkDescriptor * network) {
+// 	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
+
+	std::list<layerDescriptor>::iterator layer;
+	unsigned int layerIndex = 0;
+	unsigned int neuronIndex = 0;
+	unsigned int connectionIndex = 0;
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			printf("		neuron %u connections: %lu\n", neuronIndex, (unsigned long)neuron->connections.size());
+
+//  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
+
+ 				;
+ 				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
+				connectionIndex++;
+			}
+			neuronIndex ++;
+		}
+// 	printf("\n");
+		layerIndex ++;
+	}
+
+
+	// return -1;
+}
+
 
 int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 	// void printConnectionArrayForDebug (networkDescriptor * network) {
