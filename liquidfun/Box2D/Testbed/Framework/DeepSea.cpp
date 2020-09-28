@@ -1372,62 +1372,96 @@ void my_print_scientific(char *dest, double value) {
 
 // method to create a fann save file from a network descriptor
 // this function is buggy, and the whole neurodescriptor scheme does not really work yet. At the moment I am modifying the FANN text file directly.
-// void createFANNFileFromDescriptor (networkDescriptor network) {
-// 	std::string s = std::string("FANN_FLO_2.1\nnum_layers=");; // string to hold the information.
-// 	s.append(std::to_string(network.n_layers));
+void createFANNFileFromDescriptor (networkDescriptor * network) {
+	std::string s = std::string("FANN_FLO_2.1\nnum_layers=");; // string to hold the information.
+	s.append(std::to_string(network->layers.size()));
 
 // 	// print this
-//  	s.append("\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n");
-//  	s.append("layer_sizes=");
+ 	s.append("\nlearning_rate=0.700000\nconnection_rate=1.000000\nnetwork_type=0\nlearning_momentum=0.000000\ntraining_algorithm=2\ntrain_error_function=1\ntrain_stop_function=0\ncascade_output_change_fraction=0.010000\nquickprop_decay=-0.000100\nquickprop_mu=1.750000\nrprop_increase_factor=1.200000\nrprop_decrease_factor=0.500000\nrprop_delta_min=0.000000\nrprop_delta_max=50.000000\nrprop_delta_zero=0.100000\ncascade_output_stagnation_epochs=12\ncascade_candidate_change_fraction=0.010000\ncascade_candidate_stagnation_epochs=12\ncascade_max_out_epochs=150\ncascade_min_out_epochs=50\ncascade_max_cand_epochs=150\ncascade_min_cand_epochs=50\ncascade_num_candidate_groups=2\nbit_fail_limit=3.49999994039535522461e-01\ncascade_candidate_limit=1.00000000000000000000e+03\ncascade_weight_multiplier=4.00000005960464477539e-01\ncascade_activation_functions_count=10\ncascade_activation_functions=3 5 7 8 10 11 14 15 16 17 \ncascade_activation_steepnesses_count=4\ncascade_activation_steepnesses=2.50000000000000000000e-01 5.00000000000000000000e-01 7.50000000000000000000e-01 1.00000000000000000000e+00\n");
+ 	s.append("layer_sizes=");
 
 //  	// print layer sizes separated by a space
-// 	for (unsigned int i = 0; i < network.n_layers; ++i) {
-// 		s.append(std::to_string(network.layers[i].n_neurons));
-// 		s.append(" ");
-// 	}
+
+	// for (unsigned int i = 0; i < network.n_layers; ++i) {
+ 	// std::list<layerDescriptor>::iterator layerIterator = network->layers.begin();
+ 	// for (neuron = layer->neurons.begin(); neuron != layer->neurons.end(); ++neuron) {
+
+ 	std::list<layerDescriptor>::iterator layer;
+	// unsigned int layerIndex = 0;
+	// unsigned int neuronIndex = 0;
+	// unsigned int connectionIndex = 0;
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+
+		s.append(std::to_string(layer->neurons.size()));
+		s.append(" ");
+
+	}
+	// }
 
 // 	// print activation information
-//  	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
+ 	s += "\nscale_included=0\nneurons (num_inputs, activation_function, activation_steepness)=";
 //  	for (unsigned int i = network.n_layers-1; i > 0; --i)	{
+		for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+
+
 //  		for (unsigned int j = 0; j<network.layers[i].n_neurons ; ++j) {
-//  			char chalkboard[9];
+
+			std::list<neuronDescriptor>::iterator neuron;
+			int i = 0;
+	 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 				char chalkboard[9];
+
+
 
 //  			// one of the layers in the file is supposed to have 0 inputs.
-//  			if (i == 0) {
-// 					sprintf(chalkboard, "(%u, %u, ", 0, 0);	
-//  			s += chalkboard;
-//  			}
-//  			else {
-//  					sprintf(chalkboard, "(%u, %u, ", network.layers[i].neurons[j].n_inputs, network.layers[i].neurons[j].activation_function);	
-// 	 			s += chalkboard;
-//  			}
+	 			// if (i == 0) {
+					// 	sprintf(chalkboard, "(%u, %u, ", 0, 0);	
+	 			// s += chalkboard;
+	 			// }
+	 			// else {
+	 				sprintf(chalkboard, "(%u, %u, ", neuron->n_inputs, neuron->activation_function);	
+		 			s += chalkboard;
+	 			// }
 
-//  			char sciNotationBuffer[] = "0.00000000000000000000e+00";
-//  			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].activation_steepness);
-//  			s += sciNotationBuffer;
-//  			s.append(") ");
-//  		}
-//  	}
+	 			char sciNotationBuffer[] = "0.00000000000000000000e+00";
+	 			my_print_scientific(sciNotationBuffer, neuron->activation_steepness);
+	 			s += sciNotationBuffer;
+	 			s.append(") ");
+	 			i++;
+	 		}
+	 	}
 
-// 	s += "\nconnections (connected_to_neuron, weight)=";
-// 	for (unsigned int i = network.n_layers-1; i > 0; --i) 	{
+	s += "\nconnections (connected_to_neuron, weight)=";
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
 //  		for (unsigned int j = 0; j < network.layers[i].n_neurons;  ++j) {
-//  			for (unsigned int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
-//  				char chalkboard[5];
-//  				sprintf(chalkboard, "(%u, ", network.layers[i].neurons[j].connections[k].connectedTo);
-//  				s += chalkboard;
-//  				char sciNotationBuffer[30];
-// 	 			my_print_scientific(sciNotationBuffer, network.layers[i].neurons[j].connections[k].connectionWeight);
-// 	 			s+= sciNotationBuffer;
-// 	 			s.append(") ");
-//  			}
-//  		}
-//  	}
 
-//     std::ofstream out("mutantGimp.net");
-//     out << s;
-//     out.close();
-// }
+			std::list<neuronDescriptor>::iterator neuron;
+			// int i = 0;
+	 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+//  			for (unsigned int k = 0; k < network.layers[i].neurons[j].n_connections; ++k) {
+
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				char chalkboard[5];
+ 				sprintf(chalkboard, "(%u, ", connection->connectedTo);
+ 				s += chalkboard;
+ 				char sciNotationBuffer[30];
+	 			my_print_scientific(sciNotationBuffer, connection->connectionWeight);
+	 			s+= sciNotationBuffer;
+	 			s.append(") ");
+ 			}
+ 		}
+ 	}
+
+    std::ofstream out("mutantGimp.net");
+    out << s;
+    out.close();
+}
 
 // void mutateFishBrain (networkDescriptor * newCake, float mutationChance, float mutationSeverity) {
 // 	// count connections.
