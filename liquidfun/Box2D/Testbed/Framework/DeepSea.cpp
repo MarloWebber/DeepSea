@@ -890,16 +890,15 @@ bool fishChecker(unsigned int fishIndex) {
 
 void moveAWholeFish (unsigned int fishIndex, b2Vec2 position) {
 	if ( fishes[fishIndex] == NULL || fishes[fishIndex] == nullptr) { 	return; }
-		if (fishSlotLoaded[fishIndex] ) {
-			for (int i = 0; i < N_FINGERS; ++i)
-			{
-				if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
-						continue;
-				}
-				fishes[fishIndex]->bones[i]->p_body->SetTransform(position, 0.0f);
-				// p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
+	if (fishSlotLoaded[fishIndex] ) {
+		for (int i = 0; i < N_FINGERS; ++i)
+		{
+			if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
+					continue;
 			}
+			fishes[fishIndex]->bones[i]->p_body->SetTransform(position, 0.0f);
 		}
+	}
 }
 
 void totalFishIncorporator (uint8_t fishIndex) {
@@ -909,14 +908,6 @@ void totalFishIncorporator (uint8_t fishIndex) {
 		}
 	}
 }
-
-// void incorporateFishForScience () {
-// 	for (int i = 0; i < N_FINGERS; ++i) {
-// 		if (sciFish->bones[i]->init) {
-// 			nonRecursiveBoneIncorporator( sciFish->bones[i] , i);
-// 		}
-// 	}
-// }
 
 // delete a fish from the game world and remove it from memory
 void deleteFish (uint8_t fishIndex) {
@@ -1009,7 +1000,7 @@ neuronDescriptor * networkDescriptor::getNeuronByIndex (unsigned int windex) {
   		unsigned int index = windex; // so as to not start from 0
   		while (1) {
 
-  			printf("index is: %i in layer of %lu\n", index, (unsigned long)layerIterator->neurons.size());
+  			// printf("index is: %i in layer of %lu\n", index, (unsigned long)layerIterator->neurons.size());
 
   			if (index < layerIterator->neurons.size()+1) { // if the index is a valid position in this layer
   				break; }
@@ -1017,7 +1008,7 @@ neuronDescriptor * networkDescriptor::getNeuronByIndex (unsigned int windex) {
   				index -= layerIterator->neurons.size();
   				std::advance(layerIterator, 1);
 
-  				printf("advanced over layer with %lu neurons\n", (unsigned long)layerIterator->neurons.size());
+  				// printf("advanced over layer with %lu neurons\n", (unsigned long)layerIterator->neurons.size());
   				// layer ++;
   			}
   		}
@@ -1058,7 +1049,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   	
 	// get the layer cake. because FANN provides layer information as an array of integers, this is just a temporary variable to hold it.
 	unsigned int layerCake[num_layers];
-
+int nimberofmafa = 0;
 	// flip the cake 
 	fann_get_layer_array(pann, layerCake);
 
@@ -1207,8 +1198,9 @@ printf("\n");
 //   			continue;
 //   		}
 //   	}
-	printf ("chunky borks and portly babies\n") ;
+	printf ("chunky borks and portly babies: %i\n", num_connections) ;
 //   	// create connections
+	
   	for (unsigned int c = 0; c < num_connections; ++c) {
 
 
@@ -1230,7 +1222,7 @@ printf("\n");
   		unsigned int index = con[c].from_neuron; // so as to not start from 0
   		while (1) {
 
-  			printf("index is: %i in layer of %lu\n", index, (unsigned long)layerIterator->neurons.size());
+  			// printf("index is: %i in layer of %lu\n", index, (unsigned long)layerIterator->neurons.size());
 
   			if (index < layerIterator->neurons.size()) { // if the index is a valid position in this layer
   				break; }
@@ -1238,7 +1230,7 @@ printf("\n");
   				index -= layerIterator->neurons.size();
   				std::advance(layerIterator, 1);
 
-  				printf("advanced over layer with %lu neurons\n", (unsigned long)layerIterator->neurons.size());
+  				// printf("advanced over layer with %lu neurons\n", (unsigned long)layerIterator->neurons.size());
   				// layer ++;
   			}
   		}
@@ -1299,6 +1291,9 @@ printf("\n");
 //   				toIndex -= layerCake[toLayer];
 //   				toLayer ++;
 //   			}
+  		nimberofmafa ++;
+
+
   		}
 //   		toIndex--;
 
@@ -1307,7 +1302,7 @@ printf("\n");
 		i++; // i is used in this function to keep track of layer index
 	}
 
-
+printf("number of connections produced: %i\n", nimberofmafa);
 					
 }
 
@@ -1458,7 +1453,7 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
  		}
  	}
 
-    std::ofstream out("mutantGimp.net");
+    std::ofstream out("Pleco.net");
     out << s;
     out.close();
 }
@@ -2148,6 +2143,44 @@ void drawingTest() {
 }
 
 
+void verifyNetworkDescriptor (networkDescriptor * network) {
+	// void printConnectionArrayForDebug (networkDescriptor * network) {
+	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
+
+	std::list<layerDescriptor>::iterator layer;
+	unsigned int layerIndex = 0;
+	unsigned int neuronIndex = 0;
+	unsigned int connectionIndex = 0;
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			printf("		neuron %u connections: %lu\n", neuronIndex, (unsigned long)neuron->connections.size());
+
+//  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
+
+ 				;
+ 				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
+				connectionIndex++;
+			}
+			neuronIndex ++;
+		}
+// 	printf("\n");
+		layerIndex ++;
+	}
+
+
+	// return -1;
+}
+
+
+
 void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
 	// bool romance = false;
@@ -2241,7 +2274,13 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-					createNeurodescriptorFromFANN (mann) ;
+					// create a neurodescriptor.
+					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+
+					verifyNetworkDescriptor(muscleCars);
+
+					// now turn it back into a file and you can see if theyre the same.
+					createFANNFileFromDescriptor(muscleCars);
 
 					loadFish (i, newFishBody, mann, getRandomPosition()) ;
 
@@ -2556,42 +2595,6 @@ int checkNeuroWindow (b2AABB mousePointer) {
 
 	}
 	return -1;
-}
-
-void verifyNetworkDescriptor (networkDescriptor * network) {
-	// void printConnectionArrayForDebug (networkDescriptor * network) {
-// 	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
-
-	std::list<layerDescriptor>::iterator layer;
-	unsigned int layerIndex = 0;
-	unsigned int neuronIndex = 0;
-	unsigned int connectionIndex = 0;
-
-	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-		printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
-
-		std::list<neuronDescriptor>::iterator neuron;
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- 			printf("		neuron %u connections: %lu\n", neuronIndex, (unsigned long)neuron->connections.size());
-
-//  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
- 			std::list<connectionDescriptor>::iterator connection;
- 			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
- 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
- 				printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
-
- 				;
- 				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
-				connectionIndex++;
-			}
-			neuronIndex ++;
-		}
-// 	printf("\n");
-		layerIndex ++;
-	}
-
-
-	// return -1;
 }
 
 
