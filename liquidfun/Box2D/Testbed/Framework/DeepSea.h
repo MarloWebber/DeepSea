@@ -139,6 +139,8 @@ struct neuronDescriptor {
 
 	b2Vec2 position;
 
+	unsigned int index; // the fann file index of this neuron. handy to refer to
+
 	neuronDescriptor();
 };
 
@@ -166,6 +168,8 @@ struct networkDescriptor {
 	std::list<senseConnector> inputRouter; // keeps track of what sense input goes to what input neuron; necessary that each animal keeps track of its own routing, to allow animals with different routing to coexist.
 
 	networkDescriptor(fann* pann);
+
+	neuronDescriptor * getNeuronByIndex(unsigned int windex);
 };
 
 

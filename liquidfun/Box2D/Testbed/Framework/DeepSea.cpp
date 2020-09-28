@@ -999,6 +999,49 @@ layerDescriptor::layerDescriptor () {
 
 
 
+neuronDescriptor * networkDescriptor::getNeuronByIndex (unsigned int windex) {
+
+	printf("getting neuron by index: %i\n", windex);
+
+	std::list<layerDescriptor>::iterator layerIterator = layers.begin();
+	
+		// unsigned int layer = 0;
+  		unsigned int index = windex; // so as to not start from 0
+  		while (1) {
+
+  			printf("index is: %i in layer of %lu\n", index, (unsigned long)layerIterator->neurons.size());
+
+  			if (index < layerIterator->neurons.size()+1) { // if the index is a valid position in this layer
+  				break; }
+  			else {
+  				index -= layerIterator->neurons.size();
+  				std::advance(layerIterator, 1);
+
+  				printf("advanced over layer with %lu neurons\n", (unsigned long)layerIterator->neurons.size());
+  				// layer ++;
+  			}
+  		}
+  		
+  		std::list<neuronDescriptor>::iterator neuronIterator = layerIterator->neurons.begin();
+  		// index--; // to undo the +1;
+
+  		// printf("landed on layer %i neuron %i\n", layer, index);
+
+  		std::advance(neuronIterator, index);
+  		
+  		return &*neuronIterator; // turn the interator into a pointer https://stackoverflow.com/questions/2754650/getting-value-of-stdlistiterator-to-pointer
+
+
+  		
+  		
+
+  		
+  		
+
+
+
+}
+
 
 // method to create a network descriptor in memory
 networkDescriptor::networkDescriptor (fann * pann) {
@@ -1043,9 +1086,7 @@ printf("\n");
 
 		layerDescriptor layer = layerDescriptor();
 
-		// add a new layer descriptor
-		layers.push_back(layer);
-
+		
 		for (unsigned int j = 0; j < layerCake[i]; ++j)
 		{
 			neuronDescriptor neuron = neuronDescriptor();
@@ -1056,6 +1097,15 @@ printf("\n");
   			neuron.n_connections = 0; 	// so not used uninitialized
   			neuron.n_inputs = 0; 
   			neuron.isUsed = true;
+
+
+  			// find the index by summing the previous layers and then adding the index in this layer.
+  			neuron.index =  0;
+  			for (unsigned int k = 0; k < i; ++k)
+  			{
+  				neuron.index += layerCake[k];
+  			}
+			neuron.index += j;
 
   			// output neurons have a different function than the others. this applies to all in the last row.
   			if (i == num_layers-1) {
@@ -1086,6 +1136,9 @@ printf("\n");
 			// 	}
 			// }
 		}
+		// add a new layer descriptor
+		this->layers.push_back(layer);
+
 	}
 
 	// printf("numberOfConnectionsCreated: %u\n", numberOfConnectionsCreated);
@@ -1111,7 +1164,7 @@ printf("\n");
   	printf("%i total connections required\n", num_connections);
 
 
-  	for (layer = layers.begin(); layer != layers.end(); ++layer)  {
+  	for (layer = this->layers.begin(); layer != this->layers.end(); ++layer)  {
   		// printf("climbdamger\n");
   		layer->n_neurons = layerCake[i];
 
@@ -1141,11 +1194,10 @@ printf("\n");
   	// while ( 1) {
   	// 	;
   	// }
-	  	// struct fann_connection margles[num_connections] ;
-
-//   	memset(&margles, 0x00, sizeof(fann_connection[512]));
-//   	struct fann_connection *con = margles; 
-//   	fann_get_connection_array(temp_ann, con);
+	struct fann_connection margles[num_connections] ;
+  	memset(&margles, 0x00, sizeof(fann_connection[num_connections]));
+  	struct fann_connection *con = margles; 
+  	fann_get_connection_array(pann, con);
 
 //   	for (unsigned int c = 0; c < num_connections; ++c) { 
 //   		if (con[c].from_neuron < 0 || con[c].from_neuron > sumOfNeurons ) {
@@ -1155,9 +1207,63 @@ printf("\n");
 //   			continue;
 //   		}
 //   	}
-
+	printf ("chunky borks and portly babies\n") ;
 //   	// create connections
   	for (unsigned int c = 0; c < num_connections; ++c) {
+
+
+  			connectionDescriptor connection = connectionDescriptor(con[c].to_neuron);
+  			connection.connectionWeight = con[c].weight;
+
+  			// // (//
+  			// neuronDescriptor *eliabth=	this->getNeuronByIndex(con[c].from_neuron);
+  				//)->connections.push_back(connection);
+  			// printf("pmeeelfanth %u\n", eliabth->index);
+
+
+
+
+
+	std::list<layerDescriptor>::iterator layerIterator = this->layers.begin();
+	
+		// unsigned int layer = 0;
+  		unsigned int index = con[c].from_neuron; // so as to not start from 0
+  		while (1) {
+
+  			printf("index is: %i in layer of %lu\n", index, (unsigned long)layerIterator->neurons.size());
+
+  			if (index < layerIterator->neurons.size()) { // if the index is a valid position in this layer
+  				break; }
+  			else {
+  				index -= layerIterator->neurons.size();
+  				std::advance(layerIterator, 1);
+
+  				printf("advanced over layer with %lu neurons\n", (unsigned long)layerIterator->neurons.size());
+  				// layer ++;
+  			}
+  		}
+  		
+  		std::list<neuronDescriptor>::iterator neuronIterator = layerIterator->neurons.begin();
+  		// index--; // to undo the +1;
+
+  		// printf("landed on layer %i neuron %i\n", layer, index);
+
+  		std::advance(neuronIterator, index);
+
+  		neuronIterator->connections.push_back(connection);
+
+
+
+
+
+
+
+  			// connection.connectedTo = con[c].to_neuron;
+
+
+
+
+
 //   		unsigned int layer = 0;
 //   		unsigned int index = con[c].from_neuron +1; // so as to not start from 0
 //   		while (1) {
