@@ -1093,6 +1093,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 	partywaist.upperBound = b2Vec2(0.0f,0.0f);
 
 
+
 	// unsigned int numberOfConnectionsCreated = 0;
 	// printf("constructing into memory\n");
 
@@ -1106,6 +1107,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 		for (unsigned int j = 0; j < layerCake[i]; ++j)
 		{
 			neuronDescriptor neuron = neuronDescriptor();
+			neuron.biasNeuron = false;
 
 			neuron.activation_function = activation_function_hidden;
   			neuron.activation_steepness = activation_steepness_hidden;
@@ -1118,6 +1120,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   			for (unsigned int k = 0; k < i; ++k)
   			{
   				neuron.index += layerCake[k];
+  				neuron.index += 1; /// add 1 for the bias neuron.
   			}
 			neuron.index += j;
 
@@ -1130,6 +1133,38 @@ networkDescriptor::networkDescriptor (fann * pann) {
 			layer.neurons.push_back(neuron);
 			// printf(".");
 		}
+
+
+
+		// there is an additional bias neuron in each layer which always emits 1. this is apparently why the number of neurons in the fann file is always 1 too big.
+		// except not in the last layer.
+		if (i == num_layers-1) {
+			;
+		}
+		else {
+			neuronDescriptor neuron = neuronDescriptor();
+			neuron.activation_function = activation_function_hidden;
+			neuron.activation_steepness = activation_steepness_hidden;
+			neuron.n_connections = 0; 	// so not used uninitialized
+			neuron.n_inputs = 0; 
+			neuron.isUsed = true;
+			neuron.biasNeuron = true;
+			// find the index by summing the previous layers and then adding the index in this layer.
+	  			neuron.index =  0;
+	  			for (unsigned int k = 0; k <= i; ++k)
+	  			{
+	  				neuron.index += layerCake[k];
+	  				neuron.index += 1; /// add 1 for the bias neuron.
+	  			}
+				neuron.index -=1; // i don't know why but it makes it work.
+
+		
+			layer.neurons.push_back(neuron);
+
+		}
+		
+
+
 		// add a new layer descriptor
 		this->layers.push_back(layer);
 
@@ -1179,8 +1214,10 @@ networkDescriptor::networkDescriptor (fann * pann) {
 	// get connection and weight information.
 	struct fann_connection margles[num_connections] ;
   	memset(&margles, 0x00, sizeof(fann_connection[num_connections]));
-  	struct fann_connection *con = margles; 
-  	fann_get_connection_array(pann, con);
+  	struct fann_connection *con = margles;
+
+
+  	fann_get_connection_array(pann, con); // this DOES include bias neuron information. 
 
 	printf ("chunky borks and portly babies: %i\n", num_connections) ; // create connections
 	
@@ -1349,12 +1386,12 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) {
 
  			// figire out this nueorns inex
 
- 			unsigned int thisNeuronsIndex = 0;
- 			for (unsigned int i = 0; i < layerIndex; ++i)
- 			{
- 				thisNeuronsIndex += creationLayerCake[i];
- 			}
- 			thisNeuronsIndex += neuronIndex;
+ 			// unsigned int thisNeuronsIndex = 0;
+ 			// for (unsigned int i = 0; i < layerIndex; ++i)
+ 			// {
+ 			// 	thisNeuronsIndex += creationLayerCake[i];
+ 			// }
+ 			// thisNeuronsIndex += neuronIndex;
 
 //  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
  			std::list<connectionDescriptor>::iterator connection;
@@ -1364,7 +1401,7 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) {
 
  				fann_connection conc;
 
- 				conc.from_neuron = thisNeuronsIndex;
+ 				conc.from_neuron = neuron->index;
  				conc.to_neuron = connection->connectedTo;
  				conc.weight = connection->connectionWeight;
 
@@ -2304,13 +2341,20 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
+					fann *dann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+
+
 					// create a neurodescriptor.
-					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (dann) ;
 
 					verifyNetworkDescriptor(muscleCars);
 
 					// now turn it back into a file and you can see if theyre the same.
-					createFANNFileFromDescriptor(muscleCars);
+					// createFANNFileFromDescriptor(muscleCars);
+
+					fann * jann = createFANNbrainFromDescriptor(muscleCars);
+
+					unused_variable((void*) jann);
 
 					loadFish (i, newFishBody, mann, getRandomPosition()) ;
 

@@ -141,6 +141,8 @@ struct neuronDescriptor {
 
 	unsigned int index; // the fann file index of this neuron. handy to refer to
 
+	bool biasNeuron;
+
 	neuronDescriptor();
 };
 
