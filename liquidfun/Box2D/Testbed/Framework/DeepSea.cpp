@@ -977,6 +977,8 @@ neuronDescriptor::neuronDescriptor() {
 	// {
 	// 	connections[i] = connectionDescriptor();
 	// };
+	aabb.upperBound = b2Vec2(0.0f,0.0f);
+	aabb.lowerBound = b2Vec2(0.0f,0.0f);
 }
 
 layerDescriptor::layerDescriptor () {
@@ -2432,6 +2434,98 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 // }
 
+
+
+// instead of drawing from the FANN struct, this function draws from the neurodescriptor.
+void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar, BonyFish * fish) {
+
+
+	unsigned int sizeOfBiggestLayer = 0;
+	unsigned int n_layers = (unsigned long)fish->brain->layers.size();
+
+	// get the size of biggest layer
+	std::list<layerDescriptor>::iterator layer;
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		if ((unsigned long)layer->neurons.size() > sizeOfBiggestLayer) {
+			sizeOfBiggestLayer = (unsigned long)layer->neurons.size();
+		}
+		// std::list<neuronDescriptor>::iterator neuron;
+ 	// 	for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 	// 		std::list<connectionDescriptor>::iterator connection;
+ 	// 		for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 	// 			;
+		// 	}
+		// }
+	}
+
+	float fcompatiblespaces = *spacesUsedSoFar;
+	b2Vec2 drawingStartingPosition = b2Vec2(  fcompatiblespaces + 1 ,4.0f);
+	float spacingDistance = 0.5f;
+
+
+
+	b2Vec2 windowVertices[] = {
+		b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance), 
+		b2Vec2(drawingStartingPosition.x - spacingDistance, drawingStartingPosition.y + ((n_layers *spacingDistance ) + ( spacingDistance) ) ), 
+		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) )), 
+		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + ( spacingDistance) ), drawingStartingPosition.y- spacingDistance)
+	};
+
+	fish->brain->networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
+	fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) ));
+
+
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+
+
+	// work out the neuron positions.
+	unsigned int layerIndex = 0;
+	unsigned int neuronIndex = 0;
+	// std::list<layerDescriptor>::iterator layer;
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+
+		neuronIndex = 0;
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			
+
+ 			neuron->position = b2Vec2(drawingStartingPosition.x + (neuronIndex * spacingDistance), drawingStartingPosition.y + (layerIndex * spacingDistance));
+
+
+ 			neuronIndex ++;
+		}
+
+		layerIndex++;
+	}
+
+	// now you know all the positions, you can draw the connections really easily.
+
+	// std::list<layerDescriptor>::iterator layer;
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+
+
+		    	b2Color segmentColor = b2Color(connection->connectionWeight*10,connection->connectionWeight*10,connection->connectionWeight*10);
+			    local_debugDraw_pointer->DrawSegment(neuron->position, (getNeuronByIndex(fish->brain, connection->connectedTo))->position,segmentColor );
+
+ 				;
+			}
+		}
+	}
+
+
+
+
+
+}
+
+
+
 void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar, BonyFish * fish) {
 
 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
@@ -2489,7 +2583,20 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
 
 	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
 
+/*
 
+	std::list<layerDescriptor>::iterator layer;
+	for (layer = fishes[fishIndex]->brain->layers.begin(); layer !=  fishes[fishIndex]->brain->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				;
+			}
+		}
+	}
+
+*/
 
 	for (uint8_t j = 0; j < layerArray[0]; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
@@ -2513,6 +2620,10 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     		}	
     		else {
     			printConnectionSideA = b2Vec2(drawingStartingPosition.x + neuronA_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
+    			b2AABB neuronBox;
+    			neuronBox.upperBound = b2Vec2(printConnectionSideA.x+0.01f,printConnectionSideA.y+0.01f );
+    			neuronBox.lowerBound = b2Vec2(printConnectionSideA.x-0.01f,printConnectionSideA.y-0.01f );
+    			getNeuronByIndex(fish->brain, con[i].from_neuron)->aabb = neuronBox;
     			break;
     		}
     		neuronA_tally --;
@@ -2524,6 +2635,11 @@ void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * senso
     		}	
     		else {
     			printConnectionSideB = b2Vec2(drawingStartingPosition.x + neuronB_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
+    			b2AABB neuronBox;
+    			neuronBox.upperBound = b2Vec2(printConnectionSideB.x+0.01f,printConnectionSideB.y+0.01f );
+    			neuronBox.lowerBound = b2Vec2(printConnectionSideB.x-0.01f,printConnectionSideB.y-0.01f );
+    			getNeuronByIndex(fish->brain, con[i].to_neuron)->aabb = neuronBox;
+    			// printf("mokkneyk: %i fussy: %i\n", getNeuronByIndex(fish->brain, con[i].to_neuron)->index, con[i].to_neuron);
     			break;
     		}
     		neuronB_tally --;
@@ -2674,7 +2790,9 @@ int checkNeuroWindow (b2AABB mousePointer) {
 
 int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 	// void printConnectionArrayForDebug (networkDescriptor * network) {
-// 	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
+	// printf("checkNeuronsInWindow \n");
+
+	// printf("mouz: %f\n", );
 
 	std::list<layerDescriptor>::iterator layer;
 	for (layer = fishes[fishIndex]->brain->layers.begin(); layer !=  fishes[fishIndex]->brain->layers.end(); ++layer) 	{
@@ -2687,6 +2805,18 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
  			std::list<connectionDescriptor>::iterator connection;
  			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+
+
+
+	// printf("mouz: %f\n", );
+
+	printf("mouz: %f\n", mousePointer.upperBound.x);
+
+	printf("faef: %f\n", neuron->aabb.lowerBound.x);
+ 				// check neuron
+ 				if (mousePointer.Contains(neuron->aabb)) {
+ 					printf("gackstchubah: %i\n", neuron->index);
+ 				}
 
  				;
  				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.

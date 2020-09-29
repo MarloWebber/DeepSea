@@ -138,6 +138,7 @@ struct neuronDescriptor {
 	std::list<connectionDescriptor> connections;
 
 	b2Vec2 position;
+	b2AABB aabb;
 
 	unsigned int index; // the fann file index of this neuron. handy to refer to
 
