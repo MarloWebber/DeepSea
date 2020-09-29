@@ -169,7 +169,7 @@ struct networkDescriptor {
 
 	networkDescriptor(fann* pann);
 
-	neuronDescriptor * getNeuronByIndex(unsigned int windex);
+	// neuronDescriptor * getNeuronByIndex(unsigned int windex);
 };
 
 
