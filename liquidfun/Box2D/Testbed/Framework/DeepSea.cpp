@@ -2224,7 +2224,7 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- 			printf("		neuron %u connections: %lu inputs: %u\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs);
+ 			printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
 
 //  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
  			std::list<connectionDescriptor>::iterator connection;
@@ -2334,18 +2334,18 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					fishDescriptor_t newFishBody;
 					loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-					mutateFishDescriptor (&newFishBody, 0.1, 0.25);
-				    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
+					// mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+				    // mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
 					// now you can load the mutant ANN.
 					// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-					fann *dann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
+					// fann *dann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
 
 
 					// create a neurodescriptor.
-					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (dann) ;
+					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
 
 					verifyNetworkDescriptor(muscleCars);
 
@@ -2354,9 +2354,9 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 					fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
-					unused_variable((void*) jann);
+					// unused_variable((void*) jann);
 
-					loadFish (i, newFishBody, mann, getRandomPosition()) ;
+					loadFish (i, newFishBody, jann, getRandomPosition()) ;
 
 				}
 				else { 						// if there is no winner, its probably a reset or new install. make one up
