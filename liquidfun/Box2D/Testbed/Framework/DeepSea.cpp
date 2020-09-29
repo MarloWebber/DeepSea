@@ -143,7 +143,7 @@ BoneUserData::BoneUserData(
 		return;
 	}
 
-	printf("creating a bone\n");
+	// printf("creating a bone\n");
 
 	p_owner = fish;
 	BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
@@ -178,7 +178,7 @@ BoneUserData::BoneUserData(
 
 		offsetOnBody = b2Vec2(0.0f, 0.0f);
 
-		printf("its a root bone\n");
+		// printf("its a root bone\n");
 
 		tipCenter = b2Vec2(0.0f, length);
 
@@ -1073,7 +1073,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
 	// query the number of layers.
 	unsigned int num_layers = fann_get_num_layers(pann);
-	printf("new %u layer networkDescriptor\n", num_layers);
+	// printf("new %u layer networkDescriptor\n", num_layers);
 
   	unsigned int activation_function_hidden = 5;
   	float activation_steepness_hidden = 0.5f;
@@ -1094,12 +1094,12 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
 
 	// unsigned int numberOfConnectionsCreated = 0;
-	printf("constructing into memory\n");
+	// printf("constructing into memory\n");
 
 
 	for (unsigned int i = 0; i < num_layers; ++i)
 	{
-	printf("\n");
+	// printf("\n");
 
 		layerDescriptor layer = layerDescriptor();
 		
@@ -1128,7 +1128,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   			}
 
 			layer.neurons.push_back(neuron);
-			printf(".");
+			// printf(".");
 		}
 		// add a new layer descriptor
 		this->layers.push_back(layer);
@@ -1143,20 +1143,20 @@ networkDescriptor::networkDescriptor (fann * pann) {
   	unsigned int sumOfNeurons = 0;
   	for (unsigned int i = 0; i < num_layers; ++i) {
   		sumOfNeurons += layerCake[i];
-  		printf("a LAYER %i has %i neurons!\n", i, layerCake[i]);
+  		// printf("a LAYER %i has %i neurons!\n", i, layerCake[i]);
   	}
 
   	std::list<layerDescriptor>::iterator layer;
   	unsigned int i = 0;
 	unsigned int num_connections = fann_get_total_connections(pann);
-  	printf("%i total connections required\n", num_connections);
+  	// printf("%i total connections required\n", num_connections);
 
   	for (layer = this->layers.begin(); layer != this->layers.end(); ++layer)  {
   		// printf("climbdamger\n");
   		layer->n_neurons = layerCake[i];
 
   		layer->isUsed = true;
-  		printf ("created layer descriptor %i with %i neurons\n", layerCake[i], layer->n_neurons) ;
+  		// printf ("created layer descriptor %i with %i neurons\n", layerCake[i], layer->n_neurons) ;
 
   		// iterate neurons in layer.
   		std::list<neuronDescriptor>::iterator neuron;
@@ -1172,7 +1172,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 				neuron->activation_function = activation_function_output;
   				neuron->activation_steepness = activation_steepness_output;
   			}
-  			printf ("created neuron descriptor\n") ;
+  			// printf ("created neuron descriptor\n") ;
   		}
   	}
 
@@ -1187,6 +1187,8 @@ networkDescriptor::networkDescriptor (fann * pann) {
   	for (unsigned int c = 0; c < num_connections; ++c) {
 		connectionDescriptor connection = connectionDescriptor(con[c].to_neuron);
 		connection.connectionWeight = con[c].weight;
+
+		printf("A conn from: %i to: %i weight: %f\n",con[c].from_neuron ,con[c].to_neuron ,con[c].weight );
 
 		//------------------
 		// first find the neuron that the connection comes FROM.
@@ -1203,7 +1205,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   		//---------------
   		// then find the one that it goes TO.
 
-		getNeuronByIndex(this, con[c].from_neuron)->n_inputs++;
+		getNeuronByIndex(this, con[c].to_neuron)->n_inputs++;
 
 		// std::list<layerDescriptor>::iterator //
 		// layerIterator = this->layers.begin();
@@ -1287,6 +1289,111 @@ void my_print_scientific(char *dest, double value) {
     snprintf(dest, 28, "%.20e", value); // 20 digits between the decimal place and the e
 }
 
+
+
+//
+fann * createFANNbrainFromDescriptor (networkDescriptor * network) {
+	//create an empty fann brain of the right size and layer cake.
+
+	unsigned int creationLayerCake[(unsigned long)network->layers.size()];	
+	std::list<layerDescriptor>::iterator layer;
+	unsigned int layerIndex = 0;
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+
+		creationLayerCake[layerIndex] = layer->neurons.size();
+		layerIndex++;
+
+	}
+
+	    // unsigned int creationLayerCake[] = {
+	    // 	28,
+	    // 	8,
+	    // 	8,
+	    // 	8,
+	    // 	8
+	    // };
+	    	fann * ann = fann_create_standard_array(5, creationLayerCake);
+		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
+		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
+
+		    // brain = createEmptyNetworkOfCorrectSize (ann) ;
+
+		    unsigned int num_connections = fann_get_total_connections(ann);
+
+	// create a connection array from the descriptor.
+
+		    struct fann_connection margles[num_connections] ;
+  	memset(&margles, 0x00, sizeof(fann_connection[num_connections]));
+  	// struct fann_connection *con = margles; 
+
+	// use 
+		    // 
+
+
+
+
+
+	// std::list<layerDescriptor>::iterator layer;
+	layerIndex = 0;
+	unsigned int neuronIndex = 0;
+	unsigned int connectionIndex = 0;
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			// printf("		neuron %u connections: %lu inputs: %u\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs);
+
+
+ 			// figire out this nueorns inex
+
+ 			unsigned int thisNeuronsIndex = 0;
+ 			for (unsigned int i = 0; i < layerIndex; ++i)
+ 			{
+ 				thisNeuronsIndex += creationLayerCake[i];
+ 			}
+ 			thisNeuronsIndex += neuronIndex;
+
+//  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				// printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
+
+ 				fann_connection conc;
+
+ 				conc.from_neuron = thisNeuronsIndex;
+ 				conc.to_neuron = connection->connectedTo;
+ 				conc.weight = connection->connectionWeight;
+
+ 				margles[connectionIndex] = conc;
+
+ 				  	printf("B conn from: %i to: %i weight: %f\n",conc.from_neuron ,conc.to_neuron ,conc.weight );
+
+
+
+ 				;
+ 				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
+				connectionIndex++;
+			}
+			neuronIndex ++;
+		}
+// 	printf("\n");
+		layerIndex ++;
+	}
+
+
+
+fann_set_weight_array(ann, margles, num_connections);
+
+return ann;
+
+}
+
+
+
 // method to create a fann save file from a network descriptor
 // this function is buggy, and the whole neurodescriptor scheme does not really work yet. At the moment I am modifying the FANN text file directly.
 void createFANNFileFromDescriptor (networkDescriptor * network) {
@@ -1310,7 +1417,7 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
 
 
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-		printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+		// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
 
 
 		s.append(std::to_string(layer->neurons.size() +1));
@@ -1696,7 +1803,7 @@ void mutateFANNFileDirectly (std::string filename) {
 						memset(sciNumber, 0x00, sciNumberLength);
 						memcpy(sciNumber, &c, sciNumberLength);
 
-						printf("%s\n", sciNumber);
+						// printf("%s\n", sciNumber);
 					    float val = std::stof(sciNumber); 
 
 					    if (RNG() < 0.2) {		// chance of a mutation occurring
@@ -1744,7 +1851,7 @@ int getSciNumberLength (char c) {
 
 		char fugnutz = *((&c) +sciNumberLength);
 
-		printf("%c ", fugnutz);
+		// printf("%c ", fugnutz);
 
 		if (fugnutz == ')') {
 			break;
@@ -1764,7 +1871,7 @@ float  getSciNumberFromFANNFile (char c) {
 	memset(sciNumber, 0x00, sciNumberLength);
 	memcpy(sciNumber, &c, sciNumberLength);
 
-	printf("%s\n", sciNumber);
+	// printf("%s\n", sciNumber);
 	float val = std::stof(sciNumber);
 	return val;
 }
@@ -1804,8 +1911,8 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 
 		getline(partnerB, lineB);
 
-		int lineALength = lineA.length();
-		int lineBLength = lineB.length();
+		// int lineALength = lineA.length();
+		// int lineBLength = lineB.length();
 
 	 	if (count == 35) { // its that crazy line.
 	 		char desireCharacter = '=';
@@ -1813,7 +1920,7 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 	 		bool skipTheRestB = false;
 	 		for(char& c : lineA) {
 
-	 			printf("%c",c);
+	 			// printf("%c",c);
 
 	 			if (c == '\n' || partnerA.eof()) {
 	 				break;
@@ -1851,7 +1958,7 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 			 			// 	break;
 			 			// }
 
-			 			printf("amountCount: %i, lineALength: %i, lineBLength: %i\n", amountCount, lineALength, lineBLength);
+			 			// printf("amountCount: %i, lineALength: %i, lineBLength: %i\n", amountCount, lineALength, lineBLength);
 
 			 			// int sciNumberLength = getSciNumberLength(c);
 
@@ -1863,10 +1970,10 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 
 								char fugnutz = lineA[amountCount + sciNumberLength]; //*((&c) +sciNumberLength); // <<this broken AF
 
-								printf("%c ", fugnutz);
+								// printf("%c ", fugnutz);
 
 								if (fugnutz == ')') {
-									printf("PFETHECHETCH");
+									// printf("PFETHECHETCH");
 									gettingLength = true;
 								}else {
 									// printf("%i ", sciNumberLength);
@@ -1883,7 +1990,7 @@ void sexBetweenTwoMinds (std::string fileNameA, std::string fileNameB) {
 		 				float partnerBValue = 0.0f;
 		 				float val = 0.0f;
 
-		 				printf("%c", c);
+		 				// printf("%c", c);
 		 				// ok now scroll the other file forward and get the number out of it.
 
 		 				for(char& d : lineB) {
