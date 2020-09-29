@@ -1178,7 +1178,7 @@ printf("\n");
   			}
   			printf ("created neuron descriptor\n") ;
   		}
-  	// }
+  	}
 
 //   	// get connection and weight information.
 
@@ -1299,8 +1299,8 @@ printf("\n");
 
 // 		// newCake->layers[toLayer].neurons[toIndex].n_inputs ++;
 // 		printf ("created connection descriptor f%u t%u w%f, %u of %u\n", con[c].from_neuron, con[c].to_neuron, con[c].weight, c, num_connections-1) ;	
-		i++; // i is used in this function to keep track of layer index
-	}
+		// i++; // i is used in this function to keep track of layer index
+	// }
 
 printf("number of connections produced: %i\n", nimberofmafa);
 					
