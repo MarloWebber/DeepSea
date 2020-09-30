@@ -2529,6 +2529,38 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+ 					// draw around it to indicate if it is selected
+ 			if (neuron->selected){
+ 				b2Vec2 gigggle[] = {
+				b2Vec2(neuron->position.x+0.05f, neuron->position.y-0.05f), 
+				b2Vec2(neuron->position.x+0.05f, neuron->position.y+0.05f), 
+				b2Vec2(neuron->position.x-0.05f, neuron->position.y+0.05f), 
+				b2Vec2(neuron->position.x-0.05f, neuron->position.y-0.05f), 
+				};
+			local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.3f,0.3f,0.3f) );
+
+
+ 			}
+
+
+
+ 			// draw a square at the neuron
+ 			b2Vec2 neuronSquareVerts[] = {
+				b2Vec2(neuron->position.x+0.01f, neuron->position.y-0.01f), 
+				b2Vec2(neuron->position.x+0.01f, neuron->position.y+0.01f), 
+				b2Vec2(neuron->position.x-0.01f, neuron->position.y+0.01f), 
+				b2Vec2(neuron->position.x-0.01f, neuron->position.y-0.01f), 
+				};
+			local_debugDraw_pointer->DrawFlatPolygon(neuronSquareVerts, 4 ,b2Color(1.0f,1.0f,1.0f) );
+
+
+
+
+
+
+			
+
  			std::list<connectionDescriptor>::iterator connection;
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
