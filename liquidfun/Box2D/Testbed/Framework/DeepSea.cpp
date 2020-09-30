@@ -2457,6 +2457,26 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 // }
 
 
+void modifyAConnection (BonyFish * fish, unsigned int from, unsigned int to, float amount) {
+	// getNeuronByIndex( fish->brain, from)
+
+
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = getNeuronByIndex( fish->brain, from)->connections.begin(); connection != getNeuronByIndex( fish->brain, from)->connections.end(); connection++) {
+
+ 				if (connection->connectedTo == to) {
+ 					connection->connectionWeight += amount;
+ 				}
+
+			}	
+
+
+			// refresh the water in the brain jar.
+			fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
+}
+
+
 
 // instead of drawing from the FANN struct, this function draws from the neurodescriptor.
 void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, unsigned int * spacesUsedSoFar, BonyFish * fish) {
