@@ -287,7 +287,8 @@ int checkNeuroWindow (b2AABB mousePointer) ;
 
 int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) ;
 extern bool startNextGeneration;
-
+void incrementSelectedConnection();
+void decrementSelectedConnection();
 // if (startNextGeneration ) {
 void		beginGeneration ();
 	// }

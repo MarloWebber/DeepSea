@@ -363,6 +363,15 @@ static void Keyboard(unsigned char key, int x, int y)
 		}
 		break;
 
+	case '-':
+		decrementSelectedConnection();
+		;
+		break;
+
+	case '=':
+		incrementSelectedConnection();
+		break;
+
 
 	case 'p':
 		settings.pause = !settings.pause;

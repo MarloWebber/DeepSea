@@ -36,6 +36,7 @@ b2World * local_m_world_sci = nullptr;
 b2ParticleSystem * local_m_particleSystem_sci = nullptr;
 DebugDraw * local_debugDraw_pointer_sci = nullptr;
 
+
 float pi = 3.14159f;
 
 void setUserControlInputA() {
@@ -2457,8 +2458,68 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 // }
 
 
-void modifyAConnection (BonyFish * fish, unsigned int from, unsigned int to, float amount) {
+
+
+void modifyAConnection (BonyFish * fish, float amount) {
 	// getNeuronByIndex( fish->brain, from)
+
+		unsigned int selectedA;
+	unsigned int selectedB;
+
+	bool gotA = false;
+	bool gotB=  false;
+
+	// int layerIndex = 0;
+	// int neuronIndex = 0;
+
+	std::list<layerDescriptor>::iterator layer;
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 		// 	std::list<connectionDescriptor>::iterator connection;
+ 		// 	for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 		// 		;
+			// }
+
+ 			if (neuron->selected) {
+ 				
+ 				if (gotA) {
+ 					selectedB = neuron->index;
+					gotB = true;
+					break;
+ 				}
+ 				else {
+ 					selectedA = neuron->index;
+					gotA = true;
+				}
+	 				
+	 					
+				
+
+			}
+			if (gotB) {
+				break;
+			}
+			// neuronIndex++;
+		}
+		// layerIndex++;
+	}
+
+
+unsigned int from = 0;
+unsigned int to = 0;
+
+if (selectedB > selectedA) {
+	to = selectedB;
+	from = selectedA;
+}
+else {
+	to = selectedA;
+	from = selectedB;
+}
+
+
+	
 
 
  			std::list<connectionDescriptor>::iterator connection;
@@ -2476,6 +2537,28 @@ void modifyAConnection (BonyFish * fish, unsigned int from, unsigned int to, flo
 
 }
 
+
+
+void changeSelectedConnection(float amount) {
+	for (int i = 0; i < N_FISHES; ++i) {
+		if (fishes[i]->selected) {
+			modifyAConnection (fishes[i],amount);
+			return;
+		}
+		else {
+			continue;
+		}
+	}
+}
+
+
+void incrementSelectedConnection() {
+	changeSelectedConnection(0.05);
+}
+
+void decrementSelectedConnection() {
+	changeSelectedConnection(-0.05);
+}
 
 
 // instead of drawing from the FANN struct, this function draws from the neurodescriptor.
