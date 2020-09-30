@@ -2434,26 +2434,26 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					fishDescriptor_t newFishBody;
 					loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-					// mutateFishDescriptor (&newFishBody, 0.1, 0.25);
-				    // mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
+					mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+				    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
 					// now you can load the mutant ANN.
-					// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
 
 					// bool thereIsAMutant = false;
 					// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
-					fann * mann;					
-				        if (FILE *file = fopen("mutantGimp.net", "r")) {
-					        // thereIsAMutant = true;
-					        fclose(file);
+					// fann * mann;					
+				 //        if (FILE *file = fopen("mutantGimp.net", "r")) {
+					//         // thereIsAMutant = true;
+					//         fclose(file);
 
-							mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
-					    }
-					    else {
-					    	mann = loadFishBrainFromFile (std::string("mostCurrentWinner"));
-					    }
+							// mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+					    // }
+					    // else {
+					    // 	mann = loadFishBrainFromFile (std::string("mostCurrentWinner"));
+					    // }
 				    
 
 
@@ -2566,6 +2566,11 @@ void meltSelectedFish () {
 	for (int i = 0; i < N_FISHES; ++i) {
 		if (fishes[i]->selected) {
 			brainMelter (fishes[i]);
+
+
+			// refresh the water in the brain jar.
+			fishes[i]->ann = createFANNbrainFromDescriptor(fishes[i]->brain);
+
 			return;
 		}
 		else {
@@ -2747,6 +2752,19 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
+
+
+	for (uint8_t j = 0; j < 28; ++j) {
+		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
+	}
+
+	for (uint8_t j = 0; j < 8; ++j) {
+		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
+	}
+
+
  					// draw around it to indicate if it is selected
  			if (neuron->selected){
  				b2Vec2 gigggle[] = {
@@ -2793,16 +2811,6 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 
 
-
-	for (uint8_t j = 0; j < 28; ++j) {
-		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
-	}
-
-	for (uint8_t j = 0; j < 8; ++j) {
-		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
-	}
 
 
 
@@ -3089,9 +3097,9 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
 //  			printf(" neuron %i connections: %i\n", j, network->layers[i].neurons[j].n_connections);
- 			std::list<connectionDescriptor>::iterator connection;
+ 			// std::list<connectionDescriptor>::iterator connection;
  			// for (unsigned int k = 0; k < fishes[fishIndex]->brain.layers[i].neurons[j].n_connections; ++k) {
- 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 			// for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
 
 
@@ -3120,11 +3128,11 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 
  				// }
 
- 				;
+ 				
  				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
 // 			}
 			}
-		}
+		// }
 // 	printf("\n");
 	}
 
