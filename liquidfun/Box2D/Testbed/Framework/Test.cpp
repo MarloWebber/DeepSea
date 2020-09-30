@@ -255,7 +255,7 @@ void Test::MouseDown(const b2Vec2& p)
 	// Make a small box.
 	b2AABB aabb;
 	b2Vec2 d;
-	d.Set(0.001f, 0.001f);
+	d.Set(0.1f, 0.1f); // default was 0.001f
 	aabb.lowerBound = p - d;
 	aabb.upperBound = p + d;
 

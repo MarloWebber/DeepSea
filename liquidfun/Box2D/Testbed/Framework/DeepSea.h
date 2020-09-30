@@ -144,6 +144,9 @@ struct neuronDescriptor {
 
 	bool biasNeuron;
 
+	bool selected;
+
+
 	neuronDescriptor();
 };
 
@@ -166,6 +169,7 @@ struct networkDescriptor {
 	std::list<layerDescriptor> layers;
 
 	b2AABB networkWindow;
+
 
 
 	std::list<senseConnector> inputRouter; // keeps track of what sense input goes to what input neuron; necessary that each animal keeps track of its own routing, to allow animals with different routing to coexist.

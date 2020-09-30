@@ -960,6 +960,10 @@ void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, fann * nann, b2Vec
 // }
 
 fann * loadFishBrainFromFile (std::string fileName) {
+
+
+
+
 	return fann_create_from_file( (fileName + std::string(".net")).c_str() );
 }
 
@@ -1084,7 +1088,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   	
 	// get the layer cake. because FANN provides layer information as an array of integers, this is just a temporary variable to hold it.
 	unsigned int layerCake[num_layers];
-	int nConnectionsMade = 0;
+	// int nConnectionsMade = 0;
 	// flip the cake 
 	fann_get_layer_array(pann, layerCake);
 
@@ -1221,13 +1225,13 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
   	fann_get_connection_array(pann, con); // this DOES include bias neuron information. 
 
-	printf ("chunky borks and portly babies: %i\n", num_connections) ; // create connections
+	// printf ("chunky borks and portly babies: %i\n", num_connections) ; // create connections
 	
   	for (unsigned int c = 0; c < num_connections; ++c) {
 		connectionDescriptor connection = connectionDescriptor(con[c].to_neuron);
 		connection.connectionWeight = con[c].weight;
 
-		printf("A conn from: %i to: %i weight: %f\n",con[c].from_neuron ,con[c].to_neuron ,con[c].weight );
+		// printf("A conn from: %i to: %i weight: %f\n",con[c].from_neuron ,con[c].to_neuron ,con[c].weight );
 
 		//------------------
 		// first find the neuron that the connection comes FROM.
@@ -1270,7 +1274,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   		
   		
 	}	
-	printf("number of connections produced: %i\n", nConnectionsMade);
+	// printf("number of connections produced: %i\n", nConnectionsMade);
 					
 }
 
@@ -1797,6 +1801,8 @@ void  vote (BonyFish * winner) {
 // }
 
 void mutateFANNFileDirectly (std::string filename) {
+
+
 	std::ofstream outFile("mutantGimp.net");
 	std::string line;
 
@@ -2341,7 +2347,23 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 					// now you can load the mutant ANN.
 					// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
-					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+
+
+					// bool thereIsAMutant = false;
+					// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+
+					fann * mann;					
+				        if (FILE *file = fopen("mutantGimp.net", "r")) {
+					        // thereIsAMutant = true;
+					        fclose(file);
+
+							mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+					    }
+					    else {
+					    	mann = loadFishBrainFromFile (std::string("mostCurrentWinner"));
+					    }
+				    
+
 
 					// fann *dann = loadFishBrainFromFile (std::string("mostCurrentWinner")) ;
 
@@ -2437,7 +2459,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 
 // instead of drawing from the FANN struct, this function draws from the neurodescriptor.
-void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar, BonyFish * fish) {
+void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, unsigned int * spacesUsedSoFar, BonyFish * fish) {
 
 
 	unsigned int sizeOfBiggestLayer = 0;
@@ -2493,7 +2515,8 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, i
 
  			neuron->position = b2Vec2(drawingStartingPosition.x + (neuronIndex * spacingDistance), drawingStartingPosition.y + (layerIndex * spacingDistance));
 
-
+ 			// printf("dacfae");
+ 			// printab2Vec2(neuron->position);
  			neuronIndex ++;
 		}
 
@@ -2810,13 +2833,27 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 
 	// printf("mouz: %f\n", );
 
-	printf("mouz: %f\n", mousePointer.upperBound.x);
+	// printf("mouz: %f\n", mousePointer.upperBound.x);
 
-	printf("faef: %f\n", neuron->aabb.lowerBound.x);
+	// printf("faef: %f\n",neuron->position.x);
  				// check neuron
- 				if (mousePointer.Contains(neuron->aabb)) {
- 					printf("gackstchubah: %i\n", neuron->index);
- 				}
+ 				// if (mousePointer.Contains(neuron->aabb)) {
+ 				
+
+ 					if (neuron->position.x < mousePointer.upperBound.x && neuron->position.x > mousePointer.lowerBound.x) {
+ 						if (neuron->position.y < mousePointer.upperBound.y && neuron->position.y > mousePointer.lowerBound.y) {
+ 								// printf("you clicked a neuron: %i\n", neuron->index);
+ 							neuron->selected = !(neuron->selected);
+
+
+
+
+ 						}
+ 					}
+
+
+
+ 				// }
 
  				;
  				// printf(" |%u|, ", fishes[fishIndex]->brain.layers[i].neurons[j].connections[k].connectedTo); // <- it is already fucked up here.
@@ -3032,7 +3069,10 @@ void runBiomechanicalFunctions () {
 				if (fishChecker(i)) {
 					if (fishes[i]->selected) {
 						// print the brainal output
-						drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar, fishes[i]);
+						// drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar, fishes[i]);
+
+						drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, fishes[i]);
+						//float * motorSignals, float * sensorium, unsigned int * spacesUsedSoFar, BonyFish * fish
 
 
 					}
