@@ -359,7 +359,8 @@ static void Keyboard(unsigned char key, int x, int y)
 	case 'd':
 		if (test)
 		{
-			test->controlB();
+			// test->controlB();
+			meltSelectedFish();
 		}
 		break;
 

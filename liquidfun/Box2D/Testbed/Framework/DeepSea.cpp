@@ -2457,8 +2457,31 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 // }
 
+void brainMelter (BonyFish * fish) {
+	std::list<layerDescriptor>::iterator layer;
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				connection->connectionWeight = 0.0f;
+			}
+		}
+	}
+}
 
 
+void meltSelectedFish () {
+	for (int i = 0; i < N_FISHES; ++i) {
+		if (fishes[i]->selected) {
+			brainMelter (fishes[i]);
+			return;
+		}
+		else {
+			continue;
+		}
+	}
+}
 
 void modifyAConnection (BonyFish * fish, float amount) {
 	// getNeuronByIndex( fish->brain, from)
@@ -2674,6 +2697,20 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
  				;
 			}
 		}
+	}
+
+
+
+
+
+	for (uint8_t j = 0; j < 28; ++j) {
+		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
+	}
+
+	for (uint8_t j = 0; j < 8; ++j) {
+		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
 	}
 
 
