@@ -984,6 +984,7 @@ neuronDescriptor::neuronDescriptor() {
 	// };
 	aabb.upperBound = b2Vec2(0.0f,0.0f);
 	aabb.lowerBound = b2Vec2(0.0f,0.0f);
+	selected = false;
 }
 
 layerDescriptor::layerDescriptor () {
@@ -2672,11 +2673,11 @@ void changeSelectedConnection(float amount) {
 
 
 void incrementSelectedConnection() {
-	changeSelectedConnection(0.05);
+	changeSelectedConnection(0.1);
 }
 
 void decrementSelectedConnection() {
-	changeSelectedConnection(-0.05);
+	changeSelectedConnection(-0.1);
 }
 
 
@@ -2761,7 +2762,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 	for (uint8_t j = 0; j < 8; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
+		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j], motorSignals[j], motorSignals[j]));
 	}
 
 
@@ -2800,7 +2801,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
 
-		    	b2Color segmentColor = b2Color(connection->connectionWeight*10,connection->connectionWeight*10,connection->connectionWeight*10);
+		    	b2Color segmentColor = b2Color(connection->connectionWeight,connection->connectionWeight,connection->connectionWeight);
 			    local_debugDraw_pointer->DrawSegment(neuron->position, (getNeuronByIndex(fish->brain, connection->connectedTo))->position,segmentColor );
 
  				;
