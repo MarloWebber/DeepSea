@@ -1044,34 +1044,83 @@ layerDescriptor::layerDescriptor () {
 
 
 
-neuronDescriptor * getNeuronByIndex (networkDescriptor * network, unsigned int windex) {
-		std::list<layerDescriptor>::iterator layerIterator = network->layers.begin();
+// // neuronDescriptor * 
+// void indexAllNeurons (networkDescriptor * network) {
+// 		// std::list<layerDescriptor>::iterator layerIterator = network->layers.begin();
 	
-  		unsigned int index = windex; // so as to not start from 0
-  		while (1) {
-  			// printf("index is: %i in layer of %lu\n", index, (unsigned long)layerIterator->neurons.size());
+//   // 		unsigned int index = windex; // so as to not start from 0
+//   // 		while (1) {
+//   // 			// printf("index is: %i in layer of %lu\n", index, (unsigned long)layerIterator->neurons.size());
 
-  			if (index < layerIterator->neurons.size()) { // if the index is a valid position in this layer
-  				break; }
-  			else {
-  				index -= layerIterator->neurons.size();
-  				std::advance(layerIterator, 1);
-  			}
-  		}
+//   // 			if (index < layerIterator->neurons.size()) { // if the index is a valid position in this layer
+//   // 				break; }
+//   // 			else {
+//   // 				index -= layerIterator->neurons.size();
+//   // 				std::advance(layerIterator, 1);
+//   // 			}
+//   // 		}
 
-  		std::list<neuronDescriptor>::iterator neuronIterator = layerIterator->neurons.begin();
+//   // 		std::list<neuronDescriptor>::iterator neuronIterator = layerIterator->neurons.begin();
 
-  		neuronIterator = layerIterator->neurons.begin();
+//   // 		neuronIterator = layerIterator->neurons.begin();
   
-  		std::advance(neuronIterator, index);
+//   // 		std::advance(neuronIterator, index);
 
-  		// neuronIterator->connections.push_back(connection);
+//   // 		// neuronIterator->connections.push_back(connection);
   		
-  		// nConnectionsMade ++;
+//   // 		// nConnectionsMade ++;
 
-  		return &(*neuronIterator);
+//   // 		return &(*neuronIterator);
+
+
+// 	unsigned int rollingIndexCounter = 0;
+
+// 	std::list<layerDescriptor>::iterator layer;
+// 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+// 		std::list<neuronDescriptor>::iterator neuron;
+//  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+//  			if (neuron -> index == windex) {
+//  				return &(*neuron);
+//  			}
+//  		// 	std::list<connectionDescriptor>::iterator connection;
+//  		// 	for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+//  		// 		;
+// 			// }
+// 		}
+// 	}
+
+
+
+// }
+
+
+
+neuronDescriptor * getNeuronByIndex (networkDescriptor * network, unsigned int windex) {
+
+	std::list<layerDescriptor>::iterator layer;
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+ 			if (neuron -> index == windex) {
+ 				return &(*neuron);
+ 			}
+ 		// 	std::list<connectionDescriptor>::iterator connection;
+ 		// 	for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 		// 		;
+			// }
+		}
+	}
+
+
+	return nullptr;
 
 }
+
+
+
+
 
 
 
@@ -1105,16 +1154,39 @@ networkDescriptor::networkDescriptor (fann * pann) {
 	// printf("constructing into memory\n");
 
 
+	unsigned int rollingIndexCounter = 0;
+
 	for (unsigned int i = 0; i < num_layers; ++i)
 	{
 	// printf("\n");
 
 		layerDescriptor layer = layerDescriptor();
 		
-		for (unsigned int j = 0; j < layerCake[i]; ++j)
+
+		unsigned int nNeuronsIncludingBias = layerCake[i];
+		if (i == num_layers-1) {
+			;
+		}else {
+			nNeuronsIncludingBias +=1;
+		}
+
+		for (unsigned int j = 0; j <nNeuronsIncludingBias; ++j)
 		{
 			neuronDescriptor neuron = neuronDescriptor();
-			neuron.biasNeuron = false;
+			
+
+			if (j == layerCake[i]-1) {
+				neuron.biasNeuron = true;
+				// neuron.index = 0;
+			}
+			else {
+				neuron.biasNeuron = false;
+			
+			}
+
+				neuron.index = rollingIndexCounter;
+				printf("created neuron index %i\n", neuron.index);
+				rollingIndexCounter ++;
 
 			neuron.activation_function = activation_function_hidden;
   			neuron.activation_steepness = activation_steepness_hidden;
@@ -1123,13 +1195,13 @@ networkDescriptor::networkDescriptor (fann * pann) {
   			neuron.isUsed = true;
 
   			// find the index by summing the previous layers and then adding the index in this layer.
-  			neuron.index =  0;
-  			for (unsigned int k = 0; k < i; ++k)
-  			{
-  				neuron.index += layerCake[k];
-  				neuron.index += 1; /// add 1 for the bias neuron.
-  			}
-			neuron.index += j;
+  	// 		neuron.index =  0;
+  	// 		for (unsigned int k = 0; k < i; ++k)
+  	// 		{
+  	// 			neuron.index += layerCake[k];
+  	// 			// neuron.indexedex += 1; /// add 1 for the bias neuron.
+  	// 		}
+			// neuron.index += j;
 
   			// output neurons have a different function than the others. this applies to all in the last row.
   			if (i == num_layers-1) {
@@ -1138,37 +1210,37 @@ networkDescriptor::networkDescriptor (fann * pann) {
   			}
 
 			layer.neurons.push_back(neuron);
-			// printf(".");
+			
 		}
 
-
+		printf("-\n");
 
 		// there is an additional bias neuron in each layer which always emits 1. this is apparently why the number of neurons in the fann file is always 1 too big.
 		// except not in the last layer.
-		if (i == num_layers-1) {
-			;
-		}
-		else {
-			neuronDescriptor neuron = neuronDescriptor();
-			neuron.activation_function = activation_function_hidden;
-			neuron.activation_steepness = activation_steepness_hidden;
-			neuron.n_connections = 0; 	// so not used uninitialized
-			neuron.n_inputs = 0; 
-			neuron.isUsed = true;
-			neuron.biasNeuron = true;
-			// find the index by summing the previous layers and then adding the index in this layer.
-	  			neuron.index =  0;
-	  			for (unsigned int k = 0; k <= i; ++k)
-	  			{
-	  				neuron.index += layerCake[k];
-	  				neuron.index += 1; /// add 1 for the bias neuron.
-	  			}
-				neuron.index -=1; // i don't know why but it makes it work.
+		// if (i == num_layers-1) {
+		// 	;
+		// }
+		// else {
+		// 	neuronDescriptor neuron = neuronDescriptor();
+		// 	neuron.activation_function = activation_function_hidden;
+		// 	neuron.activation_steepness = activation_steepness_hidden;
+		// 	neuron.n_connections = 0; 	// so not used uninitialized
+		// 	neuron.n_inputs = 0; 
+		// 	neuron.isUsed = true;
+		// 	neuron.biasNeuron = true;
+		// 	// find the index by summing the previous layers and then adding the index in this layer.
+	 //  			neuron.index =  0;
+	 //  			for (unsigned int k = 0; k <= i; ++k)
+	 //  			{
+	 //  				neuron.index += layerCake[k];
+	 //  				neuron.index += 1; /// add 1 for the bias neuron.
+	 //  			}
+		// 		neuron.index -=1; // i don't know why but it makes it work.
 
 		
-			layer.neurons.push_back(neuron);
+		// 	layer.neurons.push_back(neuron);
 
-		}
+		// }
 		
 
 
@@ -1229,6 +1301,14 @@ networkDescriptor::networkDescriptor (fann * pann) {
 	// printf ("chunky borks and portly babies: %i\n", num_connections) ; // create connections
 	
   	for (unsigned int c = 0; c < num_connections; ++c) {
+
+
+		printf("conc A to: %i, conc from: %i\n",con[c].to_neuron, con[c].from_neuron);
+
+  	}
+
+
+  	for (unsigned int c = 0; c < num_connections; ++c) {
 		connectionDescriptor connection = connectionDescriptor(con[c].to_neuron);
 		connection.connectionWeight = con[c].weight;
 
@@ -1248,6 +1328,8 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
   		//---------------
   		// then find the one that it goes TO.
+
+		printf("conc to: %i, conc from: %i\n",con[c].to_neuron, con[c].from_neuron);
 
 		getNeuronByIndex(this, con[c].to_neuron)->n_inputs++;
 
@@ -1345,7 +1427,16 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) {
 
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
 
-		creationLayerCake[layerIndex] = layer->neurons.size();
+
+		// if you are not on the last layer, ignore bias neurons because they are included implicitly.
+		if (layerIndex == ((unsigned long)network->layers.size() - 1 )) {
+			creationLayerCake[layerIndex] = layer->neurons.size();
+		}
+		else {
+			creationLayerCake[layerIndex] = layer->neurons.size() - 1;
+
+		}
+
 		layerIndex++;
 
 	}
@@ -1414,7 +1505,7 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) {
 
  				margles[connectionIndex] = conc;
 
- 				  	printf("B conn from: %i to: %i weight: %f\n",conc.from_neuron ,conc.to_neuron ,conc.weight );
+ 				  	// printf("B conn from: %i to: %i weight: %f\n",conc.from_neuron ,conc.to_neuron ,conc.weight );
 
 
 
@@ -1464,7 +1555,7 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
 		// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
 
 
-		s.append(std::to_string(layer->neurons.size() +1));
+		s.append(std::to_string(layer->neurons.size() ));
 		s.append(" ");
 		layerIndex++;
 	}
@@ -2987,6 +3078,7 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 	// void printConnectionArrayForDebug (networkDescriptor * network) {
 	// printf("checkNeuronsInWindow \n");
 
+
 	// printf("mouz: %f\n", );
 
 	std::list<layerDescriptor>::iterator layer;
@@ -3014,8 +3106,9 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 
  					if (neuron->position.x < mousePointer.upperBound.x && neuron->position.x > mousePointer.lowerBound.x) {
  						if (neuron->position.y < mousePointer.upperBound.y && neuron->position.y > mousePointer.lowerBound.y) {
- 								// printf("you clicked a neuron: %i\n", neuron->index);
+ 								printf("you clicked a neuron: %i\n", neuron->index);
  							neuron->selected = !(neuron->selected);
+ 							return neuron->index;
 
 
 
