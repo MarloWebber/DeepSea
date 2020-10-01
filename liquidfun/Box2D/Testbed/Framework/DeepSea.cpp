@@ -119,6 +119,27 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
     init = true;
 }
 
+boneAndJointDescriptor_t::boneAndJointDescriptor_t () {
+	attachedTo = 0; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
+	length = 0.5f;
+	rootThickness = 0.2f;
+	tipThickness = 0.2f;
+	isRoot = false;
+	isMouth = false;
+	sensor_radar = true; // like an olfactory sensor . senses distance from food
+	sensor_touch = false; // like how you can feel when things touch your skin.
+	sensor_jointangle = true;
+	isWeapon  = false;
+	torque = 100.0f,	// torque
+	speedLimit =		10.0f,	// speedLimit
+	upperAngle = pi  * 0.9f,// upperAngle
+	normalAngle = 		0.0f,	// normalAngle
+	lowerAngle = 		pi * -0.9f,	// lowerAngle
+	used = false;
+	color = b2Color(1,1,1);
+	outlineColor = b2Color(1,1,1);
+}
+
 uDataWrap::uDataWrap(void * dat, uint8_t typ) {
 		uData = dat;
 		dataType = typ;
@@ -153,7 +174,7 @@ BoneUserData::BoneUserData(
 	length = boneDescription.length;
 	rootThickness = boneDescription.rootThickness;
 	tipThickness = boneDescription.tipThickness;
-	density = 1.2f; // the original density of the water is 1.2f
+	density = 1.2f; 														// the original density of the water is 1.2f
 	isRoot = boneDescription.isRoot;
 	isMouth = boneDescription.isMouth;
 	isSensor = boneDescription.isSensor;
@@ -171,8 +192,7 @@ BoneUserData::BoneUserData(
 
 	int count = 4;
 
-	// int randomCollisionGroup = - (RNG() * 16.0f);
-	collisionGroup = newCollisionGroup;//randomCollisionGroup ;
+	collisionGroup = newCollisionGroup;
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
 	if (isRoot) {
@@ -180,7 +200,6 @@ BoneUserData::BoneUserData(
 		offsetOnBody = b2Vec2(0.0f, 0.0f);
 
 		// printf("its a root bone\n");
-
 		tipCenter = b2Vec2(0.0f, length);
 
 		b2Vec2 vertices[] = {
@@ -228,10 +247,10 @@ BoneUserData::BoneUserData(
 		 tipCenter = b2Vec2(0.0f,  length);
 
 		b2Vec2 vertices[] = {
-			b2Vec2( + (rootThickness/2), -(length/2)), //b2Vec2 rootVertexA = 
-			b2Vec2( - (rootThickness/2),  -(length/2)), // b2Vec2 rootVertexB =
-			b2Vec2( + tipThickness/2, +(length/2)), //b2Vec2 tipVertexA = 
-			b2Vec2( - tipThickness/2, +(length/2)) // b2Vec2 tipVertexB = 
+			b2Vec2( + (rootThickness/2), -(length/2)),
+			b2Vec2( - (rootThickness/2),  -(length/2)),
+			b2Vec2( + tipThickness/2, +(length/2)),
+			b2Vec2( - tipThickness/2, +(length/2))
 		};
 
 		// attach user data to the body
@@ -291,30 +310,9 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 
 
-	// if (p_bone->isRoot) {
-	// 		// if (  p_bone->p_owner->bones[   p_bone->attachedTo ]-> isRoot ) {
-	// 	// b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
-	// 	// 	tempFilter.groupIndex = -2;
-	// 	// 	p_bone->p_fixture->SetFilterData(tempFilter);
-	// }
-
-	// else {
-		// if (  p_bone->p_owner->bones[   p_bone->attachedTo ]->    p_fixture->GetFilterData().groupIndex == -2) {	// this is so that all the bones in a set, which have co-located joints, do not collide with each other.
-	
-		// 	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
-		// 	tempFilter.groupIndex = -4;
-		// 	p_bone->p_fixture->SetFilterData(tempFilter);
-
-
-		// 	// p_bone->p_fixture->filter->groupIndex = -4; // if it is root, the filter group index is 2. then it alernates between 2 and 4 for all subsequent sets of bones.
-		// }
-		// else {
-			b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
-			tempFilter.groupIndex = p_bone->collisionGroup;
-			p_bone->p_fixture->SetFilterData(tempFilter);
-			// p_bone->p_fixture->filter->groupIndex = -2; // if it is root, the filter group index is 2. then it alernates between 2 and 4 for all subsequent sets of bones.
-		// }
-	// }
+	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
+	tempFilter.groupIndex = p_bone->collisionGroup;
+	p_bone->p_fixture->SetFilterData(tempFilter);
 
 
 	if (!p_bone->isRoot) {
@@ -329,25 +327,29 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	if (!p_bone->init || !p_bone->isUsed) {
 		return;
 	}
-	// p_bone->position = p_bone->p_body->GetWorldCenter();
-	p_bone->sensation = 0.0f;
 
-	for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (!foodSlotLoaded[i]) {
-			break;
-		}
-		if (food[i]->init && food[i]->isUsed) {
-			b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
-			b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
-			float distance = magnitude (positionalDifference);
-			if (distance > 0) {
+	p_bone->sensation_jointAngle= p_bone->joint->p_joint->GetJointAngle();
 
-				// printf("%f\n", distance);
+	if (p_bone->sensor_radar) {
+		p_bone->sensation_radar = 0.0f;
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+			if (!foodSlotLoaded[i]) {
+				break;
+			}
+			if (food[i]->init && food[i]->isUsed) {
+				b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
+				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
+				float distance = magnitude (positionalDifference);
+				if (distance > 0) {
 
-				p_bone->sensation += 1/distance;
+					// printf("%f\n", distance);
+
+					p_bone->sensation_radar += 1/distance;
+				}
 			}
 		}
 	}
+	
 }
 
 // add a food particle to the world and register it so the game knows it exists.
@@ -511,23 +513,18 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 	flagDelete = false;
 	selected = false;
 
-heartCountA = 0;
-heartCountB = 0;
-heartCountC = 0;
-heartCountD = 0;
-	// color = driedFish.color;
+	heartCountA = 0;
+	heartCountB = 0;
+	heartCountC = 0;
+	heartCountD = 0;
 
-
-		int randomCollisionGroup = - (RNG() * 16.0f);
+	int randomCollisionGroup = - (RNG() * 16.0f);
 		// collisionGroup = newCollisionGroup;//randomCollisionGroup ;
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (i == 0) {
 			driedFish.bones[i].isRoot = true;
 		}
-
-
-
 		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup);
 	}
 
@@ -546,17 +543,19 @@ heartCountD = 0;
 
     if (nann == NULL) {
 
+
+
     		for (int i = 0; i < N_FINGERS; ++i) {
 				driedFish.bones[i].color = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
 				driedFish.bones[i].outlineColor = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
 			}
 
+			//this is what your basic bob fish will start with.
     	    unsigned int creationLayerCake[] = {
 	    	28,
-	    	8,
-	    	8,
-	    	8,
-	    	8
+	    	20,
+	    	11,
+	    	3
 	    };
 	    	ann = fann_create_standard_array(5, creationLayerCake);
 		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
@@ -575,309 +574,6 @@ heartCountD = 0;
     }
 };
 
-// this describes the teardrop shaped, swimming animal.
-// fishDescriptor_t koiCarp = {
-// 	{
-// 		// heartSpeed = 50;
-// 		{		// root mouth bone
-// 				0,		// attachesTo
-// 				0.2f,	// length
-// 				0.1f,	// rootThickness
-// 				0.3f,	// tipThickness
-// 				true,	// isRoot
-// 				true,	// isMouth
-// 				false,	// isSensor
-// 				true,
-// 				false,	// isWeapon
-// 				0.0f,	// torque
-// 				0.0f,	// speedLimit
-// 				0.0f,	// upperAngle
-// 				0.0f,	// normalAngle
-// 				0.0f,	// lowerAngle
-// 				true
-// 		},
-		
-
-// 		{		// body segment
-// 				0,		// attachesTo
-// 				0.5f,	// length
-// 				0.3f,	// rootThickness
-// 				0.5f,	// tipThickness
-// 				false,	// isRoot
-// 				false,	// isMouth
-// 				false,	// isSensor
-// 				false,	// isWeapon
-// 				100.0f,	// torque
-// 				10.0f,	// speedLimit
-// 				pi * 1.0f * 0.5f,// upperAngle
-// 				0.0f,	// normalAngle
-// 				pi * -1.0f * 0.5f,	// lowerAngle
-// 				true
-// 		},
-
-// 		 {		// pec fin A
-// 				1,		// attachesTo
-// 				0.5f,	// length
-// 				0.1f,	// rootThickness
-// 				0.1f,	// tipThickness
-// 				false,	// isRoot
-// 				false,	// isMouth
-// 				true,	// isSensor
-// 				false,	// isWeapon
-// 				0.5f,	// torque
-// 				10.0f,	// speedLimit
-// 				(0.75f * pi) + (pi * 0.5f),// upperAngle
-// 				(0.75f * pi) + (0.0f),	// normalAngle
-// 				(0.75f * pi) + (pi * -0.5f),	// lowerAngle
-// 				true
-// 		},
-// 		{		// pec fin B
-// 				1,		// attachesTo
-// 				0.5f,	// length
-// 				0.1f,	// rootThickness
-// 				0.1f,	// tipThickness
-// 				false,	// isRoot
-// 				false,	// isMouth
-// 				true,	// isSensor
-// 				false,	// isWeapon
-// 				0.5f,	// torque
-// 				10.0f,	// speedLimit
-// 				(-0.75f * pi) + (pi * 0.5f),// upperAngle
-// 				(-0.75f * pi) + (0.0f),	// normalAngle
-// 				(-0.75f * pi) + (pi * -0.5f),	// lowerAngle
-// 				true
-// 		},
-
-// 		{		// tail segment 1 segment
-// 				1,		// attachesTo
-// 				1.5f,	// length
-// 				0.5f,	// rootThickness
-// 				0.25f,	// tipThickness
-// 				false,	// isRoot
-// 				false,	// isMouth
-// 				false,	// isSensor
-// 				false,	// isWeapon
-// 				100.0f,	// torque
-// 				10.0f,	// speedLimit
-// 				pi * 1.0f * 0.5f,// upperAngle
-// 				0.0f,	// normalAngle
-// 				pi * -1.0f * 0.5f,	// lowerAngle
-// 				true
-// 		},
-// 		{		// tail segment 2 segment
-// 				2,		// attachesTo
-// 				1.5f,	// length
-// 				0.25f,	// rootThickness
-// 				0.1f,	// tipThickness
-// 				false,	// isRoot
-// 				false,	// isMouth
-// 				false,	// isSensor
-// 				false,	// isWeapon
-// 				100.0f,	// torque
-// 				10.0f,	// speedLimit
-// 				pi * 1.0f * 0.5f,// upperAngle
-// 				0.0f,	// normalAngle
-// 				pi * -1.0f * 0.5f,	// lowerAngle
-// 				true
-// 		}//,//,,
-
-// 		// {		// tail segment 1
-// 		// 		1,		// attachesTo
-// 		// 		0.15f,	// length
-// 		// 		0.015f,	// rootThickness
-// 		// 		0.01f,	// tipThickness
-// 		// 		false,	// isRoot
-// 		// 		false,	// isMouth
-// 		// 		false,	// isSensor
-// 		// 		false,	// isWeapon
-// 		// 		0.5f,	// torque
-// 		// 		10.0f,	// speedLimit
-// 		// 		 0.5f,// upperAngle
-// 		// 		 0.0f,	// normalAngle
-// 		// 		-0.5f,	// lowerAngle
-// 		// 		true
-// 		// },
-// 		// {		// tail segment 2
-// 		// 		3,		// attachesTo
-// 		// 		0.15f,	// length
-// 		// 		0.015f,	// rootThickness
-// 		// 		0.01f,	// tipThickness
-// 		// 		false,	// isRoot
-// 		// 		false,	// isMouth
-// 		// 		false,	// isSensor
-// 		// 		false,	// isWeapon
-// 		// 		0.5f,	// torque
-// 		// 		10.0f,	// speedLimit
-// 		// 		0.5f,// upperAngle
-// 		// 		0.0f,	// normalAngle
-// 		// 		-0.5f,	// lowerAngle
-// 		// 		true
-// 		// }
-
-// 	}
-// };
-
-// this describes a basic creature with 4 equal-length segments.
-fishDescriptor_t nematode = {
-	{
-		{	
-				0,		// attachesTo
-				0.5f,	// length
-				0.2f,	// rootThickness
-				0.2f,	// tipThickness
-				true,	// isRoot
-				true,	// isMouth
-				false,	// isSensor
-				true,  	// is touch sensor
-				false,	// isWeapon
-				0.0f,	// torque
-				0.0f,	// speedLimit
-				0.0f,	// upperAngle
-				0.0f,	// normalAngle
-				0.0f,	// lowerAngle
-				true
-		},
-		{
-				0,		// attachesTo
-				0.5f,	// length
-				0.2f,	// rootThickness
-				0.2f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				false,	// isSensor
-				true,
-				false,	// isWeapon
-				100.0f,	// torque
-				10.0f,	// speedLimit
-				pi  * 0.9f,// upperAngle
-				0.0f,	// normalAngle
-				pi * -0.9f,	// lowerAngle
-				true
-		},
-		{
-				1,		// attachesTo
-				0.5f,	// length
-				0.2f,	// rootThickness
-				0.2f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				false,	// isSensor
-				true,
-				false,	// isWeapon
-				100.0f,	// torque
-				10.0f,	// speedLimit
-				pi  * 0.9f,// upperAngle
-				0.0f,	// normalAngle
-				pi * -0.9f,	// lowerAngle
-				true
-		},
-		{
-				2,		// attachesTo
-				0.5f,	// length
-				0.2f,	// rootThickness
-				0.2f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				false,	// isSensor
-				true,
-				false,	// isWeapon
-				100.0f,	// torque
-				10.0f,	// speedLimit
-				pi  * 0.9f,// upperAngle
-				0.0f,	// normalAngle
-				pi * -0.9f,	// lowerAngle
-				true
-		},
-		{
-				2,		// attachesTo
-				0.5f,	// length
-				0.2f,	// rootThickness
-				0.2f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				false,	// isSensor
-				true,
-				false,	// isWeapon
-				100.0f,	// torque
-				10.0f,	// speedLimit
-				pi * 1.0f * 0.5f,// upperAngle
-				0.0f,	// normalAngle
-				pi * -1.0f * 0.5f,	// lowerAngle
-				false
-		},
-		{
-				2,		// attachesTo
-				0.5f,	// length
-				0.2f,	// rootThickness
-				0.2f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				false,	// isSensor
-				true,
-				false,	// isWeapon
-				100.0f,	// torque
-				10.0f,	// speedLimit
-				pi * 1.0f * 0.5f,// upperAngle
-				0.0f,	// normalAngle
-				pi * -1.0f * 0.5f,	// lowerAngle
-				false
-		},
-		{
-				2,		// attachesTo
-				0.5f,	// length
-				0.2f,	// rootThickness
-				0.2f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				false,	// isSensor
-				true,
-				false,	// isWeapon
-				100.0f,	// torque
-				10.0f,	// speedLimit
-				pi * 1.0f * 0.5f,// upperAngle
-				0.0f,	// normalAngle
-				pi * -1.0f * 0.5f,	// lowerAngle
-				false
-		},
-		{
-				2,		// attachesTo
-				0.5f,	// length
-				0.2f,	// rootThickness
-				0.2f,	// tipThickness
-				false,	// isRoot
-				false,	// isMouth
-				false,	// isSensor
-				true,
-				false,	// isWeapon
-				100.0f,	// torque
-				10.0f,	// speedLimit
-				pi * 1.0f * 0.5f,// upperAngle
-				0.0f,	// normalAngle
-				pi * -1.0f * 0.5f,	// lowerAngle
-				false
-		}
-	}
-};
-
-
-void prepareNematode(fishDescriptor_t * nematode) {
-	nematode->heartSpeed = 50;
-
-	for (int i = 0; i < N_FINGERS; ++i)
-	{
-		nematode->bones[i].color.r = 0.5f;
-		nematode->bones[i].color.g = 0.5f;
-		nematode->bones[i].color.b = 0.5f;
-	}
-
-
-	// return nematode;
-}
-
-// fishDescriptor_t prepareKoi() {
-// 	koiCarp.heartSpeed = 50;
-// 	return koiCarp;
-// }
 
 bool fishChecker(unsigned int fishIndex) {
 	if ( fishes[fishIndex] == NULL || fishes[fishIndex] == nullptr) { 	return false; }
@@ -996,6 +692,91 @@ layerDescriptor::layerDescriptor () {
 	// };
 }
 
+senseConnector::senseConnector () {
+	connectedToLimb = 0;		// what limb the sense is coming from, or motor signal is going to.
+	connectedToNeuron = 0;		// neuron index. The position of this neuron's layer will determine how the program uses it.
+	sensorType =  SENSECONNECTOR_UNUSED; 			// what kind of sense it is (touch, smell, etc.how the number will be treated)
+	timerFreq = 0;				// if a timer, the frequency.
+
+}
+
+fishDescriptor_t::fishDescriptor_t () {
+	
+	//initializes the blank fish as the 4 segment nematode creature.
+
+	// heartSpeed = 50;
+
+	for (int i = 0; i < 32; ++i)
+	{
+		senseConnector moshuns = senseConnector();
+		outputMatrix[i] = moshuns;
+		inputMatrix[i] = moshuns;
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		bones[i].color.r = 0.5f;
+		bones[i].color.g = 0.5f;
+		bones[i].color.b = 0.5f;
+
+		bones[i].length = 0.5f;
+		bones[i].rootThickness = 0.2f;
+		bones[i].tipThickness = 0.2f;
+
+		if (i == 0) {
+			bones[i].isRoot = true;
+			bones[i].isMouth = true;
+		}
+		else {
+			bones[i].attachesTo = i-1;
+			// bones[i].isRoot = false;
+			// bones[i].isMouth = false;
+		}
+
+		// bones[i].sensor_radar =true; 	// like an olfactory sensor . senses distance from food
+		// bones[i].sensor_touch = false; 		// like how you can feel when things touch your skin.
+		// bones[i].sensor_jointangle;
+		bones[i].isUsed = true;
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		senseConnector moshuns = senseConnector();
+		moshuns.connectedToLimb = i;
+		moshuns.sensorType = SENSECONNECTOR_MOTOR;
+		outputMatrix[i] = moshuns;
+	}
+	int j = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		senseConnector moshuns = senseConnector();
+		moshuns.connectedToLimb = i;
+		moshuns.sensorType = SENSOR_FOODRADAR;
+		inputMatrix[j] = moshuns;
+		j++;
+	}
+	for (int i = 0; i < 4; ++i)
+	{
+		senseConnector moshuns = senseConnector();
+		moshuns.connectedToLimb = i;
+		moshuns.sensorType = SENSOR_JOINTANGLE;
+		inputMatrix[j] = moshuns;
+		j++;
+	}
+	for (int i = 0; i < 3; ++i)
+	{
+		senseConnector moshuns = senseConnector();
+		moshuns.connectedToLimb = i;
+		moshuns.sensorType = SENSOR_TIMER;
+		moshuns.timerFreq = i * 25;
+		inputMatrix[j] = moshuns;
+		j++:
+
+	}
+
+	
+
+}
 
 
 // neuronDescriptor * networkDescriptor::getNeuronByIndex (unsigned int windex) {
@@ -3173,9 +2954,9 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 void runBiomechanicalFunctions () {
 
 
-		float flotCount = 0.0f;
-		float flotSpeed = 0.0f;
-		float ratio = 0.0f;
+		// float flotCount = 0.0f;
+		// float flotSpeed = 0.0f;
+		// float ratio = 0.0f;
 
 
 		unsigned int spacesUsedSoFar =0;
@@ -3193,49 +2974,49 @@ void runBiomechanicalFunctions () {
 				}
 			
 				// cause heart to beat. Heart A is the slowest
-				if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 8) {
-					fishes[i]->heartCountA = 0;
-				}
-				else { 
-					fishes[i]->heartCountA++;
-					flotCount = fishes[i]->heartCountA;
-					flotSpeed = fishes[i]->heartSpeed*4;
-					ratio = flotCount/ flotSpeed ;
-					fishes[i]->heartOutputA = sin(ratio* pi * 2 );
-				}
+				// if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 8) {
+				// 	fishes[i]->heartCountA = 0;
+				// }
+				// else { 
+				// 	fishes[i]->heartCountA++;
+				// 	flotCount = fishes[i]->heartCountA;
+				// 	flotSpeed = fishes[i]->heartSpeed*4;
+				// 	ratio = flotCount/ flotSpeed ;
+				// 	fishes[i]->heartOutputA = sin(ratio* pi * 2 );
+				// }
 
-				if (fishes[i]->heartCountB > fishes[i]->heartSpeed * 4) {
-					fishes[i]->heartCountB = 0;
-				}
-				else { 
-					fishes[i]->heartCountB++;
-					flotCount = fishes[i]->heartCountB;
-					flotSpeed = fishes[i]->heartSpeed;
-					ratio = flotCount/ flotSpeed ;
-					fishes[i]->heartOutputB = sin(ratio* pi * 2);
-				}
+				// if (fishes[i]->heartCountB > fishes[i]->heartSpeed * 4) {
+				// 	fishes[i]->heartCountB = 0;
+				// }
+				// else { 
+				// 	fishes[i]->heartCountB++;
+				// 	flotCount = fishes[i]->heartCountB;
+				// 	flotSpeed = fishes[i]->heartSpeed;
+				// 	ratio = flotCount/ flotSpeed ;
+				// 	fishes[i]->heartOutputB = sin(ratio* pi * 2);
+				// }
 
-				if (fishes[i]->heartCountC > fishes[i]->heartSpeed) {
-					fishes[i]->heartCountC = 0;
-				}
-				else { 
-					fishes[i]->heartCountC++;
-					flotCount = fishes[i]->heartCountC;
-					flotSpeed = fishes[i]->heartSpeed/4;
-					ratio = flotCount/ flotSpeed ;
-					fishes[i]->heartOutputC = sin(ratio* pi * 2);
-				}
+				// if (fishes[i]->heartCountC > fishes[i]->heartSpeed) {
+				// 	fishes[i]->heartCountC = 0;
+				// }
+				// else { 
+				// 	fishes[i]->heartCountC++;
+				// 	flotCount = fishes[i]->heartCountC;
+				// 	flotSpeed = fishes[i]->heartSpeed/4;
+				// 	ratio = flotCount/ flotSpeed ;
+				// 	fishes[i]->heartOutputC = sin(ratio* pi * 2);
+				// }
 
-				if (fishes[i]->heartCountD > fishes[i]->heartSpeed/4) {
-					fishes[i]->heartCountD = 0;
-				}
-				else { 
-					fishes[i]->heartCountD++;
-					flotCount = fishes[i]->heartCountD;
-					flotSpeed = fishes[i]->heartSpeed/16;
-					ratio = flotCount/ flotSpeed ;
-					fishes[i]->heartOutputD = sin(ratio* pi * 2);
-				}
+				// if (fishes[i]->heartCountD > fishes[i]->heartSpeed/4) {
+				// 	fishes[i]->heartCountD = 0;
+				// }
+				// else { 
+				// 	fishes[i]->heartCountD++;
+				// 	flotCount = fishes[i]->heartCountD;
+				// 	flotSpeed = fishes[i]->heartSpeed/16;
+				// 	ratio = flotCount/ flotSpeed ;
+				// 	fishes[i]->heartOutputD = sin(ratio* pi * 2);
+				// }
 
 				// update the fish's senses
 				for (int j = 0; j < N_FINGERS; ++j) {
@@ -3243,130 +3024,147 @@ void runBiomechanicalFunctions () {
 				}
 
 				// eight motors and four timing inputs
-				float sensorium[28] = {
-						fishes[i]->bones[0]->sensation, 
-						fishes[i]->bones[1]->sensation,
-						fishes[i]->bones[2]->sensation,
-						fishes[i]->bones[3]->sensation,
-						fishes[i]->bones[4]->sensation,
-						fishes[i]->bones[5]->sensation,
-						fishes[i]->bones[6]->sensation,
-						fishes[i]->bones[7]->sensation,
+				// float sensorium[28] = {
+				// 		fishes[i]->bones[0]->sensation, 
+				// 		fishes[i]->bones[1]->sensation,
+				// 		fishes[i]->bones[2]->sensation,
+				// 		fishes[i]->bones[3]->sensation,
+				// 		fishes[i]->bones[4]->sensation,
+				// 		fishes[i]->bones[5]->sensation,
+				// 		fishes[i]->bones[6]->sensation,
+				// 		fishes[i]->bones[7]->sensation,
 
-						0.0f, // joint angle feedback goes here
-						0.0f,
-						0.0f,
-						0.0f,
-						0.0f,
-						0.0f,
-						0.0f,
-						0.0f,
+				// 		0.0f, // joint angle feedback goes here
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
 
-						0.0f, // touch information goes here
-						0.0f,
-						0.0f,
-						0.0f,
-						0.0f,
-						0.0f,
-						0.0f,
-						0.0f,
+				// 		0.0f, // touch information goes here
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
+				// 		0.0f,
 
-						// fishes[i]->bones[0]->joint->p_joint->GetJointAngle(), 
-						// fishes[i]->bones[1]->joint->p_joint->GetJointAngle(), 
-						// fishes[i]->bones[2]->joint->p_joint->GetJointAngle(), 
-						// fishes[i]->bones[3]->joint->p_joint->GetJointAngle(), 
-						// fishes[i]->bones[4]->joint->p_joint->GetJointAngle(), 
-						// fishes[i]->bones[5]->joint->p_joint->GetJointAngle(), 
-						// fishes[i]->bones[6]->joint->p_joint->GetJointAngle(), 
-						// fishes[i]->bones[7]->joint->p_joint->GetJointAngle()
+				// 		// fishes[i]->bones[0]->joint->p_joint->GetJointAngle(), 
+				// 		// fishes[i]->bones[1]->joint->p_joint->GetJointAngle(), 
+				// 		// fishes[i]->bones[2]->joint->p_joint->GetJointAngle(), 
+				// 		// fishes[i]->bones[3]->joint->p_joint->GetJointAngle(), 
+				// 		// fishes[i]->bones[4]->joint->p_joint->GetJointAngle(), 
+				// 		// fishes[i]->bones[5]->joint->p_joint->GetJointAngle(), 
+				// 		// fishes[i]->bones[6]->joint->p_joint->GetJointAngle(), 
+				// 		// fishes[i]->bones[7]->joint->p_joint->GetJointAngle()
 
-						(float)fishes[i]->heartOutputA,
-						(float)fishes[i]->heartOutputB,
-						(float)fishes[i]->heartOutputC,
-						(float)fishes[i]->heartOutputD
+				// 		(float)fishes[i]->heartOutputA,
+				// 		(float)fishes[i]->heartOutputB,
+				// 		(float)fishes[i]->heartOutputC,
+				// 		(float)fishes[i]->heartOutputD
 
 
-					};
+				// 	};
 
-					for (unsigned int j = 1; j < 8; ++j)
-					{
-						/* code */
-						if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
-							continue;
-						}
-						else {
+// 					for (unsigned int j = 1; j < 8; ++j)
+// 					{
+// 						/* code */
+// 						if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
+// 							continue;
+// 						}
+// 						else {
 
-								if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
+// 								if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
 
-							if (fishes[i]->bones[j]->joint->isUsed) {
-								// i don't think you should feed the joint angle in radians directly in...
+// 							if (fishes[i]->bones[j]->joint->isUsed) {
+// 								// i don't think you should feed the joint angle in radians directly in...
 
-								// float angleRange= - (fishes[i]->bones[j]->joint->lowerAngle - fishes[i]->bones[j]->joint->upperAngle);
-								// float ratio = 0.0f;
-								// float jointAngle = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
+// 								// float angleRange= - (fishes[i]->bones[j]->joint->lowerAngle - fishes[i]->bones[j]->joint->upperAngle);
+// 								// float ratio = 0.0f;
+// 								// float jointAngle = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
 
-								// if (jointAngle >angleRange/2 ) {
-								// 	ratio =(angleRange/jointAngle) * pi;
-								// }
-								// else {
-								// ratio =(fishes[i]->bones[j]->joint->upperAngle/jointAngle)  + (fishes[i]->bones[j]->joint->lowerAngle/jointAngle) ;//* pi;
-								// }
-// 
+// 								// if (jointAngle >angleRange/2 ) {
+// 								// 	ratio =(angleRange/jointAngle) * pi;
+// 								// }
+// 								// else {
+// 								// ratio =(fishes[i]->bones[j]->joint->upperAngle/jointAngle)  + (fishes[i]->bones[j]->joint->lowerAngle/jointAngle) ;//* pi;
+// 								// }
+// // 
 									
 
 
-								// if (true) {
+// 								// if (true) {
 
-									// printf("jangle %f\n", jointAngle );
+// 									// printf("jangle %f\n", jointAngle );
 
-									sensorium[j+8] = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
+// 									sensorium[j+8] = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
 
-// 
-								// }
-		// 						else {
+// // 
+// 								// }
+// 		// 						else {
 
 
 
-		// 								float midpoint =( fishes[i]->bones[j]->joint->lowerAngle + fishes[i]->bones[j]->joint->upperAngle)/2;
+// 		// 								float midpoint =( fishes[i]->bones[j]->joint->lowerAngle + fishes[i]->bones[j]->joint->upperAngle)/2;
 
-		// 								if (jointAngle > midpoint) {
-		// 												// jointAngle -= midpoint;
-		// 												ratio =( jointAngle / (fishes[i]->bones[j]->joint->upperAngle - midpoint));
+// 		// 								if (jointAngle > midpoint) {
+// 		// 												// jointAngle -= midpoint;
+// 		// 												ratio =( jointAngle / (fishes[i]->bones[j]->joint->upperAngle - midpoint));
 
-		// 								}
-		// 								else {
-		// 										// jointAngle -= midpoint;
-		// 												ratio = - ( jointAngle / (fishes[i]->bones[j]->joint->lowerAngle - midpoint));
+// 		// 								}
+// 		// 								else {
+// 		// 										// jointAngle -= midpoint;
+// 		// 												ratio = - ( jointAngle / (fishes[i]->bones[j]->joint->lowerAngle - midpoint));
 
-		// 											// ratio += 1;
+// 		// 											// ratio += 1;
 														
-		// 												// ratio = ratio* -1;
+// 		// 												// ratio = ratio* -1;
 
-		// 								}
-		// // printf("lower: %f, upper: %f, jointAngle: %f, ratio: %f\n",fishes[i]->bones[j]->joint->lowerAngle , fishes[i]->bones[j]->joint->upperAngle,fishes[i]->bones[j]->joint->p_joint->GetJointAngle(),ratio);
-
-
-		// 								sensorium[j+8] = ratio;// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
+// 		// 								}
+// 		// // printf("lower: %f, upper: %f, jointAngle: %f, ratio: %f\n",fishes[i]->bones[j]->joint->lowerAngle , fishes[i]->bones[j]->joint->upperAngle,fishes[i]->bones[j]->joint->p_joint->GetJointAngle(),ratio);
 
 
+// 		// 								sensorium[j+8] = ratio;// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
 
-		// 						}
+
+
+// 		// 						}
 
 							
 								
-							// printf("ratio: %f\n", ratio);
+// 							// printf("ratio: %f\n", ratio);
 
 
-							}
+// 							}
 						
-							sensorium[j+16] = fishes[i]->bones[j]->touchSensation;
-							fishes[i]->bones[j]->touchSensation = 0.0f;
-						}
+// 							sensorium[j+16] = fishes[i]->bones[j]->touchSensation;
+// 							fishes[i]->bones[j]->touchSensation = 0.0f;
+// 						}
 
-						}
+// 						}
 							
 						
+// 					}
+				unsigned long sizeOfThisFishesSensorium =  (unsigned long)(fishes[i]->brain.layers.size();
+				float sensorium[ sizeOfThisFishesSensorium ];
+  
+				for (unsigned int j = 0; j < sizeOfThisFishesSensorium; ++j)
+				{
+
+					// sensorium[j] =
+					switch (fishes[i]->inputMatrix[j].sensorType) {
+						case SENSOR_FOODRADAR:
+							
+						break;
+					 
 					}
+
+					
+				}
+
 
 				// feed information into brain
 				float * motorSignals = fann_run(fishes[i]->ann, sensorium);

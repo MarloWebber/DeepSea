@@ -22,30 +22,36 @@ void setUserControlInputB() ;
 // a condensed form of fish used for data storage and transfer.
 // it is made so that it is safe to serialize and mutate, and that any changes will not crash the program.
 struct boneAndJointDescriptor_t {
-		uint8_t attachedTo = 0; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
-		float length = 0.1f;
-		float rootThickness = 0.1f;
-		float tipThickness = 0.1f;
-		bool isRoot = false;
-		bool isMouth = false;
-		bool isSensor = false;
-		bool isTouchSensor = false;
-		bool isWeapon  = false;
-		float torque = 0.0f;
-		float speedLimit = 0.0f;
-		float upperAngle = 0.0f;
-		float normalAngle = 0.0f;
-		float lowerAngle = 0.0f;
-		bool used = false;
+		uint8_t attachedTo; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
+		float length;
+		float rootThickness;
+		float tipThickness;
+		bool isRoot;
+		bool isMouth;
+			bool sensor_radar; // like an olfactory sensor . senses distance from food
+			bool sensor_touch; // like how you can feel when things touch your skin.
+			bool sensor_jointangle;
+		bool isWeapon ;
+		float torque;
+		float speedLimit;
+		float upperAngle;
+		float normalAngle;
+		float lowerAngle;
+		bool used;
 		b2Color color;
 		b2Color outlineColor;
+
+		boneAndJointDescriptor_t();
 };
 
 struct fishDescriptor_t {
 
 	boneAndJointDescriptor_t bones[N_FINGERS];
 
-	uint8_t heartSpeed;
+	// uint8_t heartSpeed;
+
+	senseConnector inputMatrix[32]; // these need to get serialized too. so this is a workable place for them.
+	senseConnector outputMatrix[32];
 };
 
 
@@ -83,14 +89,17 @@ struct BoneUserData {
 	uint8_t attachedTo;	
 	bool isRoot ;
 	bool isMouth ;
-	bool isSensor ; // like an olfactory sensor . senses distance from food
-	bool isTouchSensor; // like how you can feel when things touch your skin.
+
+	bool sensor_radar ; // like an olfactory sensor . senses distance from food
+	bool sensor_touch; // like how you can feel when things touch your skin.
+	bool sensor_jointangle;
 
 	b2Vec2 offsetOnBody;
 
-	// uint8_t sensorType; 
-	float sensation;
-	float touchSensation;
+	float sensation_radar;
+	float sensation_touch;
+	float sensation_jointangle;
+
 	bool isWeapon ;					// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect such as an explosion.
 	float energy; 					// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
@@ -115,9 +124,21 @@ struct BoneUserData {
 		int collisionGroup);
 } ;
 
+// these type codes are used to route sensory and motor information between brains and limbs.
+#define SENSECONNECTOR_UNUSED 	0
+#define SENSECONNECTOR_MOTOR 1
+#define SENSOR_FOODRADAR	2
+#define SENSOR_TOUCH 		3
+#define SENSOR_JOINTANGLE 	4
+#define SENSOR_TIMER 		5
+
 struct senseConnector {
-	unsigned int connectedTo;	// what limb the sense is coming from
-	unsigned int sensorType;  	// what kind of sense it is (touch, smell, etc.how the number will be treated)
+	unsigned int connectedToLimb;		// what limb the sense is coming from, or motor signal is going to.
+	unsigned int connectedToNeuron;		// neuron index. The position of this neuron's layer will determine how the program uses it.
+	unsigned int sensorType;  			// what kind of sense it is (touch, smell, etc.how the number will be treated)
+	unsigned int timerFreq;				// if a timer, the frequency.
+
+	senseConnector();
 };
 
 struct connectionDescriptor {
@@ -127,6 +148,10 @@ struct connectionDescriptor {
 
 	connectionDescriptor(int toNeuron);
 };
+
+
+
+
 
 struct neuronDescriptor {
 	bool isUsed;
@@ -145,6 +170,7 @@ struct neuronDescriptor {
 	bool biasNeuron;
 
 	bool selected;
+
 
 
 	neuronDescriptor();
@@ -172,7 +198,13 @@ struct networkDescriptor {
 
 
 
-	std::list<senseConnector> inputRouter; // keeps track of what sense input goes to what input neuron; necessary that each animal keeps track of its own routing, to allow animals with different routing to coexist.
+	// std::list<senseConnector> inputRouter; // keeps track of what sense input goes to what input neuron; necessary that each animal keeps track of its own routing, to allow animals with different routing to coexist.
+
+	// std::list<senseConnector> inputMatrix;
+	// std::list<senseConnector> outputMatrix;
+
+
+
 
 	networkDescriptor(fann* pann);
 
@@ -190,21 +222,21 @@ struct BonyFish {
 	BoneUserData * bones[N_FINGERS]; // for now, let's just gnetworkDet fish working with a small, hard-linked, flat level set of bones.
 	uint8_t n_bones_used;
 
-	uint8_t heartCountA; 	// the heart is a neuro input used for timing and frequency control. 
-	uint8_t heartSpeed; 	//  
-	float heartOutputA;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+	// uint8_t heartCountA; 	// the heart is a neuro input used for timing and frequency control. 
+	// uint8_t heartSpeed; 	//  
+	// float heartOutputA;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
-	uint8_t heartCountB; 	// the heart is a neuro input used for timing and frequency control. 
-	// uint8_t heartSpeedB; 	//  
-	float heartOutputB;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+	// uint8_t heartCountB; 	// the heart is a neuro input used for timing and frequency control. 
+	// // uint8_t heartSpeedB; 	//  
+	// float heartOutputB;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
-	uint8_t heartCountC; 	// the heart is a neuro input used for timing and frequency control. 
-	// uint8_t heartSpeedC; 	//  
-	float heartOutputC;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+	// uint8_t heartCountC; 	// the heart is a neuro input used for timing and frequency control. 
+	// // uint8_t heartSpeedC; 	//  
+	// float heartOutputC;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
-	uint8_t heartCountD; 	// the heart is a neuro input used for timing and frequency control. 
-	// uint8_t heartSpeedD; 	//  
-	float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
+	// uint8_t heartCountD; 	// the heart is a neuro input used for timing and frequency control. 
+	// // uint8_t heartSpeedD; 	//  
+	// float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
 
 	bool flagDelete; // flag this whole animal for deletion at the next convenient time.
@@ -219,6 +251,9 @@ struct BonyFish {
 
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
 	networkDescriptor * brain;
+
+	senseConnector inputMatrix[32]; // these need to get serialized too. so this is a workable place for them.
+	senseConnector outputMatrix[32];
 
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition);
 
@@ -239,7 +274,7 @@ struct foodParticle_t {
 };
 
 
-
+// these type codes are used with uDataWrappers to do stuff when physical bodies touch and collide.
 #define TYPE_DEFAULT 0
 #define TYPE_MOUTH 1
 #define TYPE_FOOD 2
