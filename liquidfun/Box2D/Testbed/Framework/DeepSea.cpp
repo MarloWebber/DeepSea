@@ -749,9 +749,9 @@ fishDescriptor_t nematode = {
 				false,	// isWeapon
 				100.0f,	// torque
 				10.0f,	// speedLimit
-				pi * 1.0f * 0.5f,// upperAngle
+				pi  * 0.9f,// upperAngle
 				0.0f,	// normalAngle
-				pi * -1.0f * 0.5f,	// lowerAngle
+				pi * -0.9f,	// lowerAngle
 				true
 		},
 		{
@@ -766,9 +766,9 @@ fishDescriptor_t nematode = {
 				false,	// isWeapon
 				100.0f,	// torque
 				10.0f,	// speedLimit
-				pi * 1.0f * 0.5f,// upperAngle
+				pi  * 0.9f,// upperAngle
 				0.0f,	// normalAngle
-				pi * -1.0f * 0.5f,	// lowerAngle
+				pi * -0.9f,	// lowerAngle
 				true
 		},
 		{
@@ -783,9 +783,9 @@ fishDescriptor_t nematode = {
 				false,	// isWeapon
 				100.0f,	// torque
 				10.0f,	// speedLimit
-				pi * 1.0f * 0.5f,// upperAngle
+				pi  * 0.9f,// upperAngle
 				0.0f,	// normalAngle
-				pi * -1.0f * 0.5f,	// lowerAngle
+				pi * -0.9f,	// lowerAngle
 				true
 		},
 		{
@@ -2757,12 +2757,29 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 	for (uint8_t j = 0; j < 28; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
+
+		if (sensorium[j] > 0) {
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( 0, 0, sensorium[j]));
+		}
+		else {
+
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( abs(sensorium[j]), 0, 0));
+		}
+
 	}
 
 	for (uint8_t j = 0; j < 8; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j], motorSignals[j], motorSignals[j]));
+		// local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j], motorSignals[j], motorSignals[j]));
+
+		if (motorSignals[j] > 0) {
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( 0.0f, 0.0f, motorSignals[j]));
+		}
+		else {
+
+			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( abs(motorSignals[j]), 0.0f, 0.0f));
+		}
+
 	}
 
 
@@ -2802,6 +2819,17 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 
 		    	b2Color segmentColor = b2Color(connection->connectionWeight,connection->connectionWeight,connection->connectionWeight);
+
+		    	if (connection->connectionWeight > 0) {
+		    		segmentColor = b2Color(0.0f,0.0f,connection->connectionWeight);
+		    	}
+		    	else {
+		    		// if (connection->connectionWeight > 0) {
+		    		segmentColor = b2Color(abs(connection->connectionWeight),0.0f,0.0f);
+		    	// }
+		    	}
+
+
 			    local_debugDraw_pointer->DrawSegment(neuron->position, (getNeuronByIndex(fish->brain, connection->connectedTo))->position,segmentColor );
 
  				;
@@ -3165,7 +3193,7 @@ void runBiomechanicalFunctions () {
 				}
 			
 				// cause heart to beat. Heart A is the slowest
-				if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 4) {
+				if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 8) {
 					fishes[i]->heartCountA = 0;
 				}
 				else { 
@@ -3173,10 +3201,10 @@ void runBiomechanicalFunctions () {
 					flotCount = fishes[i]->heartCountA;
 					flotSpeed = fishes[i]->heartSpeed*4;
 					ratio = flotCount/ flotSpeed ;
-					fishes[i]->heartOutputA = sin(ratio* pi );
+					fishes[i]->heartOutputA = sin(ratio* pi * 2 );
 				}
 
-				if (fishes[i]->heartCountB > fishes[i]->heartSpeed) {
+				if (fishes[i]->heartCountB > fishes[i]->heartSpeed * 4) {
 					fishes[i]->heartCountB = 0;
 				}
 				else { 
@@ -3184,10 +3212,10 @@ void runBiomechanicalFunctions () {
 					flotCount = fishes[i]->heartCountB;
 					flotSpeed = fishes[i]->heartSpeed;
 					ratio = flotCount/ flotSpeed ;
-					fishes[i]->heartOutputB = sin(ratio* pi );
+					fishes[i]->heartOutputB = sin(ratio* pi * 2);
 				}
 
-				if (fishes[i]->heartCountC > fishes[i]->heartSpeed/4) {
+				if (fishes[i]->heartCountC > fishes[i]->heartSpeed) {
 					fishes[i]->heartCountC = 0;
 				}
 				else { 
@@ -3195,10 +3223,10 @@ void runBiomechanicalFunctions () {
 					flotCount = fishes[i]->heartCountC;
 					flotSpeed = fishes[i]->heartSpeed/4;
 					ratio = flotCount/ flotSpeed ;
-					fishes[i]->heartOutputC = sin(ratio* pi );
+					fishes[i]->heartOutputC = sin(ratio* pi * 2);
 				}
 
-				if (fishes[i]->heartCountD > fishes[i]->heartSpeed/16) {
+				if (fishes[i]->heartCountD > fishes[i]->heartSpeed/4) {
 					fishes[i]->heartCountD = 0;
 				}
 				else { 
@@ -3206,7 +3234,7 @@ void runBiomechanicalFunctions () {
 					flotCount = fishes[i]->heartCountD;
 					flotSpeed = fishes[i]->heartSpeed/16;
 					ratio = flotCount/ flotSpeed ;
-					fishes[i]->heartOutputD = sin(ratio* pi );
+					fishes[i]->heartOutputD = sin(ratio* pi * 2);
 				}
 
 				// update the fish's senses
@@ -3274,8 +3302,8 @@ void runBiomechanicalFunctions () {
 								// i don't think you should feed the joint angle in radians directly in...
 
 								// float angleRange= - (fishes[i]->bones[j]->joint->lowerAngle - fishes[i]->bones[j]->joint->upperAngle);
-								float ratio = 0.0f;
-								float jointAngle = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
+								// float ratio = 0.0f;
+								// float jointAngle = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
 
 								// if (jointAngle >angleRange/2 ) {
 								// 	ratio =(angleRange/jointAngle) * pi;
@@ -3284,29 +3312,48 @@ void runBiomechanicalFunctions () {
 								// ratio =(fishes[i]->bones[j]->joint->upperAngle/jointAngle)  + (fishes[i]->bones[j]->joint->lowerAngle/jointAngle) ;//* pi;
 								// }
 // 
+									
+
+
+								// if (true) {
+
+									// printf("jangle %f\n", jointAngle );
+
+									sensorium[j+8] = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
+
+// 
+								// }
+		// 						else {
+
+
+
+		// 								float midpoint =( fishes[i]->bones[j]->joint->lowerAngle + fishes[i]->bones[j]->joint->upperAngle)/2;
+
+		// 								if (jointAngle > midpoint) {
+		// 												// jointAngle -= midpoint;
+		// 												ratio =( jointAngle / (fishes[i]->bones[j]->joint->upperAngle - midpoint));
+
+		// 								}
+		// 								else {
+		// 										// jointAngle -= midpoint;
+		// 												ratio = - ( jointAngle / (fishes[i]->bones[j]->joint->lowerAngle - midpoint));
+
+		// 											// ratio += 1;
+														
+		// 												// ratio = ratio* -1;
+
+		// 								}
+		// // printf("lower: %f, upper: %f, jointAngle: %f, ratio: %f\n",fishes[i]->bones[j]->joint->lowerAngle , fishes[i]->bones[j]->joint->upperAngle,fishes[i]->bones[j]->joint->p_joint->GetJointAngle(),ratio);
+
+
+		// 								sensorium[j+8] = ratio;// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
+
+
+
+		// 						}
+
+							
 								
-
-								float midpoint =( fishes[i]->bones[j]->joint->lowerAngle + fishes[i]->bones[j]->joint->upperAngle)/2;
-
-								if (jointAngle > midpoint) {
-												// jointAngle -= midpoint;
-												ratio =( jointAngle / (fishes[i]->bones[j]->joint->upperAngle - midpoint));
-
-								}
-								else {
-										// jointAngle -= midpoint;
-												ratio = - ( jointAngle / (fishes[i]->bones[j]->joint->lowerAngle - midpoint));
-
-											// ratio += 1;
-												
-												// ratio = ratio* -1;
-
-								}
-// printf("lower: %f, upper: %f, jointAngle: %f, ratio: %f\n",fishes[i]->bones[j]->joint->lowerAngle , fishes[i]->bones[j]->joint->upperAngle,fishes[i]->bones[j]->joint->p_joint->GetJointAngle(),ratio);
-
-
-								sensorium[j+8] = ratio;// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
-
 							// printf("ratio: %f\n", ratio);
 
 
