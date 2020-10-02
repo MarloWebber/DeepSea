@@ -337,8 +337,12 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		return;
 	}
 
-	p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle();
-
+	if (!p_bone->isRoot) {
+		if (p_bone->joint->isUsed) {
+			p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle();
+		}
+	}
+	
 	if (p_bone->sensor_radar) {
 		p_bone->sensation_radar = 0.0f;
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
