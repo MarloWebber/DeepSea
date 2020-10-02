@@ -286,7 +286,7 @@ BoneUserData::BoneUserData(
 		p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
 
 		// printf("tip center: ");
-		printab2Vec2(tipCenter);
+		// printab2Vec2(tipCenter);
 		
 		for (int i = 0; i < 4; ++i)
 		{
@@ -308,7 +308,7 @@ BoneUserData::BoneUserData(
 
 	init = true;
 	isUsed=  false;
-	// printf("\n");
+	printf("bone complete\n");
 };
 
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
@@ -561,13 +561,31 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 
 	// heartSpeed = driedFish.heartSpeed;// +  ((RNG()-0.5) * driedFish.heartSpeed * 0.5);
 
+	for (int i = 0; i < 32; ++i)
+	{
+		inputMatrix[i] = driedFish.inputMatrix[i];
+		outputMatrix[i] = driedFish.outputMatrix[i];
+	}
+
     if (nann == NULL) {
 
 
 
+    		// unsigned int senseInputsUsedSoFar = 0;
+
     		for (int i = 0; i < N_FINGERS; ++i) {
 				driedFish.bones[i].color = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
-				driedFish.bones[i].outlineColor = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
+				// driedFish.bones[i].outlineColor = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
+
+				// if (driedFish.bones[i].sensor_radar) {
+				// 	inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_FOODRADAR;
+				// }
+				// if (driedFish.bones[i].sensor_touch) {
+				// 	inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_TOUCH;
+				// }
+				// if (driedFish.bones[i].sensor_jointangle) {
+				// 	inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_JOINTANGLE;
+				// }
 			}
 
 			//this is what your basic bob fish will start with.
@@ -769,6 +787,7 @@ fishDescriptor_t::fishDescriptor_t () {
 	unsigned int j = 0;
 	for (unsigned int i = 0; i < 4; ++i)
 	{
+
 		// senseConnector moshuns = senseConnector();
 		inputMatrix[j].connectedToLimb = i;
 		inputMatrix[j].sensorType = SENSOR_FOODRADAR;
@@ -1105,7 +1124,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   	for (unsigned int c = 0; c < num_connections; ++c) {
 
 
-		printf("conc A to: %i, conc from: %i\n",con[c].to_neuron, con[c].from_neuron);
+		// printf("conc A to: %i, conc from: %i\n",con[c].to_neuron, con[c].from_neuron);
 
   	}
 
@@ -1131,7 +1150,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   		//---------------
   		// then find the one that it goes TO.
 
-		printf("conc to: %i, conc from: %i\n",con[c].to_neuron, con[c].from_neuron);
+		// printf("conc to: %i, conc from: %i\n",con[c].to_neuron, con[c].from_neuron);
 
 		getNeuronByIndex(this, con[c].to_neuron)->n_inputs++;
 
@@ -2099,7 +2118,7 @@ void drawingTest() {
 					// printf("eafe: %f\n", fishes[fishIndex]->bones[i]->outlineColor.r);
 
 					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->color);
-					local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishes[fishIndex]->bones[i]->outlineColor);
+					local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0,0,0));
 
 					if (fishes[fishIndex]->selected) {
 
@@ -2278,7 +2297,11 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 				}
 				else { 						// if there is no winner, its probably a reset or new install. make one up
+
+					printf("No genetic material found in game folder. Loading default animal.\n");
 					fishDescriptor_t nematode = fishDescriptor_t();
+
+			printf("look at his little dick");
 
 					loadFish (i, nematode, NULL,  getRandomPosition()) ;
 				}
@@ -2583,8 +2606,8 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 				b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f - 0.5f), 
 				};
 
-				// printf("fascingalg:%i\n",fish->inputMatrix[j].sensorType);
-				
+				printf("fascingalg:%i\n",fish->inputMatrix[j].connectedToLimb);
+
 				switch (fish->inputMatrix[j].sensorType) {
 					case SENSECONNECTOR_UNUSED:	
 
@@ -3026,6 +3049,7 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 
 
 void runBiomechanicalFunctions () {
+	// printf("runBiomechanicpalFunctions\n");
 	unsigned int spacesUsedSoFar =0;
 
 	for (int i = 0; i < N_FISHES; ++i) {
@@ -3103,7 +3127,11 @@ void runBiomechanicalFunctions () {
 						if ( !fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->isUsed || !fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->init) {
 							continue;
 						}
-						else if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->isUsed && fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->init) {
+						else {
+							if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->isRoot) {
+								continue;
+							}
+							if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->isUsed && fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->init) {
 							if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint != nullptr) {
 
 								// clip the possible motor speed to the speed limit.
@@ -3116,6 +3144,7 @@ void runBiomechanicalFunctions () {
 								// }
 								fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint->SetMotorSpeed(motorSpeed);
 							}
+						}
 						}	
 					break;
 				
