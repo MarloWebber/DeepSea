@@ -56,7 +56,8 @@ struct senseConnector {
 	unsigned int connectedToLimb;		// what limb the sense is coming from, or motor signal is going to.
 	unsigned int connectedToNeuron;		// neuron index. The position of this neuron's layer will determine how the program uses it.
 	unsigned int sensorType;  			// what kind of sense it is (touch, smell, etc.how the number will be treated)
-	unsigned int timerFreq;				// if a timer, the frequency.
+	float timerFreq;				// if a timer, the frequency.
+	float timerPhase;			// if a timer, the phase. Used so that the senseconnector can be a fully self contained timer.
 
 	senseConnector();
 };

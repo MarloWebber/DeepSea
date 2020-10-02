@@ -344,7 +344,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 
 
-			p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle() - pi;
+			p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle();// - pi;
 
 
 		}
@@ -819,7 +819,8 @@ fishDescriptor_t::fishDescriptor_t () {
 		// senseConnector moshuns = senseConnector();
 		inputMatrix[j].connectedToLimb = 0;
 		inputMatrix[j].sensorType = SENSOR_TIMER;
-		inputMatrix[j].timerFreq = i * 25;
+		inputMatrix[j].timerFreq = i+1;
+		inputMatrix[j].timerPhase = 0;
 		// inputMatrix[j] = moshuns;
 		j++;
 
@@ -2612,14 +2613,18 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 				// draw color fill around input connector types
  			// if (neuron->selected){
  				b2Vec2 gigggle[] = {
-				b2Vec2(neuron_position.x+0.1f, neuron_position.y-0.1f - 0.5f), 
-				b2Vec2(neuron_position.x+0.1f, neuron_position.y+0.1f - 0.5f), 
-				b2Vec2(neuron_position.x-0.1f, neuron_position.y+0.1f - 0.5f), 
-				b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f - 0.5f), 
+				b2Vec2(neuron_position.x+0.1f, neuron_position.y-0.1f - 0.2f), 
+				b2Vec2(neuron_position.x+0.1f, neuron_position.y+0.1f - 0.2f), 
+				b2Vec2(neuron_position.x-0.1f, neuron_position.y+0.1f - 0.2f), 
+				b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f - 0.2f), 
 				};
 
 				// printf("fascingalg:%i\n",fish->inputMatrix[j].connectedToLimb);
 
+
+			std::string connectorLabel = std::string("");
+
+		b2Vec2 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
 				switch (fish->inputMatrix[j].sensorType) {
 					case SENSECONNECTOR_UNUSED:	
 
@@ -2628,26 +2633,72 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 					case SENSOR_FOODRADAR:	
 
 						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.05f,0.5f,0.1f) );
+						connectorLabel =  "Food";
+
+
+		 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+
+		connectorLabel = std::string("Limb ");
+		connectorLabel += std::to_string(fish->inputMatrix[j].connectedToLimb);
+		mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.3);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
 					break;
 					case SENSOR_JOINTANGLE:	
 
 						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.05f,0.1f,0.5f) );
+						connectorLabel =  "Angle";
+
+
+		 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+
+		connectorLabel = std::string("Limb ");
+		connectorLabel += std::to_string(fish->inputMatrix[j].connectedToLimb);
+		mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.3);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+		// b2Vec2 mocesfef = b2Vec2(neuron_position.x, neuron_position.y-0.2);
+		// local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 					break;
 					case SENSOR_TOUCH:	
 
 						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.2f,0.1f) );
+						connectorLabel =  "Touch";
+
+
+		 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+		connectorLabel = std::string("Limb ");
+		connectorLabel += std::to_string(fish->inputMatrix[j].connectedToLimb);
+		mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.3);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+		// b2Vec2 mocesfef = b2Vec2(neuron_position.x, neuron_position.y-0.2);
+		// local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 					break;
 					case SENSOR_TIMER:	
 
 						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.1f,0.05f) );
+						connectorLabel =  "Timer";
+
+
+		 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+		// b2Vec2 mocesfef = b2Vec2(neuron_position.x, neuron_position.y-0.2);
+		// local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 					break;
 				}
 
 
-		std::string connectorLabel = std::string("1");
-		const char mowstring[] = "mow";
-		b2Vec2 mocesfef = b2Vec2(neuron_position.x, neuron_position.y-0.1);
-		local_debugDraw_pointer->DrawString(mocesfef, mowstring);
+		//b2Vec2
+
+		// std::string 
 
 	}
 
@@ -2669,13 +2720,13 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 		}
 
 			b2Vec2 gigggle[] = {
-				b2Vec2(neuron_position.x+0.1f, neuron_position.y-0.1f + 0.5f), 
-				b2Vec2(neuron_position.x+0.1f, neuron_position.y+0.1f + 0.5f), 
-				b2Vec2(neuron_position.x-0.1f, neuron_position.y+0.1f + 0.5f), 
-				b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f + 0.5f), 
+				b2Vec2(neuron_position.x+0.1f, neuron_position.y-0.1f + 0.2f), 
+				b2Vec2(neuron_position.x+0.1f, neuron_position.y+0.1f + 0.2f), 
+				b2Vec2(neuron_position.x-0.1f, neuron_position.y+0.1f + 0.2f), 
+				b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f + 0.2f), 
 				};
 
-				printf("fascingalg:%f\n",motorSignals[j]);
+				// printf("fascingalg:%f\n",motorSignals[j]);
 
 				switch (fish->outputMatrix[j].sensorType) {
 					case SENSECONNECTOR_UNUSED:	
@@ -2685,14 +2736,25 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 					case SENSECONNECTOR_MOTOR:	
 
 						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.3f,0.15f) );
+
+						std::string connectorLabel = std::string("");
+b2Vec2 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+
+connectorLabel = std::string("Limb ");
+connectorLabel += std::to_string(fish->outputMatrix[j].connectedToLimb);
+mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y+0.2);
+local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+connectorLabel =  "Motor";
+mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y+0.3);
+local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+
+
 					break;
 				}
 
 
-		std::string connectorLabel = std::string("1");
-		const char mowstring[] = "mow";
-		b2Vec2 mocesfef = b2Vec2(neuron_position.x, neuron_position.y-0.1);
-		local_debugDraw_pointer->DrawString(mocesfef, mowstring);
+
 
 	}
 
@@ -3142,6 +3204,16 @@ void runBiomechanicalFunctions () {
 
 					case SENSOR_TIMER:
 						// sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->0.0;
+
+						sensorium[j] = sin(2 * pi * fishes[i]->inputMatrix[j].timerFreq * 	fishes[i]->inputMatrix[j].timerPhase);
+
+
+						// printf("mekshun: %f\n", sensorium[j]);
+						fishes[i]->inputMatrix[j].timerPhase += 0.01;
+						if (fishes[i]->inputMatrix[j].timerPhase > 1) {
+							fishes[i]->inputMatrix[j].timerPhase = 0;
+						}
+ 
 					break;
 
 					case SENSECONNECTOR_UNUSED:
