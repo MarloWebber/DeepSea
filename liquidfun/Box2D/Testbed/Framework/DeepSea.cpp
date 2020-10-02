@@ -177,10 +177,19 @@ BoneUserData::BoneUserData(
 	density = 1.2f; 														// the original density of the water is 1.2f
 	isRoot = boneDescription.isRoot;
 	isMouth = boneDescription.isMouth;
-	isSensor = boneDescription.isSensor;
-	isTouchSensor = boneDescription.isTouchSensor;
-	sensation = 0.0f;
-	touchSensation = 0.0f;
+	// isSensor = boneDescription.isSensor;
+	// isTouchSensor = boneDescription.isTouchSensor;
+
+	sensor_touch = boneDescription.sensor_touch;
+	sensor_radar = boneDescription.sensor_radar;
+	sensor_jointangle = boneDescription.sensor_jointangle;
+
+	sensation_radar = 0.0f;
+	sensation_touch = 0.0f;
+	sensation_jointangle = 0.0f;
+
+	// sensation = 0.0f;
+	// touchSensation = 0.0f;
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
@@ -213,7 +222,7 @@ BoneUserData::BoneUserData(
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
 			bodyDef.userData = (void *)p_dataWrapper;
 		}
-		else if (isTouchSensor) {
+		else if (sensor_touch) {
 
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_TOUCHSENSOR);
 			bodyDef.userData = (void *)p_dataWrapper;
@@ -258,7 +267,7 @@ BoneUserData::BoneUserData(
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
 			bodyDef.userData = (void *)p_dataWrapper;
 		}
-		else if (isTouchSensor) {
+		else if (sensor_touch) {
 
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_TOUCHSENSOR);
 			bodyDef.userData = (void *)p_dataWrapper;
@@ -328,7 +337,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		return;
 	}
 
-	p_bone->sensation_jointAngle= p_bone->joint->p_joint->GetJointAngle();
+	p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle();
 
 	if (p_bone->sensor_radar) {
 		p_bone->sensation_radar = 0.0f;
@@ -513,10 +522,10 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 	flagDelete = false;
 	selected = false;
 
-	heartCountA = 0;
-	heartCountB = 0;
-	heartCountC = 0;
-	heartCountD = 0;
+	// heartCountA = 0;
+	// heartCountB = 0;
+	// heartCountC = 0;
+	// heartCountD = 0;
 
 	int randomCollisionGroup = - (RNG() * 16.0f);
 		// collisionGroup = newCollisionGroup;//randomCollisionGroup ;
@@ -539,7 +548,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 	init = true; // true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false; // only true when the part is added to the world
 
-	heartSpeed = driedFish.heartSpeed;// +  ((RNG()-0.5) * driedFish.heartSpeed * 0.5);
+	// heartSpeed = driedFish.heartSpeed;// +  ((RNG()-0.5) * driedFish.heartSpeed * 0.5);
 
     if (nann == NULL) {
 
@@ -728,7 +737,7 @@ fishDescriptor_t::fishDescriptor_t () {
 			bones[i].isMouth = true;
 		}
 		else {
-			bones[i].attachesTo = i-1;
+			bones[i].attachedTo = i-1;
 			// bones[i].isRoot = false;
 			// bones[i].isMouth = false;
 		}
@@ -736,7 +745,7 @@ fishDescriptor_t::fishDescriptor_t () {
 		// bones[i].sensor_radar =true; 	// like an olfactory sensor . senses distance from food
 		// bones[i].sensor_touch = false; 		// like how you can feel when things touch your skin.
 		// bones[i].sensor_jointangle;
-		bones[i].isUsed = true;
+		bones[i].used = true;
 	}
 
 	for (int i = 0; i < 4; ++i)
@@ -770,7 +779,7 @@ fishDescriptor_t::fishDescriptor_t () {
 		moshuns.sensorType = SENSOR_TIMER;
 		moshuns.timerFreq = i * 25;
 		inputMatrix[j] = moshuns;
-		j++:
+		j++;
 
 	}
 
@@ -1469,7 +1478,7 @@ void createFANNFileFromDescriptor (networkDescriptor * network) {
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
 
 	// mutate heart rate
-	if (RNG() > mutationChance) {	fish->heartSpeed += fish->heartSpeed * mutationSeverity *(RNG()-0.5); }
+	// if (RNG() > mutationChance) {	fish->heartSpeed += fish->heartSpeed * mutationSeverity *(RNG()-0.5); }
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fish->bones[i].used) {
@@ -1498,8 +1507,8 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			// if (RNG() > mutationChance) {	fish->bones[i].attachedTo = (RNG() * fish->n_bones_used ) }
 
 			// mutate bools
-			if (RNG() < mutationChance) {	fish->bones[i].isMouth = !fish->bones[i].isMouth; }
-			if (RNG() < mutationChance) {	fish->bones[i].isSensor = !fish->bones[i].isSensor; }
+			// if (RNG() < mutationChance) {	fish->bones[i].isMouth = !fish->bones[i].isMouth; }
+			// if (RNG() < mutationChance) {	fish->bones[i].sensor_touch = !fish->bones[i].sensor_touch; }
 		}
 	}
 }
@@ -2258,7 +2267,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 				}
 				else { 						// if there is no winner, its probably a reset or new install. make one up
-					prepareNematode(&nematode);
+					fishDescriptor_t nematode = fishDescriptor_t();
 
 					loadFish (i, nematode, NULL,  getRandomPosition()) ;
 				}
@@ -2952,94 +2961,79 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 
 
 void runBiomechanicalFunctions () {
+	unsigned int spacesUsedSoFar =0;
 
-		unsigned int spacesUsedSoFar =0;
+	for (int i = 0; i < N_FISHES; ++i) {
+		if (fishSlotLoaded[i]) {
 
-		for (int i = 0; i < N_FISHES; ++i) {
-			if (fishSlotLoaded[i]) {
+			if (fishChecker(i)) {
+				// reset neuro bounding boxes... this isnt the right place to do this, should be in a graphics function
+				fishes[i]->brain->networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
+				fishes[i]->brain->networkWindow.upperBound = b2Vec2(0.0f,0.0f);
+			}
 
-				if (fishChecker(i)) {
-					// reset neuro bounding boxes... this isnt the right place to do this, should be in a graphics function
-					fishes[i]->brain->networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
-					fishes[i]->brain->networkWindow.upperBound = b2Vec2(0.0f,0.0f);
-				}
-			
-				// cause heart to beat. Heart A is the slowest
-				// if (fishes[i]->heartCountA > fishes[i]->heartSpeed * 8) {
-				// 	fishes[i]->heartCountA = 0;
-				// }
-				// else { 
-				// 	fishes[i]->heartCountA++;
-				// 	flotCount = fishes[i]->heartCountA;
-				// 	flotSpeed = fishes[i]->heartSpeed*4;
-				// 	ratio = flotCount/ flotSpeed ;
-				// 	fishes[i]->heartOutputA = sin(ratio* pi * 2 );
-				// }
+			// update the fish's senses
+			for (int j = 0; j < N_FINGERS; ++j) {
+				nonRecursiveSensorUpdater (fishes[i]->bones[j]);
+			}
+		
+			// sensorium size is based on the size of the ANN. Whether or not it is populated with numbers depends on the size of the input connector matrix.
+			unsigned long sizeOfInputLayer = 0;
+			unsigned long sizeOfOutputLayer = 0;
+			unsigned long num_layers =  (unsigned long)(fishes[i]->brain->layers.size());
 
-				// update the fish's senses
-				for (int j = 0; j < N_FINGERS; ++j) {
-					nonRecursiveSensorUpdater (fishes[i]->bones[j]);
-				}
-			
-				// sensorium size is based on the size of the ANN. Whether or not it is populated with numbers depends on the size of the input connector matrix.
-				unsigned long sizeOfInputLayer = 0;
-				unsigned long sizeOfOutputLayer = 0;
-				unsigned long num_layers =  (unsigned long)(fishes[i]->brain.layers.size();
+			std::list<layerDescriptor>::iterator layer;
+			layer = fishes[i]->brain->layers.begin();
+			sizeOfInputLayer = layer->neurons.size();
 
-				std::list<layerDescriptor>::iterator layer;
-				layer = fish->brain->layers.begin();
-				sizeOfInputLayer = layer->neurons.size();
+			std::advance(layer, num_layers-1);
+			sizeOfOutputLayer = layer->neurons.size();
 
-				std::advance(layerIterator, num_layers-1);
-				sizeOfOutputLayer = layer->neurons.size();
+			float sensorium[ sizeOfInputLayer ];
+			// float motorsignals[sizeOfOutputLayer ];
 
-				float sensorium[ sizeOfInputLayer ];
-				float motorsignals[sizeOfOutputLayer ]
+			// unsigned int senseInputsUsedSoFar = 0;
 
-				// unsigned int senseInputsUsedSoFar = 0;
-  
-				for (unsigned int j = 0; j < sizeOfInputLayer; ++j)
-				{
-					if (j >= 32) {
-						continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
-					}
-
-					switch (fishes[i]->inputMatrix[j].sensorType) {
-						case SENSOR_FOODRADAR:
-							sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_radar;
-						break;
-
-						case SENSOR_TOUCH:
-							sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_touch;
-						break;
-
-						case SENSOR_JOINTANGLE:
-							sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_jointAngle;
-						break;
-
-						case SENSOR_TIMER:
-							// sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->0.0;
-						break;
-					 
-					}	
-					// senseInputsUsedSoFar ++;				
+			for (unsigned int j = 0; j < sizeOfInputLayer; ++j)
+			{
+				if (j >= 32) {
+					continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
 				}
 
+				switch (fishes[i]->inputMatrix[j].sensorType) {
+					case SENSOR_FOODRADAR:
+						sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_radar;
+					break;
+
+					case SENSOR_TOUCH:
+						sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_touch;
+					break;
+
+					case SENSOR_JOINTANGLE:
+						sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_jointangle;
+					break;
+
+					case SENSOR_TIMER:
+						// sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->0.0;
+					break;
+				 
+				}	
+				// senseInputsUsedSoFar ++;				
+			}
+
+			// feed information into brain
+			float * motorSignals = fann_run(fishes[i]->ann, sensorium);
 
 
-				// feed information into brain
-				float * motorSignals = fann_run(fishes[i]->ann, sensorium);
+			for (unsigned int j = 0; j < sizeOfOutputLayer; ++j)
+			{
+				if (j >= 32) {
+					continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
+				}
 
-
-				for (unsigned int j = 0; j < sizeOfOutputLayer; ++j)
-				{
-					if (j >= 32) {
-						continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
-					}
-
-					switch (fishes[i]->outputMatrix[j].sensorType) {
-						case SENSECONNECTOR_MOTOR:
-						
+				switch (fishes[i]->outputMatrix[j].sensorType) {
+					case SENSECONNECTOR_MOTOR:
+	
 						// first just check to make sure the bone and joint is good.
 						// this paragraph could be condensed very easily
 						if ( !fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->isUsed || !fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->init) {
@@ -3053,54 +3047,30 @@ void runBiomechanicalFunctions () {
 								if (motorSpeed > fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit) {
 									motorSpeed = fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
 								}
-								if (motorSpeed < -(fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit)) {
+								if (motorSpeed < -abs(fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit)) {
 									motorSpeed = -fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
 								}
-
-								fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint->SetMotorSpeed();
+								fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint->SetMotorSpeed(motorSpeed);
 							}
 						}	
-
-
-						break;
-
-					// 	case SENSOR_TOUCH:
-					// 		sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_touch;
-					// 	break;
-
-					// 	case SENSOR_JOINTANGLE:
-					// 		sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_jointAngle;
-					// 	break;
-					 
-					// }					
-				}
-
-
-
-				// for (int j = 1; j < N_FINGERS; ++j) { // dont even try to move the 0th one
-				// 	if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
-				// 		continue;
-				// 	}
-				// 	else if (fishes[i]->bones[j]->isUsed && fishes[i]->bones[j]->init) {
-				// 		if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
-				// 			fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
-				// 		}
-				// 	}							
-				// }
-
-
-
+					break;
 				
-
-	if (fishChecker(i)) {
-		if (fishes[i]->selected) {
-			// print the brainal output
-			// drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar, fishes[i]);
-
-			drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, fishes[i]);
-			//float * motorSignals, float * sensorium, unsigned int * spacesUsedSoFar, BonyFish * fish
+				}
+			}
 
 
+			if (fishChecker(i)) {
+				if (fishes[i]->selected) {
+					// print the brainal output
+					// drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar, fishes[i]);
+
+					drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, fishes[i]);
+					//float * motorSignals, float * sensorium, unsigned int * spacesUsedSoFar, BonyFish * fish
+
+
+				}
+			}
+		}
 	}
 }
 
@@ -3194,7 +3164,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		// b2Vec2 vel2 = ((BoneUserData *)(dataB.uData))->p_body->GetLinearVelocityFromWorldPoint( worldManifold.points[0] );
 		// b2Vec2 impactVelocity = vel1 - vel2;
 
-		((BoneUserData *)(dataA.uData))->touchSensation +=0.5f;// magnitude(impactVelocity);
+		((BoneUserData *)(dataA.uData))->sensation_touch +=0.5f;// magnitude(impactVelocity);
 	}
 
 	if( dataB.dataType == TYPE_TOUCHSENSOR ) {
@@ -3210,7 +3180,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		// b2Vec2 vel2 = ((BoneUserData *)(dataB.uData))->p_body->GetLinearVelocityFromWorldPoint( worldManifold.points[0] );
 		// b2Vec2 impactVelocity = vel1 - vel2;
 
-		((BoneUserData *)(dataB.uData))->touchSensation +=0.5f;// magnitude(impactVelocity);
+		((BoneUserData *)(dataB.uData))->sensation_touch +=0.5f;// magnitude(impactVelocity);
 	}
 
 

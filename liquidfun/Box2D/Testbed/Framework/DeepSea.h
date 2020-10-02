@@ -44,6 +44,24 @@ struct boneAndJointDescriptor_t {
 		boneAndJointDescriptor_t();
 };
 
+// these type codes are used to route sensory and motor information between brains and limbs.
+#define SENSECONNECTOR_UNUSED 	0
+#define SENSECONNECTOR_MOTOR 1
+#define SENSOR_FOODRADAR	2
+#define SENSOR_TOUCH 		3
+#define SENSOR_JOINTANGLE 	4
+#define SENSOR_TIMER 		5
+
+struct senseConnector {
+	unsigned int connectedToLimb;		// what limb the sense is coming from, or motor signal is going to.
+	unsigned int connectedToNeuron;		// neuron index. The position of this neuron's layer will determine how the program uses it.
+	unsigned int sensorType;  			// what kind of sense it is (touch, smell, etc.how the number will be treated)
+	unsigned int timerFreq;				// if a timer, the frequency.
+
+	senseConnector();
+};
+
+
 struct fishDescriptor_t {
 
 	boneAndJointDescriptor_t bones[N_FINGERS];
@@ -52,6 +70,8 @@ struct fishDescriptor_t {
 
 	senseConnector inputMatrix[32]; // these need to get serialized too. so this is a workable place for them.
 	senseConnector outputMatrix[32];
+
+	fishDescriptor_t();
 };
 
 
@@ -124,22 +144,6 @@ struct BoneUserData {
 		int collisionGroup);
 } ;
 
-// these type codes are used to route sensory and motor information between brains and limbs.
-#define SENSECONNECTOR_UNUSED 	0
-#define SENSECONNECTOR_MOTOR 1
-#define SENSOR_FOODRADAR	2
-#define SENSOR_TOUCH 		3
-#define SENSOR_JOINTANGLE 	4
-#define SENSOR_TIMER 		5
-
-struct senseConnector {
-	unsigned int connectedToLimb;		// what limb the sense is coming from, or motor signal is going to.
-	unsigned int connectedToNeuron;		// neuron index. The position of this neuron's layer will determine how the program uses it.
-	unsigned int sensorType;  			// what kind of sense it is (touch, smell, etc.how the number will be treated)
-	unsigned int timerFreq;				// if a timer, the frequency.
-
-	senseConnector();
-};
 
 struct connectionDescriptor {
 	bool isUsed;
@@ -170,6 +174,7 @@ struct neuronDescriptor {
 	bool biasNeuron;
 
 	bool selected;
+	bool locked;
 
 
 
