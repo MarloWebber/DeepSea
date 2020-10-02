@@ -339,7 +339,14 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 	if (!p_bone->isRoot) {
 		if (p_bone->joint->isUsed) {
-			p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle();
+
+
+
+
+
+			p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle() - pi;
+
+
 		}
 	}
 	
@@ -752,37 +759,37 @@ fishDescriptor_t::fishDescriptor_t () {
 		bones[i].used = true;
 	}
 
-	for (int i = 0; i < 4; ++i)
+	for (unsigned int i = 0; i < 4; ++i)
 	{
-		senseConnector moshuns = senseConnector();
-		moshuns.connectedToLimb = i;
-		moshuns.sensorType = SENSECONNECTOR_MOTOR;
-		outputMatrix[i] = moshuns;
+		// senseConnector moshuns = senseConnector();
+		outputMatrix[i].connectedToLimb = i;
+		outputMatrix[i].sensorType = SENSECONNECTOR_MOTOR;
+		// outputMatrix[i] = moshuns;
 	}
-	int j = 0;
-	for (int i = 0; i < 4; ++i)
+	unsigned int j = 0;
+	for (unsigned int i = 0; i < 4; ++i)
 	{
-		senseConnector moshuns = senseConnector();
-		moshuns.connectedToLimb = i;
-		moshuns.sensorType = SENSOR_FOODRADAR;
-		inputMatrix[j] = moshuns;
+		// senseConnector moshuns = senseConnector();
+		inputMatrix[j].connectedToLimb = i;
+		inputMatrix[j].sensorType = SENSOR_FOODRADAR;
+		// inputMatrix[j] = moshuns;
+		j++;
+	// }
+	// for (unsigned int i = 0; i < 4; ++i)
+	// {
+		// senseConnector moshuns = senseConnector();
+		inputMatrix[j].connectedToLimb = i;
+		inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
+		// inputMatrix[j] = moshuns;
 		j++;
 	}
-	for (int i = 0; i < 4; ++i)
+	for (unsigned int i = 0; i < 3; ++i)
 	{
-		senseConnector moshuns = senseConnector();
-		moshuns.connectedToLimb = i;
-		moshuns.sensorType = SENSOR_JOINTANGLE;
-		inputMatrix[j] = moshuns;
-		j++;
-	}
-	for (int i = 0; i < 3; ++i)
-	{
-		senseConnector moshuns = senseConnector();
-		moshuns.connectedToLimb = i;
-		moshuns.sensorType = SENSOR_TIMER;
-		moshuns.timerFreq = i * 25;
-		inputMatrix[j] = moshuns;
+		// senseConnector moshuns = senseConnector();
+		inputMatrix[j].connectedToLimb = 0;
+		inputMatrix[j].sensorType = SENSOR_TIMER;
+		inputMatrix[j].timerFreq = i * 25;
+		// inputMatrix[j] = moshuns;
 		j++;
 
 	}
@@ -2480,10 +2487,21 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 
 	unsigned int sizeOfBiggestLayer = 0;
-	unsigned int n_layers = (unsigned long)fish->brain->layers.size();
+	// unsigned int n_layers = (unsigned long)fish->brain->layers.size();
+
+	// sensorium size is based on the size of the ANN. Whether or not it is populated with numbers depends on the size of the input connector matrix.
+			unsigned long sizeOfInputLayer = 0;
+			unsigned long sizeOfOutputLayer = 0;
+			unsigned long num_layers =  (unsigned long)(fish->brain->layers.size());
+
+			std::list<layerDescriptor>::iterator layer;
+			layer = fish->brain->layers.begin();
+			sizeOfInputLayer = layer->neurons.size();
+			std::advance(layer, num_layers-1);
+			sizeOfOutputLayer = layer->neurons.size();
 
 	// get the size of biggest layer
-	std::list<layerDescriptor>::iterator layer;
+	// std::list<layerDescriptor>::iterator layer;
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 		if ((unsigned long)layer->neurons.size() > sizeOfBiggestLayer) {
 			sizeOfBiggestLayer = (unsigned long)layer->neurons.size();
@@ -2505,13 +2523,13 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 	b2Vec2 windowVertices[] = {
 		b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance), 
-		b2Vec2(drawingStartingPosition.x - spacingDistance, drawingStartingPosition.y + ((n_layers *spacingDistance ) + ( spacingDistance) ) ), 
-		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) )), 
+		b2Vec2(drawingStartingPosition.x - spacingDistance, drawingStartingPosition.y + ((num_layers *spacingDistance ) + ( spacingDistance) ) ), 
+		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((num_layers *spacingDistance ) + (spacingDistance) )), 
 		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + ( spacingDistance) ), drawingStartingPosition.y- spacingDistance)
 	};
 
 	fish->brain->networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
-	fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) ));
+	fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((num_layers *spacingDistance ) + (spacingDistance) ));
 
 
 	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
@@ -2540,16 +2558,10 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 		layerIndex++;
 	}
 
-	// now you know all the positions, you can draw the connections really easily.
-
-	// std::list<layerDescriptor>::iterator layer;
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
-		std::list<neuronDescriptor>::iterator neuron;
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
 
-
-	for (uint8_t j = 0; j < 28; ++j) {
+ 		// draw in sensorium
+	for (unsigned int j = 0; j < sizeOfInputLayer; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
 
 		if (sensorium[j] > 0) {
@@ -2560,10 +2572,56 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( abs(sensorium[j]), 0, 0));
 		}
 
+
+
+				// draw color fill around input connector types
+ 			// if (neuron->selected){
+ 				b2Vec2 gigggle[] = {
+				b2Vec2(neuron_position.x+0.1f, neuron_position.y-0.1f - 0.5f), 
+				b2Vec2(neuron_position.x+0.1f, neuron_position.y+0.1f - 0.5f), 
+				b2Vec2(neuron_position.x-0.1f, neuron_position.y+0.1f - 0.5f), 
+				b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f - 0.5f), 
+				};
+
+				// printf("fascingalg:%i\n",fish->inputMatrix[j].sensorType);
+				
+				switch (fish->inputMatrix[j].sensorType) {
+					case SENSECONNECTOR_UNUSED:	
+
+						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.1f,0.1f,0.1f) );
+					break;
+					case SENSOR_FOODRADAR:	
+
+						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.05f,0.5f,0.1f) );
+					break;
+					case SENSOR_JOINTANGLE:	
+
+						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.05f,0.1f,0.5f) );
+					break;
+					case SENSOR_TOUCH:	
+
+						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.1f,0.05f) );
+					break;
+				}
+
+
+
+ 			// }
+
+
+		// std::string connectorLabel = std::string("1");
+		// const char mowstring[] = "mow";
+		// local_debugDraw_pointer->DrawString(neuron_position.x, neuron_position.y-0.1, mowstring);
+
 	}
 
-	for (uint8_t j = 0; j < 8; ++j) {
-		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
+	// for (int i = 0; i < count; ++i)
+	// {
+	// 	/* code */
+	// }
+
+	for (uint8_t j = 0; j < sizeOfOutputLayer; ++j) {
+		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((num_layers-1) * spacingDistance)));
 		// local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j], motorSignals[j], motorSignals[j]));
 
 		if (motorSignals[j] > 0) {
@@ -2575,6 +2633,15 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 		}
 
 	}
+
+	// now you know all the positions, you can draw the connections really easily.
+
+	// std::list<layerDescriptor>::iterator layer;
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+
 
 
  					// draw around it to indicate if it is selected
@@ -2633,256 +2700,250 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 
 
-
-
-
-
-
-
 }
 
 
 
-void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar, BonyFish * fish) {
+// void drawNeuralNetwork(struct 	fann 	*	ann	, float * motorSignals, float * sensorium, int index, unsigned int * spacesUsedSoFar, BonyFish * fish) {
 
-	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
-	unsigned int n_layers = fann_get_num_layers(ann);
+// 	// get the number of layers. FANN_EXTERNAL unsigned int FANN_API fann_get_num_layers(	struct 	fann 	*	ann	)
+// 	unsigned int n_layers = fann_get_num_layers(ann);
 
-	unsigned int sizeOfBiggestLayer = 0;
+// 	unsigned int sizeOfBiggestLayer = 0;
 
-	// get the number of neurons on each layer.
-	unsigned int layerArray[n_layers];
-	fann_get_layer_array(ann,layerArray);
+// 	// get the number of neurons on each layer.
+// 	unsigned int layerArray[n_layers];
+// 	fann_get_layer_array(ann,layerArray);
  
-    struct fann_connection *con;   /* weight matrix */
-    unsigned int connum;           /* connections number */
-    size_t i;
+//     struct fann_connection *con;   /* weight matrix */
+//     unsigned int connum;           /* connections number */
+//     size_t i;
 
-	connum = fann_get_total_connections(ann);
-    if (connum == 0) {
-        fprintf(stderr, "Error: connections count is 0\n");
-    }
+// 	connum = fann_get_total_connections(ann);
+//     if (connum == 0) {
+//         fprintf(stderr, "Error: connections count is 0\n");
+//     }
 
-    con = (fann_connection *)calloc(connum, sizeof(*con));
-    if (con == NULL) {
-        fprintf(stderr, "Error: unable to allocate memory\n");
-    }
+//     con = (fann_connection *)calloc(connum, sizeof(*con));
+//     if (con == NULL) {
+//         fprintf(stderr, "Error: unable to allocate memory\n");
+//     }
 
-    /* Get weight matrix */
-    fann_get_connection_array(ann, con);
+//     /* Get weight matrix */
+//     fann_get_connection_array(ann, con);
 
-    // int icompatiblespaces = spacesUsedSoFar
-    float fcompatiblespaces = *spacesUsedSoFar;
-	b2Vec2 drawingStartingPosition = b2Vec2(  fcompatiblespaces + 1 ,4.0f);
-	float spacingDistance = 0.5f;
+//     // int icompatiblespaces = spacesUsedSoFar
+//     float fcompatiblespaces = *spacesUsedSoFar;
+// 	b2Vec2 drawingStartingPosition = b2Vec2(  fcompatiblespaces + 1 ,4.0f);
+// 	float spacingDistance = 0.5f;
 
-	// compute the size of biggest layer so you know how far to move over all subsequent layers.
-	for (uint8_t j = 0; j < n_layers; ++j)
-	{
-		if (layerArray[j] > sizeOfBiggestLayer) {
-			sizeOfBiggestLayer = layerArray[j];
-		}
-	}
-	*spacesUsedSoFar += sizeOfBiggestLayer;
-
-
-	// make a black color window that the drawing sits in.
-	b2Vec2 windowVertices[] = {
-		b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance), 
-		b2Vec2(drawingStartingPosition.x - spacingDistance, drawingStartingPosition.y + ((n_layers *spacingDistance ) + ( spacingDistance) ) ), 
-		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) )), 
-		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + ( spacingDistance) ), drawingStartingPosition.y- spacingDistance)
-	};
-
-	fish->brain->networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
-	fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) ));
+// 	// compute the size of biggest layer so you know how far to move over all subsequent layers.
+// 	for (uint8_t j = 0; j < n_layers; ++j)
+// 	{
+// 		if (layerArray[j] > sizeOfBiggestLayer) {
+// 			sizeOfBiggestLayer = layerArray[j];
+// 		}
+// 	}
+// 	*spacesUsedSoFar += sizeOfBiggestLayer;
 
 
-	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+// 	// make a black color window that the drawing sits in.
+// 	b2Vec2 windowVertices[] = {
+// 		b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance), 
+// 		b2Vec2(drawingStartingPosition.x - spacingDistance, drawingStartingPosition.y + ((n_layers *spacingDistance ) + ( spacingDistance) ) ), 
+// 		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) )), 
+// 		b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + ( spacingDistance) ), drawingStartingPosition.y- spacingDistance)
+// 	};
 
-/*
+// 	fish->brain->networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
+// 	fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((n_layers *spacingDistance ) + (spacingDistance) ));
 
-	std::list<layerDescriptor>::iterator layer;
-	for (layer = fishes[fishIndex]->brain->layers.begin(); layer !=  fishes[fishIndex]->brain->layers.end(); ++layer) 	{
-		std::list<neuronDescriptor>::iterator neuron;
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- 			std::list<connectionDescriptor>::iterator connection;
- 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
- 				;
-			}
-		}
-	}
 
-*/
+// 	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
 
-	for (uint8_t j = 0; j < layerArray[0]; ++j) {
-		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
-	}
+// /*
 
-	for (uint8_t j = 0; j < layerArray[n_layers-1]; ++j) {
-		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
-		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
-	}
-
-    /* Print weight matrix */
-    for (i = 0; i < connum; ++i) {
-    	b2Vec2 printConnectionSideA;
-    	b2Vec2 printConnectionSideB;
-
-    	uint8_t neuronA_tally = con[i].from_neuron;
-    	for (uint8_t j = 0; j< n_layers; ++j) {
-    		if (neuronA_tally >= layerArray[j]) {
-    			neuronA_tally -= layerArray[j];
-    		}	
-    		else {
-    			printConnectionSideA = b2Vec2(drawingStartingPosition.x + neuronA_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
-    			b2AABB neuronBox;
-    			neuronBox.upperBound = b2Vec2(printConnectionSideA.x+0.01f,printConnectionSideA.y+0.01f );
-    			neuronBox.lowerBound = b2Vec2(printConnectionSideA.x-0.01f,printConnectionSideA.y-0.01f );
-    			getNeuronByIndex(fish->brain, con[i].from_neuron)->aabb = neuronBox;
-    			break;
-    		}
-    		neuronA_tally --;
-    	}
-    	uint8_t neuronB_tally = con[i].to_neuron;
-    	for (uint8_t j = 0; j< n_layers; ++j) {
-    		if (neuronB_tally >= layerArray[j]) {
-    			neuronB_tally -= layerArray[j];
-    		}	
-    		else {
-    			printConnectionSideB = b2Vec2(drawingStartingPosition.x + neuronB_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
-    			b2AABB neuronBox;
-    			neuronBox.upperBound = b2Vec2(printConnectionSideB.x+0.01f,printConnectionSideB.y+0.01f );
-    			neuronBox.lowerBound = b2Vec2(printConnectionSideB.x-0.01f,printConnectionSideB.y-0.01f );
-    			getNeuronByIndex(fish->brain, con[i].to_neuron)->aabb = neuronBox;
-    			// printf("mokkneyk: %i fussy: %i\n", getNeuronByIndex(fish->brain, con[i].to_neuron)->index, con[i].to_neuron);
-    			break;
-    		}
-    		neuronB_tally --;
-    	}
-
-    	b2Color segmentColor = b2Color(con[i].weight*10,con[i].weight*10,con[i].weight*10);
-	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB,segmentColor );
-    }
-    free(con);
-}
-
-// void enterScienceModeInterruptableEntry () {
-// 	printf("enterScienceModeInterruptableEntry\n");
-
-// 	for (int i = 0; i < N_FISHES; ++i) {
-// 		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
-// 		fishes[i]->flagDelete = true;
+// 	std::list<layerDescriptor>::iterator layer;
+// 	for (layer = fishes[fishIndex]->brain->layers.begin(); layer !=  fishes[fishIndex]->brain->layers.end(); ++layer) 	{
+// 		std::list<neuronDescriptor>::iterator neuron;
+//  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+//  			std::list<connectionDescriptor>::iterator connection;
+//  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+//  				;
+// 			}
+// 		}
 // 	}
 
-// 	readyToEnterScienceMode = true;
+// */
+
+// 	for (uint8_t j = 0; j < layerArray[0]; ++j) {
+// 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,drawingStartingPosition.y );
+// 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( sensorium[j], sensorium[j], sensorium[j]));
+// 	}
+
+// 	for (uint8_t j = 0; j < layerArray[n_layers-1]; ++j) {
+// 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((n_layers-1) * spacingDistance)));
+// 		local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j]+0.5f, motorSignals[j]+0.5f, motorSignals[j]+0.5f));
+// 	}
+
+//     /* Print weight matrix */
+//     for (i = 0; i < connum; ++i) {
+//     	b2Vec2 printConnectionSideA;
+//     	b2Vec2 printConnectionSideB;
+
+//     	uint8_t neuronA_tally = con[i].from_neuron;
+//     	for (uint8_t j = 0; j< n_layers; ++j) {
+//     		if (neuronA_tally >= layerArray[j]) {
+//     			neuronA_tally -= layerArray[j];
+//     		}	
+//     		else {
+//     			printConnectionSideA = b2Vec2(drawingStartingPosition.x + neuronA_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
+//     			b2AABB neuronBox;
+//     			neuronBox.upperBound = b2Vec2(printConnectionSideA.x+0.01f,printConnectionSideA.y+0.01f );
+//     			neuronBox.lowerBound = b2Vec2(printConnectionSideA.x-0.01f,printConnectionSideA.y-0.01f );
+//     			getNeuronByIndex(fish->brain, con[i].from_neuron)->aabb = neuronBox;
+//     			break;
+//     		}
+//     		neuronA_tally --;
+//     	}
+//     	uint8_t neuronB_tally = con[i].to_neuron;
+//     	for (uint8_t j = 0; j< n_layers; ++j) {
+//     		if (neuronB_tally >= layerArray[j]) {
+//     			neuronB_tally -= layerArray[j];
+//     		}	
+//     		else {
+//     			printConnectionSideB = b2Vec2(drawingStartingPosition.x + neuronB_tally * spacingDistance, drawingStartingPosition.y +j * spacingDistance);
+//     			b2AABB neuronBox;
+//     			neuronBox.upperBound = b2Vec2(printConnectionSideB.x+0.01f,printConnectionSideB.y+0.01f );
+//     			neuronBox.lowerBound = b2Vec2(printConnectionSideB.x-0.01f,printConnectionSideB.y-0.01f );
+//     			getNeuronByIndex(fish->brain, con[i].to_neuron)->aabb = neuronBox;
+//     			// printf("mokkneyk: %i fussy: %i\n", getNeuronByIndex(fish->brain, con[i].to_neuron)->index, con[i].to_neuron);
+//     			break;
+//     		}
+//     		neuronB_tally --;
+//     	}
+
+//     	b2Color segmentColor = b2Color(con[i].weight*10,con[i].weight*10,con[i].weight*10);
+// 	    local_debugDraw_pointer->DrawSegment(printConnectionSideA, printConnectionSideB,segmentColor );
+//     }
+//     free(con);
 // }
 
+// // void enterScienceModeInterruptableEntry () {
+// // 	printf("enterScienceModeInterruptableEntry\n");
 
-// void enterScienceMode ( ) {
+// // 	for (int i = 0; i < N_FISHES; ++i) {
+// // 		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
+// // 		fishes[i]->flagDelete = true;
+// // 	}
+
+// // 	readyToEnterScienceMode = true;
+// // }
 
 
-// 	printf("enterScienceMode\n");
-// 	removeDeletableFish();
+// // void enterScienceMode ( ) {
 
 
-// 				// addFoodParticle(getRandomPosition());
+// // 	printf("enterScienceMode\n");
+// // 	removeDeletableFish();
+
+
+// // 				// addFoodParticle(getRandomPosition());
 	
 		
-// 		scienceMode = true;
-// 	// for (int i = 0; i < N_FISHES; ++i) {
+// // 		scienceMode = true;
+// // 	// for (int i = 0; i < N_FISHES; ++i) {
 		
-// 		bool thereIsAFile = false;
-// 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+// // 		bool thereIsAFile = false;
+// // 		// b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
-// 		if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
-// 	        fclose(file);
-// 	        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
-// 		        thereIsAFile = true;
-// 		        fclose(file);
-// 		    }
-// 	    } 
+// // 		if (FILE *file = fopen("mostCurrentWinner.net", "r")) { //if (FILE *file = fopen(name.c_str(), "r")) {
+// // 	        fclose(file);
+// // 	        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
+// // 		        thereIsAFile = true;
+// // 		        fclose(file);
+// // 		    }
+// // 	    } 
 
-// 		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
-// 			fishDescriptor_t newFishBody;
-// 			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+// // 		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
+// // 			fishDescriptor_t newFishBody;
+// // 			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-// 			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
-// 		    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
+// // 			mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+// // 		    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
-// 			// now you can load the mutant ANN.
-// 			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
-// 			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+// // 			// now you can load the mutant ANN.
+// // 			// fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+// // 			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-// 		    b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+// // 		    b2Vec2 positionalRandomness = b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 
-// 			loadFish (0, newFishBody, mann, positionalRandomness) ;
+// // 			loadFish (0, newFishBody, mann, positionalRandomness) ;
 			
 
-// 		}
-// 		// else { 						// if there is no winner, its probably a reset or new install. make one up
-// 		// 	prepareNematode(&nematode);
+// // 		}
+// // 		// else { 						// if there is no winner, its probably a reset or new install. make one up
+// // 		// 	prepareNematode(&nematode);
 
-// 		// 	loadFish (i, nematode, NULL,  positionalRandomness) ;
-// 		// }
+// // 		// 	loadFish (i, nematode, NULL,  positionalRandomness) ;
+// // 		// }
 
 
 
 	
-// 		// moveAWholeFish(i, positionalRandomness);
-// 	// }
-// 	// startNextGeneration = false;
+// // 		// moveAWholeFish(i, positionalRandomness);
+// // 	// }
+// // 	// startNextGeneration = false;
 
 
-// }
-
-
-// // void exitScienceMode () {
-// // 	scienceMode = false;
-// // }
-
-// // bool queryScienceMode () {
-// // 	return scienceMode;
 // // }
 
 
-// // void scienceModeGraphics () {
-// // 		unsigned int spacesUsedSoFar =0;
+// // // void exitScienceMode () {
+// // // 	scienceMode = false;
+// // // }
+
+// // // bool queryScienceMode () {
+// // // 	return scienceMode;
+// // // }
 
 
-// 		// print the brainal output
-// 		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
+// // // void scienceModeGraphics () {
+// // // 		unsigned int spacesUsedSoFar =0;
 
 
-// }
+// // 		// print the brainal output
+// // 		drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar);
 
 
-// the science menu allows you to study and modify individual organisms.
-// a single copy of the selected organism is pinned to the center of the screen
-// void scienceModeLoop () {
-// if (!local_m_world->IsLocked() ) {
+// // }
 
 
-// for  (int i = 0; i < 1; i++) {
-// 			if (!foodSlotLoaded[i]) {
-// 				break;
-// 			}
-// 			else {
-// 				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
-// 			}
-// 		}
-
-// // the user modifies the descriptor
-
-// // the new descriptor is created into an organism
-
-// // the organism is shown in the view and in the world
+// // the science menu allows you to study and modify individual organisms.
+// // a single copy of the selected organism is pinned to the center of the screen
+// // void scienceModeLoop () {
+// // if (!local_m_world->IsLocked() ) {
 
 
+// // for  (int i = 0; i < 1; i++) {
+// // 			if (!foodSlotLoaded[i]) {
+// // 				break;
+// // 			}
+// // 			else {
+// // 				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
+// // 			}
+// // 		}
 
-// }
-// }
+// // // the user modifies the descriptor
+
+// // // the new descriptor is created into an organism
+
+// // // the organism is shown in the view and in the world
+
+
+
+// // }
+// // }
 
 // return a positive number if finds a box or negative if not.
 int checkNeuroWindow (b2AABB mousePointer) {
@@ -2989,7 +3050,6 @@ void runBiomechanicalFunctions () {
 			std::list<layerDescriptor>::iterator layer;
 			layer = fishes[i]->brain->layers.begin();
 			sizeOfInputLayer = layer->neurons.size();
-
 			std::advance(layer, num_layers-1);
 			sizeOfOutputLayer = layer->neurons.size();
 
@@ -3048,12 +3108,12 @@ void runBiomechanicalFunctions () {
 
 								// clip the possible motor speed to the speed limit.
 								float motorSpeed = motorSignals[j]*fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
-								if (motorSpeed > fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit) {
-									motorSpeed = fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
-								}
-								if (motorSpeed < -abs(fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit)) {
-									motorSpeed = -fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
-								}
+								// if (motorSpeed > fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit) {
+								// 	motorSpeed = fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
+								// }
+								// if (motorSpeed < -abs(fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit)) {
+								// 	motorSpeed = -fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
+								// }
 								fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint->SetMotorSpeed(motorSpeed);
 							}
 						}	
