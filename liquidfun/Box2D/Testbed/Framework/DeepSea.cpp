@@ -561,49 +561,61 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 
 	// heartSpeed = driedFish.heartSpeed;// +  ((RNG()-0.5) * driedFish.heartSpeed * 0.5);
 
+
+		unsigned int senseInputsUsedSoFar = 0;
+		unsigned int motorOutputsUsed = 0;
 	for (int i = 0; i < 32; ++i)
 	{
 		inputMatrix[i] = driedFish.inputMatrix[i];
 		outputMatrix[i] = driedFish.outputMatrix[i];
+
+		if (inputMatrix[i].sensorType != SENSECONNECTOR_UNUSED) {
+			senseInputsUsedSoFar ++;
+		}
+
+
+		if (outputMatrix[i].sensorType != SENSECONNECTOR_UNUSED) {
+			motorOutputsUsed ++;
+		}
+
 	}
 
     if (nann == NULL) {
 
 
 
-    		// unsigned int senseInputsUsedSoFar = 0;
 
     		for (int i = 0; i < N_FINGERS; ++i) {
 				driedFish.bones[i].color = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
 				// driedFish.bones[i].outlineColor = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
 
 				// if (driedFish.bones[i].sensor_radar) {
-				// 	inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_FOODRADAR;
+				// 	// inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_FOODRADAR;
 				// }
 				// if (driedFish.bones[i].sensor_touch) {
-				// 	inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_TOUCH;
+				// 	// inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_TOUCH;
 				// }
 				// if (driedFish.bones[i].sensor_jointangle) {
-				// 	inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_JOINTANGLE;
+				// 	// inputMatrix[senseInputsUsedSoFar].sensorType = SENSOR_JOINTANGLE;
 				// }
 			}
 
 			//this is what your basic bob fish will start with.
     	    unsigned int creationLayerCake[] = {
-	    	28,
-	    	20,
-	    	11,
-	    	3
+	    	senseInputsUsedSoFar,
+	    	senseInputsUsedSoFar,
+	    	motorOutputsUsed,
+	    	motorOutputsUsed
 	    };
-	    	ann = fann_create_standard_array(5, creationLayerCake);
+	    	ann = fann_create_standard_array(4, creationLayerCake);
 		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
 		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
 		    brain = createEmptyNetworkOfCorrectSize (ann) ;
 
-		    wormTrainer();
+		    // wormTrainer();
 
-		    fann_train_on_file(ann, "wormTrainer.data", max_epochs, epochs_between_reports, desired_error);
+		    // fann_train_on_file(ann, "wormTrainer.data", max_epochs, epochs_between_reports, desired_error);
 	    }
     else { // a brain is provided
     	ann = nann;
@@ -1269,7 +1281,7 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) {
 	    // 	8,
 	    // 	8
 	    // };
-	    	fann * ann = fann_create_standard_array(5, creationLayerCake);
+	    	fann * ann = fann_create_standard_array((unsigned long)network->layers.size(), creationLayerCake);
 		    fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
 		    fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
@@ -2606,7 +2618,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 				b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f - 0.5f), 
 				};
 
-				printf("fascingalg:%i\n",fish->inputMatrix[j].connectedToLimb);
+				// printf("fascingalg:%i\n",fish->inputMatrix[j].connectedToLimb);
 
 				switch (fish->inputMatrix[j].sensorType) {
 					case SENSECONNECTOR_UNUSED:	
@@ -2623,18 +2635,19 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 					break;
 					case SENSOR_TOUCH:	
 
+						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.2f,0.1f) );
+					break;
+					case SENSOR_TIMER:	
+
 						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.1f,0.05f) );
 					break;
 				}
 
 
-
- 			// }
-
-
-		// std::string connectorLabel = std::string("1");
-		// const char mowstring[] = "mow";
-		// local_debugDraw_pointer->DrawString(neuron_position.x, neuron_position.y-0.1, mowstring);
+		std::string connectorLabel = std::string("1");
+		const char mowstring[] = "mow";
+		b2Vec2 mocesfef = b2Vec2(neuron_position.x, neuron_position.y-0.1);
+		local_debugDraw_pointer->DrawString(mocesfef, mowstring);
 
 	}
 
@@ -2643,7 +2656,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 	// 	/* code */
 	// }
 
-	for (uint8_t j = 0; j < sizeOfOutputLayer; ++j) {
+	for (unsigned int j = 0; j < sizeOfOutputLayer; ++j) {
 		b2Vec2 neuron_position = b2Vec2(drawingStartingPosition.x +j * spacingDistance,(drawingStartingPosition.y + ((num_layers-1) * spacingDistance)));
 		// local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( motorSignals[j], motorSignals[j], motorSignals[j]));
 
@@ -2654,6 +2667,32 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 			local_debugDraw_pointer->DrawPoint(neuron_position, 8.0f, b2Color( abs(motorSignals[j]), 0.0f, 0.0f));
 		}
+
+			b2Vec2 gigggle[] = {
+				b2Vec2(neuron_position.x+0.1f, neuron_position.y-0.1f + 0.5f), 
+				b2Vec2(neuron_position.x+0.1f, neuron_position.y+0.1f + 0.5f), 
+				b2Vec2(neuron_position.x-0.1f, neuron_position.y+0.1f + 0.5f), 
+				b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f + 0.5f), 
+				};
+
+				printf("fascingalg:%f\n",motorSignals[j]);
+
+				switch (fish->outputMatrix[j].sensorType) {
+					case SENSECONNECTOR_UNUSED:	
+
+						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.1f,0.1f,0.1f) );
+					break;
+					case SENSECONNECTOR_MOTOR:	
+
+						local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.3f,0.15f) );
+					break;
+				}
+
+
+		std::string connectorLabel = std::string("1");
+		const char mowstring[] = "mow";
+		b2Vec2 mocesfef = b2Vec2(neuron_position.x, neuron_position.y-0.1);
+		local_debugDraw_pointer->DrawString(mocesfef, mowstring);
 
 	}
 
@@ -2683,13 +2722,13 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 
  			// draw a square at the neuron
- 			b2Vec2 neuronSquareVerts[] = {
-				b2Vec2(neuron->position.x+0.01f, neuron->position.y-0.01f), 
-				b2Vec2(neuron->position.x+0.01f, neuron->position.y+0.01f), 
-				b2Vec2(neuron->position.x-0.01f, neuron->position.y+0.01f), 
-				b2Vec2(neuron->position.x-0.01f, neuron->position.y-0.01f), 
-				};
-			local_debugDraw_pointer->DrawFlatPolygon(neuronSquareVerts, 4 ,b2Color(1.0f,1.0f,1.0f) );
+ 		// 	b2Vec2 neuronSquareVerts[] = {
+			// 	b2Vec2(neuron->position.x+0.01f, neuron->position.y-0.01f), 
+			// 	b2Vec2(neuron->position.x+0.01f, neuron->position.y+0.01f), 
+			// 	b2Vec2(neuron->position.x-0.01f, neuron->position.y+0.01f), 
+			// 	b2Vec2(neuron->position.x-0.01f, neuron->position.y-0.01f), 
+			// 	};
+			// local_debugDraw_pointer->DrawFlatPolygon(neuronSquareVerts, 4 ,b2Color(1.0f,1.0f,1.0f) );
 
 
 
@@ -3104,6 +3143,11 @@ void runBiomechanicalFunctions () {
 					case SENSOR_TIMER:
 						// sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->0.0;
 					break;
+
+					case SENSECONNECTOR_UNUSED:
+						// sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->0.0;
+						sensorium[j] = 0.0f;
+					break;
 				 
 				}	
 				// senseInputsUsedSoFar ++;				
@@ -3111,6 +3155,10 @@ void runBiomechanicalFunctions () {
 
 			// feed information into brain
 			float * motorSignals = fann_run(fishes[i]->ann, sensorium);
+			// for (int j = 0; j < 32; ++j)
+			// {
+			// 	printf("smegggg: %f\n", motorSignals[j]);
+			// }
 
 
 			for (unsigned int j = 0; j < sizeOfOutputLayer; ++j)
@@ -3135,7 +3183,25 @@ void runBiomechanicalFunctions () {
 							if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint != nullptr) {
 
 								// clip the possible motor speed to the speed limit.
-								float motorSpeed = motorSignals[j]*fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
+								float speedLimit = fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
+								if (speedLimit > 100) {
+									speedLimit = 100;
+								}
+								else if (speedLimit < -100) {
+									speedLimit = -100;
+								}
+
+								float motorSpeed = motorSignals[j];
+								if (motorSpeed > speedLimit) {
+									motorSpeed = speedLimit;
+								}
+								else if (motorSpeed < -speedLimit) {
+									motorSpeed =-speedLimit;
+								}
+
+
+
+								// printf("moraotof: %f\n", motorSpeed);
 								// if (motorSpeed > fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit) {
 								// 	motorSpeed = fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
 								// }
