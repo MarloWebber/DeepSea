@@ -2953,24 +2953,15 @@ int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) {
 
 void runBiomechanicalFunctions () {
 
-
-		// float flotCount = 0.0f;
-		// float flotSpeed = 0.0f;
-		// float ratio = 0.0f;
-
-
 		unsigned int spacesUsedSoFar =0;
 
 		for (int i = 0; i < N_FISHES; ++i) {
 			if (fishSlotLoaded[i]) {
 
-
 				if (fishChecker(i)) {
-	// reset neuro bounding boxes... this isnt the right place to do this, should be in a graphics function
-				fishes[i]->brain->networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
-				fishes[i]->brain->networkWindow.upperBound = b2Vec2(0.0f,0.0f);
-
-			
+					// reset neuro bounding boxes... this isnt the right place to do this, should be in a graphics function
+					fishes[i]->brain->networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
+					fishes[i]->brain->networkWindow.upperBound = b2Vec2(0.0f,0.0f);
 				}
 			
 				// cause heart to beat. Heart A is the slowest
@@ -2985,223 +2976,134 @@ void runBiomechanicalFunctions () {
 				// 	fishes[i]->heartOutputA = sin(ratio* pi * 2 );
 				// }
 
-				// if (fishes[i]->heartCountB > fishes[i]->heartSpeed * 4) {
-				// 	fishes[i]->heartCountB = 0;
-				// }
-				// else { 
-				// 	fishes[i]->heartCountB++;
-				// 	flotCount = fishes[i]->heartCountB;
-				// 	flotSpeed = fishes[i]->heartSpeed;
-				// 	ratio = flotCount/ flotSpeed ;
-				// 	fishes[i]->heartOutputB = sin(ratio* pi * 2);
-				// }
-
-				// if (fishes[i]->heartCountC > fishes[i]->heartSpeed) {
-				// 	fishes[i]->heartCountC = 0;
-				// }
-				// else { 
-				// 	fishes[i]->heartCountC++;
-				// 	flotCount = fishes[i]->heartCountC;
-				// 	flotSpeed = fishes[i]->heartSpeed/4;
-				// 	ratio = flotCount/ flotSpeed ;
-				// 	fishes[i]->heartOutputC = sin(ratio* pi * 2);
-				// }
-
-				// if (fishes[i]->heartCountD > fishes[i]->heartSpeed/4) {
-				// 	fishes[i]->heartCountD = 0;
-				// }
-				// else { 
-				// 	fishes[i]->heartCountD++;
-				// 	flotCount = fishes[i]->heartCountD;
-				// 	flotSpeed = fishes[i]->heartSpeed/16;
-				// 	ratio = flotCount/ flotSpeed ;
-				// 	fishes[i]->heartOutputD = sin(ratio* pi * 2);
-				// }
-
 				// update the fish's senses
 				for (int j = 0; j < N_FINGERS; ++j) {
 					nonRecursiveSensorUpdater (fishes[i]->bones[j]);
 				}
+			
+				// sensorium size is based on the size of the ANN. Whether or not it is populated with numbers depends on the size of the input connector matrix.
+				unsigned long sizeOfInputLayer = 0;
+				unsigned long sizeOfOutputLayer = 0;
+				unsigned long num_layers =  (unsigned long)(fishes[i]->brain.layers.size();
 
-				// eight motors and four timing inputs
-				// float sensorium[28] = {
-				// 		fishes[i]->bones[0]->sensation, 
-				// 		fishes[i]->bones[1]->sensation,
-				// 		fishes[i]->bones[2]->sensation,
-				// 		fishes[i]->bones[3]->sensation,
-				// 		fishes[i]->bones[4]->sensation,
-				// 		fishes[i]->bones[5]->sensation,
-				// 		fishes[i]->bones[6]->sensation,
-				// 		fishes[i]->bones[7]->sensation,
+				std::list<layerDescriptor>::iterator layer;
+				layer = fish->brain->layers.begin();
+				sizeOfInputLayer = layer->neurons.size();
 
-				// 		0.0f, // joint angle feedback goes here
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
+				std::advance(layerIterator, num_layers-1);
+				sizeOfOutputLayer = layer->neurons.size();
 
-				// 		0.0f, // touch information goes here
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
-				// 		0.0f,
+				float sensorium[ sizeOfInputLayer ];
+				float motorsignals[sizeOfOutputLayer ]
 
-				// 		// fishes[i]->bones[0]->joint->p_joint->GetJointAngle(), 
-				// 		// fishes[i]->bones[1]->joint->p_joint->GetJointAngle(), 
-				// 		// fishes[i]->bones[2]->joint->p_joint->GetJointAngle(), 
-				// 		// fishes[i]->bones[3]->joint->p_joint->GetJointAngle(), 
-				// 		// fishes[i]->bones[4]->joint->p_joint->GetJointAngle(), 
-				// 		// fishes[i]->bones[5]->joint->p_joint->GetJointAngle(), 
-				// 		// fishes[i]->bones[6]->joint->p_joint->GetJointAngle(), 
-				// 		// fishes[i]->bones[7]->joint->p_joint->GetJointAngle()
-
-				// 		(float)fishes[i]->heartOutputA,
-				// 		(float)fishes[i]->heartOutputB,
-				// 		(float)fishes[i]->heartOutputC,
-				// 		(float)fishes[i]->heartOutputD
-
-
-				// 	};
-
-// 					for (unsigned int j = 1; j < 8; ++j)
-// 					{
-// 						/* code */
-// 						if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
-// 							continue;
-// 						}
-// 						else {
-
-// 								if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
-
-// 							if (fishes[i]->bones[j]->joint->isUsed) {
-// 								// i don't think you should feed the joint angle in radians directly in...
-
-// 								// float angleRange= - (fishes[i]->bones[j]->joint->lowerAngle - fishes[i]->bones[j]->joint->upperAngle);
-// 								// float ratio = 0.0f;
-// 								// float jointAngle = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
-
-// 								// if (jointAngle >angleRange/2 ) {
-// 								// 	ratio =(angleRange/jointAngle) * pi;
-// 								// }
-// 								// else {
-// 								// ratio =(fishes[i]->bones[j]->joint->upperAngle/jointAngle)  + (fishes[i]->bones[j]->joint->lowerAngle/jointAngle) ;//* pi;
-// 								// }
-// // 
-									
-
-
-// 								// if (true) {
-
-// 									// printf("jangle %f\n", jointAngle );
-
-// 									sensorium[j+8] = fishes[i]->bones[j]->joint->p_joint->GetJointAngle();// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
-
-// // 
-// 								// }
-// 		// 						else {
-
-
-
-// 		// 								float midpoint =( fishes[i]->bones[j]->joint->lowerAngle + fishes[i]->bones[j]->joint->upperAngle)/2;
-
-// 		// 								if (jointAngle > midpoint) {
-// 		// 												// jointAngle -= midpoint;
-// 		// 												ratio =( jointAngle / (fishes[i]->bones[j]->joint->upperAngle - midpoint));
-
-// 		// 								}
-// 		// 								else {
-// 		// 										// jointAngle -= midpoint;
-// 		// 												ratio = - ( jointAngle / (fishes[i]->bones[j]->joint->lowerAngle - midpoint));
-
-// 		// 											// ratio += 1;
-														
-// 		// 												// ratio = ratio* -1;
-
-// 		// 								}
-// 		// // printf("lower: %f, upper: %f, jointAngle: %f, ratio: %f\n",fishes[i]->bones[j]->joint->lowerAngle , fishes[i]->bones[j]->joint->upperAngle,fishes[i]->bones[j]->joint->p_joint->GetJointAngle(),ratio);
-
-
-// 		// 								sensorium[j+8] = ratio;// fishes[i]->bones[j]->joint->p_joint->GetJointAngle();
-
-
-
-// 		// 						}
-
-							
-								
-// 							// printf("ratio: %f\n", ratio);
-
-
-// 							}
-						
-// 							sensorium[j+16] = fishes[i]->bones[j]->touchSensation;
-// 							fishes[i]->bones[j]->touchSensation = 0.0f;
-// 						}
-
-// 						}
-							
-						
-// 					}
-				unsigned long sizeOfThisFishesSensorium =  (unsigned long)(fishes[i]->brain.layers.size();
-				float sensorium[ sizeOfThisFishesSensorium ];
+				// unsigned int senseInputsUsedSoFar = 0;
   
-				for (unsigned int j = 0; j < sizeOfThisFishesSensorium; ++j)
+				for (unsigned int j = 0; j < sizeOfInputLayer; ++j)
 				{
-
-					// sensorium[j] =
-					switch (fishes[i]->inputMatrix[j].sensorType) {
-						case SENSOR_FOODRADAR:
-							
-						break;
-					 
+					if (j >= 32) {
+						continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
 					}
 
-					
+					switch (fishes[i]->inputMatrix[j].sensorType) {
+						case SENSOR_FOODRADAR:
+							sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_radar;
+						break;
+
+						case SENSOR_TOUCH:
+							sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_touch;
+						break;
+
+						case SENSOR_JOINTANGLE:
+							sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_jointAngle;
+						break;
+
+						case SENSOR_TIMER:
+							// sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->0.0;
+						break;
+					 
+					}	
+					// senseInputsUsedSoFar ++;				
 				}
+
 
 
 				// feed information into brain
 				float * motorSignals = fann_run(fishes[i]->ann, sensorium);
 
-				if (true) { // use to disable all joint motors
-					for (int j = 1; j < N_FINGERS; ++j) { // dont even try to move the 0th one
-						if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
+
+				for (unsigned int j = 0; j < sizeOfOutputLayer; ++j)
+				{
+					if (j >= 32) {
+						continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
+					}
+
+					switch (fishes[i]->outputMatrix[j].sensorType) {
+						case SENSECONNECTOR_MOTOR:
+						
+						// first just check to make sure the bone and joint is good.
+						// this paragraph could be condensed very easily
+						if ( !fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->isUsed || !fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->init) {
 							continue;
 						}
-						else if (fishes[i]->bones[j]->isUsed && fishes[i]->bones[j]->init) {
-							if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
+						else if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->isUsed && fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->init) {
+							if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint != nullptr) {
 
-								// fishes[i]->bones[j].touchSensation = 0.0f;
+								// clip the possible motor speed to the speed limit.
+								float motorSpeed = motorSignals[j]*fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
+								if (motorSpeed > fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit) {
+									motorSpeed = fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
+								}
+								if (motorSpeed < -(fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit)) {
+									motorSpeed = -fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
+								}
 
-								fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
+								fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint->SetMotorSpeed();
 							}
-						}							
-					}
+						}	
+
+
+						break;
+
+					// 	case SENSOR_TOUCH:
+					// 		sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_touch;
+					// 	break;
+
+					// 	case SENSOR_JOINTANGLE:
+					// 		sensorium[j] = fishes[i]->bones[ fishes[i]->inputMatrix[j].connectedToLimb  ]->sensation_jointAngle;
+					// 	break;
+					 
+					// }					
 				}
 
-				if (fishChecker(i)) {
-					if (fishes[i]->selected) {
-						// print the brainal output
-						// drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar, fishes[i]);
-
-						drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, fishes[i]);
-						//float * motorSignals, float * sensorium, unsigned int * spacesUsedSoFar, BonyFish * fish
 
 
-					}
-				}
+				// for (int j = 1; j < N_FINGERS; ++j) { // dont even try to move the 0th one
+				// 	if ( !fishes[i]->bones[j]->isUsed || !fishes[i]->bones[j]->init) {
+				// 		continue;
+				// 	}
+				// 	else if (fishes[i]->bones[j]->isUsed && fishes[i]->bones[j]->init) {
+				// 		if (fishes[i]->bones[j]->joint->p_joint != nullptr) {
+				// 			fishes[i]->bones[j]->joint->p_joint->SetMotorSpeed(motorSignals[j]*fishes[i]->bones[j]->joint->speedLimit);
+				// 		}
+				// 	}							
+				// }
 
-			}
-			// clearTouchSensations
-		}
 
+
+				
+
+	if (fishChecker(i)) {
+		if (fishes[i]->selected) {
+			// print the brainal output
+			// drawNeuralNetwork( fishes[i]->ann, motorSignals, sensorium, i, &spacesUsedSoFar, fishes[i]);
+
+			drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, fishes[i]);
+			//float * motorSignals, float * sensorium, unsigned int * spacesUsedSoFar, BonyFish * fish
+
+
+	}
 }
+
 
 
 
