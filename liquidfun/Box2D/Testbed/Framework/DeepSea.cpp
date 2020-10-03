@@ -95,7 +95,7 @@ float RNG() { //
 }
 
 JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish) {
-	torque = boneDescription.torque / 2;
+	torque = boneDescription.torque ;
 	speedLimit = boneDescription.speedLimit;
 	upperAngle = boneDescription.upperAngle;
 	normalAngle = boneDescription.normalAngle;
@@ -132,7 +132,7 @@ boneAndJointDescriptor_t::boneAndJointDescriptor_t () {
 	sensor_touch = false; // like how you can feel when things touch your skin.
 	sensor_jointangle = true;
 	isWeapon  = false;
-	torque = 100.0f,	// torque
+	torque = 200.0f,	// torque
 	speedLimit =		10.0f,	// speedLimit
 	upperAngle = pi  * 0.9f,// upperAngle
 	normalAngle = 		0.0f,	// normalAngle
@@ -853,7 +853,7 @@ fishDescriptor_t::fishDescriptor_t () {
 
 
 		// inputMatrix[j].timerFreq = nugangeouds;
-		inputMatrix[j].timerPhase = 0;
+		inputMatrix[j].timerPhase = RNG(); //0;
 		// inputMatrix[j] = moshuns;
 		j++;
 
@@ -1810,8 +1810,15 @@ void mutateFANNFileDirectly (std::string filename) {
 						// printf("%s\n", sciNumber);
 					    float val = std::stof(sciNumber); 
 
-					    if (RNG() < 0.2) {		// chance of a mutation occurring
-						    val += ( (RNG() -0.5f) * 0.5f ); // how much mutation to apply
+					    if (RNG() < 0.1) {		// chance of a mutation occurring
+
+					    	if (val > 1 || val < -1) { // if it's a big number, apply the mutation as a fraction of htat number. else, apply a random amount in a small range. this is to prevent weights being stuck at very small numbers.
+					    		val += ( (RNG() -0.5f) * val * 1);
+					    	}	
+					    	else {
+					    		val += ( (RNG() -0.5f) * 0.5f ); // how much mutation to apply
+					    	}
+						    
 					    }
 
 				    	char sciNotationBuffer[27];// = "0.00000000000000000000e+00";
@@ -2301,7 +2308,12 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					fishDescriptor_t newFishBody;
 					loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-					mutateFishDescriptor (&newFishBody, 0.1, 0.25);
+					// if (true) { // freeze body
+
+
+						mutateFishDescriptor (&newFishBody, 0.0f, 0.0f);
+						// mutateFishDescriptor (&newFishBody, 0.1, 0.5);
+					// }
 				    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
 					// now you can load the mutant ANN.
@@ -2338,6 +2350,12 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
 					// unused_variable((void*) jann);
+					for (int i = 0; i < 32; ++i)
+					{
+						if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
+								newFishBody.inputMatrix[i].timerPhase = RNG();
+						}
+					}
 
 					loadFish (i, newFishBody, jann, getRandomPosition()) ;
 
@@ -3287,6 +3305,14 @@ void runBiomechanicalFunctions () {
 							if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->isUsed && fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->init) {
 							if (fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->p_joint != nullptr) {
 
+
+
+
+								float motorSpeed = motorSignals[j] * 10;
+
+								if (false) {
+
+
 								// clip the possible motor speed to the speed limit.
 								float speedLimit = fishes[i]->bones[fishes[i]->outputMatrix[j].connectedToLimb]->joint->speedLimit;
 								if (speedLimit > 100) {
@@ -3296,14 +3322,14 @@ void runBiomechanicalFunctions () {
 									speedLimit = -100;
 								}
 
-								float motorSpeed = motorSignals[j];
+								
 								if (motorSpeed > speedLimit) {
 									motorSpeed = speedLimit;
 								}
 								else if (motorSpeed < -speedLimit) {
 									motorSpeed =-speedLimit;
 								}
-
+							}
 
 
 								// printf("moraotof: %f\n", motorSpeed);
