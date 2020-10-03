@@ -12,6 +12,8 @@
 #include <thread>
 
 #include <math.h>
+// #include <iostream>
+#include <cmath>
 
 int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
@@ -600,11 +602,15 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b
 				// }
 			}
 
+
+			unsigned int innerLayerSmall = (senseInputsUsedSoFar + motorOutputsUsed + motorOutputsUsed)/3;
+			unsigned int innerLayerBig = (senseInputsUsedSoFar + senseInputsUsedSoFar + motorOutputsUsed)/3;
+
 			//this is what your basic bob fish will start with.
     	    unsigned int creationLayerCake[] = {
 	    	senseInputsUsedSoFar,
-	    	senseInputsUsedSoFar,
-	    	motorOutputsUsed,
+	    	innerLayerBig,
+	    	innerLayerSmall,
 	    	motorOutputsUsed
 	    };
 	    	ann = fann_create_standard_array(4, creationLayerCake);
@@ -662,17 +668,23 @@ void deleteFish (uint8_t fishIndex) {
 	if (fishSlotLoaded[fishIndex]) {
 
 		// printf("deleting %i of 8.", fishIndex);
+		if (!fishChecker(fishIndex)) {
+			return;
+		}
 	
 		for (int i = 0; i < N_FINGERS; ++i) {
 			if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
 						continue;
 			}
-			if (!fishes[fishIndex]->bones[i]->isRoot) { // root bones dont have joints
-				if (fishes[fishIndex]->bones[i]->joint->isUsed) {
-						local_m_world->DestroyJoint(fishes[fishIndex]->bones[i]->joint->p_joint);	
-						fishes[fishIndex]->bones[i]->joint = nullptr;
+			else {
+				if (!fishes[fishIndex]->bones[i]->isRoot) { // root bones dont have joints
+					if (fishes[fishIndex]->bones[i]->joint->isUsed) {
+							local_m_world->DestroyJoint(fishes[fishIndex]->bones[i]->joint->p_joint);	
+							fishes[fishIndex]->bones[i]->joint = nullptr;
+					}
 				}
 			}
+			
 		}
 
 		for (int i = 0; i < N_FINGERS; ++i) {
@@ -814,12 +826,33 @@ fishDescriptor_t::fishDescriptor_t () {
 		// inputMatrix[j] = moshuns;
 		j++;
 	}
-	for (unsigned int i = 0; i < 3; ++i)
+	for (unsigned int i = 0; i < 4; ++i)
 	{
 		// senseConnector moshuns = senseConnector();
 		inputMatrix[j].connectedToLimb = 0;
 		inputMatrix[j].sensorType = SENSOR_TIMER;
-		inputMatrix[j].timerFreq = i+1;
+		// float mint=  i + 1;
+		// float nugangeouds = (mint*mint);
+
+		switch (i){
+			case 0:
+			inputMatrix[j].timerFreq = 4;
+			break;
+			case 1:
+			inputMatrix[j].timerFreq = 12;
+			break;
+			case 2:
+			inputMatrix[j].timerFreq = 36;
+			break;
+			case 3:
+			inputMatrix[j].timerFreq = 64;
+			break;
+		}
+
+
+
+
+		// inputMatrix[j].timerFreq = nugangeouds;
 		inputMatrix[j].timerPhase = 0;
 		// inputMatrix[j] = moshuns;
 		j++;
@@ -3209,7 +3242,7 @@ void runBiomechanicalFunctions () {
 
 
 						// printf("mekshun: %f\n", sensorium[j]);
-						fishes[i]->inputMatrix[j].timerPhase += 0.01;
+						fishes[i]->inputMatrix[j].timerPhase += 0.001;
 						if (fishes[i]->inputMatrix[j].timerPhase > 1) {
 							fishes[i]->inputMatrix[j].timerPhase = 0;
 						}
