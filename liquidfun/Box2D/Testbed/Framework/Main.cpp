@@ -46,6 +46,7 @@ namespace
 {
 	int32 testIndex = 0;
 	int32 testSelection = 0;
+	int32 modeSelection = 0;
 	int32 testCount = 0;
 	TestEntry* entry;
 	Test* test;
@@ -379,43 +380,43 @@ static void Keyboard(unsigned char key, int x, int y)
 		break;
 
 		// Press [ to prev test.
-	case '[':
-		--testSelection;
-		if (testSelection < 0)
-		{
-			testSelection = testCount - 1;
-		}
-#if ENABLE_GLUI
-		if (glui) glui->sync_live();
-#endif  // ENABLE_GLUI
-		break;
+// 	case '[':
+// 		--testSelection;
+// 		if (testSelection < 0)
+// 		{
+// 			testSelection = testCount - 1;
+// 		}
+// #if ENABLE_GLUI
+// 		if (glui) glui->sync_live();
+// #endif  // ENABLE_GLUI
+// 		break;
 
 		// Press ] to next test.
-	case ']':
-		++testSelection;
-		if (testSelection == testCount)
-		{
-			testSelection = 0;
-		}
-#if ENABLE_GLUI
-		if (glui) glui->sync_live();
-#endif  // ENABLE_GLUI
-		break;
+// 	case ']':
+// 		++testSelection;
+// 		if (testSelection == testCount)
+// 		{
+// 			testSelection = 0;
+// 		}
+// #if ENABLE_GLUI
+// 		if (glui) glui->sync_live();
+// #endif  // ENABLE_GLUI
+// 		break;
 
 		// Press ~ to enable / disable the fullscreen UI.
 	case '~':
 		fullscreenUI.SetEnabled(!fullscreenUI.GetEnabled());
 		break;
 
-		// Press < to select the previous particle parameter setting.
-	case '<':
-		particleParameter.Decrement();
-		break;
+	// 	// Press < to select the previous particle parameter setting.
+	// case '<':
+	// 	particleParameter.Decrement();
+	// 	break;
 
-		// Press > to select the next particle parameter setting.
-	case '>':
-		particleParameter.Increment();
-		break;
+	// 	// Press > to select the next particle parameter setting.
+	// case '>':
+	// 	particleParameter.Increment();
+	// 	break;
 
 	case 'w':
 		// particleParameter.Increment();
@@ -615,13 +616,13 @@ static void MouseWheel(int wheel, int direction, int x, int y)
 #endif
 
 #if ENABLE_GLUI
-static void Restart(int)
-{
-	delete test;
-	entry = g_testEntries + testIndex;
-	test = entry->createFcn();
-	Resize(width, height);
-}
+// static void Restart(int)
+// {
+// 	delete test;
+// 	entry = g_testEntries + testIndex;
+// 	test = entry->createFcn();
+// 	Resize(width, height);
+// }
 #endif  // ENABLE_GLUI
 
 
@@ -644,24 +645,24 @@ static void Pause(int)
 }
 #endif  // ENABLE_GLUI
 
-#if ENABLE_GLUI
-static void Exit(int code)
-{
-	// TODO: freeglut is not building on OSX
-#ifdef FREEGLUT
-	glutLeaveMainLoop();
-#endif
-	exit(code);
-}
-#endif  // ENABLE_GLUI
+// #if ENABLE_GLUI
+// static void Exit(int code)
+// {
+// 	// TODO: freeglut is not building on OSX
+// #ifdef FREEGLUT
+// 	glutLeaveMainLoop();
+// #endif
+// 	exit(code);
+// }
+// #endif  // ENABLE_GLUI
 
-#if ENABLE_GLUI
-static void SingleStep(int)
-{
-	settings.pause = 1;
-	settings.singleStep = 1;
-}
-#endif  // ENABLE_GLUI
+// #if ENABLE_GLUI
+// static void SingleStep(int)
+// {
+// 	settings.pause = 1;
+// 	settings.singleStep = 1;
+// }
+// #endif  // ENABLE_GLUI
 
 }  // namespace TestMain
 
@@ -721,49 +722,105 @@ int main(int argc, char** argv)
 	glui = GLUI_Master.create_glui_subwindow( mainWindow,
 		GLUI_SUBWINDOW_RIGHT );
 
-	glui->add_statictext("Tests");
+
+	GLUI_Panel* gamePanel =	glui->add_panel("Game");
+
+	// glui->add_statictext_to_panel(gamePanel, "Map");
 	GLUI_Listbox* testList =
-		glui->add_listbox("", &testSelection);
+		glui->add_listbox_to_panel(gamePanel, "Map", &testSelection);
 
-	glui->add_separator();
+	// GLUI_Spinner* velocityIterationSpinner =
+	// 	glui->add_spinner("Vel Iters", GLUI_SPINNER_INT, &settings.velocityIterations);
+	// velocityIterationSpinner->set_int_limits(1, 500);
 
-	GLUI_Spinner* velocityIterationSpinner =
-		glui->add_spinner("Vel Iters", GLUI_SPINNER_INT, &settings.velocityIterations);
-	velocityIterationSpinner->set_int_limits(1, 500);
+	// GLUI_Spinner* positionIterationSpinner =
+	// 	glui->add_spinner("Pos Iters", GLUI_SPINNER_INT, &settings.positionIterations);
+	// positionIterationSpinner->set_int_limits(0, 100);
 
-	GLUI_Spinner* positionIterationSpinner =
-		glui->add_spinner("Pos Iters", GLUI_SPINNER_INT, &settings.positionIterations);
-	positionIterationSpinner->set_int_limits(0, 100);
+	// GLUI_Spinner* particleIterationSpinner =
+	// 	glui->add_spinner("Pcl Iters", GLUI_SPINNER_INT, &settings.particleIterations);
+	// particleIterationSpinner->set_int_limits(1, 100);
 
-	GLUI_Spinner* particleIterationSpinner =
-		glui->add_spinner("Pcl Iters", GLUI_SPINNER_INT, &settings.particleIterations);
-	particleIterationSpinner->set_int_limits(1, 100);
+	// GLUI_Spinner* hertzSpinner =
+	// 	glui->add_spinner("Speed (Hz)", GLUI_SPINNER_FLOAT, &settingsHz);
 
-	GLUI_Spinner* hertzSpinner =
-		glui->add_spinner("Hertz", GLUI_SPINNER_FLOAT, &settingsHz);
+	// hertzSpinner->set_float_limits(5.0f, 200.0f);
 
-	hertzSpinner->set_float_limits(5.0f, 200.0f);
-
-	glui->add_checkbox("Sleep", &settings.enableSleep);
-	glui->add_checkbox("Warm Starting", &settings.enableWarmStarting);
-	glui->add_checkbox("Time of Impact", &settings.enableContinuous);
-	glui->add_checkbox("Sub-Stepping", &settings.enableSubStepping);
-	glui->add_checkbox("Strict Particle/Body Contacts", &settings.strictContacts);
+	// glui->add_checkbox("Sleep", &settings.enableSleep);
+	// glui->add_checkbox("Warm Starting", &settings.enableWarmStarting);
+	// glui->add_checkbox("Time of Impact", &settings.enableContinuous);
+	// glui->add_checkbox("Sub-Stepping", &settings.enableSubStepping);
+	// glui->add_checkbox("Strict Particle/Body Contacts", &settings.strictContacts);
 
 	//glui->add_separator();
 
-	GLUI_Panel* drawPanel =	glui->add_panel("Draw");
-	glui->add_checkbox_to_panel(drawPanel, "Shapes", &settings.drawShapes);
-	glui->add_checkbox_to_panel(drawPanel, "Particles", &settings.drawParticles);
-	glui->add_checkbox_to_panel(drawPanel, "Joints", &settings.drawJoints);
-	glui->add_checkbox_to_panel(drawPanel, "AABBs", &settings.drawAABBs);
-	glui->add_checkbox_to_panel(drawPanel, "Contact Points", &settings.drawContactPoints);
-	glui->add_checkbox_to_panel(drawPanel, "Contact Normals", &settings.drawContactNormals);
-	glui->add_checkbox_to_panel(drawPanel, "Contact Impulses", &settings.drawContactImpulse);
-	glui->add_checkbox_to_panel(drawPanel, "Friction Impulses", &settings.drawFrictionImpulse);
-	glui->add_checkbox_to_panel(drawPanel, "Center of Masses", &settings.drawCOMs);
-	glui->add_checkbox_to_panel(drawPanel, "Statistics", &settings.drawStats);
-	glui->add_checkbox_to_panel(drawPanel, "Profile", &settings.drawProfile);
+	// GLUI_Panel* drawPanel =	glui->add_panel("Draw");
+	// glui->add_checkbox_to_panel(drawPanel, "Shapes", &settings.drawShapes);
+	// glui->add_checkbox_to_panel(drawPanel, "Particles", &settings.drawParticles);
+	// glui->add_checkbox_to_panel(drawPanel, "Joints", &settings.drawJoints);
+	// glui->add_checkbox_to_panel(drawPanel, "AABBs", &settings.drawAABBs);
+	// glui->add_checkbox_to_panel(drawPanel, "Contact Points", &settings.drawContactPoints);
+	// glui->add_checkbox_to_panel(drawPanel, "Contact Normals", &settings.drawContactNormals);
+	// glui->add_checkbox_to_panel(drawPanel, "Contact Impulses", &settings.drawContactImpulse);
+	// glui->add_checkbox_to_panel(drawPanel, "Friction Impulses", &settings.drawFrictionImpulse);
+	// glui->add_checkbox_to_panel(drawPanel, "Center of Masses", &settings.drawCOMs);
+	// glui->add_checkbox_to_panel(drawPanel, "Statistics", &settings.drawStats);
+	// glui->add_checkbox_to_panel(drawPanel, "Profile", &settings.drawProfile);
+
+	// int booger = 0;
+	// glui->add_checkbox_to_panel(gamePanel, "Shapes", booger);
+	GLUI_Listbox* modeList =
+		glui->add_listbox_to_panel(gamePanel, "Mode", &modeSelection);
+
+
+
+	int32 modeCount = 0;
+	// TestEntry* e = g_testEntries;
+	// while (e->createFcn)
+	// {
+		modeList->add_item(modeCount, "fish mode" );
+		// ++testCount;
+		// ++e;
+
+
+	// }
+
+
+	glui->add_separator_to_panel(gamePanel);
+
+		int fakeNumberOfFood;
+		GLUI_Spinner* numberOfFoodSpinner =
+		glui->add_spinner_to_panel(gamePanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
+	numberOfFoodSpinner->set_int_limits(1, 8);
+
+		int fakeNumberOfFish;
+		GLUI_Spinner* numberOfFishSpinner =
+		glui->add_spinner_to_panel(gamePanel,"Number of fish", GLUI_SPINNER_INT, &fakeNumberOfFish);
+	numberOfFishSpinner->set_int_limits(1, 8);
+
+	int fakeNumberOfSpecies;
+		GLUI_Spinner* numberOfSpeciesSpinner =
+		glui->add_spinner_to_panel(gamePanel,"Number of species", GLUI_SPINNER_INT, &fakeNumberOfSpecies);
+	numberOfSpeciesSpinner->set_int_limits(1, 8);
+
+
+
+
+
+	GLUI_Panel* bioPanel =	glui->add_panel("Biology");
+
+	float fakeMutationRate;
+		GLUI_Spinner* mutationRateSpinner =
+		glui->add_spinner_to_panel(bioPanel, "Mutation Rate", GLUI_SPINNER_FLOAT, &fakeMutationRate);
+	mutationRateSpinner->set_float_limits(0.0001f, 1.0f);
+
+	float fakeMutationSeverity;
+		GLUI_Spinner* mutationSeveritySpinner =
+		glui->add_spinner_to_panel(bioPanel, "Mutation Severity", GLUI_SPINNER_FLOAT, &fakeMutationSeverity);
+	mutationSeveritySpinner->set_float_limits(0.0001f, 1.0f);
+
+
+
 
 	int32 testCount = 0;
 	TestEntry* e = g_testEntries;
@@ -775,10 +832,10 @@ int main(int argc, char** argv)
 	}
 
 	glui->add_button("Pause", 0, Pause);
-	glui->add_button("Single Step", 0, SingleStep);
-	glui->add_button("Restart", 0, Restart);
+	// glui->add_button("Single Step", 0, SingleStep);
+	// glui->add_button("Restart", 0, Restart);
 
-	glui->add_button("Quit", 0,(GLUI_Update_CB)Exit);
+	// glui->add_button("Quit", 0,(GLUI_Update_CB)Exit);
 
 	glui->set_main_gfx_window( mainWindow );
 
