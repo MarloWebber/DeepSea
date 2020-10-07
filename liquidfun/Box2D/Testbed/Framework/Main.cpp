@@ -666,6 +666,11 @@ static void Pause(int)
 
 }  // namespace TestMain
 
+
+void menuHandler(int bobi) {
+	printf("feet %i\n", bobi);
+}
+
 int main(int argc, char** argv)
 {
 	using namespace TestMain;
@@ -804,6 +809,13 @@ int main(int argc, char** argv)
 	numberOfSpeciesSpinner->set_int_limits(1, 8);
 
 
+float fakeGravity;
+		GLUI_Spinner* gravitySpinner =
+		glui->add_spinner_to_panel(gamePanel, "Gravity", GLUI_SPINNER_FLOAT, &fakeGravity);
+	gravitySpinner->set_float_limits(-10.0f, 10.0f);
+
+
+
 
 
 
@@ -820,6 +832,21 @@ int main(int argc, char** argv)
 	mutationSeveritySpinner->set_float_limits(0.0001f, 1.0f);
 
 
+
+
+
+	GLUI_Panel* terrainPanel =	glui->add_panel("Terrain Paint");
+
+	int currentlyPainting;
+	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
+
+
+
+	glutCreateMenu(menuHandler);
+
+        // Add menu items
+        glutAddMenuEntry("hello", 0);
+          glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 
 	int32 testCount = 0;
