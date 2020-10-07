@@ -30,6 +30,8 @@ bool foodSlotLoaded[N_FOODPARTICLES];
 bool userControlInputA;
 bool userControlInputB;
 
+b2Body * theActualFuckingFuck;
+
 b2World * local_m_world = nullptr;
 b2ParticleSystem * local_m_particleSystem = nullptr;
 DebugDraw * local_debugDraw_pointer = nullptr;
@@ -356,7 +358,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		p_bone->sensation_radar = 0.0f;
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 			if (!foodSlotLoaded[i]) {
-				break;
+				continue;
 			}
 			if (food[i]->init && food[i]->isUsed) {
 				b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
@@ -381,6 +383,7 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
 	p_body = local_m_world->CreateBody(&bodyDef);
+	theActualFuckingFuck = p_body;
 
 	b2Vec2 vertices[] = {
 		b2Vec2(-0.25, -0.25), 
@@ -659,6 +662,73 @@ void totalFishIncorporator (uint8_t fishIndex) {
 		if (fishes[fishIndex]->bones[i]->init) {
 			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , i);
 		}
+	}
+}
+
+void deleteFood (unsigned int foodIndex) {
+		if (foodSlotLoaded[foodIndex]) {
+
+		// printf("deleting %i of 8.", fishIndex);
+		// if (!fishChecker(fishIndex)) {
+			// return;
+		// }
+	
+		// for (int i = 0; i < N_FINGERS; ++i) {
+		// 	if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
+		// 				continue;
+		// 	}
+		// 	else {
+		// 		if (!fishes[fishIndex]->bones[i]->isRoot) { // root bones dont have joints
+		// 			if (fishes[fishIndex]->bones[i]->joint->isUsed) {
+		// 					local_m_world->DestroyJoint(fishes[fishIndex]->bones[i]->joint->p_joint);	
+		// 					fishes[fishIndex]->bones[i]->joint = nullptr;
+		// 			}
+		// 		}
+		// 	}
+			
+
+			// b2JointEdge * monogaleela = ( food[foodIndex])->p_body -> GetJointList ();
+
+			// // bool goin  = false;
+			// while (true) {
+
+			// 		if (monogaleela == NULL || monogaleela == nullptr) {
+			// 			break;
+			// 		}
+
+			// 		if (monogaleela->joint == NULL || monogaleela->joint == nullptr) {
+			// 			break;
+			// 		}
+
+			// 		local_m_world->DestroyJoint(monogaleela->joint );
+			// 		monogaleela = monogaleela->next;
+			// }
+
+
+		// }
+
+		// for (int i = 0; i < N_FINGERS; ++i) {
+			// if ( !fishes[fishIndex]->bones[i]->isUsed && !fishes[fishIndex]->bones[i]->init) {
+			// 	continue;
+			// }
+
+			// if (fishes[fishIndex]->bones[i]->isUsed && fishes[fishIndex]->bones[i]->init) {
+				printf("deleting food particle %i\n", foodIndex);
+
+				 local_m_world->DestroyBody( theActualFuckingFuck);
+				 // fishes[fishIndex]->bones[i]->p_body = nullptr;
+				 // fishes[fishIndex]->bones[i]->isUsed = false;
+				 // fishes[fishIndex]->bones[i]->init = false;
+			// }
+		// }
+	
+
+	currentNumberOfFood --;
+	food[foodIndex]->flagDelete = false;
+	food[foodIndex]->p_body = nullptr;
+	food[foodIndex]->isUsed = false;
+	food[foodIndex]->init = false;
+	foodSlotLoaded[foodIndex] = false;
 	}
 }
 
@@ -1701,7 +1771,16 @@ void removeDeletableFish() {
 			deleteFish (i) ;
 		}
 	}
+
+	// for (int i = 0; i < N_FOODPARTICLES; ++i) {
+	// 	if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
+		if (food[0]->flagDelete) {
+			deleteFood (0) ;
+		}
+	// }
 }
+
+
 
 // random new generation from the old winner. reset
 void reloadTheSim  () {
@@ -1709,6 +1788,10 @@ void reloadTheSim  () {
 	for (int i = 0; i < N_FISHES; ++i) {
 		if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
 		fishes[i]->flagDelete = true;
+	}
+	for (int i = 0; i < N_FOODPARTICLES; ++i) {
+		if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
+		food[i]->flagDelete = true;
 	}
 
 	startNextGeneration = true;
@@ -2117,11 +2200,9 @@ void drawingTest() {
 	b2Color fishFoodDye 		= b2Color(0.2f, 0.6f, 0.1f);
 	b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
 
-	for (int i = 0; i < N_FOODPARTICLES; ++i) {
-		if (!foodSlotLoaded[i] || !food[i]->init || !food[i]->isUsed) {
-			continue;
-		}
-		else {
+	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
+		if (foodSlotLoaded[i] && food[i]->init && food[i]->isUsed) {
+		
 			// food[i]->position 
 			// food[i]->p_body->GetAngle()
 
@@ -2129,7 +2210,7 @@ void drawingTest() {
 
 
 					// b2Vec2 boneCenterWorldPosition = ;
-					for (int j = 0; j < 4; ++j) {	
+					for (unsigned int j = 0; j < 4; ++j) {	
 						b2Vec2 adjustedVertex = food[i]->shape.GetVertex(j);//vertices[j];
 						b2Vec2 boneLocalCenter =food[i]->p_body->GetLocalCenter();
 						b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i]->p_body->GetAngle(), adjustedVertex);
@@ -2142,6 +2223,9 @@ void drawingTest() {
 					// local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDye);
 
 
+		}
+		else {
+			break;
 		}
 	}
 
@@ -2311,8 +2395,8 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					// if (true) { // freeze body
 
 
-						mutateFishDescriptor (&newFishBody, 0.0f, 0.0f);
-						// mutateFishDescriptor (&newFishBody, 0.1, 0.5);
+						// mutateFishDescriptor (&newFishBody, 0.0f, 0.0f);
+						mutateFishDescriptor (&newFishBody, 0.1, 0.5);
 					// }
 				    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
@@ -3498,5 +3582,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		else if (dataA.dataType == TYPE_MOUTH) {
 			vote(((BoneUserData *)(dataB.uData))->p_owner);
 		}
+
+		// food[0]->flagDelete = true;
 	}
 }

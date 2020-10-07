@@ -7,7 +7,7 @@
 #include "fann.h"
 
 #define N_FINGERS 8 // the amount of bones a fish can have. you know, fish fingers.
-#define N_FISHES 8
+#define N_FISHES 12
 #define N_FOODPARTICLES 8
 
 b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p);
@@ -275,6 +275,8 @@ struct foodParticle_t {
 
 	bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;
+
+	bool flagDelete;
 
 	foodParticle_t(b2Vec2 position);
 };
