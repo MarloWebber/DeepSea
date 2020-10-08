@@ -187,10 +187,12 @@ static void SimulationLoop()
 
 
 	// if (!queryScienceMode()) {
+		
+		test->Step(&settings);
+
 		if (test->IsWorldLocked() == false && !settings.pause) {
 			deepSeaLoop();
 		}
-		test->Step(&settings);
 	// }
 	// else {
 	// 	if (test->IsWorldLocked() == false && !settings.pause) {

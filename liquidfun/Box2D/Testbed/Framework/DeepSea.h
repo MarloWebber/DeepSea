@@ -272,7 +272,7 @@ struct foodParticle_t {
 	float energy; 				// the nutritive value of the food
 
 	b2BodyDef bodyDef;
-	b2Body * p_body;
+	b2Body * u_body;
 	b2PolygonShape shape; 
 
 	bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.

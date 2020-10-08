@@ -26,6 +26,8 @@
 
 #include <stdlib.h>
 
+#include "DeepSea.h"
+
 class Test;
 struct Settings;
 
@@ -195,6 +197,7 @@ public:
 	{
 		B2_NOT_USED(contact);
 		B2_NOT_USED(impulse);
+		// deepSeaLoop();
 	}
 
 	void ShiftOrigin(const b2Vec2& newOrigin);

@@ -114,6 +114,15 @@ Test::~Test()
 	RestoreParticleParameters();
 }
 
+// void Test::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse){
+// 	// if (test->IsWorldLocked() == false && !settings.pause) {
+// 			deepSeaLoop();
+// 		// }
+
+// 				B2_NOT_USED(contact);
+// 		B2_NOT_USED(impulse);
+// }
+
 // i think this is the collision handler? 
 void Test::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 {

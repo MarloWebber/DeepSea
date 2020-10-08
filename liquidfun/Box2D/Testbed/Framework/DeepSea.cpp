@@ -34,7 +34,7 @@ bool userControlInputB;
 std::list<BonyFish> fishes;
 std::list<foodParticle_t> food;
 
-// b2Body * theActualFuckingFuck;
+b2Body * theActualFuckingFuck;
 
 b2World * local_m_world = nullptr;
 b2ParticleSystem * local_m_particleSystem = nullptr;
@@ -354,8 +354,8 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
-	p_body = local_m_world->CreateBody(&bodyDef);
-	// theActualFuckingFuck = p_body;
+	u_body = local_m_world->CreateBody(&bodyDef);
+	theActualFuckingFuck = u_body;
 
 	flagDelete = false;
 
@@ -368,7 +368,7 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 		
 	shape.Set(vertices, 4);
 
-	p_body->CreateFixture(&shape, 1.2f);
+	u_body->CreateFixture(&shape, 1.2f);
 	init = true;
 	isUsed = true;
 };
@@ -602,40 +602,60 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 // }
 
 void deleteFood (foodParticle_t * snackBar) {
-	// if (foodSlotLoaded[foodIndex]) {
+
+	// 	std::list<foodParticle_t>::iterator foodParticle;
+	// for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+
+	// 	if ( &(*foodParticle) == snackBar ) {
+	// 		break;
+	// 	}
+
+	// }
 
 
-	if (!snackBar->isUsed || !snackBar->init) {
-		return;
-	}
+
+	// 	// currentNumberOfFood --;
+	// 	foodParticle->flagDelete = false;
+	// 	// snackBar->p_body = nullptr;
+	// 	foodParticle->isUsed = false;
+	// 	foodParticle->init = false;
+	// 	// foodSlotLoaded[foodIndex] = false;
+
+	// // if (foodSlotLoaded[foodIndex]) {
+
+
+	// // if (!snackBar->isUsed || !snackBar->init || snackBar == nullptr || snackBar == NULL) {
+	// // 	return;
+	// // }
 
 		printf("deleting food particle\n");
 
 
-		// currentNumberOfFood --;
-		snackBar->flagDelete = false;
-		// snackBar->p_body = nullptr;
-		snackBar->isUsed = false;
-		snackBar->init = false;
-		// foodSlotLoaded[foodIndex] = false;
 
 
-	std::list<foodParticle_t>::iterator foodParticle;
-	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
 
-		if ( &(*foodParticle) == snackBar ) {
-			break;
-		}
+	// b2JointEdge * monogogo = foodParticle->u_body->GetJointList();
 
-	}
+	// while (monogogo != NULL) {
+	// 	b2JointEdge * mndaee = monogogo->next;
+	// 		local_m_world->DestroyJoint(monogogo->joint);
+	// 		monogogo = mndaee;
+	// }
+
+	// if (monogogo->joint != NULL || monogogo->joint != nullptr) {
 
 
-	// try {
-	local_m_world->DestroyBody( foodParticle->p_body );
+// 	local_m_world->DestroyJoint(monogogo->joint);
+// }
+
+	// // try {
+	// printf("DESROREYING BODYEHN 0x%lu\n", foodParticle->u_body);
+	// printf("SNARBYFRK 0x%lu\n",snackBar->u_body);
+	// local_m_world->DestroyBody( foodParticle->u_body );
 	// local_m_world->DestroyBody( theActualFuckingFuck );
-	
+	// theActualFuckingFuck= nullptr;
 
-	food.erase(foodParticle);
+	// food.erase(foodParticle);
 // }
 // catch (...){
 // 	;
@@ -1178,13 +1198,13 @@ void removeDeletableFish() {
 
 	std::list<foodParticle_t>::iterator foodParticle;
 	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-			if (!foodParticle->isUsed || !foodParticle->init) {
-		continue;
-	}
+	// 		if (!foodParticle->isUsed || !foodParticle->init) {
+	// 	continue;
+	// }
 
 		// if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
 		if (foodParticle->flagDelete) {
-			// deleteFood ( &(*foodParticle)) ;
+			deleteFood ( &(*foodParticle)) ;
 		}
 	}
 }
@@ -1395,8 +1415,8 @@ void drawingTest() {
 
 			for (unsigned int j = 0; j < 4; ++j) {	
 				b2Vec2 adjustedVertex = foodParticle->shape.GetVertex(j);
-				b2Vec2 boneLocalCenter =foodParticle->p_body->GetLocalCenter();
-				b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, foodParticle->p_body->GetAngle(), adjustedVertex);
+				b2Vec2 boneLocalCenter =foodParticle->u_body->GetLocalCenter();
+				b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, foodParticle->u_body->GetAngle(), adjustedVertex);
 				rotatedVertex.x += foodParticle->position.x;
 				rotatedVertex.y += foodParticle->position.y;
 				vertices[j] = rotatedVertex;
@@ -2128,7 +2148,7 @@ void deepSeaLoop () {
 			// 	break;
 			// }
 			// else {
-				foodParticle->position = foodParticle->p_body->GetWorldCenter(); // update positions of all the food particles
+				foodParticle->position = foodParticle->u_body->GetWorldCenter(); // update positions of all the food particles
 			// }
 		}
 
@@ -2191,14 +2211,18 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			if (exploratoryMode) {
 
 			    vote(((BoneUserData *)(dataB.uData))->p_owner);
+
+				// ((foodParticle_t*)(dataA.uData) )->flagDelete = true;
+				
+				// flagAddFood = true;
 			}
 
 			else {
 				// deleteFood()
-				((foodParticle_t*)(dataA.uData) )->flagDelete = true;
+				// ((foodParticle_t*)(dataA.uData) )->flagDelete = true;
 
-				// addFoodParticle(getRandomPosition());
-				flagAddFood = true;
+				// // addFoodParticle(getRandomPosition());
+				// flagAddFood = true;
 			}
 
 		}
@@ -2211,9 +2235,9 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			else {
 
 				// food[0]->flagDelete = true;
-				((foodParticle_t*)(dataB.uData) )->flagDelete = true;
-				// addFoodParticle(getRandomPosition());
-				flagAddFood = true;
+				// ((foodParticle_t*)(dataB.uData) )->flagDelete = true;
+				// // addFoodParticle(getRandomPosition());
+				// flagAddFood = true;
 			}
 		}
 	}
