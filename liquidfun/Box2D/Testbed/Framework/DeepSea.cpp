@@ -488,7 +488,7 @@ networkDescriptor * createEmptyNetworkOfCorrectSize (fann * temp_ann) {
 }
 
 
-BonyFish::BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition) {
+BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
 	genes = driedFish;
 	hunger = 0.0f; 										// the animal spends energy to move and must replenish it by eating
 
@@ -582,13 +582,9 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 	// }
 }
 
-void totalFishIncorporator (uint8_t fishIndex) {
-	for (int i = 0; i < N_FINGERS; ++i) {
-		if (fishes[fishIndex]->bones[i]->init) {
-			nonRecursiveBoneIncorporator( fishes[fishIndex]->bones[i] , i);
-		}
-	}
-}
+// void totalFishIncorporator (uint8_t fishIndex) {
+	
+// }
 
 void deleteFood (unsigned int foodIndex) {
 	if (foodSlotLoaded[foodIndex]) {
@@ -644,10 +640,19 @@ void deleteFish (BonyFish * fish) {
 	// fishSlotLoaded[fishIndex] = false;
 }
 
-void loadFish (uint8_t fishIndex, fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
-	fishes[fishIndex] = new BonyFish(driedFish, fishIndex, nann, startingPosition);
-	fishes[fishIndex]->slot = fishIndex;
-	fishSlotLoaded[fishIndex] = true;
+void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
+	// fishes[fishIndex] =
+
+	BonyFish * fish =  new BonyFish(driedFish, nann, startingPosition);
+	
+	for (int i = 0; i < N_FINGERS; ++i) {
+		if (fish->bones[i]->init) {
+			nonRecursiveBoneIncorporator( fish->bones[i] , i);
+		}
+	}
+
+	fishes.push_back( *fish );
+
 }
 
 fann * loadFishBrainFromFile (std::string fileName) {
@@ -1100,7 +1105,7 @@ void removeDeletableFish() {
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		// if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
 		if (fish->flagDelete) {
-			deleteFish (i) ;
+			deleteFish ( &(*fish)) ;
 		}
 	}
 
@@ -1390,30 +1395,30 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 
 void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
-	int n_selected  = 0;
-	int partner1index = 0;
-	int partner2index = 0;
+	// int n_selected  = 0;
+	// int partner1index = 0;
+	// int partner2index = 0;
 
-	// count the number of selected fish to see if you can do a fish fucking.
-	// for (int i = 0; i < N_FISHES; ++i) {
+	// // count the number of selected fish to see if you can do a fish fucking.
+	// // for (int i = 0; i < N_FISHES; ++i) {
 
-	std::list<BonyFish>::iterator fish;
-	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-		// if (fishSlotLoaded[i]) {
-			if (fish->selected) {
-				if (partner1index == 0) {
-					partner1index = i;
-				}
-				else {
-					partner2index = i;
-				}
-				n_selected ++;
-				fish->selected = false;
-			}
-		// }
-	}
+	// std::list<BonyFish>::iterator fish;
+	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+	// 	// if (fishSlotLoaded[i]) {
+	// 		if (fish->selected) {
+	// 			if (partner1index == 0) {
+	// 				partner1index = i;
+	// 			}
+	// 			else {
+	// 				partner2index = i;
+	// 			}
+	// 			n_selected ++;
+	// 			fish->selected = false;
+	// 		}
+	// 	// }
+	// }
 
-	if (n_selected >= 2) {
+	// if (n_selected >= 2) {
 
 		// save partners information to file
 		//  saveFishToFile(std::string("partner1.fsh"), fishes[partner1index]->genes);
@@ -1441,8 +1446,8 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 			// totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
 		// }
 
-	}
-	else {
+	// }
+	// else {
 			// otherwise just reproduce 1 of them asexually
 			// clear out the old generation
 			removeDeletableFish();
@@ -1486,7 +1491,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 						}
 					}
 
-					loadFish (i, newFishBody, jann, getRandomPosition()) ;
+					loadFish ( newFishBody, jann, getRandomPosition()) ;
 
 				}
 				else { 						// if there is no winner, its probably a reset or new install. make one up
@@ -1494,13 +1499,13 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 					printf("No genetic material found in game folder. Loading default animal.\n");
 					fishDescriptor_t nematode = fishDescriptor_t();
 
-					loadFish (i, nematode, NULL,  getRandomPosition()) ;
+					loadFish ( nematode, NULL,  getRandomPosition()) ;
 				}
 
-				totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
+				// totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
 
-			}
-	}
+			// }
+	// }
 
 	startNextGeneration = false;
 }
@@ -1549,7 +1554,7 @@ void meltSelectedFish () {
 	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		if (fish->selected) {
-			brainMelter (fishes[i]);
+			brainMelter ( &(*fish));
 
 			// refresh the water in the brain jar.
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
@@ -1837,7 +1842,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 }
 
 // return a positive number if finds a box or negative if not.
-int checkNeuroWindow (b2AABB mousePointer) {
+BonyFish * checkNeuroWindow (b2AABB mousePointer) {
 	// check to see if you're in a neuro window.
 	// for (int i = 0; i < N_FISHES; ++i) {
 
@@ -1845,11 +1850,11 @@ int checkNeuroWindow (b2AABB mousePointer) {
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		// if (fishChecker(i)) {
 			if (fish->brain->networkWindow.Contains(mousePointer)) {
-				return i;
+				return &(*fish);
 			}
 		// }
 	}
-	return -1;
+	return (BonyFish*)nullptr;
 }
 
 int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
@@ -1996,7 +2001,7 @@ void runBiomechanicalFunctions () {
 
 			// if (fishChecker(i)) {
 				if (fish->selected) {
-					drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, fish);
+					drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, &(*fish));
 				}
 			// }
 		// }

@@ -263,7 +263,7 @@ struct BonyFish {
 
 	char species[32]; // a textual string describing what species the fish is.
 
-	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition);
+	BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition);
 
 };
 
@@ -329,9 +329,9 @@ void vote(BonyFish * winner);
 void  mutateFANNFileDirectly();
 
 void drawingTest() ;
-int checkNeuroWindow (b2AABB mousePointer) ;
+BonyFish * checkNeuroWindow (b2AABB mousePointer) ;
 
-int checkNeuronsInWindow (b2AABB mousePointer, int fishIndex) ;
+int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) ;
 extern bool startNextGeneration;
 void incrementSelectedConnection();
 void decrementSelectedConnection();
