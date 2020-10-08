@@ -42,6 +42,9 @@ b2World * local_m_world_sci = nullptr;
 b2ParticleSystem * local_m_particleSystem_sci = nullptr;
 DebugDraw * local_debugDraw_pointer_sci = nullptr;
 
+bool exploratoryMode  = false;
+bool flagAddFood = true;
+
 
 float pi = 3.14159f;
 
@@ -1111,12 +1114,12 @@ void removeDeletableFish() {
 		}
 	}
 
-	// for (int i = 0; i < N_FOODPARTICLES; ++i) {
-	// 	if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
-		if (food[0]->flagDelete) {
-			deleteFood (0) ;
+	for (int i = 0; i < N_FOODPARTICLES; ++i) {
+		if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
+		if (food[i]->flagDelete) {
+			deleteFood (i) ;
 		}
-	// }
+	}
 }
 
 // random new generation from the old winner. reset
@@ -1455,9 +1458,12 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 	// else {
 			// otherwise just reproduce 1 of them asexually
 			// clear out the old generation
+
+
+
 			removeDeletableFish();
 			
-			// for (int i = 0; i < N_FISHES; ++i) {
+			for (int i = 0; i < N_FISHES; ++i) {
 
 				
 				bool thereIsAFile = false;
@@ -1509,7 +1515,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 				// totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
 
-			// }
+			}
 	// }
 
 	startNextGeneration = false;
@@ -2031,6 +2037,12 @@ void deepSeaLoop () {
 			beginGeneration ( );
 		}
 
+		if (flagAddFood) {
+			flagAddFood = false;
+
+			addFoodParticle(getRandomPosition());
+		}
+
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 			if (!foodSlotLoaded[i]) {
 				break;
@@ -2077,14 +2089,16 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 	if( dataA.dataType == TYPE_MOUTH ) {
 		et = true;
-		if( dataB.dataType == TYPE_FOOD ) {
+		if( dataB.dataType == TYPE_FOOD && !
+				((foodParticle_t*)(dataB.uData) )->flagDelete ) {
 			fud = true;
 		}
 	}
 
 	if( dataB.dataType == TYPE_MOUTH ) {
 		et = true;
-		if( dataA.dataType == TYPE_FOOD ) {
+		if( dataA.dataType == TYPE_FOOD && !
+				((foodParticle_t*)(dataA.uData) )->flagDelete) {
 			fud = true;
 		}
 	}
@@ -2093,10 +2107,34 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		printf("monch");
 
 		if( dataB.dataType == TYPE_MOUTH ) {
-		    vote(((BoneUserData *)(dataB.uData))->p_owner);
+
+			if (exploratoryMode) {
+
+			    vote(((BoneUserData *)(dataB.uData))->p_owner);
+			}
+
+			else {
+				// deleteFood()
+				((foodParticle_t*)(dataA.uData) )->flagDelete = true;
+
+				// addFoodParticle(getRandomPosition());
+				flagAddFood = true;
+			}
+
 		}
 		else if (dataA.dataType == TYPE_MOUTH) {
-			vote(((BoneUserData *)(dataB.uData))->p_owner);
+
+			if (exploratoryMode) {
+
+				vote(((BoneUserData *)(dataB.uData))->p_owner);
+			}
+			else {
+
+				// food[0]->flagDelete = true;
+				((foodParticle_t*)(dataB.uData) )->flagDelete = true;
+				// addFoodParticle(getRandomPosition());
+				flagAddFood = true;
+			}
 		}
 	}
 }
