@@ -34,7 +34,7 @@ bool userControlInputB;
 std::list<BonyFish> fishes;
 std::list<foodParticle_t> food;
 
-b2Body * theActualFuckingFuck;
+// b2Body * theActualFuckingFuck;
 
 b2World * local_m_world = nullptr;
 b2ParticleSystem * local_m_particleSystem = nullptr;
@@ -355,7 +355,7 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
 	p_body = local_m_world->CreateBody(&bodyDef);
-	theActualFuckingFuck = p_body;
+	// theActualFuckingFuck = p_body;
 
 	flagDelete = false;
 
@@ -614,7 +614,7 @@ void deleteFood (foodParticle_t * snackBar) {
 
 		// currentNumberOfFood --;
 		snackBar->flagDelete = false;
-		snackBar->p_body = nullptr;
+		// snackBar->p_body = nullptr;
 		snackBar->isUsed = false;
 		snackBar->init = false;
 		// foodSlotLoaded[foodIndex] = false;
@@ -631,11 +631,11 @@ void deleteFood (foodParticle_t * snackBar) {
 
 
 	// try {
-	// local_m_world->DestroyBody( foodParticle->p_body );
-	local_m_world->DestroyBody( theActualFuckingFuck );
+	local_m_world->DestroyBody( foodParticle->p_body );
+	// local_m_world->DestroyBody( theActualFuckingFuck );
 	
 
-	// food.erase(foodParticle);
+	food.erase(foodParticle);
 // }
 // catch (...){
 // 	;
