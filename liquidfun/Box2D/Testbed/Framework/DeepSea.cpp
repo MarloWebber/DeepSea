@@ -32,8 +32,9 @@ bool userControlInputA;
 bool userControlInputB;
 
 std::list<BonyFish> fishes;
+std::list<foodParticle_t> food;
 
-// b2Body * theActualFuckingFuck;
+b2Body * theActualFuckingFuck;
 
 b2World * local_m_world = nullptr;
 b2ParticleSystem * local_m_particleSystem = nullptr;
@@ -354,7 +355,9 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
 	p_body = local_m_world->CreateBody(&bodyDef);
-	// theActualFuckingFuck = p_body;
+	theActualFuckingFuck = p_body;
+
+	flagDelete = false;
 
 	b2Vec2 vertices[] = {
 		b2Vec2(-0.25, -0.25), 
@@ -372,7 +375,7 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 
 void addFoodParticle(b2Vec2 position) {
 	// food[currentNumberOfFood] =
-	 food.push_back(new foodParticle_t( position) );
+	 food.push_back( foodParticle_t( position) );
 	// foodSlotLoaded[currentNumberOfFood] = true;
 	// currentNumberOfFood++;
 }
@@ -600,6 +603,12 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 
 void deleteFood (foodParticle_t * snackBar) {
 	// if (foodSlotLoaded[foodIndex]) {
+
+
+	if (!snackBar->isUsed || !snackBar->init) {
+		return;
+	}
+
 		printf("deleting food particle\n");
 
 
@@ -621,9 +630,16 @@ void deleteFood (foodParticle_t * snackBar) {
 	}
 
 
-	local_m_world->DestroyBody( foodParticle->p_body );
+	// try {
+	// local_m_world->DestroyBody( foodParticle->p_body );
+	local_m_world->DestroyBody( theActualFuckingFuck );
+	
 
-	food.erase(foodParticle);
+	// food.erase(foodParticle);
+// }
+// catch (...){
+// 	;
+// }
 
 	// }
 }
@@ -634,9 +650,9 @@ void deleteFish (BonyFish * fish) {
 		// if (!fishChecker(fishIndex)) {
 		// 	return;
 		// }
-	if (!fish->init || !fish->isUsed) {
-		return;
-	}
+	// if (!fish->init || !fish->isUsed) {
+	// 	return;
+	// }
 	
 		for (int i = 0; i < N_FINGERS; ++i) {
 			if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
@@ -668,20 +684,20 @@ void deleteFish (BonyFish * fish) {
 
 fish->isUsed = false;
 
-	std::list<BonyFish>::iterator fishA;
+	// std::list<BonyFish>::iterator fishA;
 
-	// for (int i = 0; i < N_FISHES; ++i) {
+	// // for (int i = 0; i < N_FISHES; ++i) {
 
-	for (fishA = fishes.begin(); fishA !=  fishes.end(); ++fishA) 	{
+	// for (fishA = fishes.begin(); fishA !=  fishes.end(); ++fishA) 	{
 
-		if ( &(*fishA) == fish) {
-			break;
+	// 	if ( &(*fishA) == fish) {
+	// 		break;
 			
-		}
+	// 	}
 
-	}
+	// }
 
-	fishes.erase(fishA);
+	// fishes.erase(fishA);
 
 
 	
@@ -1158,10 +1174,17 @@ void removeDeletableFish() {
 		}
 	}
 
-	for (int i = 0; i < N_FOODPARTICLES; ++i) {
-		if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
-		if (food[i]->flagDelete) {
-			deleteFood ( food[i] ) ;
+	// for (int i = 0; i < N_FOODPARTICLES; ++i) {
+
+	std::list<foodParticle_t>::iterator foodParticle;
+	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+			if (!foodParticle->isUsed || !foodParticle->init) {
+		continue;
+	}
+
+		// if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
+		if (foodParticle->flagDelete) {
+			// deleteFood ( &(*foodParticle)) ;
 		}
 	}
 }
@@ -1176,9 +1199,13 @@ void reloadTheSim  () {
 		// if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
 		fish->flagDelete = true;
 	}
-	for (int i = 0; i < N_FOODPARTICLES; ++i) {
-		if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
-		food[i]->flagDelete = true;
+	// for (int i = 0; i < N_FOODPARTICLES; ++i) {
+
+	std::list<foodParticle_t>::iterator foodParticle;
+	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+
+		// if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
+		foodParticle->flagDelete = true;
 	}
 	startNextGeneration = true;
 }
@@ -1187,7 +1214,7 @@ void reloadTheSim  () {
 void  vote (BonyFish * winner) {
 	// if ( !fishSlotLoaded[winner->slot]) { return; }
 	// else {
-	printf("winner: %i\n", winner->slot);
+	// printf("winner: %i\n", winner->slot);
 
 	fann * wann = winner->ann;
 
@@ -1356,19 +1383,22 @@ void drawingTest() {
 	b2Color fishFoodDye 		= b2Color(0.2f, 0.6f, 0.1f);
 	b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
 
-	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
+	// for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
+
+	std::list<foodParticle_t>::iterator foodParticle;
+	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
 		if (
 			// foodSlotLoaded[i] &&
-		 food[i]->init && food[i]->isUsed) {
+		 foodParticle->init && foodParticle->isUsed) {
 	
 			b2Vec2 vertices[4];
 
 			for (unsigned int j = 0; j < 4; ++j) {	
-				b2Vec2 adjustedVertex = food[i]->shape.GetVertex(j);
-				b2Vec2 boneLocalCenter =food[i]->p_body->GetLocalCenter();
-				b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i]->p_body->GetAngle(), adjustedVertex);
-				rotatedVertex.x += food[i]->position.x;
-				rotatedVertex.y +=food[i]->position.y;
+				b2Vec2 adjustedVertex = foodParticle->shape.GetVertex(j);
+				b2Vec2 boneLocalCenter =foodParticle->p_body->GetLocalCenter();
+				b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, foodParticle->p_body->GetAngle(), adjustedVertex);
+				rotatedVertex.x += foodParticle->position.x;
+				rotatedVertex.y += foodParticle->position.y;
 				vertices[j] = rotatedVertex;
 			}
 			local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 ,fishFoodDye );
@@ -2093,7 +2123,7 @@ void deepSeaLoop () {
 
 	std::list<foodParticle_t>::iterator foodParticle;
 	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-		
+
 			// if (!foodParticle->init || !food[i]->isUsed) {
 			// 	break;
 			// }
