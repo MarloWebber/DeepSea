@@ -310,7 +310,8 @@ void makeAJellyfish (BonyFish * p_fish) ;
 
 
 
-extern foodParticle_t * food[N_FOODPARTICLES];
+// extern foodParticle_t * food[N_FOODPARTICLES];
+extern std::list<foodParticle_t> food;
 // extern BonyFish * fishes[N_FISHES];
 extern std::list<BonyFish> fishes;
 

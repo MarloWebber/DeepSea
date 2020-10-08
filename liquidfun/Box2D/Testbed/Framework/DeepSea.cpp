@@ -25,14 +25,15 @@ bool startNextGeneration = false;
 // bool scienceMode = false;
 
 // bool fishSlotLoaded[N_FISHES];
-bool foodSlotLoaded[N_FOODPARTICLES];
+// bool foodSlotLoaded[N_FOODPARTICLES];
+
 
 bool userControlInputA;
 bool userControlInputB;
 
 std::list<BonyFish> fishes;
 
-b2Body * theActualFuckingFuck;
+// b2Body * theActualFuckingFuck;
 
 b2World * local_m_world = nullptr;
 b2ParticleSystem * local_m_particleSystem = nullptr;
@@ -42,7 +43,7 @@ b2World * local_m_world_sci = nullptr;
 b2ParticleSystem * local_m_particleSystem_sci = nullptr;
 DebugDraw * local_debugDraw_pointer_sci = nullptr;
 
-bool exploratoryMode  = false;
+bool exploratoryMode  = true;
 bool flagAddFood = true;
 
 
@@ -61,7 +62,7 @@ const float desired_error = (const float) 0.01;
 const unsigned int max_epochs = 50000;
 const unsigned int epochs_between_reports = 100;
 
-foodParticle_t * food[N_FOODPARTICLES];
+// foodParticle_t * food[N_FOODPARTICLES];
 // BonyFish * fishes[N_FISHES];
 // BonyFish * sciFish;
 float magnitude (b2Vec2 vector) {
@@ -324,13 +325,18 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	
 	if (p_bone->sensor_radar) {
 		p_bone->sensation_radar = 0.0f;
-		for  (int i = 0; i < N_FOODPARTICLES; i++) {
-			if (!foodSlotLoaded[i]) {
-				continue;
-			}
-			if (food[i]->init && food[i]->isUsed) {
+		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
+
+	std::list<foodParticle_t>::iterator foodParticle;
+	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+			// if (
+			// 	//!foodSlotLoaded[i]
+			// 	!food[i]) {
+			// 	continue;
+			// }
+			if (foodParticle->init && foodParticle->isUsed) {
 				b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
-				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
+				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - foodParticle->position.x),(boneCenterWorldPosition.y - foodParticle->position.y));
 				float distance = magnitude (positionalDifference);
 				if (distance > 0) {
 					p_bone->sensation_radar += 1/distance;
@@ -348,7 +354,7 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
 	p_body = local_m_world->CreateBody(&bodyDef);
-	theActualFuckingFuck = p_body;
+	// theActualFuckingFuck = p_body;
 
 	b2Vec2 vertices[] = {
 		b2Vec2(-0.25, -0.25), 
@@ -365,9 +371,10 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 };
 
 void addFoodParticle(b2Vec2 position) {
-	food[currentNumberOfFood] = new foodParticle_t( position);
-	foodSlotLoaded[currentNumberOfFood] = true;
-	currentNumberOfFood++;
+	// food[currentNumberOfFood] =
+	 food.push_back(new foodParticle_t( position) );
+	// foodSlotLoaded[currentNumberOfFood] = true;
+	// currentNumberOfFood++;
 }
 
 void saveFishToFile(const std::string& file_name, fishDescriptor_t& data) {
@@ -591,19 +598,34 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 	
 // }
 
-void deleteFood (unsigned int foodIndex) {
-	if (foodSlotLoaded[foodIndex]) {
-		printf("deleting food particle %i\n", foodIndex);
+void deleteFood (foodParticle_t * snackBar) {
+	// if (foodSlotLoaded[foodIndex]) {
+		printf("deleting food particle\n");
 
-		local_m_world->DestroyBody( theActualFuckingFuck);
 
-		currentNumberOfFood --;
-		food[foodIndex]->flagDelete = false;
-		food[foodIndex]->p_body = nullptr;
-		food[foodIndex]->isUsed = false;
-		food[foodIndex]->init = false;
-		foodSlotLoaded[foodIndex] = false;
+		// currentNumberOfFood --;
+		snackBar->flagDelete = false;
+		snackBar->p_body = nullptr;
+		snackBar->isUsed = false;
+		snackBar->init = false;
+		// foodSlotLoaded[foodIndex] = false;
+
+
+	std::list<foodParticle_t>::iterator foodParticle;
+	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+
+		if ( &(*foodParticle) == snackBar ) {
+			break;
+		}
+
 	}
+
+
+	local_m_world->DestroyBody( foodParticle->p_body );
+
+	food.erase(foodParticle);
+
+	// }
 }
 
 // delete a fish from the game world and remove it from memory
@@ -612,6 +634,9 @@ void deleteFish (BonyFish * fish) {
 		// if (!fishChecker(fishIndex)) {
 		// 	return;
 		// }
+	if (!fish->init || !fish->isUsed) {
+		return;
+	}
 	
 		for (int i = 0; i < N_FINGERS; ++i) {
 			if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
@@ -641,7 +666,26 @@ void deleteFish (BonyFish * fish) {
 		}
 	// }
 
-	fish->isUsed = false;
+fish->isUsed = false;
+
+	std::list<BonyFish>::iterator fishA;
+
+	// for (int i = 0; i < N_FISHES; ++i) {
+
+	for (fishA = fishes.begin(); fishA !=  fishes.end(); ++fishA) 	{
+
+		if ( &(*fishA) == fish) {
+			break;
+			
+		}
+
+	}
+
+	fishes.erase(fishA);
+
+
+	
+	// fishes.remove( (*fish ))
 	// fishSlotLoaded[fishIndex] = false;
 }
 
@@ -1117,7 +1161,7 @@ void removeDeletableFish() {
 	for (int i = 0; i < N_FOODPARTICLES; ++i) {
 		if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
 		if (food[i]->flagDelete) {
-			deleteFood (i) ;
+			deleteFood ( food[i] ) ;
 		}
 	}
 }
@@ -1313,7 +1357,9 @@ void drawingTest() {
 	b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
 
 	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
-		if (foodSlotLoaded[i] && food[i]->init && food[i]->isUsed) {
+		if (
+			// foodSlotLoaded[i] &&
+		 food[i]->init && food[i]->isUsed) {
 	
 			b2Vec2 vertices[4];
 
@@ -2043,13 +2089,17 @@ void deepSeaLoop () {
 			addFoodParticle(getRandomPosition());
 		}
 
-		for  (int i = 0; i < N_FOODPARTICLES; i++) {
-			if (!foodSlotLoaded[i]) {
-				break;
-			}
-			else {
-				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
-			}
+		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
+
+	std::list<foodParticle_t>::iterator foodParticle;
+	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+		
+			// if (!foodParticle->init || !food[i]->isUsed) {
+			// 	break;
+			// }
+			// else {
+				foodParticle->position = foodParticle->p_body->GetWorldCenter(); // update positions of all the food particles
+			// }
 		}
 
 		runBiomechanicalFunctions();
