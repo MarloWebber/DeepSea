@@ -286,16 +286,44 @@ void Test::MouseDown(const b2Vec2& p)
 
 		if (voting_mode) {
 			// find fish struct from user data and save its genetic material.
-		uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
-		BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
-		BonyFish * winner = wishBone->p_owner;
+		// uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
+		// BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
+		// BonyFish * winner = wishBone->p_owner;
 
-		if (winner->selected) {
-			winner->selected = false;
+		// printf("");
+
+
+	std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+for (int i = 0; i < N_FINGERS; ++i) {
+				if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
+					;
+				}
+				else {
+					if (fish->bones[i]->p_body == NULL || fish->bones[i]->p_body == nullptr) {
+						continue;
+					}
+
+
+					if (body == fish->bones[i]->p_body) {
+						// printf("YOU BEAT JUMANJI\n");
+
+							if (fish->selected) {
+			fish->selected = false;
 		}
 		else {
-			winner->selected = true;
+						// printf("neen\n");
+
+			fish->selected = true;
 		}
+					}
+				}
+			}
+
+	}
+
+	
 
 		
 			// if (!winner->init || !winner->isUsed) {

@@ -1357,10 +1357,13 @@ void drawingTest() {
 					}
 
 					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fish->bones[i]->color);
-					local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0,0,0));
 
 					if (fish->selected) {
 						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(1,1,1));
+						// printf("yenies");
+					}
+					else {
+						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0,0,0));
 					}
 				}
 			}
@@ -1849,13 +1852,21 @@ BonyFish * checkNeuroWindow (b2AABB mousePointer) {
 	// for (int i = 0; i < N_FISHES; ++i) {
 
 	std::list<BonyFish>::iterator fish;
+	// printf("boslimbg");
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
 		// if (fishChecker(i)) {
+		// printf("sleb");
+		printab2Vec2(fish->brain->networkWindow.upperBound);
+
+		if (fish->selected) {
 			if (fish->brain->networkWindow.Contains(mousePointer)) {
+				// printf("nmelmul\n");
 				return &(*fish);
 			}
-		// }
+		}
 	}
+	// printf("wililil\n");
 	return (BonyFish*)nullptr;
 }
 
@@ -1890,9 +1901,9 @@ void runBiomechanicalFunctions () {
 
 			// if (fishChecker(i)) {
 				// reset neuro bounding boxes... this isnt the right place to do this, should be in a graphics function
-				fish->brain->networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
-				fish->brain->networkWindow.upperBound = b2Vec2(0.0f,0.0f);
-			// }
+			// 	fish->brain->networkWindow.lowerBound = b2Vec2(0.0f,0.0f);
+			// 	fish->brain->networkWindow.upperBound = b2Vec2(0.0f,0.0f);
+			// // }
 
 			// update the fish's senses
 			for (int j = 0; j < N_FINGERS; ++j) {
@@ -2001,8 +2012,11 @@ void runBiomechanicalFunctions () {
 				}
 			}
 
-			// if (fishChecker(i)) {
+			// if (fishChecker(i)) {_		
+
+					// printf("fanucker");
 				if (fish->selected) {
+					// printf("EEEEEEEEEEEEEEEEEEEEEEEETTTT");
 					drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, &(*fish));
 				}
 			// }
