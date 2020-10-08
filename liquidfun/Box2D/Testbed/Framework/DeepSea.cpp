@@ -45,7 +45,7 @@ b2ParticleSystem * local_m_particleSystem_sci = nullptr;
 DebugDraw * local_debugDraw_pointer_sci = nullptr;
 
 bool exploratoryMode  = true;
-bool flagAddFood = true;
+bool flagAddFood = false;
 
 
 float pi = 3.14159f;
@@ -355,7 +355,7 @@ foodParticle_t::foodParticle_t ( b2Vec2 position) {
 	bodyDef.userData = (void*)p_dataWrapper;
 	bodyDef.type = b2_dynamicBody;
 	u_body = local_m_world->CreateBody(&bodyDef);
-	theActualFuckingFuck = u_body;
+	// theActualFuckingFuck = u_body;
 
 	flagDelete = false;
 
@@ -601,7 +601,7 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 	
 // }
 
-void deleteFood (foodParticle_t * snackBar) {
+// void deleteFood (foodParticle_t * snackBar) {
 
 	// 	std::list<foodParticle_t>::iterator foodParticle;
 	// for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
@@ -617,8 +617,7 @@ void deleteFood (foodParticle_t * snackBar) {
 	// 	// currentNumberOfFood --;
 	// 	foodParticle->flagDelete = false;
 	// 	// snackBar->p_body = nullptr;
-	// 	foodParticle->isUsed = false;
-	// 	foodParticle->init = false;
+
 	// 	// foodSlotLoaded[foodIndex] = false;
 
 	// // if (foodSlotLoaded[foodIndex]) {
@@ -628,7 +627,7 @@ void deleteFood (foodParticle_t * snackBar) {
 	// // 	return;
 	// // }
 
-		printf("deleting food particle\n");
+		// printf("deleting food particle\n");
 
 
 
@@ -651,7 +650,8 @@ void deleteFood (foodParticle_t * snackBar) {
 	// // try {
 	// printf("DESROREYING BODYEHN 0x%lu\n", foodParticle->u_body);
 	// printf("SNARBYFRK 0x%lu\n",snackBar->u_body);
-	// local_m_world->DestroyBody( foodParticle->u_body );
+	// 
+	
 	// local_m_world->DestroyBody( theActualFuckingFuck );
 	// theActualFuckingFuck= nullptr;
 
@@ -662,7 +662,7 @@ void deleteFood (foodParticle_t * snackBar) {
 // }
 
 	// }
-}
+// }
 
 // delete a fish from the game world and remove it from memory
 void deleteFish (BonyFish * fish) {
@@ -1198,13 +1198,20 @@ void removeDeletableFish() {
 
 	std::list<foodParticle_t>::iterator foodParticle;
 	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-	// 		if (!foodParticle->isUsed || !foodParticle->init) {
-	// 	continue;
-	// }
+	// // 		if (!foodParticle->isUsed || !foodParticle->init) {
+	// // 	continue;
+	// // }
 
-		// if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
+	// 	// if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
 		if (foodParticle->flagDelete) {
-			deleteFood ( &(*foodParticle)) ;
+			// deleteFood ( foodParticle) ;
+
+			foodParticle->isUsed = false;
+			foodParticle->init = false;
+			foodParticle->flagDelete = false;
+			local_m_world->DestroyBody( foodParticle->u_body );
+
+			// food.erase(foodParticle_t)
 		}
 	}
 }
@@ -1235,6 +1242,13 @@ void  vote (BonyFish * winner) {
 	// if ( !fishSlotLoaded[winner->slot]) { return; }
 	// else {
 	// printf("winner: %i\n", winner->slot);
+
+	// if (winner == NULL ||) {
+
+	// }
+	// if (!winner->init || !winner->isUsed) {
+	// 	return;
+	// }
 
 	fann * wann = winner->ann;
 
@@ -1612,6 +1626,8 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 				// totalFishIncorporator(i);	// spawn them into the world to repeat the cycle
 
 			}
+
+			// addFoodParticle(b2Vec2(124.0f, 3.5f));
 	// }
 
 	startNextGeneration = false;
@@ -1633,12 +1649,12 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
 
-	if (RNG() > 0.5f) {
-		addFoodParticle(b2Vec2(24.0f, 3.5f));
-	}
-	else {
-		addFoodParticle(b2Vec2(-24.0f, 3.5f));
-	}
+	// if (RNG() > 0.5f) {
+	// 	addFoodParticle(b2Vec2(24.0f, 3.5f));
+	// }
+	// else {
+	// 	addFoodParticle(b2Vec2(-24.0f, 3.5f));
+	// }
 }
 
 void brainMelter (BonyFish * fish) {
@@ -2133,11 +2149,13 @@ void deepSeaLoop () {
 			beginGeneration ( );
 		}
 
-		if (flagAddFood) {
-			flagAddFood = false;
+		removeDeletableFish();
 
-			addFoodParticle(getRandomPosition());
-		}
+		// if (flagAddFood) {
+		// 	flagAddFood = false;
+
+		// 	addFoodParticle(getRandomPosition());
+		// }
 
 		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
@@ -2149,8 +2167,12 @@ void deepSeaLoop () {
 			// }
 			// else {
 				foodParticle->position = foodParticle->u_body->GetWorldCenter(); // update positions of all the food particles
+
+				// if () {
+
+				}
 			// }
-		}
+		
 
 		runBiomechanicalFunctions();
 	}
@@ -2158,6 +2180,7 @@ void deepSeaLoop () {
 
 void deepSeaControlA () {
 	;
+	addFoodParticle(b2Vec2(124.0f, 3.5f));
 }
 void deepSeaControlB () {
 	;
@@ -2195,7 +2218,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		}
 	}
 
-	if( dataB.dataType == TYPE_MOUTH ) {
+	else if( dataB.dataType == TYPE_MOUTH ) {
 		et = true;
 		if( dataA.dataType == TYPE_FOOD && !
 				((foodParticle_t*)(dataA.uData) )->flagDelete) {
@@ -2212,7 +2235,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 			    vote(((BoneUserData *)(dataB.uData))->p_owner);
 
-				// ((foodParticle_t*)(dataA.uData) )->flagDelete = true;
+				
 				
 				// flagAddFood = true;
 			}
@@ -2220,7 +2243,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			else {
 				// deleteFood()
 				// ((foodParticle_t*)(dataA.uData) )->flagDelete = true;
-
+((foodParticle_t*)(dataA.uData) )->flagDelete = true;
 				// // addFoodParticle(getRandomPosition());
 				// flagAddFood = true;
 			}
@@ -2230,12 +2253,12 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 			if (exploratoryMode) {
 
-				vote(((BoneUserData *)(dataB.uData))->p_owner);
+				vote(((BoneUserData *)(dataA.uData))->p_owner);
 			}
 			else {
 
 				// food[0]->flagDelete = true;
-				// ((foodParticle_t*)(dataB.uData) )->flagDelete = true;
+				((foodParticle_t*)(dataB.uData) )->flagDelete = true;
 				// // addFoodParticle(getRandomPosition());
 				// flagAddFood = true;
 			}

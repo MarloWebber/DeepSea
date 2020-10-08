@@ -337,7 +337,7 @@ static void Keyboard(unsigned char key, int x, int y)
 		// 	// settings.pause = false;
 		// }
 		// else {
-
+deepSeaControlA();
 		// 	enterScienceModeInterruptableEntry();
 		// 	// enterScienceMode();	
 		// 	// settings.pause = true;
