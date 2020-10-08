@@ -24,11 +24,13 @@ bool startNextGeneration = false;
 // // int selected = 0;
 // bool scienceMode = false;
 
-bool fishSlotLoaded[N_FISHES];
+// bool fishSlotLoaded[N_FISHES];
 bool foodSlotLoaded[N_FOODPARTICLES];
 
 bool userControlInputA;
 bool userControlInputB;
+
+std::list<BonyFish> fishes;
 
 b2Body * theActualFuckingFuck;
 
@@ -58,7 +60,7 @@ const unsigned int epochs_between_reports = 100;
 
 foodParticle_t * food[N_FOODPARTICLES];
 // BonyFish * fishes[N_FISHES];
-BonyFish * sciFish;
+// BonyFish * sciFish;
 float magnitude (b2Vec2 vector) {
 	return sqrt( (vector.x * vector.x) + (vector.y * vector.y));
 }
@@ -1136,8 +1138,8 @@ void reloadTheSim  () {
 
 //  prints the winner to file immediately.
 void  vote (BonyFish * winner) {
-	if ( !fishSlotLoaded[winner->slot]) { return; }
-	else {
+	// if ( !fishSlotLoaded[winner->slot]) { return; }
+	// else {
 	printf("winner: %i\n", winner->slot);
 
 	fann * wann = winner->ann;
@@ -1149,7 +1151,7 @@ void  vote (BonyFish * winner) {
     saveFishToFile (fdescfilename, winner->genes);
     fann_save(  wann , nnfilename.c_str()); 
 
-	}
+	// }
 
 	reloadTheSim();	
 }
