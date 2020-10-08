@@ -261,6 +261,8 @@ struct BonyFish {
 	senseConnector inputMatrix[32]; // these need to get serialized too. so this is a workable place for them.
 	senseConnector outputMatrix[32];
 
+	char species[32]; // a textual string describing what species the fish is.
+
 	BonyFish(fishDescriptor_t driedFish, uint8_t fishIndex, fann * nann, b2Vec2 startingPosition);
 
 };
@@ -309,7 +311,8 @@ void makeAJellyfish (BonyFish * p_fish) ;
 
 
 extern foodParticle_t * food[N_FOODPARTICLES];
-extern BonyFish * fishes[N_FISHES];
+// extern BonyFish * fishes[N_FISHES];
+std::list<BonyFish> fishes;
 
 extern int currentNumberOfFood;
 extern int currentNumberOfFish;

@@ -783,12 +783,8 @@ int main(int argc, char** argv)
 	// TestEntry* e = g_testEntries;
 	// while (e->createFcn)
 	// {
-		modeList->add_item(modeCount, "fish mode" );
-		// ++testCount;
-		// ++e;
-
-
-	// }
+		modeList->add_item(modeCount, "Exploratory Mode" );
+		modeList->add_item(modeCount, "Ecosystem Mode" );
 
 
 	glui->add_separator_to_panel(gamePanel);
