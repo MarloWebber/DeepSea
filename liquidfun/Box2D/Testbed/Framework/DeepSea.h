@@ -140,6 +140,9 @@ struct BoneUserData {
 	b2Color color;
 	b2Color outlineColor;
 
+	bool flagDelete; // flag this whole animal for deletion at the next convenient time.
+	
+
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
 		b2Vec2 positionOffset,
@@ -245,8 +248,8 @@ struct BonyFish {
 	// // uint8_t heartSpeedD; 	//  
 	// float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
+	bool flagDelete;
 
-	bool flagDelete; // flag this whole animal for deletion at the next convenient time.
 	// bool flagWinner; // flag the animal as winner for this turn.
 
 	struct fann *ann;
@@ -311,8 +314,8 @@ void makeAJellyfish (BonyFish * p_fish) ;
 
 
 
-// extern foodParticle_t * food[N_FOODPARTICLES];
-extern std::list<foodParticle_t> food;
+// extern foodParticle_t food[N_FOODPARTICLES];
+// extern std::list<foodParticle_t*> food;
 // extern BonyFish * fishes[N_FISHES];
 extern std::list<BonyFish> fishes;
 

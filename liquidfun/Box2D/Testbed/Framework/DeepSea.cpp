@@ -16,7 +16,7 @@
 // #include <iostream>
 #include <cmath>
 
-int currentNumberOfFood = 0;
+// int currentNumberOfFood = 0;
 int currentNumberOfFish = 0;
 int generationsThisGame = 0;
 bool startNextGeneration = false;
@@ -33,7 +33,9 @@ bool userControlInputA;
 bool userControlInputB;
 
 std::list<BonyFish> fishes;
-std::list<foodParticle_t> food;
+// std::list<foodParticle_t> food;
+
+BoneUserData * food[N_FOODPARTICLES];
 
 b2Body * theActualFuckingFuck;
 
@@ -164,6 +166,31 @@ void printab2Vec2(b2Vec2 v) {
 b2Vec2 getRandomPosition() {
 		   return  b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
 }
+
+// add a food particle to the world and register it so the game knows it exists.
+// foodParticle_t::foodParticle_t ( b2Vec2 position) {	
+// 	energy = 1.0f;
+// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
+// 	bodyDef.userData = (void*)p_dataWrapper;
+// 	bodyDef.type = b2_dynamicBody;
+// 	u_body = local_m_world->CreateBody(&bodyDef);
+// 	// theActualFuckingFuck = u_body;
+
+// 	flagDelete = false;
+
+// 	b2Vec2 vertices[] = {
+// 		b2Vec2(-0.25, -0.25), 
+// 		b2Vec2(0.25, -0.25), 
+// 		b2Vec2(0.25, 0.25), 
+// 		b2Vec2(-0.25, 0.25)
+// 	};
+		
+// 	shape.Set(vertices, 4);
+
+// 	// u_body->CreateFixture(&shape, 1.2f);
+// 	init = false;
+// 	isUsed = false;
+// };
 
 BoneUserData::BoneUserData(
 		boneAndJointDescriptor_t boneDescription,
@@ -327,18 +354,18 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	
 	if (p_bone->sensor_radar) {
 		p_bone->sensation_radar = 0.0f;
-		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-	std::list<foodParticle_t>::iterator foodParticle;
-	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+	// std::list<foodParticle_t>::iterator foodParticle;
+	// for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
 			// if (
 			// 	//!foodSlotLoaded[i]
 			// 	!food[i]) {
 			// 	continue;
 			// }
-			if (foodParticle->init && foodParticle->isUsed) {
+			if (food[i]->init && food[i]->isUsed) {
 				b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
-				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - foodParticle->position.x),(boneCenterWorldPosition.y - foodParticle->position.y));
+				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
 				float distance = magnitude (positionalDifference);
 				if (distance > 0) {
 					p_bone->sensation_radar += 1/distance;
@@ -349,34 +376,27 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	
 }
 
-// add a food particle to the world and register it so the game knows it exists.
-foodParticle_t::foodParticle_t ( b2Vec2 position) {	
-	energy = 1.0f;
-	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
-	bodyDef.userData = (void*)p_dataWrapper;
-	bodyDef.type = b2_dynamicBody;
-	u_body = local_m_world->CreateBody(&bodyDef);
-	// theActualFuckingFuck = u_body;
 
-	flagDelete = false;
-
-	b2Vec2 vertices[] = {
-		b2Vec2(-0.25, -0.25), 
-		b2Vec2(0.25, -0.25), 
-		b2Vec2(0.25, 0.25), 
-		b2Vec2(-0.25, 0.25)
-	};
-		
-	shape.Set(vertices, 4);
-
-	u_body->CreateFixture(&shape, 1.2f);
-	init = true;
-	isUsed = true;
-};
 
 void addFoodParticle(b2Vec2 position) {
-	// food[currentNumberOfFood] =
-	 food.push_back( foodParticle_t( position) );
+
+	// unsigned int currentNumberOfFood = 0;
+
+	// for (int i = 0; i < N_FOODPARTICLES; ++i)
+	// {
+
+	// 	if (food[i].isUsed) {
+	// 		currentNumberOfFood ++;
+	// 	}
+	// 	else {
+	// 		break;
+	// 	}
+
+
+	// }
+
+	// food[currentNumberOfFood] = foodParticle_t(position);
+	 // food.push_back( foodParticle_t( position) );
 	// foodSlotLoaded[currentNumberOfFood] = true;
 	// currentNumberOfFood++;
 }
@@ -531,6 +551,81 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 	init = true; 										// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false; 									// only true when the part is added to the world
 
+
+
+
+
+
+
+for (unsigned int i = 0; i < N_FINGERS; ++i)
+	{
+		// if the limb doesn't already have sense and motor connectors, add them in.
+
+		if (driedFish.bones[i].used) {
+
+			bool connected_radar = false;
+			bool connected_angle = false;
+			bool connected_motor = false;
+
+			if (driedFish.bones[i].sensor_radar) {
+				for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
+					if (driedFish.inputMatrix[j].connectedToLimb == i ) {
+
+						if (driedFish.inputMatrix[j].sensorType == SENSOR_FOODRADAR) {connected_radar = true;}
+
+						if (driedFish.inputMatrix[j].sensorType == SENSOR_JOINTANGLE) {connected_angle = true;}
+
+					}
+
+					if (driedFish.outputMatrix[j].connectedToLimb == i ) { 
+
+						if (driedFish.outputMatrix[j].sensorType == SENSECONNECTOR_MOTOR) {connected_motor = true;}
+
+					}
+
+				}
+	
+			}
+
+
+			if (!connected_radar) {
+				for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
+					if (driedFish.inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
+						driedFish.inputMatrix[j].sensorType = SENSOR_FOODRADAR;
+						driedFish.inputMatrix[j].connectedToLimb = i;
+						break;
+					}
+				}
+			}
+
+			if (!connected_angle) {
+				for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
+					if (driedFish.inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
+						driedFish.inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
+						driedFish.inputMatrix[j].connectedToLimb = i;
+						break;
+					}
+				}
+			}
+
+			if (!connected_motor) {
+				for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
+					if (driedFish.outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
+						driedFish.outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
+						driedFish.outputMatrix[j].connectedToLimb = i;
+						break;
+					}
+				}
+			}
+
+
+		}
+	}
+
+
+
+
+
 	unsigned int senseInputsUsedSoFar = 0;
 	unsigned int motorOutputsUsed = 0;
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
@@ -546,6 +641,9 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 			motorOutputsUsed ++;
 		}
 	}
+
+
+	
 
     if (nann == NULL) {
     		for (int i = 0; i < N_FINGERS; ++i) {
@@ -665,6 +763,25 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 	// }
 // }
 
+void deleteBone (BoneUserData * bone) {
+
+	if (bone->isUsed && bone->init) {
+
+	
+				if (!bone->isRoot) { // root bones dont have joints
+					if (bone->joint->isUsed) {
+							local_m_world->DestroyJoint(bone->joint->p_joint);	
+							// fish->bones[i]->joint = nullptr;
+					}
+				}
+			
+				 local_m_world->DestroyBody(bone->p_body);
+				 // fish->bones[i]->p_body = nullptr;
+				 bone->isUsed = false;
+				 bone->init = false;
+			}
+}
+
 // delete a fish from the game world and remove it from memory
 void deleteFish (BonyFish * fish) {
 	// if (fishSlotLoaded[fishIndex]) {
@@ -675,32 +792,34 @@ void deleteFish (BonyFish * fish) {
 	// 	return;
 	// }
 	
-		for (int i = 0; i < N_FINGERS; ++i) {
-			if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
-						continue;
-			}
-			else {
-				if (!fish->bones[i]->isRoot) { // root bones dont have joints
-					if (fish->bones[i]->joint->isUsed) {
-							local_m_world->DestroyJoint(fish->bones[i]->joint->p_joint);	
-							fish->bones[i]->joint = nullptr;
-					}
-				}
-			}
+		for (int i = N_FINGERS-1; i >=0 ; --i) {
+			// if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
+			// 			continue;
+			// }
+			// else {
+			// 	if (!fish->bones[i]->isRoot) { // root bones dont have joints
+			// 		if (fish->bones[i]->joint->isUsed) {
+			// 				local_m_world->DestroyJoint(fish->bones[i]->joint->p_joint);	
+			// 				fish->bones[i]->joint = nullptr;
+			// 		}
+			// 	}
+			// }
+
+			deleteBone(fish->bones[i]);
 		}
 
-		for (int i = 0; i < N_FINGERS; ++i) {
-			if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
-				continue;
-			}
+		// for (int i = 0; i < N_FINGERS; ++i) {
+		// 	if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
+		// 		continue;
+		// 	}
 
-			if (fish->bones[i]->isUsed && fish->bones[i]->init) {
-				 local_m_world->DestroyBody(fish->bones[i]->p_body);
-				 fish->bones[i]->p_body = nullptr;
-				 fish->bones[i]->isUsed = false;
-				 fish->bones[i]->init = false;
-			}
-		}
+		// 	if (fish->bones[i]->isUsed && fish->bones[i]->init) {
+		// 		 local_m_world->DestroyBody(fish->bones[i]->p_body);
+		// 		 fish->bones[i]->p_body = nullptr;
+		// 		 fish->bones[i]->isUsed = false;
+		// 		 fish->bones[i]->init = false;
+		// 	}
+		// }
 	// }
 
 fish->isUsed = false;
@@ -1218,7 +1337,7 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			if (RNG() < mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() < mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
 
-			if (RNG() < mutationChance) {	
+			if (RNG() < (mutationChance / 50)) {	
 				polydactyly(fish);
 			}
 
@@ -1332,25 +1451,28 @@ void removeDeletableFish() {
 		}
 	}
 
-	// for (int i = 0; i < N_FOODPARTICLES; ++i) {
+	for (int i = 0; i < N_FOODPARTICLES; ++i) {
 
-	std::list<foodParticle_t>::iterator foodParticle;
-	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+		deleteBone(food[i]);
+
+
+	// std::list<foodParticle_t>::iterator foodParticle;
+	// for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
 	// // 		if (!foodParticle->isUsed || !foodParticle->init) {
 	// // 	continue;
 	// // }
 
 	// 	// if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
-		if (foodParticle->flagDelete) {
-			// deleteFood ( foodParticle) ;
+		// if (food[i].flagDelete) {
+		// 	// deleteFood ( foodParticle) ;
 
-			foodParticle->isUsed = false;
-			foodParticle->init = false;
-			foodParticle->flagDelete = false;
-			local_m_world->DestroyBody( foodParticle->u_body );
+		// 	food[i].isUsed = false;
+		// 	food[i].init = false;
+		// 	food[i].flagDelete = false;
+		// 	food[i].DestroyBody( food[i].u_body );
 
-			// food.erase(foodParticle_t)
-		}
+		// 	// food.erase(foodParticle_t)
+		// }
 	}
 }
 
@@ -1364,13 +1486,13 @@ void reloadTheSim  () {
 		// if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
 		fish->flagDelete = true;
 	}
-	// for (int i = 0; i < N_FOODPARTICLES; ++i) {
+	for (int i = 0; i < N_FOODPARTICLES; ++i) {
 
-	std::list<foodParticle_t>::iterator foodParticle;
-	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+	// std::list<foodParticle_t>::iterator foodParticle;
+	// for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
 
 		// if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
-		foodParticle->flagDelete = true;
+		food[i]->flagDelete = true;
 	}
 	startNextGeneration = true;
 }
@@ -1555,30 +1677,52 @@ void drawingTest() {
 	b2Color fishFoodDye 		= b2Color(0.2f, 0.6f, 0.1f);
 	b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
 
-	// for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
+	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
 
-	std::list<foodParticle_t>::iterator foodParticle;
-	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-		if (
-			// foodSlotLoaded[i] &&
-		 foodParticle->init && foodParticle->isUsed) {
+
+		if (food[i]-> init && food[i]->isUsed) {
+
+		
+
+		b2Vec2 vertices[4];
+					b2Vec2 boneCenterWorldPosition = food[i]->p_body->GetWorldCenter();
+					for (int j = 0; j < 4; ++j) {	
+						b2Vec2 adjustedVertex = food[i]->shape.GetVertex(j);
+						b2Vec2 boneLocalCenter =food[i]->p_body->GetLocalCenter();
+						b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i]->p_body->GetAngle(), adjustedVertex);
+						rotatedVertex.x += boneCenterWorldPosition.x;
+						rotatedVertex.y +=boneCenterWorldPosition.y;
+						vertices[j] = rotatedVertex;
+					}
+
+					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishFoodDye);
+					local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutline);
+
+				}
+
+
+	// // std::list<foodParticle_t>::iterator foodParticle;
+	// // for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+	// 	if (
+	// 		// foodSlotLoaded[i] &&
+	// 	 food[i].init && food[i].isUsed) {
 	
-			b2Vec2 vertices[4];
+	// 		b2Vec2 vertices[4];
 
-			for (unsigned int j = 0; j < 4; ++j) {	
-				b2Vec2 adjustedVertex = foodParticle->shape.GetVertex(j);
-				b2Vec2 boneLocalCenter =foodParticle->u_body->GetLocalCenter();
-				b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, foodParticle->u_body->GetAngle(), adjustedVertex);
-				rotatedVertex.x += foodParticle->position.x;
-				rotatedVertex.y += foodParticle->position.y;
-				vertices[j] = rotatedVertex;
-			}
-			local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 ,fishFoodDye );
-			local_debugDraw_pointer->DrawPolygon(vertices, 4 ,fishFoodDyeOutline );
-		}
-		else {
-			break;
-		}
+	// 		for (unsigned int j = 0; j < 4; ++j) {	
+	// 			b2Vec2 adjustedVertex = food[i].shape.GetVertex(j);
+	// 			b2Vec2 boneLocalCenter =food[i].p_body->GetLocalCenter();
+	// 			b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i].u_body->GetAngle(), adjustedVertex);
+	// 			rotatedVertex.x += food[i].position.x;
+	// 			rotatedVertex.y += food[i].position.y;
+	// 			vertices[j] = rotatedVertex;
+	// 		}
+	// 		local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 ,fishFoodDye );
+	// 		local_debugDraw_pointer->DrawPolygon(vertices, 4 ,fishFoodDyeOutline );
+	// 	}
+	// 	else {
+	// 		break;
+	// 	}
 	}
 
 	// for each bone, get the vertices, then add the body's world location to them, and rotate by the body angle around the body world location.
@@ -1709,7 +1853,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 
 
-			removeDeletableFish();
+			
 			
 			for (int i = 0; i < N_FISHES; ++i) {
 
@@ -1786,6 +1930,22 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	local_debugDraw_pointer = p_debugDraw;
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
+
+	for (int i = 0; i < N_FOODPARTICLES; ++i)
+	{
+
+		/*
+		boneAndJointDescriptor_t boneDescription,
+		BonyFish * fish,
+		b2Vec2 positionOffset,
+		int newCollisionGroup
+
+		*/
+		boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
+		food[i] = new BoneUserData(foodDescriptor, NULL, b2Vec2(0.0f, 0.0f), 0);
+		food[i]->init = false;
+		food[i]->isUsed = false;
+	}
 }
 
 // completely nullifies the animals brain
@@ -2281,7 +2441,7 @@ void deepSeaLoop () {
 
 	if (!local_m_world->IsLocked() ) {
 
-		removeDeletableFish();
+		// removeDeletableFish();
 
 		if (startNextGeneration ) {
 			beginGeneration ( );
@@ -2300,11 +2460,15 @@ void deepSeaLoop () {
 		// 	addFoodParticle(getRandomPosition());
 		// }
 
-		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-		std::list<foodParticle_t>::iterator foodParticle;
-		for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-			foodParticle->position = foodParticle->u_body->GetWorldCenter(); // update positions of all the food particles
+			if (food[i]->init && food[i]->isUsed) {
+
+			
+		// std::list<foodParticle_t>::iterator foodParticle;
+		// for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+			food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
+		}
 		}
 		
 		
