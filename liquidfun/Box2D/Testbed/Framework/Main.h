@@ -45,7 +45,11 @@ void SetParticleParameters(
  void Pause2();
  void Resume2();
 
+ void SimulationLoop();
+
 }  // namespace TestMain
+
+// void SimulationLoop();
 
 
 // #if ENABLE_GLUI

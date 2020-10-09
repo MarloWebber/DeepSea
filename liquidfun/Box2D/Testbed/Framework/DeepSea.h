@@ -9,6 +9,7 @@
 #define N_FINGERS 8 // the amount of bones a fish can have. you know, fish fingers.
 #define N_FISHES 12
 #define N_FOODPARTICLES 8
+#define N_SENSECONNECTORS 32
 
 b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p);
 

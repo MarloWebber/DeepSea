@@ -166,7 +166,7 @@ static void Timer(int)
 	glutTimerFunc(framePeriod, Timer, 0);
 }
 
-static void SimulationLoop()
+ void SimulationLoop()
 {
 
 
@@ -190,9 +190,9 @@ static void SimulationLoop()
 		
 		test->Step(&settings);
 
-		if (test->IsWorldLocked() == false && !settings.pause) {
-			deepSeaLoop();
-		}
+		// if (test->IsWorldLocked() == false && !settings.pause) {
+		// 	// deepSeaLoop();
+		// }
 	// }
 	// else {
 	// 	if (test->IsWorldLocked() == false && !settings.pause) {
@@ -702,7 +702,9 @@ int main(int argc, char** argv)
 	mainWindow = glutCreateWindow(title);
 	//glutSetOption (GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-	glutDisplayFunc(SimulationLoop);
+	// glutDisplayFunc(SimulationLoop);
+		glutDisplayFunc(deepSeaLoop);
+
 
 #if ENABLE_GLUI
 	GLUI_Master.set_glutReshapeFunc(Resize);

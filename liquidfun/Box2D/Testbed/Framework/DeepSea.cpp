@@ -1,6 +1,7 @@
 #include "DeepSea.h"
 #include "fann.h"
 #include "Test.h"
+#include "Main.h"
 
 #include <iostream>
 #include <fstream>
@@ -294,7 +295,7 @@ BoneUserData::BoneUserData(
 	isUsed=  false;
 };
 
-void nonRecursiveBoneIncorporator(BoneUserData * p_bone, uint8_t boneIndex) {
+void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	if (!p_bone->init) {
 		return;
 	}
@@ -532,7 +533,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 	unsigned int senseInputsUsedSoFar = 0;
 	unsigned int motorOutputsUsed = 0;
-	for (int i = 0; i < 32; ++i)
+	for (int i = 0; i < N_SENSECONNECTORS; ++i)
 	{
 		inputMatrix[i] = driedFish.inputMatrix[i];
 		outputMatrix[i] = driedFish.outputMatrix[i];
@@ -732,7 +733,7 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition)
 	
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fish->bones[i]->init) {
-			nonRecursiveBoneIncorporator( fish->bones[i] , i);
+			nonRecursiveBoneIncorporator( fish->bones[i]);
 		}
 	}
 
@@ -773,13 +774,15 @@ senseConnector::senseConnector () {
 }
 
 fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4 segment nematode creature.
-	for (int i = 0; i < 32; ++i) {
+	for (int i = 0; i < N_SENSECONNECTORS; ++i) {
 		senseConnector moshuns = senseConnector();
 		outputMatrix[i] = moshuns;
 		inputMatrix[i] = moshuns;
 	}
 
-	for (int i = 0; i < 4; ++i) {
+
+	for (int i = 0; i < N_FINGERS; ++i) {
+	
 		bones[i].color.r = 0.5f;
 		bones[i].color.g = 0.5f;
 		bones[i].color.b = 0.5f;
@@ -796,7 +799,9 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 			bones[i].attachedTo = i-1;
 		}
 
-		bones[i].used = true;
+		if (i < 4) {
+			bones[i].used = true;
+		}
 	}
 
 	for (unsigned int i = 0; i < 4; ++i) {
@@ -1064,6 +1069,131 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 	return ann;
 }
 
+// pausing on this for a moment because it would make more sense to mutate the fish in this way than to do it in the simulation.
+// add a limb to one of the fish, and add a driver for it in the fish's mind.
+// void polydactyly (BonyFish * fish, unsigned int baseLimbIndex) {
+
+// 	unsigned int emptyLimbIndex = 0;
+// 	// find empty limb slot if available
+// 	for (int i = 0; i < N_FINGERS; ++i)
+// 	{
+// 		if (!fish->bones[i]->used){
+// 			emptyLimbIndex = i;
+// 			break;
+// 		}
+// 	}
+
+// 	if (emptyLimbIndex == 0) {
+// 		printf("There was no available limb.\n");
+// 		return;
+// 	}
+
+// 	// you may have to calculate the position of the new bone, so that it sits on the animal where it is supposed to, and not at the world 0,0.
+// 	b2Vec2 rootPositionOfThisBone = fish->bones[baseLimbIndex]->p_body->GetWorldCenter():  // it's the same as the tip position of the bone it is attached to
+// 	b2Vec2 halfLength = B2Vec2(rootPositionOfThisBone.x, rootPositionOfThisBone.y + (fish->bones[baseLimbIndex]->length/2)  );
+// 	b2Vec2 startingPosition = rotatePoint(rootPositionOfThisBone.x, rootPositionOfThisBone.y, fish->bones[baseLimbIndex]->p_body->GetAngle(), halfLength)
+
+// 	// get limb by index
+// 	fish->bones[emptyLimbIndex] = new BoneUserData(baseLimbIndex, fish, startingPosition, fish->bones[baseLimbIndex]->collisionGroup);
+
+// 	// make a joint.
+
+// 	nonRecursiveBoneIncorporator(fish->bones[emptyLimbIndex]);
+
+
+
+// 	// before you create a new sense connector, you have to create a new neuron in the brain.
+
+
+
+
+
+// 	// find empty sense connectors to use.
+// 	 int emptySenseConnectorJointAngle = -1;
+// 	 int emptySenseConnectorRadar = -1;
+// 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
+// 	{
+// 		if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED) {
+
+// 			if (emptySenseConnectorRadar < 0) { // they are init to -1 which is like a code for not having picked one.
+// 				emptySenseConnectorRadar = i;
+// 			}
+// 			else {
+// 				emptySenseConnectorJointAngle = i;
+// 				break;
+// 			}
+
+// 		}
+// 	}
+
+// 	fish->inputMatrix[emptySenseConnectorJointAngle].sensorType = SENSOR_JOINTANGLE;
+// 	fish->inputMatrix[emptySenseConnectorJointAngle].connectedToLimb = emptyLimbIndex;
+
+// 	fish->inputMatrix[emptySenseConnectorRadar].sensorType = SENSOR_FOODRADAR;
+// 	fish->inputMatrix[emptySenseConnectorRadar].connectedToLimb = emptyLimbIndex;
+
+
+	
+
+// }
+
+// instantly remove the fish's limb as well as its motor apparatus. The sensory input neurons are left behind and the sense connector is changed to 'unused'.
+// void amputation () {
+
+// }
+
+
+void polydactyly (fishDescriptor_t * driedFish) {
+
+	for (unsigned int i = 0; i < N_FINGERS; ++i)
+	{
+		if (!driedFish->bones[i].used) {
+
+			// if (!driedFish->bones[i].init) {
+				// driedFish->bones[i] = new boneAndJointDescriptor_t();	
+			// }
+
+			driedFish->bones[i].attachedTo = RNG() * i;
+
+			driedFish->bones[i].used = true;
+
+			break;
+		}
+	}
+}
+
+void amputation (fishDescriptor_t * driedFish) {
+
+	unsigned int usedFingers = 0;
+
+	for (unsigned int i = 0; i < N_FINGERS; ++i)
+	{
+		if (driedFish->bones[i].used) {
+
+			// driedFish->bones[i].used = false;
+			usedFingers ++;
+		}
+	}
+
+
+
+	unsigned int randomFinger = RNG() * usedFingers;
+
+	driedFish->bones[randomFinger].used = false;
+
+
+	// for all the limbs that were attached to the random one, you have to remove those too.
+
+	for (unsigned int i = 0; i < N_FINGERS; ++i)
+	{
+		if (driedFish->bones[i].attachedTo == randomFinger ){
+			driedFish->bones[i].used = false;
+		}
+	}
+		
+	
+}
+
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fish->bones[i].used) {
@@ -1087,6 +1217,14 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			if (RNG() < mutationChance) {	fish->bones[i].speedLimit += fish->bones[i].speedLimit 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() < mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() < mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
+
+			if (RNG() < mutationChance) {	
+				polydactyly(fish);
+			}
+
+			// if (RNG() < mutationChance) {	
+			// 	amputation(fish);
+			// }
 
 			// mutate attachment points
 			// if (RNG() > mutationChance) {	fish->bones[i].attachedTo = (RNG() * fish->n_bones_used ) }
@@ -1605,7 +1743,7 @@ void beginGeneration ( ) { // select an animal as an evolutionary winner, passin
 
 					fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
-					for (int i = 0; i < 32; ++i)
+					for (int i = 0; i < N_SENSECONNECTORS; ++i)
 					{
 						if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
 								newFishBody.inputMatrix[i].timerPhase = RNG();
@@ -1644,19 +1782,13 @@ inline bool exists_test1 (const std::string& name) {
 
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) { //, b2World * m_world_sci, b2ParticleSystem * m_particleSystem_sci) {
 
-	// store the debugdraw pointer in here so we can use it.
+	// store a single copy to the pointers so we don't have to give them as arguments 1 million times.
 	local_debugDraw_pointer = p_debugDraw;
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
-
-	// if (RNG() > 0.5f) {
-	// 	addFoodParticle(b2Vec2(24.0f, 3.5f));
-	// }
-	// else {
-	// 	addFoodParticle(b2Vec2(-24.0f, 3.5f));
-	// }
 }
 
+// completely nullifies the animals brain
 void brainMelter (BonyFish * fish) {
 	std::list<layerDescriptor>::iterator layer;
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
@@ -1670,10 +1802,7 @@ void brainMelter (BonyFish * fish) {
 	}
 }
 
-// completely nullifies the animals brain
 void meltSelectedFish () {
-	// for (int i = 0; i < N_FISHES; ++i) {
-
 	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		if (fish->selected) {
@@ -1681,7 +1810,6 @@ void meltSelectedFish () {
 
 			// refresh the water in the brain jar.
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
-
 			return;
 		}
 		else {
@@ -2043,7 +2171,7 @@ void runBiomechanicalFunctions () {
 
 			for (unsigned int j = 0; j < sizeOfInputLayer; ++j)
 			{
-				if (j >= 32) {
+				if (j >= N_SENSECONNECTORS) {
 					continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
 				}
 
@@ -2081,7 +2209,7 @@ void runBiomechanicalFunctions () {
 		
 			for (unsigned int j = 0; j < sizeOfOutputLayer; ++j)
 			{
-				if (j >= 32) {
+				if (j >= N_SENSECONNECTORS) {
 					continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
 				}
 
@@ -2176,6 +2304,8 @@ void deepSeaLoop () {
 
 		runBiomechanicalFunctions();
 	}
+
+	TestMain::SimulationLoop();
 }
 
 void deepSeaControlA () {
