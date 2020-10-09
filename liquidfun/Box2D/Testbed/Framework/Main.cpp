@@ -337,7 +337,7 @@ deepSeaControlA();
 	case ' ':
 		if (test)
 		{
-			test->jointMotorSetpoint();
+			// test->jointMotorSetpoint();
 		}
 		break;
 

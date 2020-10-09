@@ -200,17 +200,13 @@ BoneUserData::BoneUserData(
 		bool attached
 	) {
 
-	if (!boneDescription.used) {
-		return;
-	}
+	// if (!boneDescription.used) {
+	// 	return;
+	// }
 
 	p_owner = fish;
 
-	BoneUserData * attachesTo = nullptr;
-
-	if (attached) {
-		 attachesTo = fish->bones[boneDescription.attachedTo];	
-	}
+	
 	// unused_variable((void *)attachesTo);
 
 	// else {
@@ -247,7 +243,7 @@ BoneUserData::BoneUserData(
 	collisionGroup = newCollisionGroup;
 
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
-	if (isRoot) {
+	if (isRoot ||!boneDescription.used) {
 
 		offsetOnBody = b2Vec2(0.0f, 0.0f);
 		tipCenter = b2Vec2(0.0f, length);
@@ -268,6 +264,10 @@ BoneUserData::BoneUserData(
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_TOUCHSENSOR);
 			bodyDef.userData = (void *)p_dataWrapper;
 			}
+		// else if (!attached) {
+		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
+		// 	bodyDef.userData = (void *)p_dataWrapper;
+		// }
 			else {
 
 				uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
@@ -284,14 +284,17 @@ BoneUserData::BoneUserData(
 		rootCenter = b2Vec2(0.0f, 0.0f);
 	}
 	else {
-		if (attached) {
+		// if (attached) {
+
+		BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
+	// }
 
 			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;	
-		}
-		else {
-			offsetOnBody = b2Vec2(0.0f, 0.0f);
-		}
-		tipCenter = b2Vec2(0.0f,  length);
+		// }
+		// else {
+		// 	offsetOnBody = b2Vec2(0.0f, 0.0f);
+		// }
+		// tipCenter = b2Vec2(0.0f,  length);
 
 		b2Vec2 vertices[] = {
 			b2Vec2( + (rootThickness/2), -(length/2)),
@@ -327,16 +330,16 @@ BoneUserData::BoneUserData(
 
 		// reference the physics object from the user data.
 		tipCenter = tipCenter;
-		if (attached) {
+		// if (!isRoot) {
 			rootCenter = attachesTo->tipCenter;
-		} else {
-			rootCenter = b2Vec2(0.0f, 0.0f);
-		}
+		// } else {
+		// 	rootCenter = b2Vec2(0.0f, 0.0f);
+		// }
 
 
-		}
+		
 
-	if (!isRoot && attached) {
+	// if (!isRoot) {
 		joint = new JointUserData( boneDescription, this, fish); 	// the joint that attaches it into its socket 
 	}	
 
@@ -426,7 +429,7 @@ void addFoodParticle(b2Vec2 position) {
 		food[emptyFoodIndex] = new BoneUserData(foodDescriptor, nullptr, position, 0, false);
 
 		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
-		food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
+		// food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
 		food[emptyFoodIndex]->joint->init = false;
 		food[emptyFoodIndex]->joint->isUsed = false;
 		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
@@ -575,6 +578,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 			driedFish.bones[i].isRoot = true;
 		}
 		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup, true);
+		// bones[i]->joint = new JointUserData(); //(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
 	}
 
 	n_bones_used = 0;
@@ -800,17 +804,31 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 	// }
 // }
 
-void deleteBone (BoneUserData * bone) {
+void deleteJoint(BoneUserData * bone) {
 
-	if (bone->isUsed && bone->init) {
+		if (!bone->isRoot) { // root bones dont have joints
 
-	
-				if (!bone->isRoot) { // root bones dont have joints
-					if (bone->joint->isUsed) {
+			if (bone->joint != NULL && bone->joint != nullptr) {
+					if (bone->joint->isUsed && bone->joint->init) {
+
+						if (bone->joint->p_joint != NULL && bone->joint->p_joint != nullptr) {
+
+						
 							local_m_world->DestroyJoint(bone->joint->p_joint);	
 							// fish->bones[i]->joint = nullptr;
+						}
 					}
 				}
+			}
+			
+
+}
+
+void deleteBone (BoneUserData * bone) {
+
+	if (bone->isUsed && bone->init && bone->flagDelete) {
+
+	
 			
 				 local_m_world->DestroyBody(bone->p_body);
 				 // fish->bones[i]->p_body = nullptr;
@@ -825,75 +843,52 @@ void deleteFish (BonyFish * fish) {
 		// if (!fishChecker(fishIndex)) {
 		// 	return;
 		// }
-	// if (!fish->init || !fish->isUsed) {
-	// 	return;
-	// }
-	
-		for (int i = N_FINGERS-1; i >=0 ; --i) {
-			// if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
-			// 			continue;
-			// }
-			// else {
-			// 	if (!fish->bones[i]->isRoot) { // root bones dont have joints
-			// 		if (fish->bones[i]->joint->isUsed) {
-			// 				local_m_world->DestroyJoint(fish->bones[i]->joint->p_joint);	
-			// 				fish->bones[i]->joint = nullptr;
-			// 		}
-			// 	}
-			// }
+	if (!fish->isUsed) {
+		return;
+	}
 
+	if (fish->flagDelete) {
+
+		for (unsigned int i = 0; i < N_FINGERS ; ++i) {
+		fish->bones[i]->flagDelete = true;
+			printf("deleting joint %i.\n", i);
+			deleteJoint(fish->bones[i]);
+		}
+
+	
+		for (unsigned int i = 0; i < N_FINGERS ; ++i) {
+
+			printf("deleting bone %i.\n", i);
 			deleteBone(fish->bones[i]);
 		}
 
-		// for (int i = 0; i < N_FINGERS; ++i) {
-		// 	if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
-		// 		continue;
-		// 	}
-
-		// 	if (fish->bones[i]->isUsed && fish->bones[i]->init) {
-		// 		 local_m_world->DestroyBody(fish->bones[i]->p_body);
-		// 		 fish->bones[i]->p_body = nullptr;
-		// 		 fish->bones[i]->isUsed = false;
-		// 		 fish->bones[i]->init = false;
-		// 	}
-		// }
-	// }
-
-fish->isUsed = false;
-
-	// std::list<BonyFish>::iterator fishA;
-
-	// // for (int i = 0; i < N_FISHES; ++i) {
-
-	// for (fishA = fishes.begin(); fishA !=  fishes.end(); ++fishA) 	{
-
-	// 	if ( &(*fishA) == fish) {
-	// 		break;
-			
-	// 	}
-
-	// }
-
-	// fishes.erase(fishA);
+		fish->isUsed = false;
+	}
 
 
-	
-	// fishes.remove( (*fish ))
-	// fishSlotLoaded[fishIndex] = false;
 }
 
 void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
 	// fishes[fishIndex] =
 
-	BonyFish * fish =  new BonyFish(driedFish, nann, startingPosition);
+	// BonyFish * fish =  new
+
 	
+
+// BonyFIsh buttfish = ;
+	
+
+	fishes.push_back(  *(new BonyFish(driedFish, nann, startingPosition)) );
+
+	// std::list<BonyFish>::iterator fish = 
+	BonyFish * fish = &(fishes.back());
+	fish->isUsed = true;
+
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fish->bones[i]->init) {
 			nonRecursiveBoneIncorporator( fish->bones[i]);
 		}
 	}
-
-	fishes.push_back( *fish );
 
 }
 
@@ -1485,12 +1480,15 @@ void removeDeletableFish() {
 		// if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
 		if (fish->flagDelete) {
 			deleteFish ( &(*fish)) ;
+			break;
 		}
 	}
 
 	for (int i = 0; i < N_FOODPARTICLES; ++i) {
 
+		if (food[i]->flagDelete) {
 		deleteBone(food[i]);
+	}
 
 
 	// std::list<foodParticle_t>::iterator foodParticle;
@@ -1557,7 +1555,7 @@ void  vote (BonyFish * winner) {
     fann_save(  wann , nnfilename.c_str()); 
 
 	// }
-
+    // startNextGeneration = true;
 	reloadTheSim();	
 }
 
@@ -1830,7 +1828,7 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 	}
 }
 
-void beginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
+void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
 	// int n_selected  = 0;
 	// int partner1index = 0;
@@ -2481,7 +2479,7 @@ void deepSeaLoop () {
 		removeDeletableFish();
 
 		if (startNextGeneration ) {
-			beginGeneration ( );
+			exploratoryModeBeginGeneration ( );
 		}
 
 	

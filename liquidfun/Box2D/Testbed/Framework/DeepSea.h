@@ -250,6 +250,7 @@ struct BonyFish {
 	// float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
 	bool flagDelete;
+	bool flagExtraBoneDeleter;
 
 	// bool flagWinner; // flag the animal as winner for this turn.
 
