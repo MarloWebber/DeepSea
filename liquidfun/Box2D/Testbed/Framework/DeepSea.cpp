@@ -115,7 +115,7 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 	isUsed = false;
 
 	// the following code prepares the box2d objects.
-	if (boneDescription.isRoot) {
+	if (boneDescription.isRoot) { // used for food particles which aren't jointed to anything.
 		;
 	}
 	else {
@@ -196,7 +196,8 @@ BoneUserData::BoneUserData(
 		boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
 		b2Vec2 positionOffset,
-		int newCollisionGroup
+		int newCollisionGroup,
+		bool attached
 	) {
 
 	if (!boneDescription.used) {
@@ -204,8 +205,18 @@ BoneUserData::BoneUserData(
 	}
 
 	p_owner = fish;
-	BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
 
+	BoneUserData * attachesTo = nullptr;
+
+	if (attached) {
+		 attachesTo = fish->bones[boneDescription.attachedTo];	
+	}
+	// unused_variable((void *)attachesTo);
+
+	// else {
+	// 	attachesTo = NULL;
+	// }
+	
 	// initialize everything to default, sane values
 	length = boneDescription.length;
 	rootThickness = boneDescription.rootThickness;
@@ -273,8 +284,13 @@ BoneUserData::BoneUserData(
 		rootCenter = b2Vec2(0.0f, 0.0f);
 	}
 	else {
+		if (attached) {
 
-		offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;
+			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;	
+		}
+		else {
+			offsetOnBody = b2Vec2(0.0f, 0.0f);
+		}
 		tipCenter = b2Vec2(0.0f,  length);
 
 		b2Vec2 vertices[] = {
@@ -311,10 +327,16 @@ BoneUserData::BoneUserData(
 
 		// reference the physics object from the user data.
 		tipCenter = tipCenter;
-		rootCenter = attachesTo->tipCenter;
-	}
+		if (attached) {
+			rootCenter = attachesTo->tipCenter;
+		} else {
+			rootCenter = b2Vec2(0.0f, 0.0f);
+		}
 
-	if (!isRoot) {
+
+		}
+
+	if (!isRoot && attached) {
 		joint = new JointUserData( boneDescription, this, fish); 	// the joint that attaches it into its socket 
 	}	
 
@@ -379,21 +401,36 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 
 void addFoodParticle(b2Vec2 position) {
+	printf("addFoodParticle\n");
 
-	// unsigned int currentNumberOfFood = 0;
+	unsigned int emptyFoodIndex = 0;
 
-	// for (int i = 0; i < N_FOODPARTICLES; ++i)
-	// {
+	for (int i = 0; i < N_FOODPARTICLES; ++i)
+	{
 
-	// 	if (food[i].isUsed) {
-	// 		currentNumberOfFood ++;
-	// 	}
-	// 	else {
-	// 		break;
-	// 	}
+		if (food[i]->isUsed) {
+			emptyFoodIndex ++;
+		}
+		else {
+			break;
+		}
 
 
-	// }
+	}
+
+
+
+		boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
+		foodDescriptor.used = true;
+		foodDescriptor.isRoot = true;
+		food[emptyFoodIndex] = new BoneUserData(foodDescriptor, nullptr, position, 0, false);
+
+		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
+		food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
+		food[emptyFoodIndex]->joint->init = false;
+		food[emptyFoodIndex]->joint->isUsed = false;
+		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
+
 
 	// food[currentNumberOfFood] = foodParticle_t(position);
 	 // food.push_back( foodParticle_t( position) );
@@ -537,7 +574,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		if (i == 0) {
 			driedFish.bones[i].isRoot = true;
 		}
-		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup);
+		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup, true);
 	}
 
 	n_bones_used = 0;
@@ -1942,7 +1979,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 		*/
 		boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
-		food[i] = new BoneUserData(foodDescriptor, NULL, b2Vec2(0.0f, 0.0f), 0);
+		food[i] = new BoneUserData(foodDescriptor, NULL, b2Vec2(0.0f, 0.0f), 0, false);
 		food[i]->init = false;
 		food[i]->isUsed = false;
 	}
@@ -2441,7 +2478,7 @@ void deepSeaLoop () {
 
 	if (!local_m_world->IsLocked() ) {
 
-		// removeDeletableFish();
+		removeDeletableFish();
 
 		if (startNextGeneration ) {
 			beginGeneration ( );
@@ -2454,11 +2491,11 @@ void deepSeaLoop () {
 
 
 
-		// if (flagAddFood) {
-		// 	flagAddFood = false;
+		if (flagAddFood) {
+			flagAddFood = false;
 
-		// 	addFoodParticle(getRandomPosition());
-		// }
+			addFoodParticle(getRandomPosition());
+		}
 
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
@@ -2484,7 +2521,8 @@ void deepSeaLoop () {
 
 void deepSeaControlA () {
 	;
-	addFoodParticle(b2Vec2(124.0f, 3.5f));
+	// addFoodParticle(b2Vec2(0.0f, 0.0f));
+	flagAddFood = true;
 }
 void deepSeaControlB () {
 	;

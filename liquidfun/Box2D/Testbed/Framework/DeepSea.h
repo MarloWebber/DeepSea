@@ -146,7 +146,8 @@ struct BoneUserData {
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
 		b2Vec2 positionOffset,
-		int collisionGroup);
+		int collisionGroup,
+		bool attached);
 } ;
 
 
