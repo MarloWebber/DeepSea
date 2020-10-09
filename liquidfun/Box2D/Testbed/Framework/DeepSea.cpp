@@ -598,7 +598,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		}
 	}
 
-	init = true; 										// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+	init = false; 										// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false; 									// only true when the part is added to the world
 
 
@@ -899,7 +899,7 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition)
 	fish->isUsed = true;
 
 	for (int i = 0; i < N_FINGERS; ++i) {
-		if (fish->bones[i]->init) {
+		if (driedFish.bones[i].used) {
 			nonRecursiveBoneIncorporator( fish->bones[i]);
 		}
 	}
@@ -1492,9 +1492,9 @@ void removeDeletableFish() {
 
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		// if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
-		if (fish->flagDelete) {
+		if (fish->flagDelete && fish->isUsed) {
 			deleteFish ( &(*fish)) ;
-			break;
+			// break;
 		}
 	}
 
