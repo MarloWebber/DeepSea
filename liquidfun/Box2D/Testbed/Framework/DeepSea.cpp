@@ -438,7 +438,7 @@ void addFoodParticle(b2Vec2 position) {
 		food[emptyFoodIndex] = new BoneUserData(foodDescriptor, nullptr, position, 0, false);
 
 		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
-		// food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
+		food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
 		food[emptyFoodIndex]->joint->init = false;
 		food[emptyFoodIndex]->joint->isUsed = false;
 		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
