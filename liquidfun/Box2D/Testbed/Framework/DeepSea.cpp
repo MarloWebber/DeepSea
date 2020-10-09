@@ -2271,13 +2271,28 @@ void runBiomechanicalFunctions () {
 }
 
 void deepSeaLoop () {
+
+
+	// TestMain::SimulationLoop();
+
+	TestMain::PreStep();
+
+	TestMain::Step();
+
 	if (!local_m_world->IsLocked() ) {
+
+		removeDeletableFish();
 
 		if (startNextGeneration ) {
 			beginGeneration ( );
 		}
 
-		removeDeletableFish();
+	
+		drawingTest();
+		runBiomechanicalFunctions();
+
+
+
 
 		// if (flagAddFood) {
 		// 	flagAddFood = false;
@@ -2287,25 +2302,20 @@ void deepSeaLoop () {
 
 		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-	std::list<foodParticle_t>::iterator foodParticle;
-	for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-
-			// if (!foodParticle->init || !food[i]->isUsed) {
-			// 	break;
-			// }
-			// else {
-				foodParticle->position = foodParticle->u_body->GetWorldCenter(); // update positions of all the food particles
-
-				// if () {
-
-				}
-			// }
+		std::list<foodParticle_t>::iterator foodParticle;
+		for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
+			foodParticle->position = foodParticle->u_body->GetWorldCenter(); // update positions of all the food particles
+		}
 		
-
-		runBiomechanicalFunctions();
+		
 	}
 
-	TestMain::SimulationLoop();
+
+
+
+	TestMain::PostStep();
+	
+
 }
 
 void deepSeaControlA () {

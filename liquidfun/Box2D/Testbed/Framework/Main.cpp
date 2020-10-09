@@ -166,12 +166,8 @@ static void Timer(int)
 	glutTimerFunc(framePeriod, Timer, 0);
 }
 
- void SimulationLoop()
+ void PreStep()
 {
-
-
-
-
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -188,9 +184,18 @@ static void Timer(int)
 
 	// if (!queryScienceMode()) {
 		
+	
+}
+
+void Step () {
 		test->Step(&settings);
 
-		// if (test->IsWorldLocked() == false && !settings.pause) {
+
+}
+
+
+void PostStep() {
+			// if (test->IsWorldLocked() == false && !settings.pause) {
 		// 	// deepSeaLoop();
 		// }
 	// }
@@ -212,53 +217,53 @@ static void Timer(int)
 	
 
 
-	if (fullscreenUI.GetEnabled())
-	{
-		// Set framework settings options based on parameters
-		const uint32 options = particleParameter.GetOptions();
+	// if (fullscreenUI.GetEnabled())
+	// {
+	// 	// Set framework settings options based on parameters
+	// 	const uint32 options = particleParameter.GetOptions();
 
-		settings.strictContacts 	= options &
-			ParticleParameter::OptionStrictContacts;
-		settings.drawContactPoints	= options &
-			ParticleParameter::OptionDrawContactPoints;
-		settings.drawContactNormals	= options &
-			ParticleParameter::OptionDrawContactNormals;
-		settings.drawContactImpulse	= options &
-			ParticleParameter::OptionDrawContactImpulse;
-		settings.drawFrictionImpulse = options &
-			ParticleParameter::OptionDrawFrictionImpulse;
-		settings.drawStats 			 = options &
-			ParticleParameter::OptionDrawStats;
-		settings.drawProfile		 = options &
-			ParticleParameter::OptionDrawProfile;
+	// 	settings.strictContacts 	= options &
+	// 		ParticleParameter::OptionStrictContacts;
+	// 	settings.drawContactPoints	= options &
+	// 		ParticleParameter::OptionDrawContactPoints;
+	// 	settings.drawContactNormals	= options &
+	// 		ParticleParameter::OptionDrawContactNormals;
+	// 	settings.drawContactImpulse	= options &
+	// 		ParticleParameter::OptionDrawContactImpulse;
+	// 	settings.drawFrictionImpulse = options &
+	// 		ParticleParameter::OptionDrawFrictionImpulse;
+	// 	settings.drawStats 			 = options &
+	// 		ParticleParameter::OptionDrawStats;
+	// 	settings.drawProfile		 = options &
+	// 		ParticleParameter::OptionDrawProfile;
 
-		// The b2Draw based flags must be exactly 0 or 1 currently.
-		settings.drawShapes 	= options &
-			ParticleParameter::OptionDrawShapes ? 1 : 0;
-		settings.drawParticles 	= options &
-			ParticleParameter::OptionDrawParticles ? 1 : 0;
-		settings.drawJoints		= options &
-			ParticleParameter::OptionDrawJoints ? 1 : 0;
-		settings.drawAABBs		= options &
-			ParticleParameter::OptionDrawAABBs ? 1 : 0;
-		settings.drawCOMs 		= options &
-			ParticleParameter::OptionDrawCOMs ? 1 : 0;
+	// 	// The b2Draw based flags must be exactly 0 or 1 currently.
+	// 	settings.drawShapes 	= options &
+	// 		ParticleParameter::OptionDrawShapes ? 1 : 0;
+	// 	settings.drawParticles 	= options &
+	// 		ParticleParameter::OptionDrawParticles ? 1 : 0;
+	// 	settings.drawJoints		= options &
+	// 		ParticleParameter::OptionDrawJoints ? 1 : 0;
+	// 	settings.drawAABBs		= options &
+	// 		ParticleParameter::OptionDrawAABBs ? 1 : 0;
+	// 	settings.drawCOMs 		= options &
+	// 		ParticleParameter::OptionDrawCOMs ? 1 : 0;
 
-		// Draw the full screen UI with
-		// "test_name [: particle_parameter] / fps" at the bottom of the
-		// screen.
-		std::string msg = entry->name;
-		if (fullscreenUI.GetParticleParameterSelectionEnabled())
-		{
-			msg += " : ";
-			msg += particleParameter.GetName();
-		}
+	// 	// Draw the full screen UI with
+	// 	// "test_name [: particle_parameter] / fps" at the bottom of the
+	// 	// screen.
+	// 	std::string msg = entry->name;
+	// 	if (fullscreenUI.GetParticleParameterSelectionEnabled())
+	// 	{
+	// 		msg += " : ";
+	// 		msg += particleParameter.GetName();
+	// 	}
 
-		std::stringstream ss;
-		ss << int(1000.0f / ComputeFPS());
-		msg += " / " + ss.str() + " fps";
-		fullscreenUI.Draw(msg);
-	}
+	// 	std::stringstream ss;
+	// 	ss << int(1000.0f / ComputeFPS());
+	// 	msg += " / " + ss.str() + " fps";
+	// 	fullscreenUI.Draw(msg);
+	// }
 
 	test->DrawTitle(entry->name);
 
@@ -277,23 +282,6 @@ static void Timer(int)
 		settings.viewCenter.Set(0.0f, 20.0f * viewZoom);
 		Resize(width, height);
 	}
-
-	// print world step time stats every 600 frames
-	// static int s_printCount = 0;
-	// static b2Stat st;
-	// st.Record(settings.stepTimeOut);
-
-	// const int STAT_PRINT_INTERVAL = 600;
-	// if ( settings.printStepTimeStats && st.GetCount() == STAT_PRINT_INTERVAL )
-	// {
-	// 	printf("World Step Time samples %i-%i: %fmin %fmax %favg (ms)\n",
-	// 		s_printCount*STAT_PRINT_INTERVAL,
-	// 		(s_printCount+1)*STAT_PRINT_INTERVAL-1,
-	// 		st.GetMin(), st.GetMax(), st.GetMean());
-	// 	st.Clear();
-	// 	s_printCount++;
-	// }
-
 
 }
 

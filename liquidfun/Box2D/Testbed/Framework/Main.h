@@ -45,7 +45,9 @@ void SetParticleParameters(
  void Pause2();
  void Resume2();
 
- void SimulationLoop();
+ void PreStep();
+ void Step();
+ void PostStep();
 
 }  // namespace TestMain
 

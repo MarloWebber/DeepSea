@@ -555,7 +555,6 @@ void Test::Step(Settings* settings)
 
 	// m_world->DrawDebugData(); // this the one
 
-	drawingTest();
 
 	if (timeStep > 0.0f)
 	{
