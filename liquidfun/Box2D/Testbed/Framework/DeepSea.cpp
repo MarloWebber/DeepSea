@@ -242,8 +242,12 @@ BoneUserData::BoneUserData(
 	// bones in a set can't collide with each other.
 	collisionGroup = newCollisionGroup;
 
+	if (!attached) {
+		isRoot = true;
+	}
+
 	// the following code is used to generate box2d structures and shapes from the bone parameters.
-	if (isRoot ||!boneDescription.used) {
+	if (isRoot) {
 
 		offsetOnBody = b2Vec2(0.0f, 0.0f);
 		tipCenter = b2Vec2(0.0f, length);
@@ -286,11 +290,6 @@ BoneUserData::BoneUserData(
 	else {
 		// if (attached) {
 
-		BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
-	// }
-
-			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;	
-		// }
 		// else {
 		// 	offsetOnBody = b2Vec2(0.0f, 0.0f);
 		// }
@@ -324,14 +323,24 @@ BoneUserData::BoneUserData(
 		// move the body to the appropriate position on the model.
 		p_body = local_m_world->CreateBody(&bodyDef);
 
-		p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
+
+		tipCenter = tipCenter;
+		rootCenter = b2Vec2(0.0f, 0.0f);
+
+		if (attached) {
+			BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
+			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;	
+			p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
+			rootCenter = attachesTo->tipCenter;
+		}
+		
 
 		shape.Set(vertices, count);
 
 		// reference the physics object from the user data.
-		tipCenter = tipCenter;
+
 		// if (!isRoot) {
-			rootCenter = attachesTo->tipCenter;
+			
 		// } else {
 		// 	rootCenter = b2Vec2(0.0f, 0.0f);
 		// }
@@ -867,6 +876,11 @@ void deleteFish (BonyFish * fish) {
 
 
 }
+
+
+// void deleteFishForActual () {
+// 	deleteBone(fish->bones[3]);
+// }
 
 void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
 	// fishes[fishIndex] =
@@ -2523,7 +2537,28 @@ void deepSeaControlA () {
 	flagAddFood = true;
 }
 void deepSeaControlB () {
-	;
+
+
+	// for (int i = 0; i <; ++i)
+	// {
+	// 	/* code */
+	// }
+
+	// ;
+
+
+	std::list<BonyFish>::iterator fish;
+
+	// for (int i = 0; i < N_FISHES; ++i) {
+
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (fish->selected) {
+			fish->flagDelete = true;
+			fish->selected = false;
+
+		}
+
+	}
 }
 
 void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) {

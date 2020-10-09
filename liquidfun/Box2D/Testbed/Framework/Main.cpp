@@ -344,7 +344,8 @@ deepSeaControlA();
 	case 'a':
 		if (test)
 		{
-			test->controlA();
+			// test->controlA();
+			deepSeaControlB();
 		}
 		break;
 	case 'd':
