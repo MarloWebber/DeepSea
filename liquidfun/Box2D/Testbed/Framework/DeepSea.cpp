@@ -439,6 +439,14 @@ void addFoodParticle(b2Vec2 position) {
 
 		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
 		food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
+
+
+		// change udatawrap to have a food type
+		// new uDataWrap();
+		uDataWrap * p_dataWrapper = new uDataWrap( &(*food[emptyFoodIndex]), TYPE_FOOD);
+
+		food[emptyFoodIndex]->p_body->SetUserData((void *) p_dataWrapper); //userData->dataType = TYPE_FOOD;
+
 		food[emptyFoodIndex]->joint->init = false;
 		food[emptyFoodIndex]->joint->isUsed = false;
 		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
