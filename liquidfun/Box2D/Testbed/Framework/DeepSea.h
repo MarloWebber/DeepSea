@@ -226,7 +226,7 @@ struct networkDescriptor {
 void LoadFishFromName (uint8_t fishIndex) ;
 
 struct BonyFish {
-	float hunger; 	// the animal spends energy to move and must replenish it by eating
+	float energy; 	// the animal spends energy to move and must replenish it by eating
 	bool init; 		// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;	// 
 

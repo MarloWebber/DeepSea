@@ -583,7 +583,9 @@ networkDescriptor * createEmptyNetworkOfCorrectSize (fann * temp_ann) {
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
 	genes = driedFish;
-	hunger = 0.0f; 										// the animal spends energy to move and must replenish it by eating
+	// hunger = 0.0f; 										// the animal spends energy to move and must replenish it by eating
+
+	energy = 1000.0f;
 
 	flagDelete = false;
 	selected = false;
@@ -1850,6 +1852,46 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 	}
 }
 
+void ecosystemModeBeginGeneration (BonyFish * fish) {
+
+	// delete the fish
+	fish->flagDelete = true;
+
+
+	// create n mutant children near that position
+
+	for (int i = 0; i < 3; ++i)
+	{
+			fishDescriptor_t newFishBody;
+					loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+
+					mutateFishDescriptor (&newFishBody, 0.1, 0.5);
+				
+				    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
+
+					// now you can load the mutant ANN.
+					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+
+					// create a neurodescriptor.
+					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+
+					verifyNetworkDescriptor(muscleCars);
+
+					fann * jann = createFANNbrainFromDescriptor(muscleCars);
+
+					for (int i = 0; i < N_SENSECONNECTORS; ++i)
+					{
+						if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
+								newFishBody.inputMatrix[i].timerPhase = RNG();
+						}
+					}
+
+					loadFish ( newFishBody, jann, (fish->bones[0]->p_body->GetWorldCenter() + getRandomPosition() )) ;
+	}
+
+
+}
+
 void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
 	// int n_selected  = 0;
@@ -2368,6 +2410,8 @@ void runBiomechanicalFunctions () {
 			// 	fish->brain->networkWindow.upperBound = b2Vec2(0.0f,0.0f);
 			// // }
 
+			float energyUsedThisTurn = 0;
+
 			// update the fish's senses
 			for (int j = 0; j < N_FINGERS; ++j) {
 				nonRecursiveSensorUpdater (fish->bones[j]);
@@ -2447,6 +2491,8 @@ void runBiomechanicalFunctions () {
 
 									float motorSpeed = motorSignals[j] * 10;
 
+									energyUsedThisTurn += abs(motorSignals[j]);
+
 									if (false) {
 
 										// clip the possible motor speed to the speed limit.
@@ -2473,6 +2519,20 @@ void runBiomechanicalFunctions () {
 						}	
 					break;
 				}
+			}
+
+			if (true) { // if in ecosystem mode
+
+			
+
+				// kill the fish if it is out of energy.
+				fish->energy -= energyUsedThisTurn;
+				printf("charhe: %f\n", fish->energy);
+				if (fish->energy < 0) {
+					fish->flagDelete = true;
+				}
+
+
 			}
 
 			// if (fishChecker(i)) {_		
