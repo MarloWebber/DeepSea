@@ -934,6 +934,8 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition)
 		if (driedFish.bones[i].used) {
 			nonRecursiveBoneIncorporator( fish->bones[i]);
 		}
+
+		fish->bones[i]->p_owner = fish; // you need to update the user data pointer, because when you pushed the fish onto the list you pushed a copy of it not the actual thing.
 	}
 
 }
@@ -2556,7 +2558,7 @@ void runBiomechanicalFunctions () {
 				}
 
 
-	printf("f: %f r: %f\n", fish->energy , fish->reproductionEnergyCost);
+	// printf("f: %f r: %f\n", fish->energy , fish->reproductionEnergyCost);
 				if (fish->energy > fish->reproductionEnergyCost) {
 					ecosystemModeBeginGeneration( &(*fish) );
 					fish->energy -= fish->reproductionEnergyCost;
@@ -2724,9 +2726,11 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 				
 				food->flagDelete = true;
 				// fish->energy = (fish->energy) +(food->energy);
+				// printf("FEK %f\n", fish->energy);
 				fish->feed(food->energy);
+				// printf("FEK %f\n", fish->energy);
 
-				printf("ate %f of food\n", food->energy);
+				// printf("ate %f of food\n", food->energy);
 
 				// // addFoodParticle(getRandomPosition());
 				// flagAddFood = true;
@@ -2748,9 +2752,12 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 				food->flagDelete = true;
 				// fish->energy = (fish->energy) +(food->energy);
+				// printf("FEK %f\n", fish->energy);
 				fish->feed(food->energy);
+				// printf("FEK %f\n", fish->energy);
 
-				printf("ate %f of food\n", food->energy);
+
+				// printf("ate %f of food\n", food->energy);
 
 				// food[0]->flagDelete = true;
 				// ecosystemModeBeginGeneration( fish );
