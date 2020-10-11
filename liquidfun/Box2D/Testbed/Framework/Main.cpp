@@ -46,7 +46,7 @@ namespace
 {
 	int32 testIndex = 0;
 	int32 testSelection = 0;
-	int32 modeSelection = 0;
+	// int32 modeSelection = 0;
 	int32 testCount = 0;
 	TestEntry* entry;
 	Test* test;
@@ -768,16 +768,16 @@ int main(int argc, char** argv)
 	// int booger = 0;
 	// glui->add_checkbox_to_panel(gamePanel, "Shapes", booger);
 	GLUI_Listbox* modeList =
-		glui->add_listbox_to_panel(gamePanel, "Mode", &modeSelection);
+		glui->add_listbox_to_panel(gamePanel, "Mode", &(m_deepSeaSettings.gameMode ));
 
 
 
-	int32 modeCount = 0;
+	// int32 modeCount = 0;
 	// TestEntry* e = g_testEntries;
 	// while (e->createFcn)
 	// {
-		modeList->add_item(modeCount, "Exploratory Mode" );
-		modeList->add_item(modeCount, "Ecosystem Mode" );
+		modeList->add_item(GAME_MODE_EXPLORATION, "Exploratory Mode" );
+		modeList->add_item(GAME_MODE_ECOSYSTEM, "Ecosystem Mode" );
 
 
 	glui->add_separator_to_panel(gamePanel);

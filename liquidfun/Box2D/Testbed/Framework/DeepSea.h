@@ -11,6 +11,25 @@
 #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
 
+	// int gameMode;
+	 // extern int deepSeaGameMode;
+
+
+#define GAME_MODE_EXPLORATION 0
+#define GAME_MODE_ECOSYSTEM 1
+
+
+	 struct deepSeaSettings {
+	 	int gameMode;
+	 	int exploratory_nFood;
+	 	int exploratory_nFish;
+	 	b2Vec2 gravity;
+	 	float mutationRate;
+	 	float mutationSeverity;
+	 };
+
+	 extern deepSeaSettings m_deepSeaSettings;
+
 b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p);
 
 struct JointUserData; // forward class declaration
@@ -19,6 +38,16 @@ struct BonyFish;
 
 void setUserControlInputA() ;
 void setUserControlInputB() ;
+
+
+
+// typedef struct DeepSeaSettings {
+
+	// bool ecosystemMode = true;
+// } m_deepSeaSettings ;
+
+// DeepSeaSettings m_deepSeaSettings;
+
 
 // a condensed form of fish used for data storage and transfer.
 // it is made so that it is safe to serialize and mutate, and that any changes will not crash the program.

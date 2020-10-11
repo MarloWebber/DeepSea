@@ -32,6 +32,10 @@ bool startNextGeneration = false;
 bool userControlInputA;
 bool userControlInputB;
 
+deepSeaSettings m_deepSeaSettings;
+
+// int m_deepSeaSettings.gameMode = 0;
+
 std::list<BonyFish> fishes;
 // std::list<foodParticle_t> food;
 
@@ -47,8 +51,7 @@ b2World * local_m_world_sci = nullptr;
 b2ParticleSystem * local_m_particleSystem_sci = nullptr;
 DebugDraw * local_debugDraw_pointer_sci = nullptr;
 
-bool exploratoryMode  = false;
-bool ecosystemMode = true;
+// DeepSeaSettings m_deepSeaSettings;
 
 bool flagAddFood = false;
 
@@ -2546,7 +2549,7 @@ void runBiomechanicalFunctions () {
 				}
 			}
 
-			if (ecosystemMode) { // if in ecosystem mode
+			if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) { // if in ecosystem mode
 
 			
 
@@ -2593,7 +2596,7 @@ void deepSeaLoop () {
 
 		removeDeletableFish();
 
-		if (startNextGeneration ) {
+		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION ) {
 			exploratoryModeBeginGeneration ( );
 		}
 
@@ -2711,7 +2714,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
-			if (exploratoryMode) {
+			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
 
 			    vote(fish);
 
@@ -2720,7 +2723,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 				// flagAddFood = true;
 			}
 
-			else if (ecosystemMode) {
+			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
 				// deleteFood()
 				// ((foodParticle_t*)(dataA.uData) )->flagDelete = true;
 				
@@ -2743,11 +2746,11 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
 
 
-			if (exploratoryMode) {
+			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
 
 				vote(fish);
 			}
-			else if (ecosystemMode) {
+			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
 
 
 				food->flagDelete = true;

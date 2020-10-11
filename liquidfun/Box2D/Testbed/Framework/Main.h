@@ -20,6 +20,8 @@
 #include <Box2D/Box2D.h>
 #include "ParticleParameter.h"
 
+// int deepSeaGameMode;
+
 namespace TestMain
 {
 
