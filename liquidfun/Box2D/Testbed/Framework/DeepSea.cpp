@@ -47,7 +47,9 @@ b2World * local_m_world_sci = nullptr;
 b2ParticleSystem * local_m_particleSystem_sci = nullptr;
 DebugDraw * local_debugDraw_pointer_sci = nullptr;
 
-bool exploratoryMode  = true;
+bool exploratoryMode  = false;
+bool ecosystemMode = true;
+
 bool flagAddFood = false;
 
 
@@ -229,7 +231,16 @@ BoneUserData::BoneUserData(
 	sensation_jointangle = 0.0f;
 
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
-	energy = ((rootThickness + tipThickness)/2) * (length * density); 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
+	energy = ((rootThickness + tipThickness)/2) * length * density; 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
+
+	// accessory features cost more so you can't just go ham on them. And the effect stacks so it's better to specialize.
+	// touch and jointangle are considered necessary for any moving limb, so they come free.
+	if (isMouth				&& !isRoot) 	{ energy = energy * 1.5; };
+	if (sensor_radar 		&& !isRoot) 	{ energy = energy * 1.5; };
+	if (isWeapon 			&& !isRoot) 	{ energy = energy * 1.5; };
+
+	energy = energy * 10000; // this is a constant that is used to help the value of energy in food roughly match the effort required to get food.
+
 
 	color = boneDescription.color;
 	outlineColor = boneDescription.outlineColor;
@@ -451,6 +462,8 @@ void addFoodParticle(b2Vec2 position) {
 		food[emptyFoodIndex]->joint->isUsed = false;
 		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
 
+		food[emptyFoodIndex]->energy = food[emptyFoodIndex]->energy * 5; // this is a constant that sets the value of food. Typical creatures are made from 4 segments; setting this to 4 or above should allow the creature to reproduce after eating just 1 segment.
+
 
 	// food[currentNumberOfFood] = foodParticle_t(position);
 	 // food.push_back( foodParticle_t( position) );
@@ -580,12 +593,16 @@ networkDescriptor * createEmptyNetworkOfCorrectSize (fann * temp_ann) {
 	return new networkDescriptor(temp_ann);
 }
 
+void BonyFish::feed(float amount) {
+	energy += amount;
+}
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
 	genes = driedFish;
-	// hunger = 0.0f; 										// the animal spends energy to move and must replenish it by eating
+	// hunger = 0.0f; 								
+	// energy = 10000.0f;		// the animal spends energy to move and must replenish it by eating
 
-	energy = 1000.0f;
+	reproductionEnergyCost = 0.0f; // the amount of energy required to make a clutch of viable offspring. to be calculated
 
 	flagDelete = false;
 	selected = false;
@@ -598,7 +615,10 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		}
 		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup, true);
 		// bones[i]->joint = new JointUserData(); //(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
+		reproductionEnergyCost += bones[i]->energy;
 	}
+
+	energy = reproductionEnergyCost - 1;
 
 	n_bones_used = 0;
 	for (int i = 0; i < N_FINGERS; ++i) {
@@ -607,6 +627,8 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 		}
 	}
+
+	printf("reproductionEnergyCost: %f\n", reproductionEnergyCost);
 
 	init = false; 										// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false; 									// only true when the part is added to the world
@@ -1556,6 +1578,7 @@ void reloadTheSim  () {
 	startNextGeneration = true;
 }
 
+
 //  prints the winner to file immediately.
 void  vote (BonyFish * winner) {
 	// if ( !fishSlotLoaded[winner->slot]) { return; }
@@ -1855,7 +1878,7 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 void ecosystemModeBeginGeneration (BonyFish * fish) {
 
 	// delete the fish
-	fish->flagDelete = true;
+	// fish->flagDelete = true;
 
 
 	// create n mutant children near that position
@@ -2521,16 +2544,24 @@ void runBiomechanicalFunctions () {
 				}
 			}
 
-			if (true) { // if in ecosystem mode
+			if (ecosystemMode) { // if in ecosystem mode
 
 			
 
 				// kill the fish if it is out of energy.
 				fish->energy -= energyUsedThisTurn;
-				printf("charhe: %f\n", fish->energy);
+				// printf("charhe: %f\n", fish->energy);
 				if (fish->energy < 0) {
 					fish->flagDelete = true;
 				}
+
+
+	printf("f: %f r: %f\n", fish->energy , fish->reproductionEnergyCost);
+				if (fish->energy > fish->reproductionEnergyCost) {
+					ecosystemModeBeginGeneration( &(*fish) );
+					fish->energy -= fish->reproductionEnergyCost;
+				}
+
 
 
 			}
@@ -2674,19 +2705,29 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 		if( dataB.dataType == TYPE_MOUTH ) {
 
+
+			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
+			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
+
 			if (exploratoryMode) {
 
-			    vote(((BoneUserData *)(dataB.uData))->p_owner);
+			    vote(fish);
 
 				
 				
 				// flagAddFood = true;
 			}
 
-			else {
+			else if (ecosystemMode) {
 				// deleteFood()
 				// ((foodParticle_t*)(dataA.uData) )->flagDelete = true;
-((foodParticle_t*)(dataA.uData) )->flagDelete = true;
+				
+				food->flagDelete = true;
+				// fish->energy = (fish->energy) +(food->energy);
+				fish->feed(food->energy);
+
+				printf("ate %f of food\n", food->energy);
+
 				// // addFoodParticle(getRandomPosition());
 				// flagAddFood = true;
 			}
@@ -2694,14 +2735,26 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		}
 		else if (dataA.dataType == TYPE_MOUTH) {
 
+			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
+			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
+
+
 			if (exploratoryMode) {
 
-				vote(((BoneUserData *)(dataA.uData))->p_owner);
+				vote(fish);
 			}
-			else {
+			else if (ecosystemMode) {
+
+
+				food->flagDelete = true;
+				// fish->energy = (fish->energy) +(food->energy);
+				fish->feed(food->energy);
+
+				printf("ate %f of food\n", food->energy);
 
 				// food[0]->flagDelete = true;
-				((foodParticle_t*)(dataB.uData) )->flagDelete = true;
+				// ecosystemModeBeginGeneration( fish );
+				// ((BoneUserData *)(dataB.uData) )->flagDelete = true;
 				// // addFoodParticle(getRandomPosition());
 				// flagAddFood = true;
 			}

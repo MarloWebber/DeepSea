@@ -7,7 +7,7 @@
 #include "fann.h"
 
 #define N_FINGERS 8 // the amount of bones a fish can have. you know, fish fingers.
-#define N_FISHES 12
+#define N_FISHES 1
 #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
 
@@ -226,6 +226,8 @@ struct networkDescriptor {
 void LoadFishFromName (uint8_t fishIndex) ;
 
 struct BonyFish {
+
+	float reproductionEnergyCost;
 	float energy; 	// the animal spends energy to move and must replenish it by eating
 	bool init; 		// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;	// 
@@ -250,7 +252,7 @@ struct BonyFish {
 	// float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
 	bool flagDelete;
-	bool flagExtraBoneDeleter;
+	// bool flagExtraBoneDeleter;
 
 	// bool flagWinner; // flag the animal as winner for this turn.
 
@@ -270,6 +272,8 @@ struct BonyFish {
 	char species[32]; // a textual string describing what species the fish is.
 
 	BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition);
+
+	void feed(float amount);
 
 };
 
