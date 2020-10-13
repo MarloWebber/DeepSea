@@ -56,6 +56,7 @@ DebugDraw * local_debugDraw_pointer_sci = nullptr;
 // DeepSeaSettings m_deepSeaSettings;
 
 bool flagAddFood = false;
+bool flagAddPlant= false;
 
 
 float pi = 3.14159f;
@@ -227,6 +228,7 @@ BoneUserData::BoneUserData(
 	density = 1.2f; 														// the original density of the water is 1.2f
 	isRoot = boneDescription.isRoot;
 	isMouth = boneDescription.isMouth;
+	isLeaf = boneDescription.isLeaf;
 
 	sensor_touch = boneDescription.sensor_touch;
 	sensor_radar = boneDescription.sensor_radar;
@@ -243,6 +245,7 @@ BoneUserData::BoneUserData(
 	if (isMouth				&& !isRoot) 	{ energy = energy * 1.5; };
 	if (sensor_radar 		&& !isRoot) 	{ energy = energy * 1.5; };
 	if (isWeapon 			&& !isRoot) 	{ energy = energy * 1.5; };
+	if (isLeaf 				&& !isRoot) 	{ energy = energy * 1.5; };
 
 	energy = energy * 10000; // this is a constant that is used to help the value of energy in food roughly match the effort required to get food.
 
@@ -288,6 +291,11 @@ BoneUserData::BoneUserData(
 		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
 		// 	bodyDef.userData = (void *)p_dataWrapper;
 		// }
+			else if (isLeaf) {
+
+			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_LEAF);
+			bodyDef.userData = (void *)p_dataWrapper;
+			}
 			else {
 
 				uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
@@ -326,6 +334,11 @@ BoneUserData::BoneUserData(
 		else if (sensor_touch) {
 
 			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_TOUCHSENSOR);
+			bodyDef.userData = (void *)p_dataWrapper;
+			}
+			else if (isLeaf) {
+
+			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_LEAF);
 			bodyDef.userData = (void *)p_dataWrapper;
 			}
 			else {
@@ -378,6 +391,15 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	}
 
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
+
+	// p_bone->p_body->SetUserData
+
+
+		// uDataWrap * p_dataWrapper = new uDataWrap( p_bone, ((uDataWrap*)p_bone->p_body->GetUserData())->dataType  );
+
+		// p_bone->p_body->SetUserData((void *) p_dataWrapper); //userData->dataType = TYPE_FOOD;
+
+
 
 	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
 	tempFilter.groupIndex = p_bone->collisionGroup;
@@ -1046,12 +1068,29 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 	}
 }
 
+fishDescriptor_t * basicPlant() {
+
+	fishDescriptor_t * newPlant = new fishDescriptor_t();
+
+	for (int i = 0; i < N_FINGERS; ++i)
+	{
+		newPlant->bones[i].used = false;	
+	}
+
+	newPlant->bones[0].used = true;
+	newPlant->bones[0].isLeaf = true;
+	newPlant->bones[0].sensor_touch = false;
+	newPlant->bones[0].isMouth = false;
+	newPlant->bones[0].color = b2Color(0.1f, 1.0f, 0.3f);
+
+	return newPlant;
+}
+
 neuronDescriptor * getNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 	std::list<layerDescriptor>::iterator layer;
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-
  			if (neuron -> index == windex) {
  				return &(*neuron);
  			}
@@ -1811,8 +1850,17 @@ public:
 
 	float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
 	{
+		// printf("peeeee\n");
 		b2Body* body = fixture->GetBody();
 		void* userData = body->GetUserData();
+		uDataWrap* myUserData = (uDataWrap* )body->GetUserData();
+
+		if (myUserData->dataType == TYPE_LEAF) {
+			printf("sunlight fell on a leaf: %f\n", ((BoneUserData *)(myUserData->uData))->p_owner->energy);
+
+			((BoneUserData *)(myUserData->uData))->p_owner->energy += 100;
+		}
+
 		if (userData)
 		{
 			int32 index = *(int32*)userData;
@@ -1831,6 +1879,7 @@ public:
 		// By returning the current fraction, we instruct the calling code to clip the ray and
 		// continue the ray-cast to the next fixture. WARNING: do not assume that fixtures
 		// are reported in order. However, by clipping, we can always get the closest fixture.
+		// printf("fraction: %f\n", fraction);
 		return fraction;
 	}
 	
@@ -1849,14 +1898,18 @@ void shine () {
 
 	float randomDirection = (RNG() * 2 * pi);
 
-	sunbeam.p2 = b2Vec2( cos(randomDirection), sin(randomDirection));
-	sunbeam.maxFraction = 100;
+	float rayLength = 12.0f;
+
+	sunbeam.p2 = b2Vec2(rayLength * cos(randomDirection),rayLength* sin(randomDirection));
+	sunbeam.maxFraction = 1.0f;
 	// int32 childIndex = 0;
 
+	if (true) { // print the rays of light
+
+	   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, b2Color(1.0f, 1.0f, 1.0f) );
+	}
 
 	RayCastClosestCallback stupidMotherFucker;
-	// stupidMotherFucker.callback = lickerdicker;
-
 
 	local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
 
@@ -2580,11 +2633,14 @@ void deepSeaLoop () {
 
 	if (!local_m_world->IsLocked() ) {
 
+
 		removeDeletableFish();
 
 		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION ) {
 			exploratoryModeBeginGeneration ( );
 		}
+
+		shine();
 
 	
 		drawingTest();
@@ -2593,10 +2649,26 @@ void deepSeaLoop () {
 
 
 
+
+
 		if (flagAddFood) {
 			flagAddFood = false;
 
 			addFoodParticle(getRandomPosition());
+		}
+
+		if (flagAddPlant) {
+			flagAddPlant = false;
+
+
+			fishDescriptor_t * newFishBody = basicPlant();
+
+			mutateFishDescriptor (newFishBody, 0.1, 0.5);
+
+			loadFish ( *newFishBody, NULL, b2Vec2(0.0f, 0.0f)) ;
+
+
+
 		}
 
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
@@ -2619,6 +2691,12 @@ void deepSeaLoop () {
 	TestMain::PostStep();
 	
 
+}
+
+void deepSeaControlP () {
+	;
+	// addFoodParticle(b2Vec2(0.0f, 0.0f));
+	flagAddPlant = true;
 }
 
 void deepSeaControlA () {

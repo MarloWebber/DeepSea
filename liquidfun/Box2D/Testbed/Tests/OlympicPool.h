@@ -1,5 +1,8 @@
 /*
 */
+
+#include "../Framework/DeepSea.h"
+
 #ifndef OLYMPICPOOL_H
 #define OLYMPICPOOL_H
 
@@ -15,6 +18,8 @@ public:
 			m_world->SetGravity(b2Vec2(0.0f,0.0f));
 
 			b2BodyDef bd;
+			uDataWrap * p_dataWrapper = new uDataWrap(nullptr, TYPE_DEFAULT);
+			bd.userData = (void*)p_dataWrapper;
 			b2Body* ground = m_world->CreateBody(&bd);
 
 			b2ChainShape shape;

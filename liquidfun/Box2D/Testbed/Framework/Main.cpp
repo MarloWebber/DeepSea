@@ -338,6 +338,7 @@ deepSeaControlA();
 		if (test)
 		{
 			// test->jointMotorSetpoint();
+			deepSeaControlP();
 		}
 		break;
 

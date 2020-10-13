@@ -56,12 +56,16 @@ struct boneAndJointDescriptor_t {
 		float length;
 		float rootThickness;
 		float tipThickness;
+
 		bool isRoot;
 		bool isMouth;
-			bool sensor_radar; // like an olfactory sensor . senses distance from food
-			bool sensor_touch; // like how you can feel when things touch your skin.
-			bool sensor_jointangle;
-		bool isWeapon ;
+		bool isWeapon;
+		bool isLeaf;
+
+		bool sensor_radar; // like an olfactory sensor . senses distance from food
+		bool sensor_touch; // like how you can feel when things touch your skin.
+		bool sensor_jointangle;
+	
 		float torque;
 		float speedLimit;
 		float upperAngle;
@@ -140,6 +144,7 @@ struct BoneUserData {
 	uint8_t attachedTo;	
 	bool isRoot ;
 	bool isMouth ;
+	bool isLeaf;
 
 	bool sensor_radar ; // like an olfactory sensor . senses distance from food
 	bool sensor_touch; // like how you can feel when things touch your skin.
@@ -323,7 +328,7 @@ struct foodParticle_t {
 };
 
 
-// these type codes are used with uDataWrappers to do stuff when physical bodies touch and collide.
+// these type codes are used with uDataWrappers to do stuff when physical bodies touch and collide, or with raycasts
 #define TYPE_DEFAULT 0
 #define TYPE_MOUTH 1
 #define TYPE_FOOD 2
@@ -339,6 +344,7 @@ struct uDataWrap {
 
 void deepSeaControlA () ;
 void deepSeaControlB () ;
+void deepSeaControlP () ;
 
 void addFoodParticle ( b2Vec2 position) ;
 void fishIncorporator (BonyFish * p_fish) ;
