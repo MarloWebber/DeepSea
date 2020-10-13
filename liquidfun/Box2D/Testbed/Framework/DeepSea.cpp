@@ -28,6 +28,8 @@ bool startNextGeneration = false;
 // bool fishSlotLoaded[N_FISHES];
 // bool foodSlotLoaded[N_FOODPARTICLES];
 
+b2Vec2 star = b2Vec2(0.0f, 3.0f); // the emitter of radiant light. Just using a position for now but maybe more properties later.
+
 
 bool userControlInputA;
 bool userControlInputB;
@@ -1271,80 +1273,6 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 	return ann;
 }
 
-// pausing on this for a moment because it would make more sense to mutate the fish in this way than to do it in the simulation.
-// add a limb to one of the fish, and add a driver for it in the fish's mind.
-// void polydactyly (BonyFish * fish, unsigned int baseLimbIndex) {
-
-// 	unsigned int emptyLimbIndex = 0;
-// 	// find empty limb slot if available
-// 	for (int i = 0; i < N_FINGERS; ++i)
-// 	{
-// 		if (!fish->bones[i]->used){
-// 			emptyLimbIndex = i;
-// 			break;
-// 		}
-// 	}
-
-// 	if (emptyLimbIndex == 0) {
-// 		printf("There was no available limb.\n");
-// 		return;
-// 	}
-
-// 	// you may have to calculate the position of the new bone, so that it sits on the animal where it is supposed to, and not at the world 0,0.
-// 	b2Vec2 rootPositionOfThisBone = fish->bones[baseLimbIndex]->p_body->GetWorldCenter():  // it's the same as the tip position of the bone it is attached to
-// 	b2Vec2 halfLength = B2Vec2(rootPositionOfThisBone.x, rootPositionOfThisBone.y + (fish->bones[baseLimbIndex]->length/2)  );
-// 	b2Vec2 startingPosition = rotatePoint(rootPositionOfThisBone.x, rootPositionOfThisBone.y, fish->bones[baseLimbIndex]->p_body->GetAngle(), halfLength)
-
-// 	// get limb by index
-// 	fish->bones[emptyLimbIndex] = new BoneUserData(baseLimbIndex, fish, startingPosition, fish->bones[baseLimbIndex]->collisionGroup);
-
-// 	// make a joint.
-
-// 	nonRecursiveBoneIncorporator(fish->bones[emptyLimbIndex]);
-
-
-
-// 	// before you create a new sense connector, you have to create a new neuron in the brain.
-
-
-
-
-
-// 	// find empty sense connectors to use.
-// 	 int emptySenseConnectorJointAngle = -1;
-// 	 int emptySenseConnectorRadar = -1;
-// 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
-// 	{
-// 		if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED) {
-
-// 			if (emptySenseConnectorRadar < 0) { // they are init to -1 which is like a code for not having picked one.
-// 				emptySenseConnectorRadar = i;
-// 			}
-// 			else {
-// 				emptySenseConnectorJointAngle = i;
-// 				break;
-// 			}
-
-// 		}
-// 	}
-
-// 	fish->inputMatrix[emptySenseConnectorJointAngle].sensorType = SENSOR_JOINTANGLE;
-// 	fish->inputMatrix[emptySenseConnectorJointAngle].connectedToLimb = emptyLimbIndex;
-
-// 	fish->inputMatrix[emptySenseConnectorRadar].sensorType = SENSOR_FOODRADAR;
-// 	fish->inputMatrix[emptySenseConnectorRadar].connectedToLimb = emptyLimbIndex;
-
-
-	
-
-// }
-
-// instantly remove the fish's limb as well as its motor apparatus. The sensory input neurons are left behind and the sense connector is changed to 'unused'.
-// void amputation () {
-
-// }
-
-
 void polydactyly (fishDescriptor_t * driedFish) {
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i)
@@ -1372,28 +1300,21 @@ void amputation (fishDescriptor_t * driedFish) {
 	{
 		if (driedFish->bones[i].used) {
 
-			// driedFish->bones[i].used = false;
 			usedFingers ++;
 		}
 	}
-
-
 
 	unsigned int randomFinger = RNG() * usedFingers;
 
 	driedFish->bones[randomFinger].used = false;
 
-
 	// for all the limbs that were attached to the random one, you have to remove those too.
-
 	for (unsigned int i = 0; i < N_FINGERS; ++i)
 	{
 		if (driedFish->bones[i].attachedTo == randomFinger ){
 			driedFish->bones[i].used = false;
 		}
 	}
-		
-	
 }
 
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
@@ -1541,24 +1462,6 @@ void removeDeletableFish() {
 		deleteBone(food[i]);
 	}
 
-
-	// std::list<foodParticle_t>::iterator foodParticle;
-	// for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-	// // 		if (!foodParticle->isUsed || !foodParticle->init) {
-	// // 	continue;
-	// // }
-
-	// 	// if ( food[i] == NULL || food[i] == nullptr) { 	continue; }
-		// if (food[i].flagDelete) {
-		// 	// deleteFood ( foodParticle) ;
-
-		// 	food[i].isUsed = false;
-		// 	food[i].init = false;
-		// 	food[i].flagDelete = false;
-		// 	food[i].DestroyBody( food[i].u_body );
-
-		// 	// food.erase(foodParticle_t)
-		// }
 	}
 }
 
@@ -1586,16 +1489,6 @@ void reloadTheSim  () {
 
 //  prints the winner to file immediately.
 void  vote (BonyFish * winner) {
-	// if ( !fishSlotLoaded[winner->slot]) { return; }
-	// else {
-	// printf("winner: %i\n", winner->slot);
-
-	// if (winner == NULL ||) {
-
-	// }
-	// if (!winner->init || !winner->isUsed) {
-	// 	return;
-	// }
 
 	fann * wann = winner->ann;
 
@@ -1786,30 +1679,6 @@ void drawingTest() {
 					local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutline);
 
 				}
-
-
-	// // std::list<foodParticle_t>::iterator foodParticle;
-	// // for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-	// 	if (
-	// 		// foodSlotLoaded[i] &&
-	// 	 food[i].init && food[i].isUsed) {
-	
-	// 		b2Vec2 vertices[4];
-
-	// 		for (unsigned int j = 0; j < 4; ++j) {	
-	// 			b2Vec2 adjustedVertex = food[i].shape.GetVertex(j);
-	// 			b2Vec2 boneLocalCenter =food[i].p_body->GetLocalCenter();
-	// 			b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i].u_body->GetAngle(), adjustedVertex);
-	// 			rotatedVertex.x += food[i].position.x;
-	// 			rotatedVertex.y += food[i].position.y;
-	// 			vertices[j] = rotatedVertex;
-	// 		}
-	// 		local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 ,fishFoodDye );
-	// 		local_debugDraw_pointer->DrawPolygon(vertices, 4 ,fishFoodDyeOutline );
-	// 	}
-	// 	else {
-	// 		break;
-	// 	}
 	}
 
 	// for each bone, get the vertices, then add the body's world location to them, and rotate by the body angle around the body world location.
@@ -1878,6 +1747,123 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 		}
 		layerIndex ++;
 	}
+}
+
+
+
+// class newCallbackClass {
+
+// 	float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction){
+
+// 		printf("smelly ness farts");
+
+// 		float myBalls= 0.01f;
+
+// 		return myBalls;
+
+// 	}
+
+// };
+
+
+float32 lickerdicker(const b2RayCastInput& input, int32 proxyId)
+	{
+
+
+		printf("boot boot pankackes");
+
+				float myBalls= 0.01f;
+
+		return myBalls;
+
+
+	}
+
+
+// struct b2WorldRayCastWrapper
+// {
+// 	float32 RayCastCallback(const b2RayCastInput& input, int32 proxyId)
+// 	{
+
+
+// 		printf("smelly ness farts");
+
+// 				float myBalls= 0.01f;
+
+// 		return myBalls;
+
+
+// 	}
+
+
+// 	const b2BroadPhase* broadPhase;
+// 	b2RayCastCallback* callback;
+// };
+
+
+class RayCastClosestCallback : public b2RayCastCallback
+{
+public:
+	RayCastClosestCallback()
+	{
+		m_hit = false;
+	}
+
+	float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
+	{
+		b2Body* body = fixture->GetBody();
+		void* userData = body->GetUserData();
+		if (userData)
+		{
+			int32 index = *(int32*)userData;
+			if (index == 0)
+			{
+				// By returning -1, we instruct the calling code to ignore this fixture and
+				// continue the ray-cast to the next fixture.
+				return -1.0f;
+			}
+		}
+
+		m_hit = true;
+		m_point = point;
+		m_normal = normal;
+
+		// By returning the current fraction, we instruct the calling code to clip the ray and
+		// continue the ray-cast to the next fixture. WARNING: do not assume that fixtures
+		// are reported in order. However, by clipping, we can always get the closest fixture.
+		return fraction;
+	}
+	
+	bool m_hit;
+	b2Vec2 m_point;
+	b2Vec2 m_normal;
+};
+
+
+
+// a ray of light is cast from the star in a random direction. If it falls on the photosynthetic organ, the organ gains energy.
+void shine () {
+
+	b2RayCastInput sunbeam;
+	sunbeam.p1 = star;
+
+	float randomDirection = (RNG() * 2 * pi);
+
+	sunbeam.p2 = b2Vec2( cos(randomDirection), sin(randomDirection));
+	sunbeam.maxFraction = 100;
+	// int32 childIndex = 0;
+
+
+	RayCastClosestCallback stupidMotherFucker;
+	// stupidMotherFucker.callback = lickerdicker;
+
+
+	local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
+
+	// if (itHitSomething) {	
+		// printf("itHitSomething");
+	// }
+
 }
 
 void ecosystemModeBeginGeneration (BonyFish * fish) {

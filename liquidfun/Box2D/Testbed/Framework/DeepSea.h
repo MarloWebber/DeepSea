@@ -328,6 +328,7 @@ struct foodParticle_t {
 #define TYPE_MOUTH 1
 #define TYPE_FOOD 2
 #define TYPE_TOUCHSENSOR 3
+#define TYPE_LEAF 4
 
 struct uDataWrap {
 	void * uData;
