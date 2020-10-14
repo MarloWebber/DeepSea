@@ -1833,18 +1833,18 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 // };
 
 
-float32 lickerdicker(const b2RayCastInput& input, int32 proxyId)
-	{
+// float32 lickerdicker(const b2RayCastInput& input, int32 proxyId)
+// 	{
 
 
-		printf("boot boot pankackes");
+// 		printf("boot boot pankackes");
 
-				float myBalls= 0.01f;
+// 				float myBalls= 0.01f;
 
-		return myBalls;
+// 		return myBalls;
 
 
-	}
+// 	}
 
 
 // struct b2WorldRayCastWrapper
@@ -1957,22 +1957,30 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 
 	for (int i = 0; i < 3; ++i)
 	{
-			fishDescriptor_t newFishBody;
-					loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+					fishDescriptor_t newFishBody = fish->genes;
+					// loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
 					mutateFishDescriptor (&newFishBody, 0.1, 0.5);
+
+					networkDescriptor ickyBrain = *(fish->brain);
+
+					fann * wann = createFANNbrainFromDescriptor(&ickyBrain);
+
+					std::string nnfilename =  std::string("someFishBrain.net");
+				    fann_save(  wann , nnfilename.c_str()); 
+
 				
-				    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
+				    mutateFANNFileDirectly(std::string("someFishBrain.net"));
 
 					// now you can load the mutant ANN.
-					fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+					fann *jann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
 					// create a neurodescriptor.
-					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+					// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
 
-					verifyNetworkDescriptor(muscleCars);
+					// verifyNetworkDescriptor(muscleCars);
 
-					fann * jann = createFANNbrainFromDescriptor(muscleCars);
+					// fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
 					for (int i = 0; i < N_SENSECONNECTORS; ++i)
 					{
