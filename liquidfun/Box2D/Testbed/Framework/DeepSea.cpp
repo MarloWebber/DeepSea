@@ -673,7 +673,8 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		reproductionEnergyCost += bones[i]->energy;
 	}
 
-	energy = reproductionEnergyCost - 1;
+	// energy = reproductionEnergyCost - 1;
+	energy = reproductionEnergyCost * 0.5;
 
 	n_bones_used = 0;
 	for (int i = 0; i < N_FINGERS; ++i) {
