@@ -237,6 +237,8 @@ BoneUserData::BoneUserData(
 	sensation_touch = 0.0f;
 	sensation_jointangle = 0.0f;
 
+	isFood = false;
+
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * length * density; 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
 
@@ -278,29 +280,29 @@ BoneUserData::BoneUserData(
 			b2Vec2(- (tipThickness/2),  +(length/2)) // b2Vec2 tipVertexB = 
 		};
 		
-		if (isMouth) {
-			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
-			bodyDef.userData = (void *)p_dataWrapper;
-		}
-		else if (sensor_touch) {
-
-			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_TOUCHSENSOR);
-			bodyDef.userData = (void *)p_dataWrapper;
-			}
-		// else if (!attached) {
-		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
+		// if (isMouth) {
+		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
 		// 	bodyDef.userData = (void *)p_dataWrapper;
 		// }
-			else if (isLeaf) {
+		// else if (sensor_touch) {
 
-			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_LEAF);
-			bodyDef.userData = (void *)p_dataWrapper;
-			}
-			else {
+		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_TOUCHSENSOR);
+		// 	bodyDef.userData = (void *)p_dataWrapper;
+		// 	}
+		// // else if (!attached) {
+		// // 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_FOOD);
+		// // 	bodyDef.userData = (void *)p_dataWrapper;
+		// // }
+		// 	else if (isLeaf) {
 
-				uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
-				bodyDef.userData = (void *)p_dataWrapper;
-			}
+		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_LEAF);
+		// 	bodyDef.userData = (void *)p_dataWrapper;
+		// 	}
+		// 	else {
+
+		// 		uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
+		// 		bodyDef.userData = (void *)p_dataWrapper;
+		// 	}
 
 		bodyDef.type = b2_dynamicBody;
 		p_body = local_m_world->CreateBody(&bodyDef);
@@ -327,25 +329,25 @@ BoneUserData::BoneUserData(
 		};
 
 		// attach user data to the body
-		if (isMouth) {
-			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
-			bodyDef.userData = (void *)p_dataWrapper;
-		}
-		else if (sensor_touch) {
+		// if (isMouth) {
+		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_MOUTH);
+		// 	bodyDef.userData = (void *)p_dataWrapper;
+		// }
+		// else if (sensor_touch) {
 
-			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_TOUCHSENSOR);
-			bodyDef.userData = (void *)p_dataWrapper;
-			}
-			else if (isLeaf) {
+		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_TOUCHSENSOR);
+		// 	bodyDef.userData = (void *)p_dataWrapper;
+		// 	}
+		// 	else if (isLeaf) {
 
-			uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_LEAF);
-			bodyDef.userData = (void *)p_dataWrapper;
-			}
-			else {
+		// 	uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_LEAF);
+		// 	bodyDef.userData = (void *)p_dataWrapper;
+		// 	}
+		// 	else {
 
-				uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
-				bodyDef.userData = (void *)p_dataWrapper;
-			}
+		// 		uDataWrap * p_dataWrapper = new uDataWrap(this, TYPE_DEFAULT);
+		// 		bodyDef.userData = (void *)p_dataWrapper;
+		// 	}
 
 		bodyDef.type = b2_dynamicBody;
 
@@ -398,6 +400,33 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		// uDataWrap * p_dataWrapper = new uDataWrap( p_bone, ((uDataWrap*)p_bone->p_body->GetUserData())->dataType  );
 
 		// p_bone->p_body->SetUserData((void *) p_dataWrapper); //userData->dataType = TYPE_FOOD;
+
+
+	if (p_bone->isMouth) {
+		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_MOUTH);
+		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+	}
+	else if (p_bone->sensor_touch) {
+		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_TOUCHSENSOR);
+		// bodyDef.userData = (void *)p_dataWrapper;
+		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+	}
+	else if (p_bone->isLeaf) {
+		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_LEAF);
+		// bodyDef.userData = (void *)p_dataWrapper;
+		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+	}
+	else if (p_bone->isFood) {
+		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_FOOD);
+		// bodyDef.userData = (void *)p_dataWrapper;
+		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+	}
+	else {
+		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_DEFAULT);
+		// bodyDef.userData = (void *)p_dataWrapper;
+		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+	}
+
 
 
 
@@ -479,11 +508,10 @@ void addFoodParticle(b2Vec2 position) {
 		food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
 
 
-		// change udatawrap to have a food type
-		// new uDataWrap();
-		uDataWrap * p_dataWrapper = new uDataWrap( &(*food[emptyFoodIndex]), TYPE_FOOD);
-
-		food[emptyFoodIndex]->p_body->SetUserData((void *) p_dataWrapper); //userData->dataType = TYPE_FOOD;
+		// all udatawrap additions being moved to recursiveBoneIncorporaotr
+		// uDataWrap * p_dataWrapper = new uDataWrap( &(*food[emptyFoodIndex]), TYPE_FOOD);
+		// food[emptyFoodIndex]->p_body->SetUserData((void *) p_dataWrapper); //userData->dataType = TYPE_FOOD;
+		food[emptyFoodIndex]->isFood = true;
 
 		food[emptyFoodIndex]->joint->init = false;
 		food[emptyFoodIndex]->joint->isUsed = false;
