@@ -176,6 +176,7 @@ struct BoneUserData {
 	b2Color outlineColor;
 
 	bool flagDelete; // flag this whole animal for deletion at the next convenient time.
+	bool flagPhotosynth;
 	
 
 	BoneUserData(boneAndJointDescriptor_t boneDescription,

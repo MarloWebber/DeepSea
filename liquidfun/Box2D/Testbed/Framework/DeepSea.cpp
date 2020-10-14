@@ -361,9 +361,11 @@ BoneUserData::BoneUserData(
 		if (attached) {
 			BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
 			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;	
-			p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
 			rootCenter = attachesTo->tipCenter;
 		}
+
+		printf("new bone with position offset x: %f, y%f\n", positionOffset.x, positionOffset.y);
+		p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
 		
 
 		shape.Set(vertices, count);
@@ -1885,9 +1887,10 @@ public:
 		uDataWrap* myUserData = (uDataWrap* )body->GetUserData();
 
 		if (myUserData->dataType == TYPE_LEAF) {
-			printf("sunlight fell on a leaf: %f\n", ((BoneUserData *)(myUserData->uData))->p_owner->energy);
+			// printf("sunlight fell on a leaf: %f\n", ((BoneUserData *)(myUserData->uData))->p_owner->energy);
 
-			((BoneUserData *)(myUserData->uData))->p_owner->energy += 100;
+			// ((BoneUserData *)(myUserData->uData))->p_owner->energy += 100;
+			 ((BoneUserData *)(myUserData->uData))->flagPhotosynth = true;
 		}
 
 		if (userData)
@@ -1990,7 +1993,18 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 						}
 					}
 
-					loadFish ( newFishBody, jann, (fish->bones[0]->p_body->GetWorldCenter() + getRandomPosition() )) ;
+					b2Vec2 desiredPosition = fish->bones[0]->p_body->GetWorldCenter();
+
+					printf("place children at position x: %f, y%f\n",desiredPosition.x, desiredPosition.y);
+
+					loadFish ( newFishBody, jann, desiredPosition) ;
+
+
+
+					moveAWholeFish ( &fishes.back(),  desiredPosition);
+
+
+	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 	}
 
 
@@ -2628,6 +2642,19 @@ void runBiomechanicalFunctions () {
 			if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) { // if in ecosystem mode
 
 			
+				for (int i = 0; i < N_FINGERS; ++i)
+				{
+					if (fish->bones[i]->isLeaf && fish->bones[i]->flagPhotosynth) {
+						fish->bones[i]->flagPhotosynth = false;
+
+						printf("sunlight fell on a leaf: %f\n", fish->energy);
+
+			// ((BoneUserData *)(myUserData->uData))->p_owner->
+						fish->energy += 100;
+
+					}
+				}
+
 
 				// kill the fish if it is out of energy.
 				fish->energy -= energyUsedThisTurn;
@@ -2715,8 +2742,8 @@ void deepSeaLoop () {
 			
 		// std::list<foodParticle_t>::iterator foodParticle;
 		// for (foodParticle = food.begin(); foodParticle !=  food.end(); ++foodParticle) 	{
-			food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
-		}
+				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
+			}
 		}
 		
 		
