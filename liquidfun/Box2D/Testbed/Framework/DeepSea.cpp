@@ -1779,13 +1779,20 @@ void drawingTest() {
 
 					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fish->bones[i]->color);
 
+					if (fish->bones[i]->flagPhotosynth) {
+						local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , b2Color(0.9f,0.9f,0.0f));
+					}
+
 					if (fish->selected) {
 						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(1,1,1));
 						// printf("yenies");
 					}
+					
 					else {
 						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0,0,0));
 					}
+
+					
 				}
 			}
 		// }
@@ -2650,9 +2657,13 @@ void runBiomechanicalFunctions () {
 						printf("sunlight fell on a leaf: %f\n", fish->energy);
 
 			// ((BoneUserData *)(myUserData->uData))->p_owner->
-						fish->energy += 100;
+						fish->energy += 100.0f;
 
 					}
+
+					// 1 energy is lost per bone per turn for homeostasis or whatever. this is also so that plants can't live forever without sunlight.
+					fish->energy -= 0.1f;
+
 				}
 
 
