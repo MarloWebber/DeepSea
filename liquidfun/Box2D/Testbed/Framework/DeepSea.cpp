@@ -474,7 +474,38 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 					p_bone->sensation_radar += 1/distance;
 				}
 			}
+
+			// marker
+
+	
+
 		}
+
+
+			// this part is heinously computationally inefficient: iterating through the whole global list of bones, once per bone, every step.
+		// you can do better, but i don't know how right now
+
+				std::list<BonyFish>::iterator fish;
+			for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+				for (int i = 0; i < N_FINGERS; ++i)
+				{
+					if ( fish->bones[i]->isLeaf ) {
+
+						if (fish->bones[i]->init && fish->bones[i]->isUsed) {
+							b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
+							b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - fish->bones[i]->position.x),(boneCenterWorldPosition.y - fish->bones[i]->position.y));
+							float distance = magnitude (positionalDifference);
+							if (distance > 0) {
+								p_bone->sensation_radar += 1/distance;
+							}
+						}
+
+					}
+				}
+
+			}
+
 	}
 	
 }
@@ -1893,7 +1924,7 @@ public:
 		void* userData = body->GetUserData();
 		uDataWrap* myUserData = (uDataWrap* )body->GetUserData();
 
-		if (myUserData->dataType == TYPE_LEAF) {
+		if (myUserData->dataType == TYPE_LEAF && m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
 			// printf("sunlight fell on a leaf: %f\n", ((BoneUserData *)(myUserData->uData))->p_owner->energy);
 
 			// ((BoneUserData *)(myUserData->uData))->p_owner->energy += 100;
@@ -2807,6 +2838,7 @@ void deepSeaControlB () {
 void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) {
 	bool et = false;
 	bool fud = false;
+	bool lef = false;
 
 	if (userDataA == nullptr || userDataB == nullptr) {
 		return;
@@ -2834,6 +2866,10 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 				((foodParticle_t*)(dataB.uData) )->flagDelete ) {
 			fud = true;
 		}
+		if( dataB.dataType == TYPE_LEAF && !
+				((foodParticle_t*)(dataA.uData) )->flagDelete) {
+			lef = true;
+		}
 	}
 
 	else if( dataB.dataType == TYPE_MOUTH ) {
@@ -2842,70 +2878,65 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 				((foodParticle_t*)(dataA.uData) )->flagDelete) {
 			fud = true;
 		}
+		if( dataA.dataType == TYPE_LEAF && !
+				((foodParticle_t*)(dataA.uData) )->flagDelete) {
+			lef = true;
+		}
 	}
 	
 	if (et && fud) {
-		printf("monch");
+		// printf("monch");
 
 		if( dataB.dataType == TYPE_MOUTH ) {
-
-
 			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
 			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
-
 			    vote(fish);
-
-				
-				
-				// flagAddFood = true;
 			}
 
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-				// deleteFood()
-				// ((foodParticle_t*)(dataA.uData) )->flagDelete = true;
-				
 				food->flagDelete = true;
-				// fish->energy = (fish->energy) +(food->energy);
-				// printf("FEK %f\n", fish->energy);
 				fish->feed(food->energy);
-				// printf("FEK %f\n", fish->energy);
-
-				// printf("ate %f of food\n", food->energy);
-
-				// // addFoodParticle(getRandomPosition());
-				// flagAddFood = true;
 			}
-
 		}
 		else if (dataA.dataType == TYPE_MOUTH) {
-
 			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
-
-
 			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
-
 				vote(fish);
 			}
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-
-
 				food->flagDelete = true;
-				// fish->energy = (fish->energy) +(food->energy);
-				// printf("FEK %f\n", fish->energy);
 				fish->feed(food->energy);
-				// printf("FEK %f\n", fish->energy);
+			}
+		}
+	}
+	if (et && lef) {
+		// printf("monch");
 
+		if( dataB.dataType == TYPE_MOUTH ) {
+			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
+			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
-				// printf("ate %f of food\n", food->energy);
+			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
+			    vote(fish);
+			}
 
-				// food[0]->flagDelete = true;
-				// ecosystemModeBeginGeneration( fish );
-				// ((BoneUserData *)(dataB.uData) )->flagDelete = true;
-				// // addFoodParticle(getRandomPosition());
-				// flagAddFood = true;
+			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
+				food->p_owner->flagDelete = true;
+				fish->feed(food->energy);
+			}
+		}
+		else if (dataA.dataType == TYPE_MOUTH) {
+			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
+			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
+			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
+				vote(fish);
+			}
+			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
+				food->p_owner->flagDelete = true;
+				fish->feed(food->energy);
 			}
 		}
 	}

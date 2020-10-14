@@ -337,6 +337,13 @@ struct foodParticle_t {
 #define TYPE_TOUCHSENSOR 3
 #define TYPE_LEAF 4
 
+// bit masks can potentially be used instead so we can have more than one udata type.
+// #define MASK_DEFAULT 		1<<0
+// #define MASK_MOUTH 			1<<1
+// #define MASK_FOOD 			1<<2
+// #define MASK_TOUCHSENSOR 	1<<3
+// #define MASK_LEAF 			1<<4
+
 struct uDataWrap {
 	void * uData;
 	uint8_t dataType;
