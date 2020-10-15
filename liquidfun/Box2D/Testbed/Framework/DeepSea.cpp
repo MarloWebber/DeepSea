@@ -1738,20 +1738,28 @@ void sexBetweenTwoMinds () {
 void drawingTest() {
 
 	// draw the particle system
-	int32 particleCount = local_m_particleSystem->GetParticleCount();
-	if (particleCount)
-	{
-		float32 radius = local_m_particleSystem->GetRadius();
-		const b2Vec2* positionBuffer = local_m_particleSystem->GetPositionBuffer();
-		// if (local_m_particleSystem->m_colorBuffer.data)
-		// {
-		// 	const b2ParticleColor* colorBuffer = local_m_particleSystem->GetColorBuffer();
-		// 	local_debugDraw_pointer->DrawParticles(positionBuffer, radius, colorBuffer, particleCount);
-		// }
-		// else
-		// {
-			local_debugDraw_pointer->DrawParticles(positionBuffer, radius, NULL, particleCount);
-		// }
+	if (false) {
+		int32 particleCount = local_m_particleSystem->GetParticleCount();
+		if (particleCount)
+		{
+			float32 radius = local_m_particleSystem->GetRadius();
+			const b2Vec2* positionBuffer = local_m_particleSystem->GetPositionBuffer();
+			// if (local_m_particleSystem->m_colorBuffer.data)
+			// {
+			// 	const b2ParticleColor* colorBuffer = local_m_particleSystem->GetColorBuffer();
+			// 	local_debugDraw_pointer->DrawParticles(positionBuffer, radius, colorBuffer, particleCount);
+			// }
+			// else
+			// {
+				local_debugDraw_pointer->DrawParticles(positionBuffer, radius, NULL, particleCount);
+			// }
+		}
+
+	}
+	
+
+	if (true) {
+		local_m_world->DrawParticleSystem(*local_m_particleSystem);
 	}
 
 	// draw the food particles
@@ -1974,7 +1982,7 @@ void shine () {
 	sunbeam.maxFraction = 1.0f;
 	// int32 childIndex = 0;
 
-	if (true) { // print the rays of light
+	if (false) { // print the rays of light
 
 	   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, b2Color(1.0f, 1.0f, 1.0f) );
 	}
@@ -2746,7 +2754,7 @@ void deepSeaLoop () {
 			exploratoryModeBeginGeneration ( );
 		}
 
-		shine();
+		// shine();
 
 	
 		drawingTest();

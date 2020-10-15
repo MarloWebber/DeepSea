@@ -273,6 +273,10 @@ public:
 		return m_liquidFunVersionString;
 	}
 
+	
+	void DrawParticleSystem(const b2ParticleSystem& system);
+
+
 #if LIQUIDFUN_EXTERNAL_LANGUAGE_API
 public:
 	/// Constructor which takes direct floats.
@@ -306,7 +310,7 @@ private:
 	void DrawJoint(b2Joint* joint);
 	void DrawShape(b2Fixture* shape, const b2Transform& xf, const b2Color& color);
 
-	void DrawParticleSystem(const b2ParticleSystem& system);
+	// void DrawParticleSystem(const b2ParticleSystem& system);
 
 	b2BlockAllocator m_blockAllocator;
 	b2StackAllocator m_stackAllocator;
