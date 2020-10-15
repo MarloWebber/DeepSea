@@ -39,6 +39,55 @@ struct BonyFish;
 void setUserControlInputA() ;
 void setUserControlInputB() ;
 
+extern bool m_drawing;
+extern b2ParticleGroup* m_lastGroup;
+extern uint32 m_particleFlags;
+extern uint32 m_groupFlags;
+extern uint32 m_colorIndex;
+
+void ParticleDrawingKeyboard(unsigned char key);
+
+enum Parameters {
+		e_parameterBegin = (1UL << 31), // Start of this parameter namespace.
+		e_parameterMove = e_parameterBegin | (1UL << 0),
+		e_parameterRigid = e_parameterBegin | (1UL << 1),
+		e_parameterRigidBarrier = e_parameterBegin | (1UL << 2),
+		e_parameterElasticBarrier = e_parameterBegin | (1UL << 3),
+		e_parameterSpringBarrier = e_parameterBegin | (1UL << 4),
+		e_parameterRepulsive = e_parameterBegin | (1UL << 5),
+	};
+
+const ParticleParameter::Value k_paramValues[] =
+{
+	{b2_zombieParticle,
+		ParticleParameter::k_DefaultOptions, "erase"},
+	{(uint32)e_parameterMove,
+		ParticleParameter::k_DefaultOptions, "move"},
+	{(uint32)e_parameterRigid,
+		ParticleParameter::k_DefaultOptions, "rigid"},
+	{(uint32)e_parameterRigidBarrier,
+		ParticleParameter::k_DefaultOptions, "rigid barrier"},
+	{(uint32)e_parameterElasticBarrier,
+		ParticleParameter::k_DefaultOptions, "elastic barrier"},
+	{(uint32)e_parameterSpringBarrier,
+		ParticleParameter::k_DefaultOptions, "spring barrier"},
+	{(uint32)e_parameterRepulsive,
+		ParticleParameter::k_DefaultOptions, "repulsive wall"}
+};
+
+const ParticleParameter::Definition k_paramDef[] =
+{
+	{
+		ParticleParameter::k_particleTypesPtr,
+		ParticleParameter::k_particleTypesCount
+	},
+	{
+		k_paramValues,
+		B2_ARRAY_SIZE(k_paramValues)
+	},
+};
+const uint32 k_paramDefCount =
+	B2_ARRAY_SIZE(k_paramDef);
 
 
 // typedef struct DeepSeaSettings {
@@ -394,5 +443,14 @@ void decrementSelectedConnection();
 void meltSelectedFish();
 // if (startNextGeneration ) {
 void		beginGeneration ();
+
+
+
+
+
+
+
+
+
 	// }
 #endif

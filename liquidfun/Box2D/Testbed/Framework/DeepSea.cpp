@@ -53,6 +53,46 @@ b2World * local_m_world_sci = nullptr;
 b2ParticleSystem * local_m_particleSystem_sci = nullptr;
 DebugDraw * local_debugDraw_pointer_sci = nullptr;
 
+bool m_drawing;
+b2ParticleGroup* m_lastGroup;
+uint32 m_particleFlags;
+uint32 m_groupFlags;
+uint32 m_colorIndex;
+
+
+
+
+uint32 DetermineParticleParameter() 
+	{
+		if (m_drawing)
+		{
+			if (m_groupFlags == (b2_rigidParticleGroup |
+								 b2_solidParticleGroup))
+			{
+				return (uint32)e_parameterRigid;
+			}
+			if (m_groupFlags == b2_rigidParticleGroup &&
+				m_particleFlags == b2_barrierParticle)
+			{
+				return (uint32)e_parameterRigidBarrier;
+			}
+			if (m_particleFlags == (b2_elasticParticle | b2_barrierParticle))
+			{
+				return (uint32)e_parameterElasticBarrier;
+			}
+			if (m_particleFlags == (b2_springParticle | b2_barrierParticle))
+			{
+				return (uint32)e_parameterSpringBarrier;
+			}
+			if (m_particleFlags == (b2_wallParticle | b2_repulsiveParticle))
+			{
+				return (uint32)e_parameterRepulsive;
+			}
+			return m_particleFlags;
+		}
+		return (uint32)e_parameterMove;
+	}
+
 // DeepSeaSettings m_deepSeaSettings;
 
 bool flagAddFood = false;
@@ -2194,21 +2234,21 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
 
+	// initialize foodparticles so they don't crash the program. This step does not add any to the world, and is required even for unused foodparticles.
 	for (int i = 0; i < N_FOODPARTICLES; ++i)
 	{
-
-		/*
-		boneAndJointDescriptor_t boneDescription,
-		BonyFish * fish,
-		b2Vec2 positionOffset,
-		int newCollisionGroup
-
-		*/
 		boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
 		food[i] = new BoneUserData(foodDescriptor, NULL, b2Vec2(0.0f, 0.0f), 0, false);
 		food[i]->init = false;
 		food[i]->isUsed = false;
 	}
+
+	// from particle drawing
+	b2Assert((k_paramDef[0].CalculateValueMask() & e_parameterBegin) == 0);
+	TestMain::SetParticleParameters(k_paramDef, k_paramDefCount);
+	TestMain::SetRestartOnParticleParameterChange(false);
+	m_particleFlags = TestMain::GetParticleParameterValue();
+	m_groupFlags = 0;
 }
 
 // completely nullifies the animals brain
@@ -2948,4 +2988,159 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			}
 		}
 	}
+}
+
+
+
+// ------------------------------------------------------------------
+
+// the following code is an attempt to integrate particle drawing (from the test of the same name) into deepsea, in a way that can be applied to all deepsea maps.
+
+void ParticleDrawingKeyboard(unsigned char key)
+{
+	m_drawing = key != 'X';
+	m_particleFlags = 0;
+	m_groupFlags = 0;
+	switch (key)
+	{
+	case 'E':
+		m_particleFlags = b2_elasticParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 'P':
+		m_particleFlags = b2_powderParticle;
+		break;
+	case 'R':
+		m_groupFlags = b2_rigidParticleGroup | b2_solidParticleGroup;
+		break;
+	case 'S':
+		m_particleFlags = b2_springParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 'T':
+		m_particleFlags = b2_tensileParticle;
+		break;
+	case 'V':
+		m_particleFlags = b2_viscousParticle;
+		break;
+	case 'W':
+		m_particleFlags = b2_wallParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 'B':
+		m_particleFlags = b2_barrierParticle | b2_wallParticle;
+		break;
+	case 'H':
+		m_particleFlags = b2_barrierParticle;
+		m_groupFlags = b2_rigidParticleGroup;
+		break;
+	case 'N':
+		m_particleFlags = b2_barrierParticle | b2_elasticParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 'M':
+		m_particleFlags = b2_barrierParticle | b2_springParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 'F':
+		m_particleFlags = b2_wallParticle | b2_repulsiveParticle;
+		break;
+	case 'C':
+		m_particleFlags = b2_colorMixingParticle;
+		break;
+	case 'Z':
+		m_particleFlags = b2_zombieParticle;
+		break;
+	default:
+		break;
+	}
+	TestMain::SetParticleParameterValue(DetermineParticleParameter());
+}
+
+	// void ParticleGroupDestroyed(b2ParticleGroup* group) {
+	// 	// Test::ParticleGroupDestroyed(group);
+	
+	// }
+
+	void SplitParticleGroups()
+	{
+		for (b2ParticleGroup* group = local_m_particleSystem->
+				GetParticleGroupList(); group; group = group->GetNext())
+		{
+			if (group != m_lastGroup &&
+				(group->GetGroupFlags() & b2_rigidParticleGroup) &&
+				(group->GetAllParticleFlags() & b2_zombieParticle))
+			{
+				// Split a rigid particle group which may be disconnected
+				// by destroying particles.
+				local_m_particleSystem->SplitParticleGroup(group);
+			}
+		}
+	}
+
+
+void stepForParticleDrawing () {
+	const uint32 parameterValue = TestMain::GetParticleParameterValue();
+		m_drawing = (parameterValue & e_parameterMove) != e_parameterMove;
+		if (m_drawing)
+		{
+			switch (parameterValue)
+			{
+				case b2_elasticParticle:
+				case b2_springParticle:
+				case b2_wallParticle:
+					m_particleFlags = parameterValue;
+					m_groupFlags = b2_solidParticleGroup;
+					break;
+				case e_parameterRigid:
+					// b2_waterParticle is the default particle type in
+					// LiquidFun.
+					m_particleFlags = b2_waterParticle;
+					m_groupFlags = b2_rigidParticleGroup |
+					               b2_solidParticleGroup;
+					break;
+				case e_parameterRigidBarrier:
+					m_particleFlags = b2_barrierParticle;
+					m_groupFlags = b2_rigidParticleGroup;
+					break;
+				case e_parameterElasticBarrier:
+					m_particleFlags = b2_barrierParticle | b2_elasticParticle;
+					m_groupFlags = 0;
+					break;
+				case e_parameterSpringBarrier:
+					m_particleFlags = b2_barrierParticle | b2_springParticle;
+					m_groupFlags = 0;
+					break;
+				case e_parameterRepulsive:
+					m_particleFlags = b2_repulsiveParticle | b2_wallParticle;
+					m_groupFlags = b2_solidParticleGroup;
+					break;
+				default:
+					m_particleFlags = parameterValue;
+					m_groupFlags = 0;
+					break;
+			}
+		}
+
+		if (local_m_particleSystem->GetAllParticleFlags() & b2_zombieParticle)
+		{
+			SplitParticleGroups();
+		}
+
+		// Test::Step(settings);
+		// local_m_debugDraw.DrawString(
+		// 	5, m_textLine, "Keys: (L) liquid, (E) elastic, (S) spring");
+		// m_textLine += DRAW_STRING_NEW_LINE;
+		// local_m_debugDraw.DrawString(
+		// 	5, m_textLine, "(R) rigid, (W) wall, (V) viscous, (T) tensile");
+		// m_textLine += DRAW_STRING_NEW_LINE;
+		// local_m_debugDraw.DrawString(
+		// 	5, m_textLine, "(F) repulsive wall, (B) wall barrier");
+		// m_textLine += DRAW_STRING_NEW_LINE;
+		// local_m_debugDraw.DrawString(
+		// 	5, m_textLine, "(H) rigid barrier, (N) elastic barrier, (M) spring barrier");
+		// m_textLine += DRAW_STRING_NEW_LINE;
+		// local_m_debugDraw.DrawString(
+		// 	5, m_textLine, "(C) color mixing, (Z) erase, (X) move");
+		// m_textLine += DRAW_STRING_NEW_LINE;
 }

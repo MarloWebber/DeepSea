@@ -422,7 +422,12 @@ deepSeaControlA();
 		{
 			test->Keyboard(key);
 		}
+
+
+
 	}
+
+	ParticleDrawingKeyboard(key);
 }
 
 static void KeyboardSpecial(int key, int x, int y)

@@ -416,6 +416,14 @@ void Test::MouseUp(const b2Vec2& p)
 	{
 		CompleteBombSpawn(p);
 	}
+
+
+	// void MouseUp(const b2Vec2& p)
+	// {
+	// 	Test::MouseUp(p);
+		m_lastGroup = NULL;
+	// }
+
 }
 
 void Test::MouseMove(const b2Vec2& p)
@@ -426,6 +434,37 @@ void Test::MouseMove(const b2Vec2& p)
 	{
 		m_mouseJoint->SetTarget(p);
 	}
+	else if (m_drawing)
+		{
+			b2CircleShape shape;
+			shape.m_p = p;
+			shape.m_radius = 0.2f;
+			b2Transform xf;
+			xf.SetIdentity();
+
+			m_particleSystem->DestroyParticlesInShape(shape, xf);
+
+			const bool joinGroup =
+				m_lastGroup && m_groupFlags == m_lastGroup->GetGroupFlags();
+			if (!joinGroup)
+			{
+				m_colorIndex = (m_colorIndex + 1) % k_ParticleColorsCount;
+			}
+			b2ParticleGroupDef pd;
+			pd.shape = &shape;
+			pd.flags = m_particleFlags;
+			if ((m_particleFlags &
+				(b2_wallParticle | b2_springParticle | b2_elasticParticle)) ||
+				(m_particleFlags == (b2_wallParticle | b2_barrierParticle)))
+			{
+				pd.flags |= b2_reactiveParticle;
+			}
+			pd.groupFlags = m_groupFlags;
+			pd.color = k_ParticleColors[m_colorIndex];
+			pd.group = m_lastGroup;
+			m_lastGroup = m_particleSystem->CreateParticleGroup(pd);
+			m_mouseTracing = false;
+		}
 }
 
 

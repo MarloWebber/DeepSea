@@ -81,7 +81,7 @@
 // #include "AntiPointy.h"
 // #include "CornerCase.h"
 #include "DamBreak.h"
-#include "DrawingParticles.h"
+// #include "DrawingParticles.h"
 // #include "ElasticParticles.h"
 #include "Faucet.h"
 
@@ -113,7 +113,7 @@ TestEntry g_testEntries[] =
 	// {"Wave Machine", WaveMachine::Create},
 	// {"Particles", Particles::Create},
 	{"Faucet", Faucet::Create},
-	{"Particle Drawing", DrawingParticles::Create},
+	// {"Particle Drawing", DrawingParticles::Create},
 	{"Sun Pool", SunPool::Create},
 	// {"Soup", Soup::Create},
 	// {"Surface Tension", ParticlesSurfaceTension::Create},
