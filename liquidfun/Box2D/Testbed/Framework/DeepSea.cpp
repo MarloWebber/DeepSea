@@ -28,7 +28,7 @@ bool startNextGeneration = false;
 // bool fishSlotLoaded[N_FISHES];
 // bool foodSlotLoaded[N_FOODPARTICLES];
 
-b2Vec2 star = b2Vec2(0.0f, 3.0f); // the emitter of radiant light. Just using a position for now but maybe more properties later.
+// b2Vec2 star = b2Vec2(0.0f, 3.0f); // the emitter of radiant light. Just using a position for now but maybe more properties later.
 
 
 bool userControlInputA;
@@ -41,7 +41,7 @@ deepSeaSettings m_deepSeaSettings;
 std::list<BonyFish> fishes;
 // std::list<foodParticle_t> food;
 
-std::list<lamps> lamps;
+std::list<Lamp> lamps;
 
 BoneUserData * food[N_FOODPARTICLES];
 
@@ -2011,20 +2011,20 @@ public:
 
 
 // a ray of light is cast from the star in a random direction. If it falls on the photosynthetic organ, the organ gains energy.
-void shine () {
+void shine (Lamp * nancy) {
 
 	b2RayCastInput sunbeam;
-	sunbeam.p1 = star;
+	sunbeam.p1 = nancy->position;
 
 	float randomDirection = (RNG() * 2 * pi);
 
-	float rayLength = 12.0f;
+	// float rayLength = 12.0f;
 
-	sunbeam.p2 = b2Vec2(rayLength * cos(randomDirection),rayLength* sin(randomDirection));
+	sunbeam.p2 = b2Vec2(nancy->illuminationRadius * cos(randomDirection),nancy->illuminationRadius* sin(randomDirection));
 	sunbeam.maxFraction = 1.0f;
 	// int32 childIndex = 0;
 
-	if (false) { // print the rays of light
+	if (true) { // print the rays of light
 
 	   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, b2Color(1.0f, 1.0f, 1.0f) );
 	}
@@ -2229,6 +2229,13 @@ inline bool exists_test1 (const std::string& name) {
     }   
 }
 
+Lamp::Lamp() {
+		brightness = 100;
+		illuminationRadius = 10;
+		position = b2Vec2(0.0f, 2.0f);
+		illuminationColor = b2Color(0.0f, 0.0f, 0.0f);
+}
+
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) { //, b2World * m_world_sci, b2ParticleSystem * m_particleSystem_sci) {
 
 	// store a single copy to the pointers so we don't have to give them as arguments 1 million times.
@@ -2251,6 +2258,12 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	TestMain::SetRestartOnParticleParameterChange(false);
 	m_particleFlags = TestMain::GetParticleParameterValue();
 	m_groupFlags = 0;
+
+
+	// add a lamp
+	Lamp monog = Lamp();
+	lamps.push_back(monog);
+
 }
 
 // completely nullifies the animals brain
@@ -2796,7 +2809,10 @@ void deepSeaLoop () {
 			exploratoryModeBeginGeneration ( );
 		}
 
-		shine();
+		std::list<Lamp>::iterator lomp;
+		for (lomp = lamps.begin(); lomp !=  lamps.end(); ++lomp) 	{
+			shine(&(*lomp));
+		}
 
 	
 		drawingTest();

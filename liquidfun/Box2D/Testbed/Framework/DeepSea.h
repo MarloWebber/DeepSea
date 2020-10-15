@@ -102,7 +102,9 @@ const uint32 k_paramDefCount =
 		unsigned int illuminationRadius;
 		b2Vec2 position;
 		b2Color illuminationColor;
-	}
+
+		Lamp();
+	};
 
 
 // a condensed form of fish used for data storage and transfer.
