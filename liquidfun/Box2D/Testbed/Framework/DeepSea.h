@@ -97,6 +97,13 @@ const uint32 k_paramDefCount =
 
 // DeepSeaSettings m_deepSeaSettings;
 
+	struct Lamp {
+		unsigned int brightness;
+		unsigned int illuminationRadius;
+		b2Vec2 position;
+		b2Color illuminationColor;
+	}
+
 
 // a condensed form of fish used for data storage and transfer.
 // it is made so that it is safe to serialize and mutate, and that any changes will not crash the program.

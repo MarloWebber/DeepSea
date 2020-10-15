@@ -840,8 +840,8 @@ float fakeGravity;
 	glutCreateMenu(menuHandler);
 
         // Add menu items
-        glutAddMenuEntry("hello", 0);
-          glutAttachMenu(GLUT_RIGHT_BUTTON);
+        // glutAddMenuEntry("hello", 0);
+        //   glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 
 	int32 testCount = 0;

@@ -41,6 +41,8 @@ deepSeaSettings m_deepSeaSettings;
 std::list<BonyFish> fishes;
 // std::list<foodParticle_t> food;
 
+std::list<lamps> lamps;
+
 BoneUserData * food[N_FOODPARTICLES];
 
 b2Body * theActualFuckingFuck;
@@ -2794,7 +2796,7 @@ void deepSeaLoop () {
 			exploratoryModeBeginGeneration ( );
 		}
 
-		// shine();
+		shine();
 
 	
 		drawingTest();
