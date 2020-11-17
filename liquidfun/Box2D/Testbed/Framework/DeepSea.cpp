@@ -3162,3 +3162,24 @@ void stepForParticleDrawing () {
 		// 	5, m_textLine, "(C) color mixing, (Z) erase, (X) move");
 		// m_textLine += DRAW_STRING_NEW_LINE;
 }
+
+
+// provides FEA-based lift and drag calculations
+void flightModel(BonyFish * fish) {
+/*
+for each face in the polygon:
+
+- get the difference in angle between the face and the direction that it is moving. take the sin() of this angle. multiply it by the speed  to get the total new force to apply.
+
+- the force component facing into the direction of movement is drag, and is applied in such a way to slow the movement.
+- the force component facing perpendicular to the direction of movement is lift, and the direction it is applied depends on the angle of the body. It will face most strongly in the axis that contains the face's leading edge.
+- the force is applied as a vector composed of both drag and lift components, which may need to be rotated again before they are applied to the body.
+
+*/
+
+	for (int i = 0; i < N_FINGERS; ++i)
+	{
+		
+	}
+
+}
