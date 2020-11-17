@@ -2663,12 +2663,20 @@ void flightModel(BoneUserData * bone) {
 
 			// // calculate the angle of incidence into the oncoming 'wind'
 			b2Vec2 linearVelocity = bone->p_body->GetLinearVelocity();
+			float magnitudeVelocity = magnitude(linearVelocity);
 			float angleOfIncidence = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
 
 			// // draw the angle of incidence 
-			b2Color segmentColorA = b2Color(50, 200, 10);
-			local_debugDraw_pointer->DrawSegment(faceCenter ,b2Vec2(faceCenter.x+ cos(angleOfIncidence) * 0.1, faceCenter.y+ sin(angleOfIncidence) * 0.1 * -1) ,segmentColorA );
+			b2Color segmentColorA = b2Color(200, 50, 10);
+
+			float dragCoefficient = 0.0001;
 			
+			b2Vec2 dragForce = b2Vec2(faceCenter.x+ cos(angleOfIncidence) * magnitudeVelocity * dragCoefficient, faceCenter.y+ sin(angleOfIncidence) * magnitudeVelocity * dragCoefficient * -1);
+			local_debugDraw_pointer->DrawSegment(faceCenter ,dragForce ,segmentColorA );
+			bone->p_body->ApplyForce(dragForce, faceCenter, true);
+
+
+
 
 			// // based on the angle, add the corresponding aerodynamic force. This paragraph also contains the aerodynamic equation.
 			// b2Vec2 linearVelocity = bone->p_body->GetLinearVelocity();

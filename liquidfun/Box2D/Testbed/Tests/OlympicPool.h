@@ -42,23 +42,23 @@ public:
 		m_particleSystem->SetRadius(0.2f);
 		m_particleSystem->SetDamping(0.2f);
 
-		{
-			//  water A
-			b2PolygonShape shape;
-			shape.SetAsBox(25.0f, 5.0f, b2Vec2(0.0f, 0.0f), 0);
-			b2ParticleGroupDef pd;
-			pd.flags = TestMain::GetParticleParameterValue();
+		// {
+		// 	//  water A
+		// 	b2PolygonShape shape;
+		// 	shape.SetAsBox(25.0f, 5.0f, b2Vec2(0.0f, 0.0f), 0);
+		// 	b2ParticleGroupDef pd;
+		// 	pd.flags = TestMain::GetParticleParameterValue();
 
-			// royal azure
-			pd.color.Set(0, 0x38, 0xa8, 255);
-			pd.shape = &shape;
+		// 	// royal azure
+		// 	pd.color.Set(0, 0x38, 0xa8, 255);
+		// 	pd.shape = &shape;
 
-			b2ParticleGroup * const group = m_particleSystem->CreateParticleGroup(pd);
-			if (pd.flags & b2_colorMixingParticle)
-			{
-				ColorParticleGroup(group, 0);
-			}
-		}
+		// 	b2ParticleGroup * const group = m_particleSystem->CreateParticleGroup(pd);
+		// 	if (pd.flags & b2_colorMixingParticle)
+		// 	{
+		// 		ColorParticleGroup(group, 0);
+		// 	}
+		// }
 
 
 		// {
