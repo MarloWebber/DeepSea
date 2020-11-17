@@ -2440,7 +2440,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 			b2Vec2(neuron_position.x-0.1f, neuron_position.y+0.1f - 0.2f), 
 			b2Vec2(neuron_position.x-0.1f, neuron_position.y-0.1f - 0.2f), 
 		};
-
+// local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.1f,0.05f) );
 		std::string connectorLabel = std::string("");
 
 		b2Vec2 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
@@ -2614,6 +2614,78 @@ int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
 	return -1;
 }
 
+// provides FEA-based lift and drag calculations
+void flightModel(BoneUserData * bone) {
+
+	for (int i = 0; i < N_FINGERS; ++i) {
+
+		uint nVertices = bone->shape.GetVertexCount();
+
+		for (uint j = 0; j < nVertices; ++j)
+		{
+			// get the face vertices from the b2 shape
+			b2Vec2 p1 = bone->shape.GetVertex(j);
+			b2Vec2 p2 = b2Vec2(0.0f, 0.0f);
+
+			// use the pair n and n-1 to make a face. if n is zero, make a face from the first to the last vertices.
+			if (j == 0) {
+				p2 = bone->shape.GetVertex(nVertices-1);
+			}
+			else {
+				p2 = bone->shape.GetVertex(j-1);
+			}
+			
+			// get the face's center point
+
+			b2Vec2 worldCenter = bone->p_body->GetWorldCenter();
+			// b2Vec2 centroid = b2Vec2(p1.y - p2.y, p1.x - p2.x);
+
+			b2Vec2 p1r = rotatePoint(0.0f, 0.0f, bone->p_body->GetAngle(), p1 );
+			p1r += worldCenter;
+
+			b2Vec2 p2r = rotatePoint(0.0f, 0.0f, bone->p_body->GetAngle(), p2 );
+			p2r += worldCenter;
+
+			// b2Vec2 p2r = rotatePoint(worldCenter.x, worldCenter.y, bone->p_body->GetAngle(), p2 );
+
+			b2Vec2 faceCenter = b2Vec2( (p1r.x + p2r.x)/2, (p1r.y + p2r.y)/2 ) ;
+
+			// draw a dot on it so you know you got it right.
+			// b2Vec2 gigglenuts  = faceCenter;
+			// b2Vec2 gigggle[] = {
+			// 	b2Vec2(gigglenuts.x+0.1f, gigglenuts.y-0.1f), 
+			// 	b2Vec2(gigglenuts.x+0.1f, gigglenuts.y+0.1f), 
+			// 	b2Vec2(gigglenuts.x-0.1f, gigglenuts.y+0.1f), 
+			// 	b2Vec2(gigglenuts.x-0.1f, gigglenuts.y-0.1f), 
+			// };
+			// local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.1f,0.05f) );
+
+
+			// // calculate the angle of incidence into the oncoming 'wind'
+			b2Vec2 linearVelocity = bone->p_body->GetLinearVelocity();
+			float angleOfIncidence = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
+
+			// // draw the angle of incidence 
+			b2Color segmentColorA = b2Color(50, 200, 10);
+			local_debugDraw_pointer->DrawSegment(faceCenter ,b2Vec2(faceCenter.x+ cos(angleOfIncidence) * 0.1, faceCenter.y+ sin(angleOfIncidence) * 0.1 * -1) ,segmentColorA );
+			
+
+			// // based on the angle, add the corresponding aerodynamic force. This paragraph also contains the aerodynamic equation.
+			// b2Vec2 linearVelocity = bone->p_body->GetLinearVelocity();
+			// b2Vec2 fluidDynamicForce = b2Vec2(cos(angleOfIncidence) * linearVelocity.x, sin(angleOfIncidence) * linearVelocity.y );
+
+			// if (false) {
+			// 	// apply the force to the body directly in the center of the face.
+			// 	bone->p_body->ApplyForce(fluidDynamicForce, centroid, true);
+
+			// 	// draw the forces applied so you can debug them.
+			// 	b2Color segmentColorD = b2Color(200, 50, 10);
+			// 	local_debugDraw_pointer->DrawSegment(worldCenter ,b2Vec2(worldCenter.x+ fluidDynamicForce.x , worldCenter.y+  fluidDynamicForce.y) ,segmentColorD );
+			// }
+		}
+	}
+}
+
 void runBiomechanicalFunctions () {
 	unsigned int spacesUsedSoFar =0;
 
@@ -2634,6 +2706,9 @@ void runBiomechanicalFunctions () {
 			// update the fish's senses
 			for (int j = 0; j < N_FINGERS; ++j) {
 				nonRecursiveSensorUpdater (fish->bones[j]);
+
+				// perform the flight simulation on the fish
+				flightModel( fish->bones[j] );
 			}
 		
 			// sensorium size is based on the size of the ANN. Whether or not it is populated with numbers depends on the size of the input connector matrix.
@@ -2786,6 +2861,12 @@ void runBiomechanicalFunctions () {
 					// printf("EEEEEEEEEEEEEEEEEEEEEEEETTTT");
 					drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, &(*fish));
 				}
+
+
+
+				
+
+
 			// }
 		// }
 	}
@@ -2816,6 +2897,8 @@ void deepSeaLoop () {
 
 	
 		drawingTest();
+
+
 		runBiomechanicalFunctions();
 
 
@@ -2846,6 +2929,9 @@ void deepSeaLoop () {
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
 			if (food[i]->init && food[i]->isUsed) {
+
+				// perform the flight simulation on the fish
+				flightModel( food[i] );
 
 			
 		// std::list<foodParticle_t>::iterator foodParticle;
@@ -3164,39 +3250,3 @@ void stepForParticleDrawing () {
 }
 
 
-// provides FEA-based lift and drag calculations
-void flightModel(BonyFish * fish) {
-
-	for (int i = 0; i < N_FINGERS; ++i) {
-
-		uint nVertices = fish->bones[i]->shape.GetVertexCount();
-
-		for (uint j = 0; j < nVertices; ++j)
-		{
-			// get the face vertices from the b2 shape
-			b2Vec2 p1 = fish->bones[i]->shape.GetVertex(j);
-			b2Vec2 p2 = b2Vec2(0.0f, 0.0f);
-
-			// use the pair n and n-1 to make a face. if n is zero, make a face from the first to the last vertices.
-			if (j == 0) {
-				p2 = fish->bones[i]->shape.GetVertex(nVertices-1);
-			}
-			else {
-				p2 = fish->bones[i]->shape.GetVertex(j-1);
-			}
-			
-			// get the face's center point
-			b2Vec2 centroid = b2Vec2(p1.y - p2.y, p1.x - p2.x);
-
-			// calculate the angle of incidence into the oncoming 'wind'
-			float angleOfIncidence = atan2(centroid.x, centroid.y);
-
-			// based on the angle, add the corresponding aerodynamic force. This paragraph also contains the aerodynamic equation.
-			b2Vec2 linearVelocity = fish->bones[i]->p_body->GetLinearVelocity();
-			b2Vec2 fluidDynamicForce = b2Vec2(cos(angleOfIncidence) * linearVelocity.x, sin(angleOfIncidence) * linearVelocity.y );
-
-			// apply the force to the body directly in the center of the face.
-			fish->bones[i]->p_body->ApplyForce(fluidDynamicForce, centroid, true);
-		}
-	}
-}
