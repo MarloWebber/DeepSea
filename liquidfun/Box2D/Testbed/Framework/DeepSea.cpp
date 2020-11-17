@@ -3166,20 +3166,37 @@ void stepForParticleDrawing () {
 
 // provides FEA-based lift and drag calculations
 void flightModel(BonyFish * fish) {
-/*
-for each face in the polygon:
 
-- get the difference in angle between the face and the direction that it is moving. take the sin() of this angle. multiply it by the speed  to get the total new force to apply.
+	for (int i = 0; i < N_FINGERS; ++i) {
 
-- the force component facing into the direction of movement is drag, and is applied in such a way to slow the movement.
-- the force component facing perpendicular to the direction of movement is lift, and the direction it is applied depends on the angle of the body. It will face most strongly in the axis that contains the face's leading edge.
-- the force is applied as a vector composed of both drag and lift components, which may need to be rotated again before they are applied to the body.
+		uint nVertices = fish->bones[i]->shape.GetVertexCount();
 
-*/
+		for (uint j = 0; j < nVertices; ++j)
+		{
+			// get the face vertices from the b2 shape
+			b2Vec2 p1 = fish->bones[i]->shape.GetVertex(j);
+			b2Vec2 p2 = b2Vec2(0.0f, 0.0f);
 
-	for (int i = 0; i < N_FINGERS; ++i)
-	{
-		
+			// use the pair n and n-1 to make a face. if n is zero, make a face from the first to the last vertices.
+			if (j == 0) {
+				p2 = fish->bones[i]->shape.GetVertex(nVertices-1);
+			}
+			else {
+				p2 = fish->bones[i]->shape.GetVertex(j-1);
+			}
+			
+			// get the face's center point
+			b2Vec2 centroid = b2Vec2(p1.y - p2.y, p1.x - p2.x);
+
+			// calculate the angle of incidence into the oncoming 'wind'
+			float angleOfIncidence = atan2(centroid.x, centroid.y);
+
+			// based on the angle, add the corresponding aerodynamic force. This paragraph also contains the aerodynamic equation.
+			b2Vec2 linearVelocity = fish->bones[i]->p_body->GetLinearVelocity();
+			b2Vec2 fluidDynamicForce = b2Vec2(cos(angleOfIncidence) * linearVelocity.x, sin(angleOfIncidence) * linearVelocity.y );
+
+			// apply the force to the body directly in the center of the face.
+			fish->bones[i]->p_body->ApplyForce(fluidDynamicForce, centroid, true);
+		}
 	}
-
 }
