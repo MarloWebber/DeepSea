@@ -2638,7 +2638,7 @@ void flightModel(BoneUserData * bone) {
 			// get the face's center point
 
 			b2Vec2 worldCenter = bone->p_body->GetWorldCenter();
-			// b2Vec2 centroid = b2Vec2(p1.y - p2.y, p1.x - p2.x);
+			// b2Vec2 localCenter = b2Vec2(p1.y - p2.y, p1.x - p2.x);
 
 			b2Vec2 p1r = rotatePoint(0.0f, 0.0f, bone->p_body->GetAngle(), p1 );
 			p1r += worldCenter;
@@ -2651,14 +2651,14 @@ void flightModel(BoneUserData * bone) {
 			b2Vec2 faceCenter = b2Vec2( (p1r.x + p2r.x)/2, (p1r.y + p2r.y)/2 ) ;
 
 			// draw a dot on it so you know you got it right.
-			// b2Vec2 gigglenuts  = faceCenter;
-			// b2Vec2 gigggle[] = {
-			// 	b2Vec2(gigglenuts.x+0.1f, gigglenuts.y-0.1f), 
-			// 	b2Vec2(gigglenuts.x+0.1f, gigglenuts.y+0.1f), 
-			// 	b2Vec2(gigglenuts.x-0.1f, gigglenuts.y+0.1f), 
-			// 	b2Vec2(gigglenuts.x-0.1f, gigglenuts.y-0.1f), 
-			// };
-			// local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.1f,0.05f) );
+			b2Vec2 gigglenuts  = faceCenter;
+			b2Vec2 gigggle[] = {
+				b2Vec2(gigglenuts.x+0.1f, gigglenuts.y-0.1f), 
+				b2Vec2(gigglenuts.x+0.1f, gigglenuts.y+0.1f), 
+				b2Vec2(gigglenuts.x-0.1f, gigglenuts.y+0.1f), 
+				b2Vec2(gigglenuts.x-0.1f, gigglenuts.y-0.1f), 
+			};
+			local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.1f,0.05f) );
 
 
 			// // calculate the angle of incidence into the oncoming 'wind'
@@ -2669,10 +2669,13 @@ void flightModel(BoneUserData * bone) {
 			// // draw the angle of incidence 
 			b2Color segmentColorA = b2Color(200, 50, 10);
 
-			float dragCoefficient = 0.0001;
+			float dragCoefficient = 0.001;
 			
-			b2Vec2 dragForce = b2Vec2(faceCenter.x+ cos(angleOfIncidence) * magnitudeVelocity * dragCoefficient, faceCenter.y+ sin(angleOfIncidence) * magnitudeVelocity * dragCoefficient * -1);
-			local_debugDraw_pointer->DrawSegment(faceCenter ,dragForce ,segmentColorA );
+			b2Vec2 dragForce = b2Vec2( cos(angleOfIncidence) * magnitudeVelocity * dragCoefficient * -1, sin(angleOfIncidence) * magnitudeVelocity * dragCoefficient );
+			
+			b2Vec2 visForce = b2Vec2(dragForce.x * 1000, dragForce.y * 1000);
+			b2Vec2 visPos = b2Vec2(faceCenter.x + visForce.x, faceCenter.y + visForce.y);
+			local_debugDraw_pointer->DrawSegment(faceCenter ,visPos ,segmentColorA );
 			bone->p_body->ApplyForce(dragForce, faceCenter, true);
 
 
@@ -2900,7 +2903,10 @@ void deepSeaLoop () {
 
 		std::list<Lamp>::iterator lomp;
 		for (lomp = lamps.begin(); lomp !=  lamps.end(); ++lomp) 	{
-			shine(&(*lomp));
+			if (false) {
+				shine(&(*lomp));
+			}
+			
 		}
 
 	
