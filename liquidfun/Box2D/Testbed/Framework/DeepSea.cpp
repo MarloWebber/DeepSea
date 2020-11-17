@@ -2649,33 +2649,39 @@ void flightModel(BoneUserData * bone) {
 			// b2Vec2 p2r = rotatePoint(worldCenter.x, worldCenter.y, bone->p_body->GetAngle(), p2 );
 
 			b2Vec2 faceCenter = b2Vec2( (p1r.x + p2r.x)/2, (p1r.y + p2r.y)/2 ) ;
+			float faceAngle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
 
 			// draw a dot on it so you know you got it right.
 			b2Vec2 gigglenuts  = faceCenter;
 			b2Vec2 gigggle[] = {
-				b2Vec2(gigglenuts.x+0.1f, gigglenuts.y-0.1f), 
-				b2Vec2(gigglenuts.x+0.1f, gigglenuts.y+0.1f), 
-				b2Vec2(gigglenuts.x-0.1f, gigglenuts.y+0.1f), 
-				b2Vec2(gigglenuts.x-0.1f, gigglenuts.y-0.1f), 
+				b2Vec2(gigglenuts.x+0.01f, gigglenuts.y-0.01f), 
+				b2Vec2(gigglenuts.x+0.01f, gigglenuts.y+0.01f), 
+				b2Vec2(gigglenuts.x-0.01f, gigglenuts.y+0.01f), 
+				b2Vec2(gigglenuts.x-0.01f, gigglenuts.y-0.01f), 
 			};
-			local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.1f,0.05f) );
+			local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.67f,0.1f,0.05f) );
 
 
 			// // calculate the angle of incidence into the oncoming 'wind'
 			b2Vec2 linearVelocity = bone->p_body->GetLinearVelocity();
 			float magnitudeVelocity = magnitude(linearVelocity);
-			float angleOfIncidence = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
+
+			b2Vec2 distanceBetweenPoints = b2Vec2(p2r.x - p1r.x, p2r.y - p1r.y);
+			float magnitudeArea = magnitude(distanceBetweenPoints);
+			unused_variable((void *)&magnitudeArea);
+
+			float angleOfForwardDirection = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
 
 			// // draw the angle of incidence 
-			b2Color segmentColorA = b2Color(200, 50, 10);
+			// b2Color segmentColorA = b2Color(200, 50, 10);
 
 			float dragCoefficient = 0.001;
 			
-			b2Vec2 dragForce = b2Vec2( cos(angleOfIncidence) * magnitudeVelocity * dragCoefficient * -1, sin(angleOfIncidence) * magnitudeVelocity * dragCoefficient );
+			b2Vec2 dragForce = b2Vec2( cos(angleOfForwardDirection) * magnitudeVelocity * dragCoefficient * -1, sin(angleOfForwardDirection) * magnitudeVelocity * dragCoefficient );
 			
-			b2Vec2 visForce = b2Vec2(dragForce.x * 1000, dragForce.y * 1000);
-			b2Vec2 visPos = b2Vec2(faceCenter.x + visForce.x, faceCenter.y + visForce.y);
-			local_debugDraw_pointer->DrawSegment(faceCenter ,visPos ,segmentColorA );
+			// b2Vec2 visForce = b2Vec2(dragForce.x * 1000, dragForce.y * 1000);
+			// b2Vec2 visPos = b2Vec2(faceCenter.x + visForce.x, faceCenter.y + visForce.y);
+			// local_debugDraw_pointer->DrawSegment(faceCenter ,visPos ,segmentColorA );
 			bone->p_body->ApplyForce(dragForce, faceCenter, true);
 
 
@@ -2683,7 +2689,24 @@ void flightModel(BoneUserData * bone) {
 
 			// // based on the angle, add the corresponding aerodynamic force. This paragraph also contains the aerodynamic equation.
 			// b2Vec2 linearVelocity = bone->p_body->GetLinearVelocity();
-			// b2Vec2 fluidDynamicForce = b2Vec2(cos(angleOfIncidence) * linearVelocity.x, sin(angleOfIncidence) * linearVelocity.y );
+
+			// see how the angle of the face between p1 and p2 compares to the rushing wind.
+			// float aerodynamicAngleOfIncidence =;
+			float aerodynamicAngleOfIncidence =  (angleOfForwardDirection)  -(faceAngle);
+
+			float liftCoeff  = 1;
+			float atmosphericDensity = 1;
+			float liftForce = liftCoeff * ((atmosphericDensity * (magnitudeVelocity*magnitudeVelocity))/2) * magnitudeArea;
+			b2Vec2 fluidDynamicForce = b2Vec2(cos(aerodynamicAngleOfIncidence) * liftForce, sin(aerodynamicAngleOfIncidence) * liftForce);
+
+			// b2Vec2 fluidDynamicForce = b2Vec2(cos(faceAngle) * (ratioOfIncidence * magnitudeVelocity) , sin(faceAngle ) * (ratioOfIncidence * magnitudeVelocity  )	);
+
+			b2Vec2 visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
+
+			b2Color segmentColorB = b2Color(50, 200, 10);
+
+			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
+		
 
 			// if (false) {
 			// 	// apply the force to the body directly in the center of the face.
