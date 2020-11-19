@@ -2698,14 +2698,15 @@ void flightModel(BoneUserData * bone) {
 			// // draw the angle of incidence 
 			// b2Color segmentColorA = b2Color(200, 50, 10);
 
-			float dragCoefficient = 0.001;
+			float dragCoefficient = 0.01;
 			
-			b2Vec2 dragForce = b2Vec2( cos(angleOfForwardDirection) * magnitudeVelocity * dragCoefficient * -1, sin(angleOfForwardDirection) * magnitudeVelocity * dragCoefficient );
+			float dragForce = magnitudeVelocity * dragCoefficient;
+			b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce * -1, sin(angleOfForwardDirection) * dragForce );
 			
 			// b2Vec2 visForce = b2Vec2(dragForce.x * 1000, dragForce.y * 1000);
 			// b2Vec2 visPos = b2Vec2(faceCenter.x + visForce.x, faceCenter.y + visForce.y);
 			// local_debugDraw_pointer->DrawSegment(faceCenter ,visPos ,segmentColorA );
-			bone->p_body->ApplyForce(dragForce, faceCenter, true);
+			bone->p_body->ApplyForce(dragVector, faceCenter, true);
 
 
 
@@ -2717,9 +2718,38 @@ void flightModel(BoneUserData * bone) {
 			// float aerodynamicAngleOfIncidence =;
 			// float aerodynamicAngleOfIncidence =  (angleOfForwardDirection)  -(faceAngle);
 
-			float liftCoeff  = 1;
+			float liftCoeff  = 0.01;
 			float atmosphericDensity = 1;
 			float liftForce = liftCoeff * ((atmosphericDensity * (magnitudeVelocity*magnitudeVelocity))/2) * magnitudeArea;
+			// if (liftForce > 1000) {
+			// 	liftForce = 1000;
+			// }
+
+
+			// lift is not free energy. normalise the amount of lift force so that it is equal or less to the drag force. this will greatly aid the stability of physical simulation.
+
+
+			
+			// liftForce = liftForce * theRatioOfLiftToDrag;
+
+			if (liftForce < 0.0001) {
+				liftForce = 0;
+			}
+			if (dragForce < 0.0001) {
+				dragForce = 0;
+			}
+
+			if (liftForce != 0 && dragForce != 0) {
+
+				float theRatioOfLiftToDrag =  dragForce/liftForce;
+			
+
+				printf("luuuft %f\n", liftForce);
+				printf("drogogogn %f\n", dragForce);
+				printf("rersher %f\n", theRatioOfLiftToDrag);
+
+				liftForce = liftForce * theRatioOfLiftToDrag;
+			}
 
 
 			// the lift angle is normal to the face but its direction is determined by how the plane meets the incoming wind.
@@ -2730,7 +2760,7 @@ void flightModel(BoneUserData * bone) {
 			
 		
 
-			b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce);
+			b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
 
 			// b2Vec2 fluidDynamicForce = b2Vec2(cos(faceAngle) * (ratioOfIncidence * magnitudeVelocity) , sin(faceAngle ) * (ratioOfIncidence * magnitudeVelocity  )	);
 
@@ -2743,7 +2773,7 @@ void flightModel(BoneUserData * bone) {
 
 			// if (false) {
 			// 	// apply the force to the body directly in the center of the face.
-			// 	bone->p_body->ApplyForce(fluidDynamicForce, centroid, true);
+			bone->p_body->ApplyForce(fluidDynamicForce, faceCenter, true);
 
 			// 	// draw the forces applied so you can debug them.
 			// 	b2Color segmentColorD = b2Color(200, 50, 10);
