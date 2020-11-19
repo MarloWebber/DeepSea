@@ -2614,6 +2614,29 @@ int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
 	return -1;
 }
 
+
+
+bool chooseDMostVertex(float angle, b2Vec2 p1, b2Vec2 p2) {
+// given 2 vertices, identify which one lines most in a given direction. return true if it is p1 and false if it is p2.
+
+	// unrotate the set of vertices by the direction, so that the distance to measure is along the Y axis.
+		// get the centroid, this is your rotation center
+		b2Vec2 thisFaceCentroid = b2Vec2((p1.x + p2.x)/2,(p1.y+p2.y)/2);
+
+		// perform the rotation
+		b2Vec2 p1r = rotatePoint(thisFaceCentroid.x, thisFaceCentroid.y, angle, p1);
+		b2Vec2 p2r = rotatePoint(thisFaceCentroid.x, thisFaceCentroid.y, angle, p2);
+
+		if (p1r.y > p2r.y) {
+			return true;
+		}
+		else {
+			return false;
+		}
+}
+
+
+
 // provides FEA-based lift and drag calculations
 void flightModel(BoneUserData * bone) {
 
@@ -2692,12 +2715,22 @@ void flightModel(BoneUserData * bone) {
 
 			// see how the angle of the face between p1 and p2 compares to the rushing wind.
 			// float aerodynamicAngleOfIncidence =;
-			float aerodynamicAngleOfIncidence =  (angleOfForwardDirection)  -(faceAngle);
+			// float aerodynamicAngleOfIncidence =  (angleOfForwardDirection)  -(faceAngle);
 
 			float liftCoeff  = 1;
 			float atmosphericDensity = 1;
 			float liftForce = liftCoeff * ((atmosphericDensity * (magnitudeVelocity*magnitudeVelocity))/2) * magnitudeArea;
-			b2Vec2 fluidDynamicForce = b2Vec2(cos(aerodynamicAngleOfIncidence) * liftForce, sin(aerodynamicAngleOfIncidence) * liftForce);
+
+
+			// the lift angle is normal to the face but its direction is determined by how the plane meets the incoming wind.
+			float liftAngle = faceAngle + 0.5*pi;
+			if (chooseDMostVertex(angleOfForwardDirection, p1r, p2r)) {
+				liftForce = liftForce * -1;
+			}
+			
+		
+
+			b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce);
 
 			// b2Vec2 fluidDynamicForce = b2Vec2(cos(faceAngle) * (ratioOfIncidence * magnitudeVelocity) , sin(faceAngle ) * (ratioOfIncidence * magnitudeVelocity  )	);
 
