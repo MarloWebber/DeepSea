@@ -214,7 +214,7 @@ void printab2Vec2(b2Vec2 v) {
 }
 
 b2Vec2 getRandomPosition() {
-		   return  b2Vec2(  (RNG()-0.5) * 25, (RNG()-0.5) * 5.0f  );
+		   return  b2Vec2(  (RNG()-0.5) * 100, (RNG()-0.5) * 100  );
 }
 
 // add a food particle to the world and register it so the game knows it exists.
@@ -278,6 +278,8 @@ BoneUserData::BoneUserData(
 	sensation_radar = 0.0f;
 	sensation_touch = 0.0f;
 	sensation_jointangle = 0.0f;
+
+	flagPhotosynth = false;
 
 	isFood = false;
 
@@ -2678,12 +2680,12 @@ void flightModel(BoneUserData * bone) {
 		float angleOfForwardDirection = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
 
 		// calculate the force of drag
-		float dragCoefficient = 0.001;
+		float dragCoefficient = 0.002;
 		float dragForce = magnitudeVelocity * magnitudeArea * dragCoefficient * -1; // the -1 in this statement is what makes it an opposing force.
 		b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce , sin(angleOfForwardDirection) * dragForce *-1);
 
 		// calculate the force of lift
-		float liftCoeff  = 0.2;
+		float liftCoeff  = 0.5;
 		float atmosphericDensity = 1;
 		float liftForce = liftCoeff * ((atmosphericDensity * (magnitudeVelocity*magnitudeVelocity))/2) * magnitudeArea * -1;
 
@@ -2695,13 +2697,20 @@ void flightModel(BoneUserData * bone) {
 		b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce );
 
 		// draw a line so you can visualize the lift force.
-		b2Vec2 visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
-		b2Color segmentColorB = b2Color(50, 200, 10);
-		local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
-		
+		if (false) {
+			b2Vec2 visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
+			b2Color segmentColorB = b2Color(50, 200, 10);
+			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
+		}
+	
 		// apply the force to the body directly in the center of the face.
 		bone->p_body->ApplyForce(dragVector, faceCenter, true);
-		bone->p_body->ApplyForce(fluidDynamicForce, faceCenter, true);
+
+		if (	fluidDynamicForce.x < 1000 && fluidDynamicForce.y < 1000
+			&& 	fluidDynamicForce.x > -1000 && fluidDynamicForce.y > -1000 ) {
+			bone->p_body->ApplyForce(fluidDynamicForce, faceCenter, true);
+		}
+		
 	}
 }
 
@@ -2849,6 +2858,7 @@ void runBiomechanicalFunctions () {
 
 					}
 
+
 					// 1 energy is lost per bone per turn for homeostasis or whatever. this is also so that plants can't live forever without sunlight.
 					fish->energy -= 0.1f;
 
@@ -2908,6 +2918,7 @@ void deepSeaLoop () {
 		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION ) {
 			exploratoryModeBeginGeneration ( );
 		}
+		startNextGeneration = false;
 
 		std::list<Lamp>::iterator lomp;
 		for (lomp = lamps.begin(); lomp !=  lamps.end(); ++lomp) 	{
@@ -3014,7 +3025,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 	bool fud = false;
 	bool lef = false;
 
-	if (userDataA == nullptr || userDataB == nullptr) {
+	if (userDataA == nullptr || userDataB == nullptr || startNextGeneration) {
 		return;
 	}
 	else {

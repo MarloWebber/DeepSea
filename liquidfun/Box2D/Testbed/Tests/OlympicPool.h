@@ -26,10 +26,10 @@ public:
 
 			// an octagon
 			const b2Vec2 vertices[8] = {
-				b2Vec2(25, 5),
-				b2Vec2(-25, 5),
-				b2Vec2(-25, -5),
-				b2Vec2(25, -5)};
+				b2Vec2(100, 100),
+				b2Vec2(-100, 100),
+				b2Vec2(-100, -100),
+				b2Vec2(100, -100)};
 				// b2Vec2(-10, 20),
 				// b2Vec2(-20, 10),
 				// b2Vec2(-20, -10),
