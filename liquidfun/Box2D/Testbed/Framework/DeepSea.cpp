@@ -1040,6 +1040,7 @@ void deleteFish (BonyFish * fish) {
 	}
 
 
+
 }
 
 
@@ -1597,8 +1598,11 @@ void removeDeletableFish() {
 		// if ( fishes[i] == NULL || fishes[i] == nullptr) { 	continue; }
 		if (fish->flagDelete && fish->isUsed) {
 			deleteFish ( &(*fish)) ;
+			fishes.erase(fish++);
 			// break;
 		}
+
+
 	}
 
 	for (int i = 0; i < N_FOODPARTICLES; ++i) {
@@ -2720,6 +2724,10 @@ void runBiomechanicalFunctions () {
 	// for (int i = 0; i < N_FISHES; ++i) {
 
 	std::list<BonyFish>::iterator fish;
+
+
+	printf("eeg beege: %lu\n" ,  fishes.size());
+
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		// if (fishSlotLoaded[i]) {
 
@@ -2905,6 +2913,8 @@ void deepSeaLoop () {
 
 
 	// TestMain::SimulationLoop();
+
+
 
 	TestMain::PreStep();
 
