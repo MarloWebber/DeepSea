@@ -2678,8 +2678,8 @@ void flightModel(BoneUserData * bone) {
 		float angleOfForwardDirection = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
 
 		// calculate the force of drag
-		float dragCoefficient = 0.01;
-		float dragForce = magnitudeVelocity * dragCoefficient * -1; // the -1 in this statement is what makes it an opposing force.
+		float dragCoefficient = 0.001;
+		float dragForce = magnitudeVelocity * magnitudeArea * dragCoefficient * -1; // the -1 in this statement is what makes it an opposing force.
 		b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce , sin(angleOfForwardDirection) * dragForce *-1);
 
 		// calculate the force of lift
