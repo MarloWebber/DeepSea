@@ -62,7 +62,8 @@ uint32 m_groupFlags;
 uint32 m_colorIndex;
 
 
-
+uint64 loopCounter = 0 ;
+uint32 loopSafetyLimit = 100;
 
 uint32 DetermineParticleParameter() 
 	{
@@ -613,6 +614,15 @@ void loadFishFromFile(const std::string& file_name, fishDescriptor_t& data) {
   in.read(reinterpret_cast<char*>(&data), sizeof(fishDescriptor_t));
 }
 
+// saves the worldlist of particles to file so that it can be retrieved later
+void saveParticleStateToFile() {
+	//https://google.github.io/liquidfun/API-Ref/html/classb2_particle_system.html
+}
+
+void loadParticleStateFromFile() {
+
+}
+
 // makes sure that the starting creature at least has senses wired up to something near the motor controls.
 // prevents generations of completely braindead creatures
 void wormTrainer () {
@@ -768,6 +778,9 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 
 
+
+distanceMovedSoFar = 0.0f;
+filteredOutputWiggle = 0.0f;
 
 
 
@@ -1071,6 +1084,8 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition)
 
 		fish->bones[i]->p_owner = fish; // you need to update the user data pointer, because when you pushed the fish onto the list you pushed a copy of it not the actual thing.
 	}
+
+	// fish->originalPosition = startingPosition;
 
 }
 
@@ -1639,6 +1654,8 @@ void reloadTheSim  () {
 //  prints the winner to file immediately.
 void  vote (BonyFish * winner) {
 
+	if ( loopCounter > loopSafetyLimit) {
+
 	fann * wann = winner->ann;
 
 	// save the winner to file with a new name.
@@ -1651,6 +1668,7 @@ void  vote (BonyFish * winner) {
 	// }
     // startNextGeneration = true;
 	reloadTheSim();	
+}
 }
 
 void mutateFANNFileDirectly (std::string filename) {
@@ -1699,12 +1717,15 @@ void mutateFANNFileDirectly (std::string filename) {
 						memcpy(sciNumber, &c, sciNumberLength);
 					    float val = std::stof(sciNumber); 
 
-					    if (RNG() < 0.1) {							// chance of a mutation occurring
+					    float brainMutationChance = 0.2;
+					    float brainMutationAmount = 2;
+
+					    if (RNG() < brainMutationChance) {							// chance of a mutation occurring
 					    	if (val > 1 || val < -1) { 				// if it's a big number, apply the mutation as a fraction of htat number. else, apply a random amount in a small range. this is to prevent weights being stuck at very small numbers.
-					    		val += ( (RNG() -0.5f) * val * 1);
+					    		val += ( (RNG() -0.5f) * val * brainMutationAmount);
 					    	}	
 					    	else {
-					    		val += ( (RNG() -0.5f) * 0.5f ); 	// how much mutation to apply
+					    		val += ( (RNG() -0.5f) * 0.5f * brainMutationAmount ); 	// how much mutation to apply
 					    	}
 						    
 					    }
@@ -2726,7 +2747,7 @@ void runBiomechanicalFunctions () {
 	std::list<BonyFish>::iterator fish;
 
 
-	printf("eeg beege: %lu\n" ,  fishes.size());
+	// printf("eeg beege: %lu\n" ,  fishes.size());
 
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		// if (fishSlotLoaded[i]) {
@@ -2757,6 +2778,8 @@ void runBiomechanicalFunctions () {
 			sizeOfInputLayer = layer->neurons.size();
 			std::advance(layer, num_layers-1);
 			sizeOfOutputLayer = layer->neurons.size();
+
+			float previousOutputs [sizeOfOutputLayer];
 
 			float sensorium[ sizeOfInputLayer ];
 
@@ -2901,12 +2924,78 @@ void runBiomechanicalFunctions () {
 
 
 
+
+
+				// calculate output wiggle
+				
+				float outputWiggleThisTurn = 0;
+				for (uint j = 0; j < sizeOfOutputLayer; ++j)
+				{
+					outputWiggleThisTurn += abs( (motorSignals[j]) - (previousOutputs[j])  );
+
+				}
+
+				fish->filteredOutputWiggle -= 0.5 * fish->filteredOutputWiggle;
+				fish->filteredOutputWiggle += outputWiggleThisTurn;
+				
+				
+				// calculate distance moved
+				b2Vec2 rootCenter = fish->bones[0]->p_body->GetWorldCenter();
+				b2Vec2 distanceThisTurn =  b2Vec2( rootCenter.x - fish->previousRootPosition.x, rootCenter.y - fish->previousRootPosition.y) ;
+				fish->distanceMovedSoFar += magnitude(distanceThisTurn);
+				fish->previousRootPosition = rootCenter;
+
+				
+
+
 				
 
 
 			// }
 		// }
 	}
+}
+
+
+void selectFishWithGreatestWiggle () {
+	std::list<BonyFish>::iterator fish;
+
+	fish = fishes.begin();
+
+	BonyFish * theWiggliest = &(*fish);
+
+	// BonyFish * theWiggliest;
+
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (fish->filteredOutputWiggle > theWiggliest->filteredOutputWiggle) {
+
+			printf("this fish is even wigglier: %f\n",fish->filteredOutputWiggle );
+
+			theWiggliest = &(*fish);
+		}
+		fish->selected = false;
+	}
+
+	theWiggliest->selected = true;
+}
+
+void selectFishWhoMovedTheFurthest () {
+	std::list<BonyFish>::iterator fish;
+
+	fish = fishes.begin();
+
+	BonyFish * theFurthest = &(*fish);
+
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (fish->distanceMovedSoFar > theFurthest->distanceMovedSoFar) {
+
+			printf("this fish has gone even further: %f\n",fish->distanceMovedSoFar );
+			theFurthest = &(*fish);
+		}
+		fish->selected = false;
+	}
+
+	theFurthest->selected = true;
 }
 
 void deepSeaLoop () {
@@ -2922,12 +3011,26 @@ void deepSeaLoop () {
 
 	if (!local_m_world->IsLocked() ) {
 
+		
+		if (loopCounter < loopSafetyLimit) {
+			// startNextGeneration = false;
+		}		
+
+		loopCounter ++;
 
 		removeDeletableFish();
 
 		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION ) {
-			exploratoryModeBeginGeneration ( );
+			if (loopCounter > loopSafetyLimit) {
+				exploratoryModeBeginGeneration ( );
+				loopCounter = 0;
+			}
+			// else {
+				
+				
+			// }
 		}
+		
 		startNextGeneration = false;
 
 		std::list<Lamp>::iterator lomp;
@@ -2943,6 +3046,8 @@ void deepSeaLoop () {
 
 
 		runBiomechanicalFunctions();
+
+		// selectFishWithGreatestWiggle();
 
 
 
@@ -3035,7 +3140,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 	bool fud = false;
 	bool lef = false;
 
-	if (userDataA == nullptr || userDataB == nullptr || startNextGeneration) {
+	if (userDataA == nullptr || userDataB == nullptr || startNextGeneration || loopCounter < loopSafetyLimit) {
 		return;
 	}
 	else {
@@ -3293,3 +3398,14 @@ void stepForParticleDrawing () {
 }
 
 
+// the following are statistical rules used to analyze the population of animals.
+
+void getFishThatWigglesTheMost () {
+
+	// to find how much the fish wiggles, 
+
+}
+
+void getFishThatHasMovedTheFurthest () {
+
+}

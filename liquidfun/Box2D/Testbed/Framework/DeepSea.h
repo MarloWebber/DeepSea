@@ -365,6 +365,11 @@ struct BonyFish {
 
 	char species[32]; // a textual string describing what species the fish is.
 
+
+	b2Vec2 previousRootPosition;
+	float distanceMovedSoFar;
+	float filteredOutputWiggle;
+
 	BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition);
 
 	void feed(float amount);
@@ -455,8 +460,8 @@ void		beginGeneration ();
 
 
 
-
-
+void selectFishWithGreatestWiggle();
+void selectFishWhoMovedTheFurthest();
 
 
 

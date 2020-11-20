@@ -371,6 +371,21 @@ deepSeaControlA();
 		settings.pause = !settings.pause;
 		break;
 
+	case 'q':
+		if (test)
+		{
+			// test->controlA();
+			selectFishWithGreatestWiggle();
+		}
+		break;
+	case 'u':
+		if (test)
+		{
+			// test->controlA();
+			selectFishWhoMovedTheFurthest();
+		}
+		break;
+
 		// Press [ to prev test.
 // 	case '[':
 // 		--testSelection;
