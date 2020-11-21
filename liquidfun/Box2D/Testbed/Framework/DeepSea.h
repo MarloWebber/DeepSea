@@ -18,6 +18,12 @@
 #define GAME_MODE_EXPLORATION 0
 #define GAME_MODE_ECOSYSTEM 1
 
+#define TERRAIN_TYPE_LIQUID 0
+#define TERRAIN_TYPE_OIL 0
+#define TERRAIN_TYPE_POWDER 0
+#define TERRAIN_TYPE_ELASTIC 0
+#define TERRAIN_TYPE_RIGID 0
+
 
 	 struct deepSeaSettings {
 	 	int gameMode;
@@ -26,6 +32,7 @@
 	 	b2Vec2 gravity;
 	 	float mutationRate;
 	 	float mutationSeverity;
+	 	int terrainPaintType;
 	 };
 
 	 extern deepSeaSettings m_deepSeaSettings;
@@ -45,7 +52,7 @@ extern uint32 m_particleFlags;
 extern uint32 m_groupFlags;
 extern uint32 m_colorIndex;
 
-void ParticleDrawingKeyboard(unsigned char key);
+void ParticleDrawingKeyboard(int key);
 
 enum Parameters {
 		e_parameterBegin = (1UL << 31), // Start of this parameter namespace.
@@ -460,8 +467,8 @@ void		beginGeneration ();
 
 
 
-void selectFishWithGreatestWiggle();
-void selectFishWhoMovedTheFurthest();
+void selectFishWithGreatestWiggle(int arg);
+void selectFishWhoMovedTheFurthest(int arg);
 
 
 

@@ -2333,7 +2333,8 @@ void runBiomechanicalFunctions () {
 }
 
 
-void selectFishWithGreatestWiggle () {
+void selectFishWithGreatestWiggle (int arg) {
+	unused_variable((void *)&arg);
 	std::list<BonyFish>::iterator fish;
 	fish = fishes.begin();
 
@@ -2351,7 +2352,9 @@ void selectFishWithGreatestWiggle () {
 	theWiggliest->selected = true;
 }
 
-void selectFishWhoMovedTheFurthest () {
+void selectFishWhoMovedTheFurthest (int arg) {
+	unused_variable((void *)&arg);
+
 	std::list<BonyFish>::iterator fish;
 	fish = fishes.begin();
 
@@ -2381,6 +2384,11 @@ void deepSeaLoop () {
 		}		
 
 		loopCounter ++;
+
+
+		
+
+
 
 		removeDeletableFish();
 
@@ -2565,7 +2573,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 // the following code is an attempt to integrate particle drawing (from the test of the same name) into deepsea, in a way that can be applied to all deepsea maps.
 
-void ParticleDrawingKeyboard(unsigned char key)
+void ParticleDrawingKeyboard(int key)
 {
 	m_drawing = TestMain::getPaintingStatus(); //key != 'X';
 
@@ -2575,52 +2583,52 @@ void ParticleDrawingKeyboard(unsigned char key)
 	m_groupFlags = 0;
 	switch (key)
 	{
-	case 'E':
+	case 0:
 		m_particleFlags = b2_elasticParticle;
 		m_groupFlags = b2_solidParticleGroup;
 		break;
-	case 'P':
+	case 1:
 		m_particleFlags = b2_powderParticle;
 		break;
-	case 'R':
+	case 2:
 		m_groupFlags = b2_rigidParticleGroup | b2_solidParticleGroup;
 		break;
-	case 'S':
+	case 3:
 		m_particleFlags = b2_springParticle;
 		m_groupFlags = b2_solidParticleGroup;
 		break;
-	case 'T':
+	case 4:
 		m_particleFlags = b2_tensileParticle;
 		break;
-	case 'V':
+	case 5:
 		m_particleFlags = b2_viscousParticle;
 		break;
-	case 'W':
+	case 6:
 		m_particleFlags = b2_wallParticle;
 		m_groupFlags = b2_solidParticleGroup;
 		break;
-	case 'B':
+	case 7:
 		m_particleFlags = b2_barrierParticle | b2_wallParticle;
 		break;
-	case 'H':
+	case 8:
 		m_particleFlags = b2_barrierParticle;
 		m_groupFlags = b2_rigidParticleGroup;
 		break;
-	case 'N':
+	case 9:
 		m_particleFlags = b2_barrierParticle | b2_elasticParticle;
 		m_groupFlags = b2_solidParticleGroup;
 		break;
-	case 'M':
+	case 10:
 		m_particleFlags = b2_barrierParticle | b2_springParticle;
 		m_groupFlags = b2_solidParticleGroup;
 		break;
-	case 'F':
+	case 11:
 		m_particleFlags = b2_wallParticle | b2_repulsiveParticle;
 		break;
-	case 'C':
+	case 12:
 		m_particleFlags = b2_colorMixingParticle;
 		break;
-	case 'Z':
+	case 13:
 		m_particleFlags = b2_zombieParticle;
 		break;
 	default:

@@ -381,14 +381,14 @@ deepSeaControlA();
 		if (test)
 		{
 			// test->controlA();
-			selectFishWithGreatestWiggle();
+			// selectFishWithGreatestWiggle();
 		}
 		break;
 	case 'u':
 		if (test)
 		{
 			// test->controlA();
-			selectFishWhoMovedTheFurthest();
+			// selectFishWhoMovedTheFurthest();
 		}
 		break;
 
@@ -448,7 +448,7 @@ deepSeaControlA();
 
 	}
 
-	ParticleDrawingKeyboard(key);
+	// ParticleDrawingKeyboard(key); // this is called by a menu action instead now
 }
 
 static void KeyboardSpecial(int key, int x, int y)
@@ -689,6 +689,10 @@ void menuHandler(int bobi) {
 	printf("feet %i\n", bobi);
 }
 
+void updateParticleDrawingKeyboard(int bobi) {
+	ParticleDrawingKeyboard(m_deepSeaSettings.terrainPaintType);
+}
+
 
 
 int main(int argc, char** argv)
@@ -798,39 +802,39 @@ int main(int argc, char** argv)
 	// glui->add_checkbox_to_panel(gamePanel, "Shapes", booger);
 	GLUI_Listbox* modeList =
 		glui->add_listbox_to_panel(gamePanel, "Mode", &(m_deepSeaSettings.gameMode ));
-
-
-
-	// int32 modeCount = 0;
-	// TestEntry* e = g_testEntries;
-	// while (e->createFcn)
-	// {
 		modeList->add_item(GAME_MODE_EXPLORATION, "Exploratory Mode" );
 		modeList->add_item(GAME_MODE_ECOSYSTEM, "Ecosystem Mode" );
 
 
-	glui->add_separator_to_panel(gamePanel);
+	// glui->add_separator_to_panel(gamePanel);
 
-		int fakeNumberOfFood;
-		GLUI_Spinner* numberOfFoodSpinner =
-		glui->add_spinner_to_panel(gamePanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
-	numberOfFoodSpinner->set_int_limits(1, 8);
+
+	GLUI_Panel* ExploratoryPanel =	glui->add_panel("Exploratory Mode");
+
 
 		int fakeNumberOfFish;
 		GLUI_Spinner* numberOfFishSpinner =
-		glui->add_spinner_to_panel(gamePanel,"Number of fish", GLUI_SPINNER_INT, &fakeNumberOfFish);
-	numberOfFishSpinner->set_int_limits(1, 8);
+		glui->add_spinner_to_panel(ExploratoryPanel,"Number of fish", GLUI_SPINNER_INT, &fakeNumberOfFish);
+	numberOfFishSpinner->set_int_limits(1, 256);
 
+
+	GLUI_Panel* EcosystemPanel =	glui->add_panel("Ecosystem Mode");
+	int fakeNumberOfFood;
+		GLUI_Spinner* numberOfFoodSpinner =
+		glui->add_spinner_to_panel(EcosystemPanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
+	numberOfFoodSpinner->set_int_limits(1, 8);
+
+		
 	int fakeNumberOfSpecies;
 		GLUI_Spinner* numberOfSpeciesSpinner =
-		glui->add_spinner_to_panel(gamePanel,"Number of species", GLUI_SPINNER_INT, &fakeNumberOfSpecies);
+		glui->add_spinner_to_panel(EcosystemPanel,"Number of species", GLUI_SPINNER_INT, &fakeNumberOfSpecies);
 	numberOfSpeciesSpinner->set_int_limits(1, 8);
 
 
-float fakeGravity;
-		GLUI_Spinner* gravitySpinner =
-		glui->add_spinner_to_panel(gamePanel, "Gravity", GLUI_SPINNER_FLOAT, &fakeGravity);
-	gravitySpinner->set_float_limits(-10.0f, 10.0f);
+// float fakeGravity;
+// 		GLUI_Spinner* gravitySpinner =
+// 		glui->add_spinner_to_panel(gamePanel, "Gravity", GLUI_SPINNER_FLOAT, &fakeGravity);
+// 	gravitySpinner->set_float_limits(-10.0f, 10.0f);
 
 
 
@@ -841,21 +845,31 @@ float fakeGravity;
 
 	float fakeMutationRate;
 		GLUI_Spinner* mutationRateSpinner =
-		glui->add_spinner_to_panel(bioPanel, "Mutation Rate", GLUI_SPINNER_FLOAT, &fakeMutationRate);
+		glui->add_spinner_to_panel(bioPanel, "Body Mutation Rate", GLUI_SPINNER_FLOAT, &fakeMutationRate);
 	mutationRateSpinner->set_float_limits(0.0001f, 1.0f);
 
 	float fakeMutationSeverity;
 		GLUI_Spinner* mutationSeveritySpinner =
-		glui->add_spinner_to_panel(bioPanel, "Mutation Severity", GLUI_SPINNER_FLOAT, &fakeMutationSeverity);
+		glui->add_spinner_to_panel(bioPanel, "Body Mutation Severity", GLUI_SPINNER_FLOAT, &fakeMutationSeverity);
 	mutationSeveritySpinner->set_float_limits(0.0001f, 1.0f);
+
+	float fakeMentalMutationRate;
+		GLUI_Spinner* mentalMutationRateSpinner =
+		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Rate", GLUI_SPINNER_FLOAT, &fakeMentalMutationRate);
+	mentalMutationRateSpinner->set_float_limits(0.0001f, 1.0f);
+
+	float fakeMentalMutationSeverity;
+		GLUI_Spinner* mentalMutationSeveritySpinner =
+		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Severity", GLUI_SPINNER_FLOAT, &fakeMentalMutationSeverity);
+	mentalMutationSeveritySpinner->set_float_limits(0.0001f, 1.0f);
 
 
 
 
 
 	GLUI_Panel* controlsPanel =	glui->add_panel("Player Controls");
-	glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, menuHandler);
-	glui->add_button_to_panel(controlsPanel, "Select Furthest Traveled", 1, menuHandler);
+	glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
+	glui->add_button_to_panel(controlsPanel, "Select Furthest Traveled", 1, selectFishWhoMovedTheFurthest);
 
 
 	GLUI_Panel* terrainPanel =	glui->add_panel("Terrain Paint");
@@ -863,6 +877,77 @@ float fakeGravity;
 	
 	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
 
+
+		GLUI_Listbox* terrainTypesList =
+		glui->add_listbox_to_panel(terrainPanel, "Terrain Type ", &(m_deepSeaSettings.terrainPaintType ) ,-1, updateParticleDrawingKeyboard);
+
+		/*
+case 0:
+		m_particleFlags = b2_elasticParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 1:
+		m_particleFlags = b2_powderParticle;
+		break;
+	case 2:
+		m_groupFlags = b2_rigidParticleGroup | b2_solidParticleGroup;
+		break;
+	case 3:
+		m_particleFlags = b2_springParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 4:
+		m_particleFlags = b2_tensileParticle;
+		break;
+	case 5:
+		m_particleFlags = b2_viscousParticle;
+		break;
+	case 6:
+		m_particleFlags = b2_wallParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 7:
+		m_particleFlags = b2_barrierParticle | b2_wallParticle;
+		break;
+	case 8:
+		m_particleFlags = b2_barrierParticle;
+		m_groupFlags = b2_rigidParticleGroup;
+		break;
+	case 9:
+		m_particleFlags = b2_barrierParticle | b2_elasticParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 10:
+		m_particleFlags = b2_barrierParticle | b2_springParticle;
+		m_groupFlags = b2_solidParticleGroup;
+		break;
+	case 11:
+		m_particleFlags = b2_wallParticle | b2_repulsiveParticle;
+		break;
+	case 12:
+		m_particleFlags = b2_colorMixingParticle;
+		break;
+	case 13:
+		m_particleFlags = b2_zombieParticle;
+		break;
+		*/
+
+		terrainTypesList->add_item(0, "Elastic | SolidGroup" );
+		terrainTypesList->add_item(1, "Powder" );
+		terrainTypesList->add_item(2, "Rigid | SolidGroup" );
+		terrainTypesList->add_item(3, "Spring | SolidGroup" );
+		terrainTypesList->add_item(4, "Tensile" );
+		terrainTypesList->add_item(5, "Viscous" );
+		terrainTypesList->add_item(6, "Wall | SolidGroup" );
+		terrainTypesList->add_item(7, "Barrier | WallParticle" );
+		terrainTypesList->add_item(8, "Barrier | RigidGroup" );
+		terrainTypesList->add_item(9, "Barrier | ElasticParticle | SolidGroup" );
+		terrainTypesList->add_item(10, "Barrier | SpringParticle | SolidGroup" );
+		terrainTypesList->add_item(11, "Wall | RepulsiveParticle" );
+		terrainTypesList->add_item(12, "ColorMixing" );
+		terrainTypesList->add_item(12, "Zombie" );
+		ParticleDrawingKeyboard(0);
+		// updateParticleDrawingKeyboard(0);
 
 
 	glutCreateMenu(menuHandler);
@@ -893,6 +978,7 @@ float fakeGravity;
 
 	// Configure the fullscreen UI's viewport parameters.
 	fullscreenUI.SetViewParameters(&settings.viewCenter, &extents);
+
 
 	// Use a timer to control the frame rate.
 	glutTimerFunc(framePeriod, Timer, 0);
