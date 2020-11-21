@@ -871,6 +871,8 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
 	glui->add_button_to_panel(controlsPanel, "Select Furthest Traveled", 1, selectFishWhoMovedTheFurthest);
 
+	glui->add_button_to_panel(controlsPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
+
 
 	GLUI_Panel* terrainPanel =	glui->add_panel("Terrain Paint");
 

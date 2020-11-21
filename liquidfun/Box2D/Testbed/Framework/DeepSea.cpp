@@ -604,6 +604,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 	distanceMovedSoFar = 0.0f;
 	filteredOutputWiggle = 0.0f;
+	previousOutputs = nullptr;
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i) { // if the limb doesn't already have sense and motor connectors, add them in.
 
@@ -2228,7 +2229,7 @@ void runBiomechanicalFunctions () {
 			std::advance(layer, num_layers-1);
 			sizeOfOutputLayer = layer->neurons.size();
 
-			float previousOutputs [sizeOfOutputLayer];
+			// float previousOutputs [sizeOfOutputLayer];
 
 			float sensorium[ sizeOfInputLayer ];
 
@@ -2357,9 +2358,11 @@ void runBiomechanicalFunctions () {
 			float outputWiggleThisTurn = 0;
 			for (uint j = 0; j < sizeOfOutputLayer; ++j)
 			{
-				outputWiggleThisTurn += abs( (motorSignals[j]) - (previousOutputs[j])  );
-
+				if (fish->previousOutputs != nullptr) { // it is null on the first rurn.
+					outputWiggleThisTurn += abs( (motorSignals[j]) - (fish->previousOutputs[j])  );	
+				}
 			}
+			fish->previousOutputs = motorSignals;
 			fish->filteredOutputWiggle -= 0.5 * fish->filteredOutputWiggle;
 			fish->filteredOutputWiggle += outputWiggleThisTurn;
 			
@@ -2372,6 +2375,16 @@ void runBiomechanicalFunctions () {
 	}
 }
 
+void flagSelectedFishForDeletion(int arg) {
+	unused_variable((void *)&arg);
+		std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (fish->selected) {
+			fish->flagDelete = true;
+			fish->selected = false;
+		}
+	}
+}
 
 void selectFishWithGreatestWiggle (int arg) {
 	unused_variable((void *)&arg);
@@ -2381,6 +2394,10 @@ void selectFishWithGreatestWiggle (int arg) {
 	BonyFish * theWiggliest = &(*fish);
 
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+		printf("giglle packeink: %f\n",fish->filteredOutputWiggle);
+		printf("yana na: %f\n",theWiggliest->filteredOutputWiggle);
+
 		if (fish->filteredOutputWiggle > theWiggliest->filteredOutputWiggle) {
 
 			printf("this fish is even wigglier: %f\n",fish->filteredOutputWiggle );
@@ -2401,7 +2418,7 @@ void selectFishWhoMovedTheFurthest (int arg) {
 	BonyFish * theFurthest = &(*fish);
 
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-		if (fish->distanceMovedSoFar > theFurthest->distanceMovedSoFar) {
+		if (fish->distanceMovedSoFar > theFurthest->distanceMovedSoFar && isinf(fish->distanceMovedSoFar) == false) {
 
 			printf("this fish has gone even further: %f\n",fish->distanceMovedSoFar );
 			theFurthest = &(*fish);
@@ -2493,13 +2510,13 @@ void deepSeaControlA () {
 	flagAddFood = true;
 }
 void deepSeaControlB () {
-	std::list<BonyFish>::iterator fish;
-	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-		if (fish->selected) {
-			fish->flagDelete = true;
-			fish->selected = false;
-		}
-	}
+	// std::list<BonyFish>::iterator fish;
+	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+	// 	if (fish->selected) {
+	// 		fish->flagDelete = true;
+	// 		fish->selected = false;
+	// 	}
+	// }
 }
 
 void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) {

@@ -378,6 +378,7 @@ struct BonyFish {
 	b2Vec2 previousRootPosition;
 	float distanceMovedSoFar;
 	float filteredOutputWiggle;
+	float * previousOutputs;
 
 	BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition);
 
@@ -471,6 +472,7 @@ void		beginGeneration ();
 
 void selectFishWithGreatestWiggle(int arg);
 void selectFishWhoMovedTheFurthest(int arg);
+void flagSelectedFishForDeletion(int arg) ;
 
 
 
