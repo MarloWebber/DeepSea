@@ -1103,13 +1103,43 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 }
 
 void polydactyly (fishDescriptor_t * driedFish) {
+
+	// generate the limb as the next-unoccupied lowest limb index. attach it to a random existing limb
+	int eventualLimb = 0;
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
 		if (!driedFish->bones[i].used) {
 			driedFish->bones[i].attachedTo = RNG() * i;
 			driedFish->bones[i].used = true;
+			eventualLimb = i;
 			break;
 		}
 	}
+
+	// do up the output connector
+	int j = 0;
+	while(1){
+		if (driedFish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+			driedFish->outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
+			driedFish->outputMatrix[j].connectedToLimb = eventualLimb;
+			break;
+		}
+		j ++;
+	}
+
+	// wire up the sense connectors
+	// bool foodradar_connected  =false;
+	// bool jointangle_connected = false;
+	// int j =0;
+	// while(1) {
+
+	// 	if (!foodradar_connected) {
+
+	// 	}
+
+
+	// }
+
+
 }
 
 void amputation (fishDescriptor_t * driedFish) {
