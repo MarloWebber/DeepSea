@@ -24,7 +24,6 @@
 
 namespace TestMain
 {
-
 // Set whether to restart the test on particle parameter changes.
 // This parameter is re-enabled when the test changes.
 void SetRestartOnParticleParameterChange(bool enable);
@@ -50,6 +49,8 @@ void SetParticleParameters(
  void PreStep();
  void Step();
  void PostStep();
+
+ int getPaintingStatus() ;
 
 }  // namespace TestMain
 

@@ -2034,7 +2034,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 BonyFish * checkNeuroWindow (b2AABB mousePointer) {
 	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-		printab2Vec2(fish->brain->networkWindow.upperBound);
+		// printab2Vec2(fish->brain->networkWindow.upperBound);
 		if (fish->selected) {
 			if (fish->brain->networkWindow.Contains(mousePointer)) {
 				return &(*fish);
@@ -2567,7 +2567,10 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 void ParticleDrawingKeyboard(unsigned char key)
 {
-	m_drawing = key != 'X';
+	m_drawing = TestMain::getPaintingStatus(); //key != 'X';
+
+	// printf("%i\n", TestMain::getPaintingStatus());
+
 	m_particleFlags = 0;
 	m_groupFlags = 0;
 	switch (key)
@@ -2643,10 +2646,14 @@ void SplitParticleGroups()
 	}
 }
 
-
+// i dont think this function is ever called by anything.
 void stepForParticleDrawing () {
 	const uint32 parameterValue = TestMain::GetParticleParameterValue();
 		m_drawing = (parameterValue & e_parameterMove) != e_parameterMove;
+		printf("%i\n",TestMain::getPaintingStatus());
+		if (TestMain::getPaintingStatus() == 0) {
+			m_drawing = 0;
+		}
 		if (m_drawing)
 		{
 			switch (parameterValue)

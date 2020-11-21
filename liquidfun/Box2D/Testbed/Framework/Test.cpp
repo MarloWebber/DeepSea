@@ -430,11 +430,7 @@ void Test::MouseMove(const b2Vec2& p)
 {
 	m_mouseWorld = p;
 
-	if (m_mouseJoint)
-	{
-		m_mouseJoint->SetTarget(p);
-	}
-	else if (m_drawing)
+	if (TestMain::getPaintingStatus())
 		{
 			b2CircleShape shape;
 			shape.m_p = p;
@@ -465,6 +461,10 @@ void Test::MouseMove(const b2Vec2& p)
 			m_lastGroup = m_particleSystem->CreateParticleGroup(pd);
 			m_mouseTracing = false;
 		}
+	else if (m_mouseJoint)
+	{
+		m_mouseJoint->SetTarget(p);
+	}
 }
 
 

@@ -44,6 +44,8 @@ namespace TestMain
 
 namespace
 {
+
+	int currentlyPainting = 0;
 	int32 testIndex = 0;
 	int32 testSelection = 0;
 	// int32 modeSelection = 0;
@@ -71,6 +73,10 @@ namespace
 	FullscreenUI fullscreenUI;
 	// Used to control the behavior of particle tests.
 	ParticleParameter particleParameter;
+}
+
+int getPaintingStatus() {
+	return currentlyPainting;
 }
 
 // Set whether to restart the test on particle parameter changes.
@@ -683,6 +689,8 @@ void menuHandler(int bobi) {
 	printf("feet %i\n", bobi);
 }
 
+
+
 int main(int argc, char** argv)
 {
 	using namespace TestMain;
@@ -845,9 +853,14 @@ float fakeGravity;
 
 
 
+	GLUI_Panel* controlsPanel =	glui->add_panel("Player Controls");
+	glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, menuHandler);
+	glui->add_button_to_panel(controlsPanel, "Select Furthest Traveled", 1, menuHandler);
+
+
 	GLUI_Panel* terrainPanel =	glui->add_panel("Terrain Paint");
 
-	int currentlyPainting;
+	
 	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
 
 
