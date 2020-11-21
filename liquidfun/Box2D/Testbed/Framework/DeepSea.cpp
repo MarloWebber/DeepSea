@@ -21,7 +21,17 @@ float pi = 3.14159f;
 int currentNumberOfFish = 0;
 int generationsThisGame = 0;
 bool startNextGeneration = false;
-deepSeaSettings m_deepSeaSettings;
+deepSeaSettings m_deepSeaSettings = {
+0,	// int gameMode;
+0,	//  	int exploratory_nFood;
+64,	//  	int exploratory_nFish;
+b2Vec2(0.0f,0.0f),	//  	b2Vec2 gravity;
+0.1,	//  	float mutationRate;
+0.2,	//  	float mutationSeverity;
+0.1,	//  	float mentalMutationRate;
+0.5,	//  	float mentalMutationSeverity;
+0	//  	int terrainPaintType;
+};
 uint64 loopCounter = 0 ;
 uint32 loopSafetyLimit = 100;
 bool flagAddFood = false;
@@ -1338,15 +1348,15 @@ void mutateFANNFileDirectly (std::string filename) {
 						memcpy(sciNumber, &c, sciNumberLength);
 					    float val = std::stof(sciNumber); 
 
-					    float brainMutationChance = 0.2;
-					    float brainMutationAmount = 2;
+					    // float brainMutationChance = 0.2;
+					    // float brainMutationAmount = 2;
 
-					    if (RNG() < brainMutationChance) {							// chance of a mutation occurring
+					    if (RNG() < m_deepSeaSettings.mentalMutationRate) {							// chance of a mutation occurring
 					    	if (val > 1 || val < -1) { 				// if it's a big number, apply the mutation as a fraction of htat number. else, apply a random amount in a small range. this is to prevent weights being stuck at very small numbers.
-					    		val += ( (RNG() -0.5f) * val * brainMutationAmount);
+					    		val += ( (RNG() -0.5f) * val * m_deepSeaSettings.mentalMutationSeverity);
 					    	}	
 					    	else {
-					    		val += ( (RNG() -0.5f) * 0.5f * brainMutationAmount ); 	// how much mutation to apply
+					    		val += ( (RNG() -0.5f) * 0.5f * m_deepSeaSettings.mentalMutationSeverity ); 	// how much mutation to apply
 					    	}
 						    
 					    }
@@ -1598,7 +1608,7 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 	for (int i = 0; i < 3; ++i) {
 		fishDescriptor_t newFishBody = fish->genes;
 
-		mutateFishDescriptor (&newFishBody, 0.1, 0.5);
+		mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 
 		networkDescriptor ickyBrain = *(fish->brain);
 
@@ -1634,7 +1644,7 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 
 void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
-	for (int i = 0; i < N_FISHES; ++i) {
+	for (int i = 0; i < m_deepSeaSettings.exploratory_nFish; ++i) {
 
 		bool thereIsAFile = false;
 
@@ -1651,7 +1661,7 @@ void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary
 			fishDescriptor_t newFishBody;
 			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-			mutateFishDescriptor (&newFishBody, 0.1, 0.5);
+			mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 		
 		    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
@@ -2386,7 +2396,7 @@ void deepSeaLoop () {
 		loopCounter ++;
 
 
-		
+
 
 
 

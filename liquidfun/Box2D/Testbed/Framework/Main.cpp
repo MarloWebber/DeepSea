@@ -812,9 +812,9 @@ int main(int argc, char** argv)
 	GLUI_Panel* ExploratoryPanel =	glui->add_panel("Exploratory Mode");
 
 
-		int fakeNumberOfFish;
+		// int fakeNumberOfFish;
 		GLUI_Spinner* numberOfFishSpinner =
-		glui->add_spinner_to_panel(ExploratoryPanel,"Number of fish", GLUI_SPINNER_INT, &fakeNumberOfFish);
+		glui->add_spinner_to_panel(ExploratoryPanel,"Number of fish", GLUI_SPINNER_INT, &m_deepSeaSettings.exploratory_nFish);
 	numberOfFishSpinner->set_int_limits(1, 256);
 
 
@@ -843,25 +843,25 @@ int main(int argc, char** argv)
 
 	GLUI_Panel* bioPanel =	glui->add_panel("Biology");
 
-	float fakeMutationRate;
+	// float fakeMutationRate;
 		GLUI_Spinner* mutationRateSpinner =
-		glui->add_spinner_to_panel(bioPanel, "Body Mutation Rate", GLUI_SPINNER_FLOAT, &fakeMutationRate);
-	mutationRateSpinner->set_float_limits(0.0001f, 1.0f);
+		glui->add_spinner_to_panel(bioPanel, "Body Mutation Rate", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationRate);
+	mutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
-	float fakeMutationSeverity;
+	// float fakeMutationSeverity;
 		GLUI_Spinner* mutationSeveritySpinner =
-		glui->add_spinner_to_panel(bioPanel, "Body Mutation Severity", GLUI_SPINNER_FLOAT, &fakeMutationSeverity);
-	mutationSeveritySpinner->set_float_limits(0.0001f, 1.0f);
+		glui->add_spinner_to_panel(bioPanel, "Body Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationSeverity);
+	mutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
-	float fakeMentalMutationRate;
+	// float fakeMentalMutationRate;
 		GLUI_Spinner* mentalMutationRateSpinner =
-		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Rate", GLUI_SPINNER_FLOAT, &fakeMentalMutationRate);
-	mentalMutationRateSpinner->set_float_limits(0.0001f, 1.0f);
+		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Rate", GLUI_SPINNER_FLOAT,&m_deepSeaSettings.mentalMutationRate);
+	mentalMutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
-	float fakeMentalMutationSeverity;
+	// float fakeMentalMutationSeverity;
 		GLUI_Spinner* mentalMutationSeveritySpinner =
-		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Severity", GLUI_SPINNER_FLOAT, &fakeMentalMutationSeverity);
-	mentalMutationSeveritySpinner->set_float_limits(0.0001f, 1.0f);
+		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
+	mentalMutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
 
 

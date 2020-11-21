@@ -7,7 +7,7 @@
 #include "fann.h"
 
 #define N_FINGERS 8 // the amount of bones a fish can have. you know, fish fingers.
-#define N_FISHES 128
+// #define N_FISHES 128
 #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
 
@@ -32,6 +32,8 @@
 	 	b2Vec2 gravity;
 	 	float mutationRate;
 	 	float mutationSeverity;
+	 	float mentalMutationRate;
+	 	float mentalMutationSeverity;
 	 	int terrainPaintType;
 	 };
 
