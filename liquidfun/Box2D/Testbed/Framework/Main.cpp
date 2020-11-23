@@ -952,6 +952,11 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(editPanel, "Pin to Grid", 5, pinToGrid);
 	glui->add_button_to_panel(editPanel, "Release", 6, releaseFromGrid);
 
+
+
+	// glui->add_button_to_panel(editPanel, "Add Limb", 7, polydactyly2);
+
+
 	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
 	glui->add_checkbox_to_panel(editPanel, "Show body edit window", &showBodyEditWindow);
 

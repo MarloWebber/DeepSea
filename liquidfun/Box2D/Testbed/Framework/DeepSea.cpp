@@ -1144,8 +1144,10 @@ void polydactyly (fishDescriptor_t * driedFish) {
 
 	// }
 
-
 }
+
+
+
 
 void amputation (fishDescriptor_t * driedFish) {
 	unsigned int usedFingers = 0;
@@ -2137,81 +2139,111 @@ bool chooseDMostVertex(float angle, b2Vec2 p1, b2Vec2 p2) {
 	}
 }
 
-	// provides FEA-based lift and drag calculations
-	void flightModel(BoneUserData * bone) {
 
-		uint nVertices = bone->shape.GetVertexCount();
+// find the distance between the projections of a pair of points. 0 is measured from the face normal.
+float findIncidentArea (float angle, b2Vec2 p1, b2Vec2 p2) {
+	
+	b2Vec2 distanceBetweenPoints = b2Vec2(p1.x - p2.x, p1.y - p2.y);
+	float magnitudeArea = magnitude(distanceBetweenPoints);
+	float incidentArea = cos(angle) * magnitudeArea;
 
-		for (uint j = 0; j < nVertices; ++j)
-		{
-			// get the face vertices from the b2 shape
-			b2Vec2 p1 = bone->shape.GetVertex(j);
-			b2Vec2 p2 = b2Vec2(0.0f, 0.0f);
+	return abs(incidentArea);
+}
 
-			// use the pair n and n-1 to make a face. if n is zero, make a face from the first to the last vertices.
-			if (j == 0) {
-				p2 = bone->shape.GetVertex(nVertices-1);
-			}
-			else {
-				p2 = bone->shape.GetVertex(j-1);
-			}
-			
-			// get the position of the face center point, taking into account the body's present rotation.
-			b2Vec2 worldCenter = bone->p_body->GetWorldCenter();
-			b2Vec2 p1r = rotatePoint(0.0f, 0.0f, bone->p_body->GetAngle(), p1 );
-			p1r += worldCenter;
-			b2Vec2 p2r = rotatePoint(0.0f, 0.0f, bone->p_body->GetAngle(), p2 );
-			p2r += worldCenter;
-			b2Vec2 faceCenter = b2Vec2( (p1r.x + p2r.x)/2, (p1r.y + p2r.y)/2 ) ;
-			float faceAngle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
 
-			// calculate the angle of incidence into the oncoming 'wind'
-			b2Vec2 linearVelocity = bone->p_body->GetLinearVelocity();// must get the linear velocity of the face center, not just of the body itself.
+// provides FEA-based lift and drag calculations
+void flightModel(BoneUserData * bone) {
 
-			// you can calculate the face center velocity, by taking the radius and multiplying it by the angular velocity.
-			b2Vec2 localFaceCenter = b2Vec2( (p1.x + p2.x)/2, (p1.y + p2.y)/2 ) ;
-			float magLinearVelocityOfRotatingFace = (bone->p_body->GetAngularVelocity() * magnitude( localFaceCenter));  // https://courses.lumenlearning.com/boundless-physics/chapter/velocity-acceleration-and-force/
-			b2Vec2 faceAngularVelocity = b2Vec2( cos(faceAngle) * magLinearVelocityOfRotatingFace, sin(faceAngle) * magLinearVelocityOfRotatingFace);
-			b2Vec2 totalVelocity = b2Vec2(linearVelocity.x + faceAngularVelocity.x, linearVelocity.y + faceAngularVelocity.y);
-			float magnitudeVelocity = magnitude(totalVelocity);
+	uint nVertices = bone->shape.GetVertexCount();
 
-			b2Vec2 distanceBetweenPoints = b2Vec2(p2r.x - p1r.x, p2r.y - p1r.y);
-			float magnitudeArea = magnitude(distanceBetweenPoints);
-			float angleOfForwardDirection = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
+	for (uint j = 0; j < nVertices; ++j)
+	{
+		// get the face vertices from the b2 shape
+		b2Vec2 p1 = bone->shape.GetVertex(j);
+		b2Vec2 p2 = b2Vec2(0.0f, 0.0f);
 
-			// calculate the force of drag
-			float dragCoefficient = 0.002;
-			float dragForce = magnitudeVelocity * magnitudeArea * dragCoefficient * -1; // the -1 in this statement is what makes it an opposing force.
-			b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce , sin(angleOfForwardDirection) * dragForce *-1);
-
-			// calculate the force of lift
-			float liftCoeff  = 0.5;
-			float atmosphericDensity = 1;
-			float liftForce = liftCoeff * ((atmosphericDensity * (magnitudeVelocity*magnitudeVelocity))/2) * magnitudeArea * -1;
-
-			// the lift angle is normal to the face but its direction is determined by how the plane meets the incoming wind.
-			float liftAngle = faceAngle + 0.5*pi;
-			if (chooseDMostVertex(angleOfForwardDirection, p1r, p2r)) {
-				liftForce = liftForce * -1;
-			}
-			b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce );
-
-			// draw a line so you can visualize the lift force.
-			if (false) {
-				b2Vec2 visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
-				b2Color segmentColorB = b2Color(50, 200, 10);
-				local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
-			}
+		// use the pair n and n-1 to make a face. if n is zero, make a face from the first to the last vertices.
+		if (j == 0) {
+			p2 = bone->shape.GetVertex(nVertices-1);
+		}
+		else {
+			p2 = bone->shape.GetVertex(j-1);
+		}
 		
-			// apply the force to the body directly in the center of the face.
-			bone->p_body->ApplyForce(dragVector, faceCenter, true);
+		// get the position of the face center point, taking into account the body's present rotation.
+		b2Vec2 worldCenter = bone->p_body->GetWorldCenter();
+		b2Vec2 p1r = rotatePoint(0.0f, 0.0f, bone->p_body->GetAngle(), p1 );
+		p1r += worldCenter;
+		b2Vec2 p2r = rotatePoint(0.0f, 0.0f, bone->p_body->GetAngle(), p2 );
+		p2r += worldCenter;
+		b2Vec2 faceCenter = b2Vec2( (p1r.x + p2r.x)/2, (p1r.y + p2r.y)/2 ) ;
+		float faceAngle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
 
-			if (	fluidDynamicForce.x < 1000 && fluidDynamicForce.y < 1000
-				&& 	fluidDynamicForce.x > -1000 && fluidDynamicForce.y > -1000 ) {
-				bone->p_body->ApplyForce(fluidDynamicForce, faceCenter, true);
-			}
+		// calculate the angle of incidence into the oncoming 'wind'
+		b2Vec2 linearVelocity = bone->p_body->GetLinearVelocity();// must get the linear velocity of the face center, not just of the body itself.
+
+		// you can calculate the face center velocity, by taking the radius and multiplying it by the angular velocity.
+		b2Vec2 localFaceCenter = b2Vec2( (p1.x + p2.x)/2, (p1.y + p2.y)/2 ) ;
+		float magLinearVelocityOfRotatingFace = (bone->p_body->GetAngularVelocity() * magnitude( localFaceCenter));  // https://courses.lumenlearning.com/boundless-physics/chapter/velocity-acceleration-and-force/
+		b2Vec2 faceAngularVelocity = b2Vec2( cos(faceAngle) * magLinearVelocityOfRotatingFace, sin(faceAngle) * magLinearVelocityOfRotatingFace);
+		b2Vec2 totalVelocity = b2Vec2(linearVelocity.x + faceAngularVelocity.x, linearVelocity.y + faceAngularVelocity.y);
+		float magnitudeVelocity = magnitude(totalVelocity);
+
+		float angleOfForwardDirection = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
+		float incidentAngle = angleOfForwardDirection - faceAngle;
+
+		b2Vec2 distanceBetweenPoints = b2Vec2(p2r.x - p1r.x, p2r.y - p1r.y);
+		float magnitudeArea = magnitude(distanceBetweenPoints);
+		// printf("magnitudeArea: %f\n",magnitudeArea );
+		float incidentArea = findIncidentArea (incidentAngle, p1r, p2r);
+		// printf("magnitudeArea: %f\n----\n",magnitudeArea );
+
+		// calculate the force of drag
+		float dragCoefficient = 0.05;
+		float dragForce = magnitudeVelocity * incidentArea * dragCoefficient * -1; 												// the -1 in this statement is what makes it an opposing force.
+		b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce , sin(angleOfForwardDirection) * dragForce *-1);	// the -1 here is used to correct for the physics engine's inverted y axis.
+
+		// There is another drag force which represents the fluid viscosity. It acts to slow spinning objects.
+		float viscosityDragCoeff = 0.05;
+		float viscDragForce = viscosityDragCoeff * magnitudeArea * magLinearVelocityOfRotatingFace * -1;
+		float viscDragAngle = atan2( faceCenter.y - worldCenter.y, faceCenter.x - worldCenter.x) + 0.5 * pi; //angle = atan2(y2 - y1, x2 - x1) /// the visc drag angle is orthogonal to the angle between the face center and the center of the spinning body.
+		b2Vec2 viscDragVector = b2Vec2( cos(viscDragAngle) * viscDragForce , sin(viscDragAngle) * viscDragForce );
+
+		b2Vec2 totalDragVector = dragVector + viscDragVector;
+
+		// calculate the force of lift
+		float liftCoeff  = 0.5;
+		float atmosphericDensity = 1;
+		float liftForce = liftCoeff * ((atmosphericDensity * (magnitudeVelocity*magnitudeVelocity))/2) * magnitudeArea * -1;
+
+		// finally, the lift force must not exceed the drag force. This is a fundamental physical fact.
+		if (liftForce > dragForce) {
+			liftForce = liftForce * (dragForce/liftForce);
+		}
+
+		// the lift angle is normal to the face but its direction is determined by how the plane meets the incoming wind.
+		float liftAngle = faceAngle + 0.5*pi;
+		if (chooseDMostVertex(angleOfForwardDirection, p1r, p2r)) {
+			liftForce = liftForce * -1;
+		}
+		b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce );
+
+		// draw a line so you can visualize the lift force.
+		if (false) {
+			b2Vec2 visPosFluid = b2Vec2(faceCenter.x + viscDragVector.x, faceCenter.y + viscDragVector.y);
+			b2Color segmentColorB = b2Color(50, 200, 10);
+			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
+		}
+	
+		// apply the force to the body directly in the center of the face.
+		bone->p_body->ApplyForce(totalDragVector, faceCenter, true);
+
+		if (	fluidDynamicForce.x < 1000 && fluidDynamicForce.y < 1000
+			&& 	fluidDynamicForce.x > -1000 && fluidDynamicForce.y > -1000 ) {
+			bone->p_body->ApplyForce(fluidDynamicForce, faceCenter, true);
 		}
 	}
+}
 
 void runBiomechanicalFunctions () {
 	unsigned int spacesUsedSoFar =0;
