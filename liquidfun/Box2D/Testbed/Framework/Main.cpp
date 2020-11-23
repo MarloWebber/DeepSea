@@ -404,6 +404,20 @@ deepSeaControlA();
 		incrementSelectedConnection();
 		break;
 
+	case 'k':
+		currentlySelectedLimb--;
+		if (currentlySelectedLimb < 0) {
+			currentlySelectedLimb = N_FINGERS-1;
+		}
+		break;
+
+	case 'l':
+		currentlySelectedLimb++;
+		if (currentlySelectedLimb > N_FINGERS-1) {
+			currentlySelectedLimb = 0;
+		}
+		break;
+
 
 	case 'p':
 		settings.pause = !settings.pause;

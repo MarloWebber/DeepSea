@@ -446,6 +446,8 @@ extern std::list<BonyFish> fishes;
 extern int currentNumberOfFood;
 extern int currentNumberOfFish;
 
+extern int currentlySelectedLimb ;
+
 void collisionHandler (void * boneA, void * boneB, b2Contact * p_contact) ;
 
 void reloadTheSim(int arg);

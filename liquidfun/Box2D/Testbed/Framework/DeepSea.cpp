@@ -40,6 +40,8 @@ bool flagAddPlant= false;
 bool userControlInputA;
 bool userControlInputB;
 
+int currentlySelectedLimb =0;
+
 // collections of objects in the game world.
 std::list<BonyFish> fishes;
 std::list<Lamp> lamps;
@@ -2120,6 +2122,92 @@ int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
 	return -1;
 }
 
+// int checkLimbsInWindow () {
+
+// }
+
+void drawBodyEditingWindow(BonyFish * fish) {
+
+	// float fcompatiblespaces = 1;
+	// b2Vec2 drawingStartingPosition = b2Vec2(  fcompatiblespaces + 1 ,4.0f);
+	// float spacingDistance = 0.5f;
+
+	b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+
+	// fish->brain->networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
+	// fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((num_layers *spacingDistance ) + (spacingDistance) ));
+
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+
+
+	b2Vec2 rootPosition = b2Vec2(0.0f, 0.0f);
+	for (int i = 0; i < N_FINGERS; ++i) {
+		if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
+			;
+		}
+		else {
+			if (fish->bones[i]->p_body == NULL || fish->bones[i]->p_body == nullptr) {
+				continue;
+			}
+
+			if (fish->bones[i]->isRoot) {
+				rootPosition = fish->bones[i]->p_body->GetWorldCenter();
+				break;
+			}
+
+		}
+	}
+
+
+	for (int i = 0; i < N_FINGERS; ++i) {
+			if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
+				;
+			}
+			else {
+				if (fish->bones[i]->p_body == NULL || fish->bones[i]->p_body == nullptr) {
+					continue;
+				}
+				b2Vec2 vertices[4];
+				b2Vec2 boneCenterWorldPosition = fish->bones[i]->p_body->GetWorldCenter();
+				for (int j = 0; j < 4; ++j) {	
+					b2Vec2 adjustedVertex = fish->bones[i]->shape.GetVertex(j);
+					b2Vec2 boneLocalCenter =fish->bones[i]->p_body->GetLocalCenter();
+					b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, fish->bones[i]->p_body->GetAngle(), adjustedVertex);
+					rotatedVertex.x += boneCenterWorldPosition.x;
+					rotatedVertex.y +=boneCenterWorldPosition.y;
+					vertices[j] = rotatedVertex - rootPosition;
+				}
+
+					
+					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fish->bones[i]->color);
+
+					if (i == currentlySelectedLimb) {
+						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0.9,0.4,0.05));
+					}
+					else {
+						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0,0,0));
+					}
+				}
+
+				
+
+
+			}
+		
+
+
+
+
+}
+
+
+
 bool chooseDMostVertex(float angle, b2Vec2 p1, b2Vec2 p2) {
 // given 2 vertices, identify which one lines most in a given direction. return true if it is p1 and false if it is p2.
 
@@ -2242,6 +2330,8 @@ void flightModel(BoneUserData * bone) {
 		}
 	}
 }
+
+
 
 void runBiomechanicalFunctions () {
 	unsigned int spacesUsedSoFar =0;
@@ -2399,6 +2489,15 @@ void runBiomechanicalFunctions () {
 					alreadyDrawnThisTurn = true;
 					drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, &(*fish));
 				}
+			}
+
+			if (TestMain::getBodyWindowStatus()) {
+				if (fish->selected && !alreadyDrawnThisTurn) {
+					alreadyDrawnThisTurn = true;
+					// drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, &(*fish));
+					drawBodyEditingWindow(&(*fish));
+				}
+
 			}
 			
 
