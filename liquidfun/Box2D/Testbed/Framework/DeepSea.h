@@ -481,7 +481,7 @@ void selectClosestToFood (int arg) ;
 
 void flagSelectedFishForDeletion(int arg) ;
 
-
+void placeLimbOnSelectedFish(int arg);
 
 void deselectAll(int arg) ;
 void selectAll(int arg) ;

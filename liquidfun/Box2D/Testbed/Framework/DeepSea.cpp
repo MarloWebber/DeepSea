@@ -1149,6 +1149,54 @@ void polydactyly (fishDescriptor_t * driedFish) {
 }
 
 
+// add a limb onto the end of the selected one.
+void polydactyly2 (BonyFish * fish) {
+	uint targetFinger = 0;
+	for (unsigned int i = 0; i < N_FINGERS; ++i) {
+		if (!fish->bones[i]->isUsed) {
+			targetFinger = i;
+		}
+	}
+
+	boneAndJointDescriptor_t  boneAlone = boneAndJointDescriptor_t();
+
+
+
+	boneAlone.used = true;
+	boneAlone.isLeaf = false;
+	boneAlone.attachedTo = currentlySelectedLimb;
+
+
+	fish->genes.bones[targetFinger] = boneAlone;
+
+
+
+	fish->bones[targetFinger] = new BoneUserData(boneAlone, fish, b2Vec2(0.0f, 0.0f), 0, true);
+
+	// fish->bones[targetFinger]->isLeaf = false;
+
+
+		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
+		fish->bones[targetFinger]->joint = new JointUserData(boneAlone, fish->bones[targetFinger], fish);
+		fish->bones[targetFinger]->joint->init = true;
+		fish->bones[targetFinger]->joint->isUsed = true;
+
+	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
+}
+
+void placeLimbOnSelectedFish(int arg) {
+
+	unused_variable((void *) &arg);
+	std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+		if (fish->selected && TestMain::getBodyWindowStatus()) {
+			polydactyly2( &(*fish));
+			break;
+		}
+	}
+}
+
 
 
 void amputation (fishDescriptor_t * driedFish) {

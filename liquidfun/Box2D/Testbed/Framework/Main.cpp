@@ -968,7 +968,7 @@ int main(int argc, char** argv)
 
 
 
-	// glui->add_button_to_panel(editPanel, "Add Limb", 7, polydactyly2);
+	glui->add_button_to_panel(editPanel, "Add Limb", 7, placeLimbOnSelectedFish);
 
 
 	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
