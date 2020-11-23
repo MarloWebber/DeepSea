@@ -51,6 +51,7 @@ namespace
 	int persistentFoodStatus = 0;
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
+	// int gridPinStatus = 0;
 
 	int32 testIndex = 0;
 	int32 testSelection = 0;
@@ -104,6 +105,10 @@ int getBrainWindowStatus() {
 int getBodyWindowStatus() {
 	return showBodyEditWindow;
 }
+
+// int getGridPinStatus() {
+// 	return gridPinStatus;
+// }
 
 
 // Set whether to restart the test on particle parameter changes.
@@ -915,11 +920,14 @@ int main(int argc, char** argv)
 
 	// selection controls
 	glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
-	glui->add_button_to_panel(controlsPanel, "Select Furthest Traveled", 1, selectFishWhoMovedTheFurthest);
+	glui->add_button_to_panel(controlsPanel, "Farthest Traveled", 1, selectFishWhoMovedTheFurthest);
 
-	glui->add_button_to_panel(controlsPanel, "Greatest Distance from Origin", 2, selectFurthestFromOrigin);
-	glui->add_button_to_panel(controlsPanel, "Deselect All", 3, deselectAll);
-	glui->add_button_to_panel(controlsPanel, "Select All", 4, selectAll);
+	glui->add_button_to_panel(controlsPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
+
+	glui->add_button_to_panel(controlsPanel, "Closest to Food", 3, selectClosestToFood);
+
+	glui->add_button_to_panel(controlsPanel, "Deselect All", 4, deselectAll);
+	glui->add_button_to_panel(controlsPanel, "Select All", 5, selectAll);
 
 
 	glui->add_separator_to_panel(controlsPanel);
@@ -927,7 +935,7 @@ int main(int argc, char** argv)
 	// cloning controls
 	glui->add_button_to_panel(controlsPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
 	glui->add_button_to_panel(controlsPanel, "Reproduce Selected", 3, voteSelectedFish);
-	glui->add_button_to_panel(controlsPanel, "Re-run generation", 3, reloadTheSim);
+	glui->add_button_to_panel(controlsPanel, "Re-run generation", 4, reloadTheSim);
 
 
 	glui->add_separator_to_panel(controlsPanel);
@@ -936,10 +944,14 @@ int main(int argc, char** argv)
 	// spawning options
 	glui->add_checkbox_to_panel(controlsPanel, "Fish don't clip", &noClipStatus);
 	glui->add_checkbox_to_panel(controlsPanel, "Start origin/random", &originStartStatus);
+	// glui->add_checkbox_to_panel(controlsPanel, "Pin to Grid", &gridPinStatus);
 
 
 
 	GLUI_Panel* editPanel =	glui->add_panel("Surgical Modification");
+	glui->add_button_to_panel(editPanel, "Pin to Grid", 5, pinToGrid);
+	glui->add_button_to_panel(editPanel, "Release", 6, releaseFromGrid);
+
 	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
 	glui->add_checkbox_to_panel(editPanel, "Show body edit window", &showBodyEditWindow);
 

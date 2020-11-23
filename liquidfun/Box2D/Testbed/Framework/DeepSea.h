@@ -469,10 +469,14 @@ void meltSelectedFish();
 void		beginGeneration ();
 
 
+void pinToGrid(int arg);
+void releaseFromGrid(int arg);
 
 void selectFishWithGreatestWiggle(int arg);
 void selectFishWhoMovedTheFurthest(int arg);
 void selectFurthestFromOrigin(int arg);
+void selectClosestToFood (int arg) ;
+
 void flagSelectedFishForDeletion(int arg) ;
 
 

@@ -54,6 +54,7 @@ void SetParticleParameters(
  int getNoClipStatus() ;
  int getOriginStartStatus();
  int getPersistentFoodStatus();
+// int getGridPinStatus() ;
 
  int getBrainWindowStatus() ;
 int getBodyWindowStatus() ;
