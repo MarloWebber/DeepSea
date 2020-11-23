@@ -482,10 +482,12 @@ void selectClosestToFood (int arg) ;
 void flagSelectedFishForDeletion(int arg) ;
 
 void placeLimbOnSelectedFish(int arg);
+void amputation(int arg);
 
 void deselectAll(int arg) ;
 void selectAll(int arg) ;
 void voteSelectedFish(int arg) ;
+
 
 	// }
 #endif

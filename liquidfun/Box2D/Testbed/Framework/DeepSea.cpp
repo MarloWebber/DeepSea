@@ -724,6 +724,8 @@ void deleteJoint(BoneUserData * bone) {
 			if (bone->joint->isUsed && bone->joint->init) {
 				if (bone->joint->p_joint != NULL && bone->joint->p_joint != nullptr) {
 					local_m_world->DestroyJoint(bone->joint->p_joint);	
+					bone->joint->isUsed = false;
+					bone->joint->init = false;
 				}
 			}
 		}
@@ -1199,23 +1201,69 @@ void placeLimbOnSelectedFish(int arg) {
 
 
 
-void amputation (fishDescriptor_t * driedFish) {
-	unsigned int usedFingers = 0;
-	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-		if (driedFish->bones[i].used) {
-			usedFingers ++;
-		}
-	}
-	unsigned int randomFinger = RNG() * usedFingers;
-	driedFish->bones[randomFinger].used = false;
+// void amputation (fishDescriptor_t * driedFish) {
+// 	unsigned int usedFingers = 0;
+// 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
+// 		if (driedFish->bones[i].used) {
+// 			usedFingers ++;
+// 		}
+// 	}
+// 	unsigned int randomFinger = RNG() * usedFingers;
+// 	driedFish->bones[randomFinger].used = false;
 
-	// for all the limbs that were attached to the random one, you have to remove those too.
-	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-		if (driedFish->bones[i].attachedTo == randomFinger ){
-			driedFish->bones[i].used = false;
-		}
+// 	// for all the limbs that were attached to the random one, you have to remove those too.
+// 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
+// 		if (driedFish->bones[i].attachedTo == randomFinger ){
+// 			driedFish->bones[i].used = false;
+// 		}
+// 	}
+// }
+
+void amputation (int arg) {
+		unused_variable((void *) &arg);
+	std::list<BonyFish>::iterator fish;
+
+	
+
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+
+		
+
+		if (fish->selected && TestMain::getBodyWindowStatus()) {
+
+			if (fish->bones[currentlySelectedLimb]->isRoot) { // you can't amputate someone's head... well you can... but..
+					return;
+				}
+
+			for ( int i = 0; i < N_FINGERS; ++i) {
+
+				if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
+					fish->bones[i]->flagDelete = true;
+					deleteJoint(fish->bones[i]);
+					deleteBone(fish->bones[i]);
+					fish->genes.bones[i].used = false;
+
+
+				}
+				// else if (i == currentlySelectedLimb) {
+				// 	fish->bones[i]->flagDelete = true;
+				// 	deleteJoint(fish->bones[i]);
+				// 	deleteBone(fish->bones[i]);
+				// }
+			}
+
+			 	fish->bones[currentlySelectedLimb]->flagDelete = true;
+					deleteJoint(fish->bones[currentlySelectedLimb]);
+					deleteBone(fish->bones[currentlySelectedLimb]);
+					fish->genes.bones[currentlySelectedLimb].used = false;
+
+
+			return;
+	}
 	}
 }
+
 
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
 	for (int i = 0; i < N_FINGERS; ++i) {
