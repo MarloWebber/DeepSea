@@ -53,6 +53,10 @@ void SetParticleParameters(
  int getPaintingStatus() ;
  int getNoClipStatus() ;
  int getOriginStartStatus();
+ int getPersistentFoodStatus();
+
+ int getBrainWindowStatus() ;
+int getBodyWindowStatus() ;
 
 }  // namespace TestMain
 

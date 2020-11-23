@@ -448,7 +448,7 @@ extern int currentNumberOfFish;
 
 void collisionHandler (void * boneA, void * boneB, b2Contact * p_contact) ;
 
-void reloadTheSim();
+void reloadTheSim(int arg);
 // bool queryScienceMode () ;
 // void enterScienceMode();
 // void exitScienceMode ();
@@ -472,11 +472,13 @@ void		beginGeneration ();
 
 void selectFishWithGreatestWiggle(int arg);
 void selectFishWhoMovedTheFurthest(int arg);
+void selectFurthestFromOrigin(int arg);
 void flagSelectedFishForDeletion(int arg) ;
 
 
 
 void deselectAll(int arg) ;
+void selectAll(int arg) ;
 void voteSelectedFish(int arg) ;
 
 	// }

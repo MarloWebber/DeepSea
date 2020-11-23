@@ -48,6 +48,10 @@ namespace
 	int currentlyPainting = 0;
 	int  noClipStatus = 0;
 	int originStartStatus = 0;
+	int persistentFoodStatus = 0;
+	int showBrainEditWindow = 0;
+	int showBodyEditWindow = 0;
+
 	int32 testIndex = 0;
 	int32 testSelection = 0;
 	// int32 modeSelection = 0;
@@ -88,6 +92,19 @@ int getNoClipStatus() {
 int getOriginStartStatus() {
 	return originStartStatus;
 }
+
+int getPersistentFoodStatus() {
+	return persistentFoodStatus;
+}
+
+int getBrainWindowStatus() {
+	return showBrainEditWindow;
+}
+
+int getBodyWindowStatus() {
+	return showBodyEditWindow;
+}
+
 
 // Set whether to restart the test on particle parameter changes.
 // This parameter is re-enabled when the test changes.
@@ -329,11 +346,11 @@ static void Keyboard(unsigned char key, int x, int y)
 		break;
 
 		// Press 'r' to reset.
-	case 'r':
-		// delete test;
-		// test = entry->createFcn();
-		reloadTheSim();
-		break;
+	// case 'r':
+	// 	// delete test;
+	// 	// test = entry->createFcn();
+	// 	reloadTheSim();
+	// 	break;
 
 	case 's':
 		// if (queryScienceMode()) {
@@ -770,6 +787,16 @@ int main(int argc, char** argv)
 	GLUI_Listbox* testList =
 		glui->add_listbox_to_panel(gamePanel, "Map", &testSelection);
 
+
+	int32 testCount = 0;
+	TestEntry* e = g_testEntries;
+	while (e->createFcn)
+	{
+		testList->add_item(testCount, e->name);
+		++testCount;
+		++e;
+	}
+
 	// GLUI_Spinner* velocityIterationSpinner =
 	// 	glui->add_spinner("Vel Iters", GLUI_SPINNER_INT, &settings.velocityIterations);
 	// velocityIterationSpinner->set_int_limits(1, 500);
@@ -816,6 +843,10 @@ int main(int argc, char** argv)
 		modeList->add_item(GAME_MODE_ECOSYSTEM, "Ecosystem Mode" );
 
 
+
+	glui->add_button_to_panel(gamePanel, "Pause", 0, Pause);
+
+
 	// glui->add_separator_to_panel(gamePanel);
 
 
@@ -826,6 +857,9 @@ int main(int argc, char** argv)
 		GLUI_Spinner* numberOfFishSpinner =
 		glui->add_spinner_to_panel(ExploratoryPanel,"Number of fish", GLUI_SPINNER_INT, &m_deepSeaSettings.exploratory_nFish);
 	numberOfFishSpinner->set_int_limits(1, 256);
+
+
+	glui->add_checkbox_to_panel(ExploratoryPanel, "Persistent Food", &persistentFoodStatus);
 
 
 	GLUI_Panel* EcosystemPanel =	glui->add_panel("Ecosystem Mode");
@@ -877,21 +911,40 @@ int main(int argc, char** argv)
 
 
 
-	GLUI_Panel* controlsPanel =	glui->add_panel("Player Controls");
+	GLUI_Panel* controlsPanel =	glui->add_panel("Cloning Controls");
+
+	// selection controls
 	glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
 	glui->add_button_to_panel(controlsPanel, "Select Furthest Traveled", 1, selectFishWhoMovedTheFurthest);
 
-
+	glui->add_button_to_panel(controlsPanel, "Greatest Distance from Origin", 2, selectFurthestFromOrigin);
 	glui->add_button_to_panel(controlsPanel, "Deselect All", 3, deselectAll);
+	glui->add_button_to_panel(controlsPanel, "Select All", 4, selectAll);
 
 
+	glui->add_separator_to_panel(controlsPanel);
+
+	// cloning controls
 	glui->add_button_to_panel(controlsPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
 	glui->add_button_to_panel(controlsPanel, "Reproduce Selected", 3, voteSelectedFish);
+	glui->add_button_to_panel(controlsPanel, "Re-run generation", 3, reloadTheSim);
 
 
+	glui->add_separator_to_panel(controlsPanel);
+
+
+	// spawning options
 	glui->add_checkbox_to_panel(controlsPanel, "Fish don't clip", &noClipStatus);
-
 	glui->add_checkbox_to_panel(controlsPanel, "Start origin/random", &originStartStatus);
+
+
+
+	GLUI_Panel* editPanel =	glui->add_panel("Surgical Modification");
+	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
+	glui->add_checkbox_to_panel(editPanel, "Show body edit window", &showBodyEditWindow);
+
+
+
 
 
 	GLUI_Panel* terrainPanel =	glui->add_panel("Terrain Paint");
@@ -979,16 +1032,6 @@ case 0:
         //   glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 
-	int32 testCount = 0;
-	TestEntry* e = g_testEntries;
-	while (e->createFcn)
-	{
-		testList->add_item(testCount, e->name);
-		++testCount;
-		++e;
-	}
-
-	glui->add_button("Pause", 0, Pause);
 	// glui->add_button("Single Step", 0, SingleStep);
 	// glui->add_button("Restart", 0, Restart);
 

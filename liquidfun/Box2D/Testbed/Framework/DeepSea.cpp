@@ -1309,14 +1309,18 @@ void removeDeletableFish() {
 }
 
 // this function just sets the flags and labels. it is done inside the step.
-void reloadTheSim  () {
+void reloadTheSim  (int arg) {
+	unused_variable((void *) &arg);
 	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		fish->flagDelete = true;
 	}
-	for (int i = 0; i < N_FOODPARTICLES; ++i) {
-		food[i]->flagDelete = true;
+	if (!TestMain::getPersistentFoodStatus()) {
+		for (int i = 0; i < N_FOODPARTICLES; ++i) {
+			food[i]->flagDelete = true;
+		}
 	}
+	
 	startNextGeneration = true;
 }
 
@@ -1333,7 +1337,7 @@ void  vote (BonyFish * winner) {
 	    saveFishToFile (fdescfilename, winner->genes);
 	    fann_save(  wann , nnfilename.c_str()); 
 
-		reloadTheSim();	
+		reloadTheSim(0);	
 	}
 }
 
@@ -2213,6 +2217,8 @@ void flightModel(BoneUserData * bone) {
 void runBiomechanicalFunctions () {
 	unsigned int spacesUsedSoFar =0;
 
+	bool alreadyDrawnThisTurn = false;
+
 	std::list<BonyFish>::iterator fish;
 
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
@@ -2359,9 +2365,13 @@ void runBiomechanicalFunctions () {
 
 			}
 
-			if (fish->selected) {
-				drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, &(*fish));
+			if (TestMain::getBrainWindowStatus()) {
+				if (fish->selected && !alreadyDrawnThisTurn) {
+					alreadyDrawnThisTurn = true;
+					drawNeuralNetworkFromDescriptor(motorSignals, sensorium, &spacesUsedSoFar, &(*fish));
+				}
 			}
+			
 
 			// calculate output wiggle
 			float outputWiggleThisTurn = 0;
@@ -2430,6 +2440,26 @@ void deselectAll (int arg) {
 
 }
 
+
+void selectAll (int arg) {
+
+		unused_variable((void *)&arg);
+
+		std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (!fish->selected) {
+			// fish->flagDelete = true;
+			fish->selected = true;
+			// vote( &(*fish) );
+
+
+		}
+	}
+
+
+}
+
+
 void selectFishWithGreatestWiggle (int arg) {
 	unused_variable((void *)&arg);
 	std::list<BonyFish>::iterator fish;
@@ -2471,6 +2501,26 @@ void selectFishWhoMovedTheFurthest (int arg) {
 	}
 	theFurthest->selected = true;
 }
+
+void selectFurthestFromOrigin (int arg) {
+	unused_variable((void *)&arg);
+
+	std::list<BonyFish>::iterator fish;
+	fish = fishes.begin();
+
+	BonyFish * theFurthest = &(*fish);
+
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (magnitude(fish->bones[0]->p_body->GetWorldCenter() ) > magnitude(theFurthest->bones[0]->p_body->GetWorldCenter())) {
+
+			printf("this fish has gone even further: %f\n",fish->distanceMovedSoFar );
+			theFurthest = &(*fish);
+		}
+		fish->selected = false;
+	}
+	theFurthest->selected = true;
+}
+
 
 void deepSeaLoop () {
 
