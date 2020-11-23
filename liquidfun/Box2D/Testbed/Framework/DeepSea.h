@@ -476,6 +476,8 @@ void flagSelectedFishForDeletion(int arg) ;
 
 
 
+void deselectAll(int arg) ;
+void voteSelectedFish(int arg) ;
 
 	// }
 #endif

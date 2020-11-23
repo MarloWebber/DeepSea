@@ -581,6 +581,10 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 	int randomCollisionGroup = - (RNG() * 16.0f);
 
+	if (TestMain::getNoClipStatus()) {
+		randomCollisionGroup = -1; // if this option box is checked, the fish never collide with each other.
+	}
+
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (i == 0) {
 			driedFish.bones[i].isRoot = true;
@@ -1712,7 +1716,12 @@ void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary
 				}
 			}
 
-			loadFish ( newFishBody, jann, getRandomPosition()) ;
+			b2Vec2 position = getRandomPosition();
+			if (TestMain::getOriginStartStatus()) {
+				position = b2Vec2(0.0f,0.0f);
+			}
+
+			loadFish ( newFishBody, jann, position) ;
 
 		}
 		else { 						// if there is no winner, its probably a reset or new install. make one up
@@ -2384,6 +2393,41 @@ void flagSelectedFishForDeletion(int arg) {
 			fish->selected = false;
 		}
 	}
+}
+
+void voteSelectedFish(int arg) {
+
+	unused_variable((void *)&arg);
+
+		std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (fish->selected) {
+			// fish->flagDelete = true;
+			// fish->selected = false;
+			vote( &(*fish) );
+
+
+		}
+	}
+
+}
+
+void deselectAll (int arg) {
+
+		unused_variable((void *)&arg);
+
+		std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (fish->selected) {
+			// fish->flagDelete = true;
+			fish->selected = false;
+			// vote( &(*fish) );
+
+
+		}
+	}
+
+
 }
 
 void selectFishWithGreatestWiggle (int arg) {

@@ -46,6 +46,8 @@ namespace
 {
 
 	int currentlyPainting = 0;
+	int  noClipStatus = 0;
+	int originStartStatus = 0;
 	int32 testIndex = 0;
 	int32 testSelection = 0;
 	// int32 modeSelection = 0;
@@ -77,6 +79,14 @@ namespace
 
 int getPaintingStatus() {
 	return currentlyPainting;
+}
+
+int getNoClipStatus() {
+	return noClipStatus;
+}
+
+int getOriginStartStatus() {
+	return originStartStatus;
 }
 
 // Set whether to restart the test on particle parameter changes.
@@ -871,7 +881,17 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
 	glui->add_button_to_panel(controlsPanel, "Select Furthest Traveled", 1, selectFishWhoMovedTheFurthest);
 
+
+	glui->add_button_to_panel(controlsPanel, "Deselect All", 3, deselectAll);
+
+
 	glui->add_button_to_panel(controlsPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
+	glui->add_button_to_panel(controlsPanel, "Reproduce Selected", 3, voteSelectedFish);
+
+
+	glui->add_checkbox_to_panel(controlsPanel, "Fish don't clip", &noClipStatus);
+
+	glui->add_checkbox_to_panel(controlsPanel, "Start origin/random", &originStartStatus);
 
 
 	GLUI_Panel* terrainPanel =	glui->add_panel("Terrain Paint");

@@ -51,6 +51,8 @@ void SetParticleParameters(
  void PostStep();
 
  int getPaintingStatus() ;
+ int getNoClipStatus() ;
+ int getOriginStartStatus();
 
 }  // namespace TestMain
 
