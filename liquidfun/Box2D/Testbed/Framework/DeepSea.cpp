@@ -2194,9 +2194,7 @@ void flightModel(BoneUserData * bone) {
 
 		b2Vec2 distanceBetweenPoints = b2Vec2(p2r.x - p1r.x, p2r.y - p1r.y);
 		float magnitudeArea = magnitude(distanceBetweenPoints);
-		// printf("magnitudeArea: %f\n",magnitudeArea );
 		float incidentArea = findIncidentArea (incidentAngle, p1r, p2r);
-		// printf("magnitudeArea: %f\n----\n",magnitudeArea );
 
 		// calculate the force of drag
 		float dragCoefficient = 0.05;
@@ -2217,7 +2215,7 @@ void flightModel(BoneUserData * bone) {
 		float liftForce = liftCoeff * ((atmosphericDensity * (magnitudeVelocity*magnitudeVelocity))/2) * magnitudeArea * -1;
 
 		// finally, the lift force must not exceed the drag force. This is a fundamental physical fact.
-		if (liftForce > dragForce) {
+		if (abs(liftForce) > abs(dragForce)) {
 			liftForce = liftForce * (dragForce/liftForce);
 		}
 
