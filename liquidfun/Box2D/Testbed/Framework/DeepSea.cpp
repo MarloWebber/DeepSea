@@ -1153,6 +1153,66 @@ void polydactyly (fishDescriptor_t * driedFish) {
 }
 
 
+
+
+void addNeuronIntoLivingBrain (BonyFish * fish, uint newNeuronIndex) {
+
+	// rearrange the network to have the appropriate amount of new 0 layer neurons.
+		// turn the network into a descriptor.
+		neurodescriptor Mugh =  createNeurodescriptorFromFANN (fish->brain) ;
+
+		// add a neuron into the end of the 0th layer.
+		// Mugh
+		// std::list<layerDescriptor>::iterator layer;
+		// layer = Mugh->layers.begin();
+		// 	std::list<neuronDescriptor>::iterator neuron;
+
+			// create the new neuron
+			neuronDescriptor newNeuron = neuronDescriptor();
+
+			// take the bias neuron off the end of the layer, put the new neuron on, and then put the bias neuron back.
+		
+			layer->insert(newNeuronIndex, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want the second to last.
+
+
+		// for (layer = Mugh->layers.begin(); layer !=  Mugh->layers.end(); ++layer) 	{
+
+		// all indexes in the connection map greater than the index of this neuron are incremented by 1.
+			for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+
+
+ 				if (connection.from_neuron >= newNeuronIndex) {
+ 					connection.to_neuron ++;
+ 				}
+
+ 				if (connection.to_neuron >= newNeuronIndex) {
+ 					connection.to_neuron ++;
+ 				}
+
+
+		 			}
+		 		}
+		 	}
+
+
+
+
+
+		 	// the new neuron is connected to all neurons in the preceding and succeeding layers, if available.
+
+
+
+
+
+		// turn it back into a FANN and put it on the fish.
+
+}
+
+
 // add a limb onto the end of the selected one.
 void polydactyly2 (BonyFish * fish) {
 	uint targetFinger = 0;
@@ -1186,6 +1246,68 @@ void polydactyly2 (BonyFish * fish) {
 		fish->bones[targetFinger]->joint->isUsed = true;
 
 	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
+
+
+
+	// add the bone's senses to new input connectors.
+		// foodradar
+		int j = 0;
+		int sense_neurons_to_add = 0;
+		while(1){
+			if (fish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+				fish->outputMatrix[j].sensorType = SENSECONNECTOR_FOODRADAR;
+				fish->outputMatrix[j].connectedToLimb = targetFinger;
+				sense_neurons_to_add ++;
+				break;
+			}
+			j ++;
+		}
+
+		// jointangle
+		j = 0;
+		while(1){
+			if (fish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+				fish->outputMatrix[j].sensorType = SENSECONNECTOR_JOINTANGLE;
+				fish->outputMatrix[j].connectedToLimb = targetFinger;
+				sense_neurons_to_add ++;
+				break;
+			}
+			j ++;
+		}
+
+
+std::list<layerDescriptor>::iterator layer;
+		layer = Mugh->layers.begin();
+	newNeuronIndex = layer.size()-2;
+
+
+
+
+
+
+
+	// add the bone's motor control to a new output connector.
+	int j = 0;
+	while(1){
+		if (driedFish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+			driedFish->outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
+			driedFish->outputMatrix[j].connectedToLimb = eventualLimb;
+			break;
+		}
+		j ++;
+	}
+
+
+	// rearrange the network to have the appropriate number of new n layer neurons.
+
+
+
+
+
+
+
+
+
 }
 
 void placeLimbOnSelectedFish(int arg) {
