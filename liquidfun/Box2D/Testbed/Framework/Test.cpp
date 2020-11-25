@@ -23,7 +23,7 @@
 #include "../Tests/DamBreak.h"
 
 #include "DeepSea.h"
-bool voting_mode;
+// bool voting_mode;
 // float pi = 3.141f;
 
 void DestructionListener::SayGoodbye(b2Joint* joint)
@@ -164,10 +164,10 @@ void Test::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	}
 }
 
-void Test::EnableVotingMode()
-{
-	voting_mode = true;
-}
+// void Test::EnableVotingMode()
+// {
+// 	voting_mode = true;
+// }
 
 void Test::DrawTitle(const char *string)
 {
@@ -293,7 +293,7 @@ void Test::MouseDown(const b2Vec2& p)
 
 		b2Body* body = callback.m_fixture->GetBody();
 
-		if (voting_mode) {
+		if (TestMain::getVotingMode()) {
 			// find fish struct from user data and save its genetic material.
 		// uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
 		// BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
@@ -551,7 +551,7 @@ void Test::LaunchBomb(const b2Vec2& position, const b2Vec2& velocity)
 void Test::Step(Settings* settings)
 {
 
-	voting_mode = false;
+	// voting_mode = false;
 	float32 timeStep = settings->hz > 0.0f ? 1.0f / settings->hz : float32(0.0f);
 
 	if (settings->pause)

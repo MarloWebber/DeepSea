@@ -59,6 +59,8 @@ void SetParticleParameters(
  int getBrainWindowStatus() ;
 int getBodyWindowStatus() ;
 
+int getVotingMode();
+
 }  // namespace TestMain
 
 // void SimulationLoop();

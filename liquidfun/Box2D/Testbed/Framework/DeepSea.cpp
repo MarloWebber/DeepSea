@@ -1111,7 +1111,9 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 	return ann;
 }
 
+// this method is discontinued in favor of ones that add to the living creature.
 void polydactyly (fishDescriptor_t * driedFish) {
+
 
 	// generate the limb as the next-unoccupied lowest limb index. attach it to a random existing limb
 	int eventualLimb = 0;

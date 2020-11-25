@@ -51,6 +51,7 @@ namespace
 	int persistentFoodStatus = 0;
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
+	int voting_mode = 0;
 	// int gridPinStatus = 0;
 
 	int32 testIndex = 0;
@@ -104,6 +105,10 @@ int getBrainWindowStatus() {
 
 int getBodyWindowStatus() {
 	return showBodyEditWindow;
+}
+
+int getVotingMode () {
+	return voting_mode; // used for click-to-select.
 }
 
 // int getGridPinStatus() {
@@ -477,11 +482,11 @@ deepSeaControlA();
 	// 	particleParameter.Increment();
 	// 	break;
 
-	case 'w':
-		// particleParameter.Increment();
-	// voting_mode = true;
-	test->EnableVotingMode();
-		break;
+	// case 'w':
+	// 	// particleParameter.Increment();
+	// // voting_mode = true;
+	// test->EnableVotingMode();
+	// 	break;
 
 
 	default:
@@ -944,6 +949,8 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(controlsPanel, "Select All", 5, selectAll);
 
 
+
+
 	glui->add_separator_to_panel(controlsPanel);
 
 	// cloning controls
@@ -953,6 +960,14 @@ int main(int argc, char** argv)
 
 
 	glui->add_separator_to_panel(controlsPanel);
+
+
+
+glui->add_checkbox_to_panel(controlsPanel, "Select with LMB", &voting_mode);
+
+
+	glui->add_separator_to_panel(controlsPanel);
+
 
 
 	// spawning options
