@@ -88,7 +88,7 @@
 #include "SunPool.h"
 #include "OlympicPool.h"
 
-#include "TethysOcean.h"
+// #include "TethysOcean.h"
 // #include "Fracker.h"
 // #include "Impulse.h"
 // #include "LiquidTimer.h"
@@ -117,7 +117,7 @@ TestEntry g_testEntries[] =
 	{"Faucet", Faucet::Create},
 	// {"Particle Drawing", DrawingParticles::Create},
 	{"Sun Pool", SunPool::Create},
-	{"Tethys Ocean", TethysOcean::Create},
+	// {"Tethys Ocean", TethysOcean::Create},
 	// {"Soup", Soup::Create},
 	// {"Surface Tension", ParticlesSurfaceTension::Create},
 	// {"Elastic Particles", ElasticParticles::Create},

@@ -171,7 +171,7 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 
 boneAndJointDescriptor_t::boneAndJointDescriptor_t () {
 	attachedTo = 0; 				// the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
-	length = 0.5f;
+	length = 1.0f;
 	rootThickness = 0.2f;
 	tipThickness = 0.2f;
 	isRoot = false;
@@ -304,7 +304,7 @@ BoneUserData::BoneUserData(
 			rootCenter = attachesTo->tipCenter;
 		}
 
-		printf("new bone with position offset x: %f, y%f\n", positionOffset.x, positionOffset.y);
+		// printf("new bone with position offset x: %f, y%f\n", positionOffset.x, positionOffset.y);
 		p_body->SetTransform(b2Vec2(positionOffset.x, positionOffset.y + offsetOnBody.y),0);
 		
 		shape.Set(vertices, count);
@@ -1137,18 +1137,7 @@ void polydactyly (fishDescriptor_t * driedFish) {
 		j ++;
 	}
 
-	// wire up the sense connectors
-	// bool foodradar_connected  =false;
-	// bool jointangle_connected = false;
-	// int j =0;
-	// while(1) {
 
-	// 	if (!foodradar_connected) {
-
-	// 	}
-
-
-	// }
 
 }
 
@@ -1157,46 +1146,40 @@ void polydactyly (fishDescriptor_t * driedFish) {
 
 void addNeuronIntoLivingBrain (BonyFish * fish, uint newNeuronIndex) {
 
-	// rearrange the network to have the appropriate amount of new 0 layer neurons.
-		// turn the network into a descriptor.
-		neurodescriptor Mugh =  createNeurodescriptorFromFANN (fish->brain) ;
+	// // rearrange the network to have the appropriate amount of new 0 layer neurons.
+	// 	// turn the network into a descriptor.
+	// 	networkDescriptor Mugh =  createNeurodescriptorFromFANN (fish->brain) ;
 
-		// add a neuron into the end of the 0th layer.
-		// Mugh
-		// std::list<layerDescriptor>::iterator layer;
-		// layer = Mugh->layers.begin();
-		// 	std::list<neuronDescriptor>::iterator neuron;
+	
 
-			// create the new neuron
-			neuronDescriptor newNeuron = neuronDescriptor();
+	// 		// create the new neuron
+	// 		neuronDescriptor newNeuron = neuronDescriptor();
 
-			// take the bias neuron off the end of the layer, put the new neuron on, and then put the bias neuron back.
+	// 		// take the bias neuron off the end of the layer, put the new neuron on, and then put the bias neuron back.
 		
-			layer->insert(newNeuronIndex, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want the second to last.
+	// 		layer->insert(newNeuronIndex, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want the second to last.
 
 
-		// for (layer = Mugh->layers.begin(); layer !=  Mugh->layers.end(); ++layer) 	{
-
-		// all indexes in the connection map greater than the index of this neuron are incremented by 1.
-			for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-		std::list<neuronDescriptor>::iterator neuron;
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- 			std::list<connectionDescriptor>::iterator connection;
- 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+	// 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
+	// 		for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+	// 	std::list<neuronDescriptor>::iterator neuron;
+ // 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ // 			std::list<connectionDescriptor>::iterator connection;
+ // 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
 
- 				if (connection.from_neuron >= newNeuronIndex) {
- 					connection.to_neuron ++;
- 				}
+ // 				if (connection.from_neuron >= newNeuronIndex) {
+ // 					connection.to_neuron ++;
+ // 				}
 
- 				if (connection.to_neuron >= newNeuronIndex) {
- 					connection.to_neuron ++;
- 				}
+ // 				if (connection.to_neuron >= newNeuronIndex) {
+ // 					connection.to_neuron ++;
+ // 				}
 
 
-		 			}
-		 		}
-		 	}
+	// 	 			}
+	// 	 		}
+	// 	 	}
 
 
 
@@ -1215,90 +1198,90 @@ void addNeuronIntoLivingBrain (BonyFish * fish, uint newNeuronIndex) {
 
 // add a limb onto the end of the selected one.
 void polydactyly2 (BonyFish * fish) {
-	uint targetFinger = 0;
-	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-		if (!fish->bones[i]->isUsed) {
-			targetFinger = i;
-		}
-	}
+// 	uint targetFinger = 0;
+// 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
+// 		if (!fish->bones[i]->isUsed) {
+// 			targetFinger = i;
+// 		}
+// 	}
 
-	boneAndJointDescriptor_t  boneAlone = boneAndJointDescriptor_t();
-
-
-
-	boneAlone.used = true;
-	boneAlone.isLeaf = false;
-	boneAlone.attachedTo = currentlySelectedLimb;
-
-
-	fish->genes.bones[targetFinger] = boneAlone;
+// 	boneAndJointDescriptor_t  boneAlone = boneAndJointDescriptor_t();
 
 
 
-	fish->bones[targetFinger] = new BoneUserData(boneAlone, fish, b2Vec2(0.0f, 0.0f), 0, true);
+// 	boneAlone.used = true;
+// 	boneAlone.isLeaf = false;
+// 	boneAlone.attachedTo = currentlySelectedLimb;
 
-	// fish->bones[targetFinger]->isLeaf = false;
 
-
-		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
-		fish->bones[targetFinger]->joint = new JointUserData(boneAlone, fish->bones[targetFinger], fish);
-		fish->bones[targetFinger]->joint->init = true;
-		fish->bones[targetFinger]->joint->isUsed = true;
-
-	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
+// 	fish->genes.bones[targetFinger] = boneAlone;
 
 
 
-	// add the bone's senses to new input connectors.
-		// foodradar
-		int j = 0;
-		int sense_neurons_to_add = 0;
-		while(1){
-			if (fish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-				fish->outputMatrix[j].sensorType = SENSECONNECTOR_FOODRADAR;
-				fish->outputMatrix[j].connectedToLimb = targetFinger;
-				sense_neurons_to_add ++;
-				break;
-			}
-			j ++;
-		}
+// 	fish->bones[targetFinger] = new BoneUserData(boneAlone, fish, b2Vec2(0.0f, 0.0f), 0, true);
 
-		// jointangle
-		j = 0;
-		while(1){
-			if (fish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-				fish->outputMatrix[j].sensorType = SENSECONNECTOR_JOINTANGLE;
-				fish->outputMatrix[j].connectedToLimb = targetFinger;
-				sense_neurons_to_add ++;
-				break;
-			}
-			j ++;
-		}
+// 	// fish->bones[targetFinger]->isLeaf = false;
 
 
-std::list<layerDescriptor>::iterator layer;
-		layer = Mugh->layers.begin();
-	newNeuronIndex = layer.size()-2;
+// 		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
+// 		fish->bones[targetFinger]->joint = new JointUserData(boneAlone, fish->bones[targetFinger], fish);
+// 		fish->bones[targetFinger]->joint->init = true;
+// 		fish->bones[targetFinger]->joint->isUsed = true;
+
+// 	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
 
 
+
+// 	// add the bone's senses to new input connectors.
+// 		// foodradar
+// 		int j = 0;
+// 		int sense_neurons_to_add = 0;
+// 		while(1){
+// 			if (fish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+// 				fish->outputMatrix[j].sensorType = SENSECONNECTOR_FOODRADAR;
+// 				fish->outputMatrix[j].connectedToLimb = targetFinger;
+// 				sense_neurons_to_add ++;
+// 				break;
+// 			}
+// 			j ++;
+// 		}
+
+// 		// jointangle
+// 		j = 0;
+// 		while(1){
+// 			if (fish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+// 				fish->outputMatrix[j].sensorType = SENSECONNECTOR_JOINTANGLE;
+// 				fish->outputMatrix[j].connectedToLimb = targetFinger;
+// 				sense_neurons_to_add ++;
+// 				break;
+// 			}
+// 			j ++;
+// 		}
+
+
+// std::list<layerDescriptor>::iterator layer;
+// 		layer = Mugh->layers.begin();
+// 	newNeuronIndex = layer.size()-2;
 
 
 
 
 
-	// add the bone's motor control to a new output connector.
-	int j = 0;
-	while(1){
-		if (driedFish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-			driedFish->outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
-			driedFish->outputMatrix[j].connectedToLimb = eventualLimb;
-			break;
-		}
-		j ++;
-	}
 
 
-	// rearrange the network to have the appropriate number of new n layer neurons.
+// 	// add the bone's motor control to a new output connector.
+// 	int j = 0;
+// 	while(1){
+// 		if (driedFish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+// 			driedFish->outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
+// 			driedFish->outputMatrix[j].connectedToLimb = eventualLimb;
+// 			break;
+// 		}
+// 		j ++;
+// 	}
+
+
+// 	// rearrange the network to have the appropriate number of new n layer neurons.
 
 
 
@@ -1413,9 +1396,9 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			if (RNG() < mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() < mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
 
-			if (RNG() < (mutationChance / 50)) {	
-				polydactyly(fish);
-			}
+			// if (RNG() < (mutationChance / 50)) {	
+			// 	polydactyly(fish);
+			// }
 
 			// if (RNG() < mutationChance) {	
 			// 	amputation(fish);
@@ -1945,15 +1928,22 @@ void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary
 			}
 
 			b2Vec2 position = getRandomPosition();
+
+
+
 			if (TestMain::getOriginStartStatus()) {
+				// printf("junpamd a\n");
 				position = b2Vec2(0.0f,0.0f);
+			}
+			else {
+				// printf("notuo \n");
 			}
 
 			loadFish ( newFishBody, jann, position) ;
 
 		}
 		else { 						// if there is no winner, its probably a reset or new install. make one up
-			printf("No genetic material found in game folder. Loading default animal.\n");
+			// printf("No genetic material found in game folder. Loading default animal.\n");
 			fishDescriptor_t nematode = fishDescriptor_t();
 
 			loadFish ( nematode, NULL,  getRandomPosition()) ;
@@ -2498,22 +2488,26 @@ void flightModel(BoneUserData * bone) {
 		float magnitudeVelocity = magnitude(totalVelocity);
 
 		float angleOfForwardDirection = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
-		float incidentAngle = angleOfForwardDirection - faceAngle;
+
+
+		float incidentAngle = atan2(sin(angleOfForwardDirection-faceAngle), cos(angleOfForwardDirection-faceAngle)); // https://stackoverflow.com/questions/1878907/how-can-i-find-the-difference-between-two-angles
+
+		// float incidentAngle = angleOfForwardDirection - faceAngle;
 
 		b2Vec2 distanceBetweenPoints = b2Vec2(p2r.x - p1r.x, p2r.y - p1r.y);
 		float magnitudeArea = magnitude(distanceBetweenPoints);
 		float incidentArea = findIncidentArea (incidentAngle, p1r, p2r);
 
 		// calculate the force of drag
-		float dragCoefficient = 0.05;
+		float dragCoefficient = 0.5;
 		float dragForce = magnitudeVelocity * incidentArea * dragCoefficient * -1; 												// the -1 in this statement is what makes it an opposing force.
 		b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce , sin(angleOfForwardDirection) * dragForce *-1);	// the -1 here is used to correct for the physics engine's inverted y axis.
 
 		// There is another drag force which represents the fluid viscosity. It acts to slow spinning objects.
-		float viscosityDragCoeff = 0.05;
+		float viscosityDragCoeff = 0.5;
 		float viscDragForce = viscosityDragCoeff * magnitudeArea * magLinearVelocityOfRotatingFace * -1;
 		float viscDragAngle = atan2( faceCenter.y - worldCenter.y, faceCenter.x - worldCenter.x) + 0.5 * pi; //angle = atan2(y2 - y1, x2 - x1) /// the visc drag angle is orthogonal to the angle between the face center and the center of the spinning body.
-		b2Vec2 viscDragVector = b2Vec2( cos(viscDragAngle) * viscDragForce , sin(viscDragAngle) * viscDragForce );
+		b2Vec2 viscDragVector = b2Vec2( cos(viscDragAngle) * viscDragForce , sin(viscDragAngle) * viscDragForce * -1);
 
 		b2Vec2 totalDragVector = dragVector + viscDragVector;
 
@@ -2528,16 +2522,101 @@ void flightModel(BoneUserData * bone) {
 		}
 
 		// the lift angle is normal to the face but its direction is determined by how the plane meets the incoming wind.
-		float liftAngle = faceAngle + 0.5*pi;
-		if (chooseDMostVertex(angleOfForwardDirection, p1r, p2r)) {
-			liftForce = liftForce * -1;
-		}
-		b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce );
+
+		// update: lift should be normal to the fluid flow, not the face angle (????)
+		// float liftAngle = angleOfForwardDirection;
+		float liftAngle = angleOfForwardDirection;// + (0.5f * pi);
+
+
+
+
+		// float angleA = atan2(p2r.y - p1r.y, p2r.x - p1r.x);
+		// float angleB = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
+		// float AoA = faceAngle-angleOfForwardDirection;
+		// float AoAB = angleB-angleOfForwardDirection;
+
+
+
+		// if (chooseDMostVertex(angleOfForwardDirection, p1r, p2r)) {
+		// // 	// liftForce = liftForce * -1;
+		// 	angle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
+
+
+		// }
+		// angle += 0.5*pi;
+
+			// float angle = atan2(p2r.y - p1r.y, p2r.x - p1r.x);
+			// float AoA = angle-angleOfForwardDirection;
+
+
+
+
+			// incidentAngle = incidentAngle % pi;
+
+			if (incidentAngle > 0) {
+			// // // 	// liftForce = liftForce * -1;
+				liftAngle += 0.5f*pi;
+			// // 	fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
+			
+
+			}
+			else {
+			// 	// b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
+			// 	fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
+				liftAngle -= 0.5f*pi;
+			
+			}
+
+
+
+			b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
+
+		// }
+		// else {
+
+
+		// 	float angle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
+		// 	float AoA = angle-angleOfForwardDirection;
+
+		// 	if (AoA > 0) {
+		// 		liftForce = liftForce * -1;
+		// 	}
+
+
+		// }
+
+
+		
+
+		
 
 		// draw a line so you can visualize the lift force.
-		if (false) {
-			b2Vec2 visPosFluid = b2Vec2(faceCenter.x + viscDragVector.x, faceCenter.y + viscDragVector.y);
-			b2Color segmentColorB = b2Color(50, 200, 10);
+		if (true) {
+			b2Vec2 visPosFluid = b2Vec2(faceCenter.x + totalDragVector.x, faceCenter.y + totalDragVector.y);
+			b2Color segmentColorB = b2Color(255, 0, 00);
+			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
+
+
+
+			//b2Vec2 
+			// visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
+			// b2Color segmentColorB = b2Color(50, 200, 10);
+			// local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
+
+			visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
+			//b2Color
+			 segmentColorB = b2Color(0, 0, 255);
+			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
+
+
+
+
+		float debugAngleDrawLength = 1.0f;
+
+
+			visPosFluid = b2Vec2(faceCenter.x + cos(faceAngle)*debugAngleDrawLength, faceCenter.y + sin(faceAngle)*debugAngleDrawLength);
+			//b2Color
+			 segmentColorB = b2Color(255, 255, 0);
 			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
 		}
 	
