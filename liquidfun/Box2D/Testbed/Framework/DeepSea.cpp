@@ -2419,7 +2419,7 @@ void drawBodyEditingWindow(BonyFish * fish) {
 
 
 bool chooseDMostVertex(float angle, b2Vec2 p1, b2Vec2 p2) {
-// given 2 vertices, identify which one lines most in a given direction. return true if it is p1 and false if it is p2.
+// given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
 
 	// unrotate the set of vertices by the direction, so that the distance to measure is along the Y axis.
 	// get the centroid, this is your rotation center
@@ -2430,11 +2430,48 @@ bool chooseDMostVertex(float angle, b2Vec2 p1, b2Vec2 p2) {
 	b2Vec2 p2r = rotatePoint(thisFaceCentroid.x, thisFaceCentroid.y, angle, p2);
 
 	if (p1r.y > p2r.y) {
-		return true;
-	}
-	else {
 		return false;
 	}
+	else {
+		return true;
+	}
+}
+
+
+// makes sure the function 'chooseDMostVertex' works properly.
+bool test_chooseDMostVertex() {
+
+	int n_failures = 0;
+
+	// A: ( -5, 5), B: (5,-5). Angle 0. B should be the 0-most vertex, returning false
+	if (		chooseDMostVertex(0.0f, b2Vec2(-5, 5), b2Vec2(5, -5) )	) { n_failures++; }
+
+	// A: ( -5, 5), B: (5,-5). Angle 0.5 * pi radians. A should be the 0-most vertex, returning true
+	if (	!	chooseDMostVertex(0.5f * pi, b2Vec2(-5, 5), b2Vec2(5, -5) )	) { n_failures++; }
+
+	// A: ( -5, 5), B: (5,-5). Angle -0.5 * pi radians. B should be the 0-most vertex, returning false
+	if (		chooseDMostVertex(-0.5f* pi, b2Vec2(-5, 5), b2Vec2(5, -5) )	) { n_failures++; }
+
+	// A: ( -5, 5), B: (5,-5). Angle pi radians. A should be the 0-most vertex, returning true
+	if (	!	chooseDMostVertex(1.0f * pi, b2Vec2(-5, 5), b2Vec2(5, -5) )	) { n_failures++; }
+
+	// A: ( -5, 5), B: (5,-5). Angle 3* pi radians. A should be the 0-most vertex, returning true
+	if (	!	chooseDMostVertex(3.0f * pi, b2Vec2(-5, 5), b2Vec2(5, -5) )	) { n_failures++; }
+
+	// A: ( -5, 5), B: (5,-5). Angle -2* pi radians. B should be the 0-most vertex, returning false
+	if (		chooseDMostVertex(-2.0f * pi, b2Vec2(-5, 5), b2Vec2(5, -5) )	) { n_failures++; }
+
+
+
+	if (n_failures > 0) {
+		printf("chooseDMostVertex failed %u tests\n", n_failures);
+		return true;		
+	}
+	else {
+		printf("test_chooseDMostVertex");
+		return false;
+	}
+ 
 }
 
 
@@ -2484,10 +2521,10 @@ void flightModel(BoneUserData * bone) {
 		b2Vec2 localFaceCenter = b2Vec2( (p1.x + p2.x)/2, (p1.y + p2.y)/2 ) ;
 		float magLinearVelocityOfRotatingFace = (bone->p_body->GetAngularVelocity() * magnitude( localFaceCenter));  // https://courses.lumenlearning.com/boundless-physics/chapter/velocity-acceleration-and-force/
 		b2Vec2 faceAngularVelocity = b2Vec2( cos(faceAngle) * magLinearVelocityOfRotatingFace, sin(faceAngle) * magLinearVelocityOfRotatingFace);
-		b2Vec2 totalVelocity = b2Vec2(linearVelocity.x + faceAngularVelocity.x, linearVelocity.y + faceAngularVelocity.y);
+		b2Vec2 totalVelocity = b2Vec2(linearVelocity.x + faceAngularVelocity.x, (linearVelocity.y + faceAngularVelocity.y ) );
 		float magnitudeVelocity = magnitude(totalVelocity);
 
-		float angleOfForwardDirection = atan2(linearVelocity.x, linearVelocity.y) - 0.5 * pi;
+		float angleOfForwardDirection = atan2(totalVelocity.x, totalVelocity.y * -1) - 0.5 * pi;
 
 
 		float incidentAngle = atan2(sin(angleOfForwardDirection-faceAngle), cos(angleOfForwardDirection-faceAngle)); // https://stackoverflow.com/questions/1878907/how-can-i-find-the-difference-between-two-angles
@@ -2501,13 +2538,13 @@ void flightModel(BoneUserData * bone) {
 		// calculate the force of drag
 		float dragCoefficient = 0.5;
 		float dragForce = magnitudeVelocity * incidentArea * dragCoefficient * -1; 												// the -1 in this statement is what makes it an opposing force.
-		b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce , sin(angleOfForwardDirection) * dragForce *-1);	// the -1 here is used to correct for the physics engine's inverted y axis.
+		b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce , sin(angleOfForwardDirection) * dragForce);	// the -1 here is used to correct for the physics engine's inverted y axis.
 
 		// There is another drag force which represents the fluid viscosity. It acts to slow spinning objects.
 		float viscosityDragCoeff = 0.5;
 		float viscDragForce = viscosityDragCoeff * magnitudeArea * magLinearVelocityOfRotatingFace * -1;
 		float viscDragAngle = atan2( faceCenter.y - worldCenter.y, faceCenter.x - worldCenter.x) + 0.5 * pi; //angle = atan2(y2 - y1, x2 - x1) /// the visc drag angle is orthogonal to the angle between the face center and the center of the spinning body.
-		b2Vec2 viscDragVector = b2Vec2( cos(viscDragAngle) * viscDragForce , sin(viscDragAngle) * viscDragForce * -1);
+		b2Vec2 viscDragVector = b2Vec2( cos(viscDragAngle) * viscDragForce , sin(viscDragAngle) * viscDragForce );
 
 		b2Vec2 totalDragVector = dragVector + viscDragVector;
 
@@ -2521,103 +2558,130 @@ void flightModel(BoneUserData * bone) {
 			liftForce = liftForce * (dragForce/liftForce);
 		}
 
-		// the lift angle is normal to the face but its direction is determined by how the plane meets the incoming wind.
 
-		// update: lift should be normal to the fluid flow, not the face angle (????)
-		// float liftAngle = angleOfForwardDirection;
-		float liftAngle = angleOfForwardDirection;// + (0.5f * pi);
+		float liftAngle = angleOfForwardDirection;
+	
 
 
 
+		// the lift angle can be calculated by. 
 
-		// float angleA = atan2(p2r.y - p1r.y, p2r.x - p1r.x);
-		// float angleB = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
-		// float AoA = faceAngle-angleOfForwardDirection;
-		// float AoAB = angleB-angleOfForwardDirection;
+		// finding the D most vertex.
 
-
-
-		// if (chooseDMostVertex(angleOfForwardDirection, p1r, p2r)) {
-		// // 	// liftForce = liftForce * -1;
-		// 	angle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
-
-
-		// }
-		// angle += 0.5*pi;
-
-			// float angle = atan2(p2r.y - p1r.y, p2r.x - p1r.x);
-			// float AoA = angle-angleOfForwardDirection;
-
-
-
-
-			// incidentAngle = incidentAngle % pi;
-
-			if (incidentAngle > 0) {
-			// // // 	// liftForce = liftForce * -1;
-				liftAngle += 0.5f*pi;
-			// // 	fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
+ 		bool isP2theDMost = chooseDMostVertex(angleOfForwardDirection,  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
 			
 
+
+		
+		// // calculating the angle between the centroid and the d most vertex. (the face angle... but actually calculated properly.)
+		// b2Vec2 centroid = b2Vec2( ((p1r.x + p2r.x) / 2), ((p1r.y + p2r.y) / 2));
+		// float properFaceAngle = 0.0f;
+
+		if (isP2theDMost) {
+			// properFaceAngle = atan2((p2r.y-centroid.y ), p2r.x-centroid.x);
+
+
+			// now check if p1 is the leftmost or right most
+			bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 * pi),  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
+			if (isP1TheLeftMost) {
+				liftAngle -= (0.5 * pi);
 			}
 			else {
-			// 	// b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
-			// 	fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
-				liftAngle -= 0.5f*pi;
-			
+				liftAngle += (0.5 * pi);
 			}
 
 
 
-			b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce * -1);
+		}
+		else {
+			// properFaceAngle = atan2((p1r.y-centroid.y ), p1r.x-centroid.x);	
 
+			// now check if p1 is the leftmost or right most
+			// bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 I pi),  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
+					// now check if p1 is the leftmost or right most
+			bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 * pi),  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
+			if (isP1TheLeftMost) {
+				liftAngle += (0.5 * pi);
+			}
+			else {
+				liftAngle -= (0.5 * pi);
+			}
+
+
+
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+		// properFaceAngle = properFaceAngle % pi;
+		// angleOfForwardDirection = angleOfForwardDirection % pi;
+
+		// subtracting the difference between the face angle and the incoming angle direction (the local AoA. ranges from -pi to +pi)
+		// float AoA =  properFaceAngle - angleOfForwardDirection;
+		// // AoA = AoA % pi;
+
+		// AoA = fmod(AoA, pi);
+
+
+		// if (AoA > 0.5 * pi) {
+
+		// }
+
+
+		// if the local AoA is less than zero, the lift angle is rotated one way. If it is greater than zero, it is rotated the other way.
+		// if (AoA < 0) {
+		// 	// liftAngle += 0.5*pi;
+		// 	liftForce = liftForce * -1;
 		// }
 		// else {
-
-
-		// 	float angle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
-		// 	float AoA = angle-angleOfForwardDirection;
-
-		// 	if (AoA > 0) {
-		// 		liftForce = liftForce * -1;
-		// 	}
-
-
+		// 	liftAngle -= 0.5*pi;
 		// }
 
+		// printf("%f\n", AoA);
 
-		
 
-		
 
+
+		b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce );
+
+	
 		// draw a line so you can visualize the lift force.
 		if (true) {
 			b2Vec2 visPosFluid = b2Vec2(faceCenter.x + totalDragVector.x, faceCenter.y + totalDragVector.y);
 			b2Color segmentColorB = b2Color(255, 0, 00);
 			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
 
-
-
-			//b2Vec2 
-			// visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
-			// b2Color segmentColorB = b2Color(50, 200, 10);
-			// local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
-
 			visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
-			//b2Color
 			 segmentColorB = b2Color(0, 0, 255);
 			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
 
 
 
+			// float debugLineLength = 1.0f;
 
-		float debugAngleDrawLength = 1.0f;
+
+			// 	visPosFluid = b2Vec2(faceCenter.x + cos(properFaceAngle) * debugLineLength, faceCenter.y + sin(properFaceAngle ) * debugLineLength);
+			//  segmentColorB = b2Color(0, 0, 255);
+			// local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
 
 
-			visPosFluid = b2Vec2(faceCenter.x + cos(faceAngle)*debugAngleDrawLength, faceCenter.y + sin(faceAngle)*debugAngleDrawLength);
-			//b2Color
-			 segmentColorB = b2Color(255, 255, 0);
-			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
+
+			// visPosFluid = b2Vec2(faceCenter.x + cos(AoA) * debugLineLength, faceCenter.y + sin(AoA) * debugLineLength);
+			//  segmentColorB = b2Color(255, 255, 0);
+			// local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
+
+
+
+
 		}
 	
 		// apply the force to the body directly in the center of the face.
@@ -3405,4 +3469,14 @@ void stepForParticleDrawing () {
 		{
 			SplitParticleGroups();
 		}
+}
+
+void test_runAllUnitTests() {
+
+	int n_failures = 0;
+	int tests_so_far = 0;
+
+	if ( test_chooseDMostVertex() ) { n_failures++; } tests_so_far++;
+
+	printf("performed %u tests with %u failures\n", tests_so_far, n_failures);
 }

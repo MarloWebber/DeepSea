@@ -489,5 +489,10 @@ void selectAll(int arg) ;
 void voteSelectedFish(int arg) ;
 
 
+
+
+void test_runAllUnitTests();
+
+
 	// }
 #endif

@@ -1095,7 +1095,13 @@ case 0:
 	// Use a timer to control the frame rate.
 	glutTimerFunc(framePeriod, Timer, 0);
 
+	test_runAllUnitTests();
+
 	glutMainLoop();
+
+
+
+
 
 	return 0;
 }
