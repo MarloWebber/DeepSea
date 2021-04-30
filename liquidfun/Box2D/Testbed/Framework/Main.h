@@ -58,6 +58,7 @@ void SetParticleParameters(
 
  int getBrainWindowStatus() ;
 int getBodyWindowStatus() ;
+int getFluidDynamicForcesViewStatus() ;
 
 int getVotingMode();
 

@@ -52,6 +52,8 @@ namespace
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
 	int voting_mode = 0;
+	int showFluidDynamicForces = 0;
+
 	// int gridPinStatus = 0;
 
 	int32 testIndex = 0;
@@ -110,6 +112,11 @@ int getBodyWindowStatus() {
 int getVotingMode () {
 	return voting_mode; // used for click-to-select.
 }
+
+int getFluidDynamicForcesViewStatus() {
+	return showFluidDynamicForces;
+}
+
 
 // int getGridPinStatus() {
 // 	return gridPinStatus;
@@ -392,12 +399,12 @@ deepSeaControlA();
 			deepSeaControlB();
 		}
 		break;
-	case 'd':
-		if (test)
-		{
-			// test->controlB();
-			meltSelectedFish();
-		}
+	// case 'd':
+	// 	if (test)
+	// 	{
+	// 		// test->controlB();
+	// 		meltSelectedFish(0);
+	// 	}
 		break;
 
 	case '-':
@@ -886,6 +893,9 @@ int main(int argc, char** argv)
 	glui->add_checkbox_to_panel(ExploratoryPanel, "Persistent Food", &persistentFoodStatus);
 
 
+	glui->add_button_to_panel(ExploratoryPanel, "Add Random Food", 0, addRandomFoodParticle);
+
+
 	GLUI_Panel* EcosystemPanel =	glui->add_panel("Ecosystem Mode");
 	int fakeNumberOfFood;
 		GLUI_Spinner* numberOfFoodSpinner =
@@ -947,6 +957,7 @@ int main(int argc, char** argv)
 
 	glui->add_button_to_panel(controlsPanel, "Deselect All", 4, deselectAll);
 	glui->add_button_to_panel(controlsPanel, "Select All", 5, selectAll);
+	glui->add_button_to_panel(controlsPanel, "Invert Selection", 6, invertSelection);
 
 
 
@@ -987,8 +998,15 @@ glui->add_checkbox_to_panel(controlsPanel, "Select with LMB", &voting_mode);
 glui->add_button_to_panel(editPanel, "Amputate Limb", 8, amputation);
 
 
+glui->add_button_to_panel(editPanel, "Neutralize Brain", 9, meltSelectedFish);
+glui->add_button_to_panel(editPanel, "Randomize Brain", 10, scrambleSelectedFish);
+
+
 	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
 	glui->add_checkbox_to_panel(editPanel, "Show body edit window", &showBodyEditWindow);
+	glui->add_checkbox_to_panel(editPanel, "Show fluid dynamic forces", &showFluidDynamicForces);
+
+
 
 
 

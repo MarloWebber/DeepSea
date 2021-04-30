@@ -332,6 +332,37 @@ for (int i = 0; i < N_FINGERS; ++i) {
 
 	}
 
+
+	// iterate through food particles and select clicked food
+	// for (int i = 0; i < N_FOODPARTICLES; ++i)
+	// {
+	// 	/* code */
+	// }
+
+	// std::list<BonyFish>::iterator fish;
+	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+	// if (body == fish->bones[i]->p_body) {
+	// }
+
+	// }
+
+	for (int i = 0; i < N_FOODPARTICLES; ++i)
+	{
+		if (food[i]->isUsed) {
+			// emptyFoodIndex ++;
+
+			if (body == food[i]->p_body) {
+				food[i]->selected = !food[i]->selected;
+			}
+ 
+
+		}
+		// else {
+		// 	break;
+		// }
+	}
+
 	
 
 		

@@ -246,6 +246,9 @@ struct BoneUserData {
 	bool flagPhotosynth;
 	
 
+	bool selected;
+
+
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
 		b2Vec2 positionOffset,
@@ -399,6 +402,8 @@ struct foodParticle_t {
 
 	bool flagDelete;
 
+	bool selected;
+
 	foodParticle_t(b2Vec2 position);
 };
 
@@ -438,7 +443,7 @@ void makeAJellyfish (BonyFish * p_fish) ;
 
 
 
-// extern foodParticle_t food[N_FOODPARTICLES];
+extern BoneUserData * food[N_FOODPARTICLES];
 // extern std::list<foodParticle_t*> food;
 // extern BonyFish * fishes[N_FISHES];
 extern std::list<BonyFish> fishes;
@@ -466,7 +471,8 @@ int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) ;
 extern bool startNextGeneration;
 void incrementSelectedConnection();
 void decrementSelectedConnection();
-void meltSelectedFish();
+void meltSelectedFish(int arg);
+void scrambleSelectedFish (int arg) ;
 // if (startNextGeneration ) {
 void		beginGeneration ();
 
@@ -486,9 +492,12 @@ void amputation(int arg);
 
 void deselectAll(int arg) ;
 void selectAll(int arg) ;
+
+void invertSelection (int arg) ;
+
 void voteSelectedFish(int arg) ;
 
-
+void addRandomFoodParticle(int arg);
 
 
 void test_runAllUnitTests();

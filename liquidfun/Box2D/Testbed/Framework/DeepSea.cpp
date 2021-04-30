@@ -15,6 +15,8 @@
 #include <math.h>
 #include <cmath>
 
+// #include <b2_draw.h>
+
 float pi = 3.14159f;
 
 // global settings to keep track of the game parameters.
@@ -437,6 +439,10 @@ void addFoodParticle(b2Vec2 position) {
 		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
 
 		food[emptyFoodIndex]->energy = food[emptyFoodIndex]->energy * 5; // this is a constant that sets the value of food. Typical creatures are made from 4 segments; setting this to 4 or above should allow the creature to reproduce after eating just 1 segment.
+}
+
+void addRandomFoodParticle(int arg) {
+	addFoodParticle(getRandomPosition());
 }
 
 void saveFishToFile(const std::string& file_name, fishDescriptor_t& data) {
@@ -1701,6 +1707,7 @@ void drawingTest() {
 	// draw the food particles
 	b2Color fishFoodDye 		= b2Color(0.2f, 0.6f, 0.1f);
 	b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
+	b2Color fishFoodDyeOutlineWhite 	= b2Color(1.0f, 1.0f, 1.0f);
 
 	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
 		if (food[i]-> init && food[i]->isUsed) {
@@ -1715,7 +1722,15 @@ void drawingTest() {
 				vertices[j] = rotatedVertex;
 			}
 			local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishFoodDye);
-			local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutline);
+
+			if (food[i]->selected) {
+				local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutlineWhite);
+			}
+			else {
+				local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutline);
+			}
+
+			
 		}
 	}
 
@@ -2010,7 +2025,21 @@ void brainMelter (BonyFish * fish) {
 	}
 }
 
-void meltSelectedFish () {
+// sets the brain to a random connection map
+void brainScrambler (BonyFish * fish) {
+	std::list<layerDescriptor>::iterator layer;
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				connection->connectionWeight = (RNG()-0.5f) * 1.0f;
+			}
+		}
+	}
+}
+
+void meltSelectedFish (int arg) {
 	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		if (fish->selected) {
@@ -2018,7 +2047,23 @@ void meltSelectedFish () {
 
 			// refresh the water in the brain jar.
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
-			return;
+			// return;
+		}
+		else {
+			continue;
+		}
+	}
+}
+
+void scrambleSelectedFish (int arg) {
+	std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		if (fish->selected) {
+			brainScrambler ( &(*fish));
+
+			// refresh the water in the brain jar.
+			fish->ann = createFANNbrainFromDescriptor(fish->brain);
+			// return;
 		}
 		else {
 			continue;
@@ -2285,11 +2330,14 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
 		    	b2Color segmentColor = b2Color(connection->connectionWeight,connection->connectionWeight,connection->connectionWeight);
+
 		    	if (connection->connectionWeight > 0) {
-		    		segmentColor = b2Color(0.0f,0.0f,connection->connectionWeight);
+		    		// segmentColor = b2Color(0.0f,0.0f,connection->connectionWeight,connection->connectionWeight ); // the connection weight is also used as alpha, so if the connection is less than 1, it will be partially transparent (and invisible at 0)
+		    		segmentColor.Set(0.0f,0.0f,connection->connectionWeight );
 		    	}
 		    	else {
-		    		segmentColor = b2Color(abs(connection->connectionWeight),0.0f,0.0f);
+		    		// segmentColor = b2Color(abs(connection->connectionWeight),0.0f,0.0f, connection->connectionWeight);
+		    		segmentColor.Set(abs(connection->connectionWeight),0.0f,0.0f);
 		    	}
 
 			    local_debugDraw_pointer->DrawSegment(neuron->position, (getNeuronByIndex(fish->brain, connection->connectedTo))->position,segmentColor );
@@ -2655,7 +2703,7 @@ void flightModel(BoneUserData * bone) {
 
 	
 		// draw a line so you can visualize the lift force.
-		if (true) {
+		if (TestMain::getFluidDynamicForcesViewStatus()) {
 			b2Vec2 visPosFluid = b2Vec2(faceCenter.x + totalDragVector.x, faceCenter.y + totalDragVector.y);
 			b2Color segmentColorB = b2Color(255, 0, 00);
 			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
@@ -2894,6 +2942,17 @@ void flagSelectedFishForDeletion(int arg) {
 			fish->selected = false;
 		}
 	}
+
+	// iterate through food particles
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+			if (food[i]->selected) {
+				food[i]->flagDelete = true;
+				food[i]->selected = false;
+			}
+		}
+
+
+
 }
 
 void voteSelectedFish(int arg) {
@@ -2945,6 +3004,25 @@ void selectAll (int arg) {
 
 
 		}
+	}
+
+
+}
+
+
+void invertSelection (int arg) {
+
+		unused_variable((void *)&arg);
+
+		std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		// if (!fish->selected) {
+			// fish->flagDelete = true;
+			fish->selected = !fish->selected;
+			// vote( &(*fish) );
+
+
+		// }
 	}
 
 
@@ -3130,6 +3208,7 @@ void selectClosestToFood (int arg) {
 }
 
 
+
 void deepSeaLoop () {
 
 	TestMain::PreStep();
@@ -3179,7 +3258,8 @@ void deepSeaLoop () {
 		if (flagAddFood) {
 			flagAddFood = false;
 
-			addFoodParticle(getRandomPosition());
+			// addFoodParticle(getRandomPosition());
+			addRandomFoodParticle(0);
 		}
 
 		if (flagAddPlant) {
