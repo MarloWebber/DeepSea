@@ -70,6 +70,20 @@ void unused_variable(void * bullshit) {
 	; // do nothing
 }
 
+/*
+ * Generic function to find if an element of any type exists in list
+ * https://thispointer.com/c-list-find-contains-how-to-search-an-element-in-stdlist/
+ */
+// template <typename T>
+// bool contains(std::list<T> & listOfElements, const T & element)
+// {
+//     // Find the iterator if element in list
+//     auto it = std::find(listOfElements.begin(), listOfElements.end(), element);
+//     //return if iterator points to end or not. It points to end then it means element
+//     // does not exists in list
+//     return it != listOfElements.end();
+// }
+
 float magnitude (b2Vec2 vector) {
 	return sqrt( (vector.x * vector.x) + (vector.y * vector.y));
 }
@@ -908,6 +922,81 @@ neuronDescriptor * getNeuronByIndex (networkDescriptor * network, unsigned int w
 	return nullptr;
 }
 
+void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
+
+	// go through the entire brain and destroy any connection mentioning the target.
+
+	// gather the connections to destroy in a separate list because you can't operate on a list while iterating through it.
+
+	std::list<layerDescriptor>::iterator layer;
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+ 			// std::list<connectionDescriptor> connectionsToDestroy;
+
+ 			std::list<connectionDescriptor>::iterator connection;
+
+ 			// note that the increment is removed from the loop and only performed if a deletion is NOT performed. https://stackoverflow.com/questions/16269696/erasing-while-iterating-an-stdlist
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); ) {
+
+ 				if (connection->connectedTo == windex ) {
+ 					// connectionsToDestroy.push_back(*connection);
+
+ 					// destroy it.
+ 					connection = neuron->connections.erase(connection);
+ 					neuron->n_connections --;
+ 				}
+ 				else {
+ 					connection++;
+ 				}
+			}
+
+			// std::list<connectionDescriptor>::iterator connectionToDestroy;
+			// for (connectionToDestroy = connectionsToDestroy.begin(); connectionToDestroy != connectionsToDestroy.end(); connectionToDestroy++) {
+			// 	neuron->connections.remove(*connectionToDestroy);
+			// }
+		}
+	}
+
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		bool allDone = false;
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ;) {
+ 			if (neuron->index == windex) {
+ 				// layer->neurons.remove(*neuron);
+ 				neuron = layer->neurons.erase(neuron);
+ 				layer->n_neurons--;
+ 				allDone = true;
+ 				break;
+ 			}
+ 			else {
+ 				neuron++;
+ 			}
+ 		}
+ 		if (allDone) {
+ 			break;
+ 		}
+	}
+
+	// go through the entire brain and decrement any neuron index greater than the target's index by 1.
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+ 			if (neuron->index > windex) {
+ 				neuron->index--;
+ 			}
+		}
+	}
+
+
+
+}
+
 // method to create a network descriptor in memory
 networkDescriptor::networkDescriptor (fann * pann) {
 
@@ -1373,18 +1462,71 @@ void amputation (int arg) {
 
 
 
-			// delete output and input connectors
+			// list of neuron indexes to remove
+			std::list<unsigned int> neuronsToRemove;    
+
+
+			// delete output and input connectors, noting which neurons will be removed.
 			uint8_t currentlySelectedLimbUnsigned = currentlySelectedLimb;
 			for (int i = 0; i < N_SENSECONNECTORS; ++i)
 			{
 				if (fish->inputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
 					fish->inputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
+					neuronsToRemove.push_back(fish->inputMatrix[i].connectedToNeuron);
 				}
 
 				if (fish->outputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
 					fish->outputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
+					neuronsToRemove.push_back(fish->outputMatrix[i].connectedToNeuron);
 				}
 			}
+
+
+			// re-fry the brain without those connectors.
+
+			// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+
+			// verifyNetworkDescriptor(muscleCars);
+
+			// fann * jann = createFANNbrainFromDescriptor(muscleCars);
+
+			// navigate the fish brain. identify the layer number and index of removed input and output neurons. Disintegrate those neurons and all connections attached to them.
+
+			std::list<unsigned int>::iterator neuronsToRemoveIterator;
+
+			for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
+
+				 deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
+
+			}
+
+			fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
+
+
+			// std::list<layerDescriptor>::iterator layer;
+			// unsigned int layerIndex = 0;
+			// unsigned int neuronIndex = 0;
+			// unsigned int connectionIndex = 0;
+
+			// for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+			// 	// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+			// 	std::list<neuronDescriptor>::iterator neuron;
+		 // 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+		 // 			// printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
+
+		 // 			std::list<connectionDescriptor>::iterator connection;
+		 // 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+		 // 				// printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
+
+			// 			connectionIndex++;
+			// 		}
+			// 		neuronIndex ++;
+			// 	}
+			// 	layerIndex ++;
+			// }
+
 
 
 
@@ -2590,7 +2732,6 @@ void flightModel(BoneUserData * bone) {
 
 		float angleOfForwardDirection = atan2(totalVelocity.x, totalVelocity.y * -1) - 0.5 * pi;
 
-
 		float incidentAngle = atan2(sin(angleOfForwardDirection-faceAngle), cos(angleOfForwardDirection-faceAngle)); // https://stackoverflow.com/questions/1878907/how-can-i-find-the-difference-between-two-angles
 
 		// float incidentAngle = angleOfForwardDirection - faceAngle;
@@ -2622,30 +2763,12 @@ void flightModel(BoneUserData * bone) {
 			liftForce = liftForce * (dragForce/liftForce);
 		}
 
-
 		float liftAngle = angleOfForwardDirection;
-	
-
-
 
 		// the lift angle can be calculated by. 
-
-		// finding the D most vertex.
-
+		// basically find the trailing edge of the plane and check if it is in a left or right hand direction. Then rotate the lift angle left or right.
  		bool isP2theDMost = chooseDMostVertex(angleOfForwardDirection,  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
-			
-
-
-		
-		// // calculating the angle between the centroid and the d most vertex. (the face angle... but actually calculated properly.)
-		// b2Vec2 centroid = b2Vec2( ((p1r.x + p2r.x) / 2), ((p1r.y + p2r.y) / 2));
-		// float properFaceAngle = 0.0f;
-
 		if (isP2theDMost) {
-			// properFaceAngle = atan2((p2r.y-centroid.y ), p2r.x-centroid.x);
-
-
-			// now check if p1 is the leftmost or right most
 			bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 * pi),  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
 			if (isP1TheLeftMost) {
 				liftAngle -= (0.5 * pi);
@@ -2653,16 +2776,8 @@ void flightModel(BoneUserData * bone) {
 			else {
 				liftAngle += (0.5 * pi);
 			}
-
-
-
 		}
 		else {
-			// properFaceAngle = atan2((p1r.y-centroid.y ), p1r.x-centroid.x);	
-
-			// now check if p1 is the leftmost or right most
-			// bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 I pi),  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
-					// now check if p1 is the leftmost or right most
 			bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 * pi),  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
 			if (isP1TheLeftMost) {
 				liftAngle += (0.5 * pi);
@@ -2670,54 +2785,10 @@ void flightModel(BoneUserData * bone) {
 			else {
 				liftAngle -= (0.5 * pi);
 			}
-
-
-
 		}
-
-
-
-
-
-
-
-
-
-
-
-
-		// properFaceAngle = properFaceAngle % pi;
-		// angleOfForwardDirection = angleOfForwardDirection % pi;
-
-		// subtracting the difference between the face angle and the incoming angle direction (the local AoA. ranges from -pi to +pi)
-		// float AoA =  properFaceAngle - angleOfForwardDirection;
-		// // AoA = AoA % pi;
-
-		// AoA = fmod(AoA, pi);
-
-
-		// if (AoA > 0.5 * pi) {
-
-		// }
-
-
-		// if the local AoA is less than zero, the lift angle is rotated one way. If it is greater than zero, it is rotated the other way.
-		// if (AoA < 0) {
-		// 	// liftAngle += 0.5*pi;
-		// 	liftForce = liftForce * -1;
-		// }
-		// else {
-		// 	liftAngle -= 0.5*pi;
-		// }
-
-		// printf("%f\n", AoA);
-
-
-
 
 		b2Vec2 fluidDynamicForce = b2Vec2(cos(liftAngle ) * liftForce, sin(liftAngle ) * liftForce );
 
-	
 		// draw a line so you can visualize the lift force.
 		if (TestMain::getFluidDynamicForcesViewStatus()) {
 			b2Vec2 visPosFluid = b2Vec2(faceCenter.x + totalDragVector.x, faceCenter.y + totalDragVector.y);
@@ -2725,27 +2796,8 @@ void flightModel(BoneUserData * bone) {
 			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
 
 			visPosFluid = b2Vec2(faceCenter.x + fluidDynamicForce.x, faceCenter.y + fluidDynamicForce.y);
-			 segmentColorB = b2Color(0, 0, 255);
+			segmentColorB = b2Color(0, 0, 255);
 			local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
-
-
-
-			// float debugLineLength = 1.0f;
-
-
-			// 	visPosFluid = b2Vec2(faceCenter.x + cos(properFaceAngle) * debugLineLength, faceCenter.y + sin(properFaceAngle ) * debugLineLength);
-			//  segmentColorB = b2Color(0, 0, 255);
-			// local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
-
-
-
-			// visPosFluid = b2Vec2(faceCenter.x + cos(AoA) * debugLineLength, faceCenter.y + sin(AoA) * debugLineLength);
-			//  segmentColorB = b2Color(255, 255, 0);
-			// local_debugDraw_pointer->DrawSegment(faceCenter ,visPosFluid ,segmentColorB );
-
-
-
-
 		}
 	
 		// apply the force to the body directly in the center of the face.
