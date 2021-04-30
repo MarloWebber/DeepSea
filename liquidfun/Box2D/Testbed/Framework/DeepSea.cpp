@@ -1193,34 +1193,34 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 	return ann;
 }
 
-// this method is discontinued in favor of ones that add to the living creature.
-void polydactyly (fishDescriptor_t * driedFish) {
+// // this method is discontinued in favor of ones that add to the living creature.
+// void polydactyly (fishDescriptor_t * driedFish) {
 
-	// generate the limb as the next-unoccupied lowest limb index. attach it to a random existing limb
-	int eventualLimb = 0;
-	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-		if (!driedFish->bones[i].used) {
-			driedFish->bones[i].attachedTo = RNG() * i;
-			driedFish->bones[i].used = true;
-			eventualLimb = i;
-			break;
-		}
-	}
+// 	// generate the limb as the next-unoccupied lowest limb index. attach it to a random existing limb
+// 	int eventualLimb = 0;
+// 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
+// 		if (!driedFish->bones[i].used) {
+// 			driedFish->bones[i].attachedTo = RNG() * i;
+// 			driedFish->bones[i].used = true;
+// 			eventualLimb = i;
+// 			break;
+// 		}
+// 	}
 
-	// do up the output connector
-	int j = 0;
-	while(1){
-		if (driedFish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-			driedFish->outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
-			driedFish->outputMatrix[j].connectedToLimb = eventualLimb;
-			break;
-		}
-		j ++;
-	}
-}
+// 	// do up the output connector
+// 	int j = 0;
+// 	while(1){
+// 		if (driedFish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+// 			driedFish->outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
+// 			driedFish->outputMatrix[j].connectedToLimb = eventualLimb;
+// 			break;
+// 		}
+// 		j ++;
+// 	}
+// }
 
 
-void addNeuronIntoLivingBrain (BonyFish * fish, uint newNeuronIndex) {
+void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
 	// // rearrange the network to have the appropriate amount of new 0 layer neurons.
 	// 	// turn the network into a descriptor.
@@ -1229,33 +1229,71 @@ void addNeuronIntoLivingBrain (BonyFish * fish, uint newNeuronIndex) {
 	
 
 	// 		// create the new neuron
-	// 		neuronDescriptor newNeuron = neuronDescriptor();
+			neuronDescriptor newNeuron = neuronDescriptor();
+			newNeuron.isUsed = true;
 
-	// 		// take the bias neuron off the end of the layer, put the new neuron on, and then put the bias neuron back.
-		
-	// 		layer->insert(newNeuronIndex, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want the second to last.
+
+			std::list<layerDescriptor>::iterator layer;
+	unsigned int layerIndex = 0;
+
+	unsigned int newNeuronIndex = 0;
+
+	// if you are not on the last layer, ignore bias neurons because they are included implicitly.
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
+
+
+		if (layerIndex == targetLayerIndex) {
+			newNeuronIndex += (layer->n_neurons - 1);
+			break;
+		}
+		else {
+			newNeuronIndex += layer->n_neurons; // always adding new neuron at the end of the layer.
+			layerIndex++;
+		}
+
+
+	}
+
+		newNeuron.index = newNeuronIndex;
+		std::list<layerDescriptor>::iterator gayer = layer;
+
+		std::list<neuronDescriptor>::iterator neuron;// = layer->neurons.end();
+		// neuron --; neuron--;
+		// layer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
 
 
 	// 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
-	// 		for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-	// 	std::list<neuronDescriptor>::iterator neuron;
- // 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- // 			std::list<connectionDescriptor>::iterator connection;
- // 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+		for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
 
- // 				if (connection.from_neuron >= newNeuronIndex) {
- // 					connection.to_neuron ++;
- // 				}
-
- // 				if (connection.to_neuron >= newNeuronIndex) {
- // 					connection.to_neuron ++;
- // 				}
+ 			if (neuron->index >= newNeuronIndex) {
+ 				neuron->index ++;
+ 			}
 
 
-	// 	 			}
-	// 	 		}
-	// 	 	}
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+
+
+ 				if (connection->connectedTo >= newNeuronIndex) {
+ 					connection->connectedTo ++;
+ 				}
+
+ 				
+
+ 			}
+ 		}
+ 	}	
+
+		// std::list<neuronDescriptor>::iterator neuron;// 
+
+ 		neuron = gayer->neurons.end();
+		neuron --; 
+		//neuron--;
+		gayer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
+
 
 
 
@@ -1274,37 +1312,46 @@ void addNeuronIntoLivingBrain (BonyFish * fish, uint newNeuronIndex) {
 
 // add a limb onto the end of the selected one.
 void polydactyly2 (BonyFish * fish) {
-// 	uint targetFinger = 0;
-// 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-// 		if (!fish->bones[i]->isUsed) {
-// 			targetFinger = i;
-// 		}
-// 	}
+	uint targetFinger = 0;
 
-// 	boneAndJointDescriptor_t  boneAlone = boneAndJointDescriptor_t();
+	// boneAndJointDescriptor_t boneToDuplicate;
+	// bool dupeExistingBone = false;
+	boneAndJointDescriptor_t  boneAlone = boneAndJointDescriptor_t();
 
+	for (unsigned int i = 0; i < N_FINGERS; ++i) {
+		if (!fish->bones[i]->isUsed) {
+			targetFinger = i;
+		}
+		// else {
+		if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
+			boneAlone = fish->genes.bones[i];
+			// dupeExistingBone = true;
+		}
+		// }
+	}
 
-
-// 	boneAlone.used = true;
-// 	boneAlone.isLeaf = false;
-// 	boneAlone.attachedTo = currentlySelectedLimb;
-
-
-// 	fish->genes.bones[targetFinger] = boneAlone;
-
-
-
-// 	fish->bones[targetFinger] = new BoneUserData(boneAlone, fish, b2Vec2(0.0f, 0.0f), 0, true);
-
-// 	// fish->bones[targetFinger]->isLeaf = false;
+	
 
 
-// 		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
-// 		fish->bones[targetFinger]->joint = new JointUserData(boneAlone, fish->bones[targetFinger], fish);
-// 		fish->bones[targetFinger]->joint->init = true;
-// 		fish->bones[targetFinger]->joint->isUsed = true;
 
-// 	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
+	boneAlone.used = true;
+	boneAlone.isLeaf = false;
+	boneAlone.sensor_radar = true;
+	boneAlone.sensor_jointangle = true;
+	boneAlone.attachedTo = currentlySelectedLimb;
+
+
+	fish->genes.bones[targetFinger] = boneAlone;
+
+
+
+	fish->bones[targetFinger] = new BoneUserData(boneAlone, fish, b2Vec2(0.0f, 0.0f), 0, true);
+
+	fish->bones[targetFinger]->joint = new JointUserData(boneAlone, fish->bones[targetFinger], fish);
+	fish->bones[targetFinger]->joint->init = true;
+	fish->bones[targetFinger]->joint->isUsed = true;
+
+	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
 
 
 
@@ -1334,6 +1381,32 @@ void polydactyly2 (BonyFish * fish) {
 // 			j ++;
 // 		}
 
+	if (boneAlone.sensor_radar) {
+		for (int i = 0; i < N_SENSECONNECTORS; ++i)
+		{
+			if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
+				fish->inputMatrix[i].sensorType = SENSOR_FOODRADAR;
+				fish->inputMatrix[i].connectedToLimb = targetFinger;
+				addNeuronIntoLivingBrain (fish, 0) ;
+				break;
+			}
+		}
+	}
+
+
+	if (boneAlone.sensor_jointangle) {
+		for (int i = 0; i < N_SENSECONNECTORS; ++i)
+		{
+			if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
+				fish->inputMatrix[i].sensorType = SENSOR_JOINTANGLE ;
+				fish->inputMatrix[i].connectedToLimb = targetFinger;
+				addNeuronIntoLivingBrain (fish, 0) ;
+				break;
+			}
+		}
+	}
+	
+
 
 // std::list<layerDescriptor>::iterator layer;
 // 		layer = Mugh->layers.begin();
@@ -1343,7 +1416,7 @@ void polydactyly2 (BonyFish * fish) {
 
 
 
-
+ 
 
 // 	// add the bone's motor control to a new output connector.
 // 	int j = 0;
