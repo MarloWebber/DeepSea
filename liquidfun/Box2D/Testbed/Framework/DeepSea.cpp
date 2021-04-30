@@ -1366,10 +1366,26 @@ void amputation (int arg) {
 				// }
 			}
 
-			 	fish->bones[currentlySelectedLimb]->flagDelete = true;
-					deleteJoint(fish->bones[currentlySelectedLimb]);
-					deleteBone(fish->bones[currentlySelectedLimb]);
-					fish->genes.bones[currentlySelectedLimb].used = false;
+		 	fish->bones[currentlySelectedLimb]->flagDelete = true;
+			deleteJoint(fish->bones[currentlySelectedLimb]);
+			deleteBone(fish->bones[currentlySelectedLimb]);
+			fish->genes.bones[currentlySelectedLimb].used = false;
+
+
+
+			// delete output and input connectors
+			uint8_t currentlySelectedLimbUnsigned = currentlySelectedLimb;
+			for (int i = 0; i < N_SENSECONNECTORS; ++i)
+			{
+				if (fish->inputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
+					fish->inputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
+				}
+
+				if (fish->outputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
+					fish->outputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
+				}
+			}
+
 
 
 			return;

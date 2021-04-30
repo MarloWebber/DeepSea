@@ -170,8 +170,8 @@ struct fishDescriptor_t {
 
 	// uint8_t heartSpeed;
 
-	senseConnector inputMatrix[32]; // these need to get serialized too. so this is a workable place for them.
-	senseConnector outputMatrix[32];
+	senseConnector inputMatrix[N_SENSECONNECTORS]; // these need to get serialized too. so this is a workable place for them.
+	senseConnector outputMatrix[N_SENSECONNECTORS];
 
 	fishDescriptor_t();
 };
@@ -372,8 +372,8 @@ struct BonyFish {
 	fishDescriptor_t genes; // the fish carries a copy of its own descriptor which is the genetic infomshun it will pass along.
 	networkDescriptor * brain;
 
-	senseConnector inputMatrix[32]; // these need to get serialized too. so this is a workable place for them.
-	senseConnector outputMatrix[32];
+	senseConnector inputMatrix[N_SENSECONNECTORS]; // these need to get serialized too. so this is a workable place for them.
+	senseConnector outputMatrix[N_SENSECONNECTORS];
 
 	char species[32]; // a textual string describing what species the fish is.
 

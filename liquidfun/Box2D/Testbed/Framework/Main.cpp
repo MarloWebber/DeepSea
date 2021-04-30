@@ -417,6 +417,7 @@ deepSeaControlA();
 		break;
 
 	case 'k':
+		// printf("SKOOOJ\n");
 		currentlySelectedLimb--;
 		if (currentlySelectedLimb < 0) {
 			currentlySelectedLimb = N_FINGERS-1;
@@ -424,6 +425,7 @@ deepSeaControlA();
 		break;
 
 	case 'l':
+	// printf("MEMENE\n");
 		currentlySelectedLimb++;
 		if (currentlySelectedLimb > N_FINGERS-1) {
 			currentlySelectedLimb = 0;
