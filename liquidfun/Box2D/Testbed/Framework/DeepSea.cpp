@@ -934,6 +934,8 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
+ 			printf("neuron %u\n", neuron->index);
+
  			// std::list<connectionDescriptor> connectionsToDestroy;
 
  			std::list<connectionDescriptor>::iterator connection;
@@ -950,6 +952,12 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
  				}
  				else {
  					connection++;
+
+ 					// if the connection was connected to a higher-indexed neuron, decrement it.
+ 					// if (connection->connectedTo > windex) {
+ 					// 	connection->connectedTo --;
+ 					// }
+
  				}
 			}
 
@@ -994,8 +1002,39 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 	}
 
 
+	// go through the entire brain and decrement any connection index greater than the target's index.
+	// printf(" printConnectionArrayForDebug: %u layers\n", network->n_layers);
+
+	// std::list<layerDescriptor>::iterator layer;
+	// unsigned int layerIndex = 0;
+	// unsigned int neuronIndex = 0;
+	// unsigned int connectionIndex = 0;
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			// printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
+
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				// printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
+
+ 				if (connection->connectedTo > windex) {
+ 					connection->connectedTo --;
+ 				}
+				// connectionIndex++;
+			}
+			// neuronIndex ++;
+		}
+		// layerIndex ++;
+	}
 
 }
+
+
+
 
 // method to create a network descriptor in memory
 networkDescriptor::networkDescriptor (fann * pann) {
@@ -1421,6 +1460,33 @@ void placeLimbOnSelectedFish(int arg) {
 // 	}
 // }
 
+void verifyNetworkDescriptor (networkDescriptor * network) {
+	printf(" printConnectionArrayForDebug: %u layers\n", network->n_layers);
+
+	std::list<layerDescriptor>::iterator layer;
+	unsigned int layerIndex = 0;
+	unsigned int neuronIndex = 0;
+	unsigned int connectionIndex = 0;
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
+
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
+
+				connectionIndex++;
+			}
+			neuronIndex ++;
+		}
+		layerIndex ++;
+	}
+}
+
 void amputation (int arg) {
 		unused_variable((void *) &arg);
 	std::list<BonyFish>::iterator fish;
@@ -1539,12 +1605,29 @@ void amputation (int arg) {
 
 			for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
 
-				 // deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
+				
 				 printf("deleting neuron %u\n", *neuronsToRemoveIterator);
+
+
+
+				  deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
+
+				  std::list<unsigned int>::iterator decrementIndexesInListIterator;
+				  for (decrementIndexesInListIterator = neuronsToRemove.begin(); decrementIndexesInListIterator !=  neuronsToRemove.end(); ++decrementIndexesInListIterator) 	{
+				  	if (*decrementIndexesInListIterator > *neuronsToRemoveIterator) {
+				  		(*decrementIndexesInListIterator)--;
+				  	}
+				  }
+
+
 
 			}
 
-			// fish->ann = createFANNbrainFromDescriptor(fish->brain);
+			// reindexNeurons(fish->brain);
+
+			verifyNetworkDescriptor(fish->brain);
+
+			fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 
 			// while(1){;}
@@ -1954,32 +2037,7 @@ void drawingTest() {
 	}
 }
 
-void verifyNetworkDescriptor (networkDescriptor * network) {
-	printf(" printConnectionArrayForDebug: %i layers\n", network->n_layers);
 
-	std::list<layerDescriptor>::iterator layer;
-	unsigned int layerIndex = 0;
-	unsigned int neuronIndex = 0;
-	unsigned int connectionIndex = 0;
-
-	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-		printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
-
-		std::list<neuronDescriptor>::iterator neuron;
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- 			printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
-
- 			std::list<connectionDescriptor>::iterator connection;
- 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
- 				printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
-
-				connectionIndex++;
-			}
-			neuronIndex ++;
-		}
-		layerIndex ++;
-	}
-}
 
 class RayCastClosestCallback : public b2RayCastCallback
 {
