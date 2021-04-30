@@ -70,20 +70,6 @@ void unused_variable(void * bullshit) {
 	; // do nothing
 }
 
-/*
- * Generic function to find if an element of any type exists in list
- * https://thispointer.com/c-list-find-contains-how-to-search-an-element-in-stdlist/
- */
-// template <typename T>
-// bool contains(std::list<T> & listOfElements, const T & element)
-// {
-//     // Find the iterator if element in list
-//     auto it = std::find(listOfElements.begin(), listOfElements.end(), element);
-//     //return if iterator points to end or not. It points to end then it means element
-//     // does not exists in list
-//     return it != listOfElements.end();
-// }
-
 float magnitude (b2Vec2 vector) {
 	return sqrt( (vector.x * vector.x) + (vector.y * vector.y));
 }
@@ -925,18 +911,12 @@ neuronDescriptor * getNeuronByIndex (networkDescriptor * network, unsigned int w
 void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 
 	// go through the entire brain and destroy any connection mentioning the target.
-
 	// gather the connections to destroy in a separate list because you can't operate on a list while iterating through it.
-
 	std::list<layerDescriptor>::iterator layer;
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
 
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-
- 			// printf("neuron %u\n", neuron->index);
-
- 			// std::list<connectionDescriptor> connectionsToDestroy;
 
  			std::list<connectionDescriptor>::iterator connection;
 
@@ -944,37 +924,23 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); ) {
 
  				if (connection->connectedTo == windex ) {
- 					// connectionsToDestroy.push_back(*connection);
-
- 					// destroy it.
  					connection = neuron->connections.erase(connection);
  					neuron->n_connections --;
  				}
  				else {
  					connection++;
-
- 					// if the connection was connected to a higher-indexed neuron, decrement it.
- 					// if (connection->connectedTo > windex) {
- 					// 	connection->connectedTo --;
- 					// }
-
  				}
 			}
-
-			// std::list<connectionDescriptor>::iterator connectionToDestroy;
-			// for (connectionToDestroy = connectionsToDestroy.begin(); connectionToDestroy != connectionsToDestroy.end(); connectionToDestroy++) {
-			// 	neuron->connections.remove(*connectionToDestroy);
-			// }
 		}
 	}
 
-
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+
+		// you can delete one neuron while iterating the list so long as you just do one and GTFO.
 		bool allDone = false;
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ;) {
  			if (neuron->index == windex) {
- 				// layer->neurons.remove(*neuron);
  				neuron = layer->neurons.erase(neuron);
  				layer->n_neurons--;
  				allDone = true;
@@ -1001,40 +967,22 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 		}
 	}
 
-
 	// go through the entire brain and decrement any connection index greater than the target's index.
-	// printf(" printConnectionArrayForDebug: %u layers\n", network->n_layers);
-
-	// std::list<layerDescriptor>::iterator layer;
-	// unsigned int layerIndex = 0;
-	// unsigned int neuronIndex = 0;
-	// unsigned int connectionIndex = 0;
-
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-		// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
 
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- 			// printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
 
  			std::list<connectionDescriptor>::iterator connection;
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
- 				// printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
 
  				if (connection->connectedTo > windex) {
  					connection->connectedTo --;
  				}
-				// connectionIndex++;
 			}
-			// neuronIndex ++;
 		}
-		// layerIndex ++;
 	}
-
 }
-
-
-
 
 // method to create a network descriptor in memory
 networkDescriptor::networkDescriptor (fann * pann) {
@@ -1248,7 +1196,6 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 // this method is discontinued in favor of ones that add to the living creature.
 void polydactyly (fishDescriptor_t * driedFish) {
 
-
 	// generate the limb as the next-unoccupied lowest limb index. attach it to a random existing limb
 	int eventualLimb = 0;
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
@@ -1270,12 +1217,7 @@ void polydactyly (fishDescriptor_t * driedFish) {
 		}
 		j ++;
 	}
-
-
-
 }
-
-
 
 
 void addNeuronIntoLivingBrain (BonyFish * fish, uint newNeuronIndex) {
@@ -1440,26 +1382,6 @@ void placeLimbOnSelectedFish(int arg) {
 	}
 }
 
-
-
-// void amputation (fishDescriptor_t * driedFish) {
-// 	unsigned int usedFingers = 0;
-// 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-// 		if (driedFish->bones[i].used) {
-// 			usedFingers ++;
-// 		}
-// 	}
-// 	unsigned int randomFinger = RNG() * usedFingers;
-// 	driedFish->bones[randomFinger].used = false;
-
-// 	// for all the limbs that were attached to the random one, you have to remove those too.
-// 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-// 		if (driedFish->bones[i].attachedTo == randomFinger ){
-// 			driedFish->bones[i].used = false;
-// 		}
-// 	}
-// }
-
 void verifyNetworkDescriptor (networkDescriptor * network) {
 	printf(" printConnectionArrayForDebug: %u layers\n", network->n_layers);
 
@@ -1488,15 +1410,10 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 }
 
 void amputation (int arg) {
-		unused_variable((void *) &arg);
+	unused_variable((void *) &arg);
 	std::list<BonyFish>::iterator fish;
 
-	
-
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-
-
-		
 
 		if (fish->selected && TestMain::getBodyWindowStatus()) {
 
@@ -1505,28 +1422,18 @@ void amputation (int arg) {
 				}
 
 			for ( int i = 0; i < N_FINGERS; ++i) {
-
 				if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
 					fish->bones[i]->flagDelete = true;
 					deleteJoint(fish->bones[i]);
 					deleteBone(fish->bones[i]);
 					fish->genes.bones[i].used = false;
-
-
 				}
-				// else if (i == currentlySelectedLimb) {
-				// 	fish->bones[i]->flagDelete = true;
-				// 	deleteJoint(fish->bones[i]);
-				// 	deleteBone(fish->bones[i]);
-				// }
 			}
 
 		 	fish->bones[currentlySelectedLimb]->flagDelete = true;
 			deleteJoint(fish->bones[currentlySelectedLimb]);
 			deleteBone(fish->bones[currentlySelectedLimb]);
 			fish->genes.bones[currentlySelectedLimb].used = false;
-
-
 
 			// list of neuron indexes to remove
 			std::list<unsigned int> neuronsToRemove;    
@@ -1538,9 +1445,6 @@ void amputation (int arg) {
 			unsigned int retractOutputConnectorsThisManyPlaces = 0;
 			unsigned int retractOutputConnectorsStartingAt = 0;
 			bool chosenPlaceForOutputConnectorRetraction = false;
-
-
-
 
 			// delete output and input connectors, noting which neurons will be removed.
 			uint8_t currentlySelectedLimbUnsigned = currentlySelectedLimb;
@@ -1569,52 +1473,14 @@ void amputation (int arg) {
 						retractOutputConnectorsStartingAt = i;
 					}
 
-					// neuronsToRemove.push_back(fish->outputMatrix[i].connectedToNeuron);
-
-					// and for the output layer we have to get the index of the first neuron in the output layer, plus i.
-					// unsigned int outputLayerStartIndex = fish->brain->layers[fish->brain->n_layers-1].neurons[fish->brain->layers[fish->brain->n_layers-1]->n_neurons-1 ]->index;
-
-
-
-					// std::list<layerDescriptor>::iterator layer = fish->brain->layers.back();
-					// unsigned int layerIndex = 0;
-					// unsigned int neuronIndex = 0;
-					// unsigned int connectionIndex = 0;
-
-					// for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-						// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
-
-						std::list<neuronDescriptor>::iterator neuron = fish->brain->layers.back().neurons.begin();
+					std::list<neuronDescriptor>::iterator neuron = fish->brain->layers.back().neurons.begin();
 					unsigned int outputLayerStartIndex = neuron->index;
-
-					printf("outputLayerStartIndex: %u\n", outputLayerStartIndex);
-
-				 	// 	for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-				 	// 		// printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
-
-				 	// 	// 	std::list<connectionDescriptor>::iterator connection;
-				 	// 	// 	for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
-				 	// 	// 		// printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
-
-						// 	// 	connectionIndex++;
-						// 	// }
-						// 	neuronIndex ++;
-						// }
-						// layerIndex ++;
-					// }
-
-
-
-
-
 					neuronsToRemove.push_back(outputLayerStartIndex + i);
 				}
 			}
 
-
 			// push back the input and output connectors by the number of neurons that were removed.
 			for (unsigned int i = 0; i < retractInputConnectorsThisManyPlaces; ++i) {
-
 				for (unsigned int j = retractInputConnectorsStartingAt; j < N_SENSECONNECTORS; ++j)
 				{
 					if (j == N_SENSECONNECTORS-1) {
@@ -1623,14 +1489,10 @@ void amputation (int arg) {
 					else {
 						fish->inputMatrix[j] = fish->inputMatrix[j+1];
 					}
-
 				}
-
 			}
 
-
 			for (unsigned int i = 0; i < retractOutputConnectorsThisManyPlaces; ++i) {
-
 				for (unsigned int j = retractOutputConnectorsStartingAt; j < N_SENSECONNECTORS; ++j)
 				{
 					if (j == N_SENSECONNECTORS-1) {
@@ -1639,71 +1501,32 @@ void amputation (int arg) {
 					else {
 						fish->outputMatrix[j] = fish->outputMatrix[j+1];
 					}
-
 				}
-
 			}
 
-
-
 			// re-fry the brain without those connectors.
-
-			// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
-
-			// verifyNetworkDescriptor(muscleCars);
-
-			// fann * jann = createFANNbrainFromDescriptor(muscleCars);
-
-			// navigate the fish brain. identify the layer number and index of removed input and output neurons. Disintegrate those neurons and all connections attached to them.
 
 			std::list<unsigned int>::iterator neuronsToRemoveIterator;
 
 			for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
 
-				
-				 printf("deleting neuron %u\n", *neuronsToRemoveIterator);
+				deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
 
-
-
-				  deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
-
-
-				 //  std::list<layerDescriptor>::iterator layer = fish->brain->layers.begin();
-				 // // printf("size of input layer %u\n", layer->n_neurons);
-
-				 //  // if the neuron to be removed is in the input layer, shuffle all the input connectors along by one.
-				 //  if (*neuronsToRemoveIterator < layer->n_neurons) {
-
-				 //  }
-
-
-				 //  // if the neuron to be removed is in the output layer, shuffle all the output connectors along by one.
-
-
-				  std::list<unsigned int>::iterator decrementIndexesInListIterator;
-				  for (decrementIndexesInListIterator = neuronsToRemove.begin(); decrementIndexesInListIterator !=  neuronsToRemove.end(); ++decrementIndexesInListIterator) 	{
+				// if the neuron to be removed is in the output layer, shuffle all the output connectors along by one.
+				std::list<unsigned int>::iterator decrementIndexesInListIterator;
+				for (decrementIndexesInListIterator = neuronsToRemove.begin(); decrementIndexesInListIterator !=  neuronsToRemove.end(); ++decrementIndexesInListIterator) 	{
 				  	if (*decrementIndexesInListIterator > *neuronsToRemoveIterator) {
 				  		(*decrementIndexesInListIterator)--;
 				  	}
-				  }
-
-
-
+				}
 			}
-
-			// reindexNeurons(fish->brain);
 
 			verifyNetworkDescriptor(fish->brain);
 
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
-
-			// while(1){;}
-		
-
-
 			return;
-	}
+		}
 	}
 }
 
@@ -2685,9 +2508,7 @@ int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
 	return -1;
 }
 
-// int checkLimbsInWindow () {
 
-// }
 
 void drawBodyEditingWindow(BonyFish * fish) {
 
@@ -2729,44 +2550,35 @@ void drawBodyEditingWindow(BonyFish * fish) {
 
 
 	for (int i = 0; i < N_FINGERS; ++i) {
-			if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
-				;
+		if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
+			;
+		}
+		else {
+			if (fish->bones[i]->p_body == NULL || fish->bones[i]->p_body == nullptr) {
+				continue;
+			}
+			b2Vec2 vertices[4];
+			b2Vec2 boneCenterWorldPosition = fish->bones[i]->p_body->GetWorldCenter();
+			for (int j = 0; j < 4; ++j) {	
+				b2Vec2 adjustedVertex = fish->bones[i]->shape.GetVertex(j);
+				b2Vec2 boneLocalCenter =fish->bones[i]->p_body->GetLocalCenter();
+				b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, fish->bones[i]->p_body->GetAngle(), adjustedVertex);
+				rotatedVertex.x += boneCenterWorldPosition.x;
+				rotatedVertex.y +=boneCenterWorldPosition.y;
+				vertices[j] = rotatedVertex - rootPosition;
+			}
+
+			
+			local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fish->bones[i]->color);
+
+			if (i == currentlySelectedLimb) {
+				local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0.9,0.4,0.05));
 			}
 			else {
-				if (fish->bones[i]->p_body == NULL || fish->bones[i]->p_body == nullptr) {
-					continue;
-				}
-				b2Vec2 vertices[4];
-				b2Vec2 boneCenterWorldPosition = fish->bones[i]->p_body->GetWorldCenter();
-				for (int j = 0; j < 4; ++j) {	
-					b2Vec2 adjustedVertex = fish->bones[i]->shape.GetVertex(j);
-					b2Vec2 boneLocalCenter =fish->bones[i]->p_body->GetLocalCenter();
-					b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, fish->bones[i]->p_body->GetAngle(), adjustedVertex);
-					rotatedVertex.x += boneCenterWorldPosition.x;
-					rotatedVertex.y +=boneCenterWorldPosition.y;
-					vertices[j] = rotatedVertex - rootPosition;
-				}
-
-					
-					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fish->bones[i]->color);
-
-					if (i == currentlySelectedLimb) {
-						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0.9,0.4,0.05));
-					}
-					else {
-						local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0,0,0));
-					}
-				}
-
-				
-
-
+				local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0,0,0));
 			}
-		
-
-
-
-
+		}
+	}
 }
 
 
@@ -3150,7 +2962,7 @@ void runBiomechanicalFunctions () {
 
 void flagSelectedFishForDeletion(int arg) {
 	unused_variable((void *)&arg);
-		std::list<BonyFish>::iterator fish;
+	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		if (fish->selected) {
 			fish->flagDelete = true;
@@ -3159,93 +2971,65 @@ void flagSelectedFishForDeletion(int arg) {
 	}
 
 	// iterate through food particles
-		for  (int i = 0; i < N_FOODPARTICLES; i++) {
-			if (food[i]->selected) {
-				food[i]->flagDelete = true;
-				food[i]->selected = false;
-			}
+	for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		if (food[i]->selected) {
+			food[i]->flagDelete = true;
+			food[i]->selected = false;
 		}
-
-
-
+	}
 }
 
 void voteSelectedFish(int arg) {
 
 	unused_variable((void *)&arg);
 
-		std::list<BonyFish>::iterator fish;
+	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		if (fish->selected) {
-			// fish->flagDelete = true;
-			// fish->selected = false;
 			vote( &(*fish) );
-
-
 		}
 	}
-
 }
 
 void deselectAll (int arg) {
 
-		unused_variable((void *)&arg);
+	unused_variable((void *)&arg);
 
-		std::list<BonyFish>::iterator fish;
+	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		if (fish->selected) {
-			// fish->flagDelete = true;
 			fish->selected = false;
-			// vote( &(*fish) );
-
-
 		}
 	}
-
-
 }
 
 
 void selectAll (int arg) {
 
-		unused_variable((void *)&arg);
+	unused_variable((void *)&arg);
 
-		std::list<BonyFish>::iterator fish;
+	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 		if (!fish->selected) {
-			// fish->flagDelete = true;
 			fish->selected = true;
-			// vote( &(*fish) );
-
-
 		}
 	}
-
-
 }
 
 
 void invertSelection (int arg) {
 
-		unused_variable((void *)&arg);
+	unused_variable((void *)&arg);
 
-		std::list<BonyFish>::iterator fish;
+	std::list<BonyFish>::iterator fish;
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-		// if (!fish->selected) {
-			// fish->flagDelete = true;
-			fish->selected = !fish->selected;
-			// vote( &(*fish) );
-
-
-		// }
+		fish->selected = !fish->selected;
 	}
-
-
 }
 
 void pinToGrid(int arg) {
 
-		unused_variable((void *)&arg);
+	unused_variable((void *)&arg);
 
 	std::list<BonyFish>::iterator fish;
 
@@ -3283,40 +3067,20 @@ void pinToGrid(int arg) {
 
 void releaseFromGrid(int arg) {
 
-		unused_variable((void *)&arg);
+	unused_variable((void *)&arg);
 
 	std::list<BonyFish>::iterator fish;
 
-	// uint gridSize = int(sqrt(m_deepSeaSettings.exploratory_nFish));
-
-	// b2Vec2 gridPosition = b2Vec2(0.0f, 0.0f);
-	// float gridSpacing = 5.0f;
-
-	// uint index = 0;
-
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-
-		// uint rootBone = 0;
 
 		for (uint i = 0; i < N_FINGERS; ++i)
 		{
 			if (fish->bones[i]->isRoot) {
-				// rootBone = i;
-				// break;
 
 				fish->bones[i]->p_body->SetType(b2_dynamicBody);
 
 			}
 		}
-
-
-		// uint row = index / gridSize;
-		// uint column = index % gridSize;
-
-		// b2Vec2 mool = b2Vec2(row * gridSpacing, column * gridSpacing);
-		// fish->bones[rootBone]->p_body->SetTransform(mool, 0.0f);
-
-		// index += 1;
 	}
 }
 
@@ -3330,16 +3094,12 @@ void selectFishWithGreatestWiggle (int arg) {
 
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 
-		// printf("giglle packeink: %f\n",fish->filteredOutputWiggle);
-		// printf("yana na: %f\n",theWiggliest->filteredOutputWiggle);
-
 		if (fish->filteredOutputWiggle > theWiggliest->filteredOutputWiggle) {
 
 			printf("this fish is even wigglier: %f\n",fish->filteredOutputWiggle );
 
 			theWiggliest = &(*fish);
 		}
-		// fish->selected = false;
 	}
 	theWiggliest->selected = true;
 }
@@ -3358,7 +3118,6 @@ void selectFishWhoMovedTheFurthest (int arg) {
 			printf("this fish has gone even further: %f\n",fish->distanceMovedSoFar );
 			theFurthest = &(*fish);
 		}
-		// fish->selected = false;
 	}
 	theFurthest->selected = true;
 }
@@ -3377,20 +3136,19 @@ void selectFurthestFromOrigin (int arg) {
 			printf("this fish has gone even further: %f\n",fish->distanceMovedSoFar );
 			theFurthest = &(*fish);
 		}
-		// fish->selected = false;
 	}
 	theFurthest->selected = true;
 }
 
 void selectClosestToFood (int arg) {
 
-		unused_variable((void *)&arg);
+	unused_variable((void *)&arg);
 
-		std::list<BonyFish>::iterator fish;
+	std::list<BonyFish>::iterator fish;
 
-		BonyFish * theClosest = &(*fish);
-		float theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
-		bool chosen = false;
+	BonyFish * theClosest = &(*fish);
+	float theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
+	bool chosen = false;
 
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 
@@ -3411,15 +3169,11 @@ void selectClosestToFood (int arg) {
 
 			}
 		}
-
-
 	}
 
 	if (chosen) {
 		theClosest->selected = true;
 	}
-
-
 }
 
 
@@ -3438,16 +3192,7 @@ void deepSeaLoop () {
 
 		loopCounter ++;
 
-
-
-
-
-
 		removeDeletableFish();
-
-		// if (TestMain::getGridPinStatus()) {
-		// 	pinToGrid();
-		// }
 
 		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION ) {
 			if (loopCounter > loopSafetyLimit) {
@@ -3472,8 +3217,6 @@ void deepSeaLoop () {
 
 		if (flagAddFood) {
 			flagAddFood = false;
-
-			// addFoodParticle(getRandomPosition());
 			addRandomFoodParticle(0);
 		}
 
