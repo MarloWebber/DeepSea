@@ -1222,26 +1222,16 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 
 void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
-	// // rearrange the network to have the appropriate amount of new 0 layer neurons.
-	// 	// turn the network into a descriptor.
-	// 	networkDescriptor Mugh =  createNeurodescriptorFromFANN (fish->brain) ;
+	neuronDescriptor newNeuron = neuronDescriptor();
+	newNeuron.isUsed = true;
 
-	
-
-	// 		// create the new neuron
-			neuronDescriptor newNeuron = neuronDescriptor();
-			newNeuron.isUsed = true;
-
-
-			std::list<layerDescriptor>::iterator layer;
+	std::list<layerDescriptor>::iterator layer;
 	unsigned int layerIndex = 0;
 
 	unsigned int newNeuronIndex = 0;
 
 	// if you are not on the last layer, ignore bias neurons because they are included implicitly.
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
-
-
 		if (layerIndex == targetLayerIndex) {
 			newNeuronIndex += (layer->n_neurons - 1);
 			break;
@@ -1250,62 +1240,55 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 			newNeuronIndex += layer->n_neurons; // always adding new neuron at the end of the layer.
 			layerIndex++;
 		}
-
-
 	}
 
-		newNeuron.index = newNeuronIndex;
-		std::list<layerDescriptor>::iterator gayer = layer;
+	newNeuron.index = newNeuronIndex;
+	std::list<layerDescriptor>::iterator gayer = layer;
 
-		std::list<neuronDescriptor>::iterator neuron;// = layer->neurons.end();
-		// neuron --; neuron--;
-		// layer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
-
+	std::list<neuronDescriptor>::iterator neuron;// = layer->neurons.end();
 
 	// 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
-		for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 		
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-
 
  			if (neuron->index >= newNeuronIndex) {
  				neuron->index ++;
  			}
 
-
  			std::list<connectionDescriptor>::iterator connection;
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
-
 
  				if (connection->connectedTo >= newNeuronIndex) {
  					connection->connectedTo ++;
  				}
-
- 				
-
  			}
  		}
  	}	
 
-		// std::list<neuronDescriptor>::iterator neuron;// 
+ 	// make connections for all the next-layer neurons, set to 0, add them to the new neuron
+ 	layer = gayer;
+ 	if (layer != fish->brain->layers.end() ) { // if this isn't the last layer
+ 		layer++;	
+ 		if (layer != fish->brain->layers.end() ) { // and the next layer is not off the end of the array
 
- 		neuron = gayer->neurons.end();
-		neuron --; 
-		//neuron--;
-		gayer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
+ 			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 				int targetIndex = neuron->index;
+ 				connectionDescriptor * newConnection = new connectionDescriptor(   targetIndex);
+ 				newNeuron.connections.push_back( *newConnection  );
+ 			}
 
-
-
-
-
-
-		 	// the new neuron is connected to all neurons in the preceding and succeeding layers, if available.
-
-
-
+ 		}
+ 	}
 
 
-		// turn it back into a FANN and put it on the fish.
+	neuron = gayer->neurons.end();
+	neuron --; 
+	gayer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
+
+
+
+
 
 }
 
