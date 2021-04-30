@@ -1472,14 +1472,57 @@ void amputation (int arg) {
 			{
 				if (fish->inputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
 					fish->inputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
-					neuronsToRemove.push_back(fish->inputMatrix[i].connectedToNeuron);
+					// neuronsToRemove.push_back(fish->inputMatrix[i].connectedToNeuron);
+
+					// turns out the 'connectedToNeuron' parameter isnt even used. So for the input layer can can just use the index
+					neuronsToRemove.push_back(i);
 				}
 
 				if (fish->outputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
 					fish->outputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
-					neuronsToRemove.push_back(fish->outputMatrix[i].connectedToNeuron);
+					// neuronsToRemove.push_back(fish->outputMatrix[i].connectedToNeuron);
+
+					// and for the output layer we have to get the index of the first neuron in the output layer, plus i.
+					// unsigned int outputLayerStartIndex = fish->brain->layers[fish->brain->n_layers-1].neurons[fish->brain->layers[fish->brain->n_layers-1]->n_neurons-1 ]->index;
+
+
+
+					// std::list<layerDescriptor>::iterator layer = fish->brain->layers.back();
+					// unsigned int layerIndex = 0;
+					// unsigned int neuronIndex = 0;
+					// unsigned int connectionIndex = 0;
+
+					// for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+						// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+						std::list<neuronDescriptor>::iterator neuron = fish->brain->layers.back().neurons.begin();
+					unsigned int outputLayerStartIndex = neuron->index;
+
+					printf("outputLayerStartIndex: %u\n", outputLayerStartIndex);
+
+				 	// 	for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+				 	// 		// printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
+
+				 	// 	// 	std::list<connectionDescriptor>::iterator connection;
+				 	// 	// 	for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+				 	// 	// 		// printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
+
+						// 	// 	connectionIndex++;
+						// 	// }
+						// 	neuronIndex ++;
+						// }
+						// layerIndex ++;
+					// }
+
+
+
+
+
+					neuronsToRemove.push_back(outputLayerStartIndex + i);
 				}
 			}
+
+
 
 
 			// re-fry the brain without those connectors.
@@ -1496,38 +1539,16 @@ void amputation (int arg) {
 
 			for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
 
-				 deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
+				 // deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
+				 printf("deleting neuron %u\n", *neuronsToRemoveIterator);
 
 			}
 
-			fish->ann = createFANNbrainFromDescriptor(fish->brain);
+			// fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 
-
-			// std::list<layerDescriptor>::iterator layer;
-			// unsigned int layerIndex = 0;
-			// unsigned int neuronIndex = 0;
-			// unsigned int connectionIndex = 0;
-
-			// for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-			// 	// printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
-
-			// 	std::list<neuronDescriptor>::iterator neuron;
-		 // 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-		 // 			// printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
-
-		 // 			std::list<connectionDescriptor>::iterator connection;
-		 // 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
-		 // 				// printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
-
-			// 			connectionIndex++;
-			// 		}
-			// 		neuronIndex ++;
-			// 	}
-			// 	layerIndex ++;
-			// }
-
-
+			// while(1){;}
+		
 
 
 			return;
@@ -3183,8 +3204,8 @@ void selectFishWithGreatestWiggle (int arg) {
 
 	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 
-		printf("giglle packeink: %f\n",fish->filteredOutputWiggle);
-		printf("yana na: %f\n",theWiggliest->filteredOutputWiggle);
+		// printf("giglle packeink: %f\n",fish->filteredOutputWiggle);
+		// printf("yana na: %f\n",theWiggliest->filteredOutputWiggle);
 
 		if (fish->filteredOutputWiggle > theWiggliest->filteredOutputWiggle) {
 
