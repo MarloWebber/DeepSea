@@ -934,7 +934,7 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
- 			printf("neuron %u\n", neuron->index);
+ 			// printf("neuron %u\n", neuron->index);
 
  			// std::list<connectionDescriptor> connectionsToDestroy;
 
@@ -1531,6 +1531,16 @@ void amputation (int arg) {
 			// list of neuron indexes to remove
 			std::list<unsigned int> neuronsToRemove;    
 
+			unsigned int retractInputConnectorsThisManyPlaces = 0;
+			unsigned int retractInputConnectorsStartingAt = 0;
+			bool chosenPlaceForInputConnectorRetraction = false;
+
+			unsigned int retractOutputConnectorsThisManyPlaces = 0;
+			unsigned int retractOutputConnectorsStartingAt = 0;
+			bool chosenPlaceForOutputConnectorRetraction = false;
+
+
+
 
 			// delete output and input connectors, noting which neurons will be removed.
 			uint8_t currentlySelectedLimbUnsigned = currentlySelectedLimb;
@@ -1542,10 +1552,23 @@ void amputation (int arg) {
 
 					// turns out the 'connectedToNeuron' parameter isnt even used. So for the input layer can can just use the index
 					neuronsToRemove.push_back(i);
+
+					retractInputConnectorsThisManyPlaces++;
+					if (!chosenPlaceForInputConnectorRetraction) {
+						chosenPlaceForInputConnectorRetraction = true;
+						retractInputConnectorsStartingAt = i;
+					}
 				}
 
 				if (fish->outputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
 					fish->outputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
+
+					retractOutputConnectorsThisManyPlaces++;
+					if (!chosenPlaceForOutputConnectorRetraction) {
+						chosenPlaceForOutputConnectorRetraction = true;
+						retractOutputConnectorsStartingAt = i;
+					}
+
 					// neuronsToRemove.push_back(fish->outputMatrix[i].connectedToNeuron);
 
 					// and for the output layer we have to get the index of the first neuron in the output layer, plus i.
@@ -1589,6 +1612,38 @@ void amputation (int arg) {
 			}
 
 
+			// push back the input and output connectors by the number of neurons that were removed.
+			for (unsigned int i = 0; i < retractInputConnectorsThisManyPlaces; ++i) {
+
+				for (unsigned int j = retractInputConnectorsStartingAt; j < N_SENSECONNECTORS; ++j)
+				{
+					if (j == N_SENSECONNECTORS-1) {
+						fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+					}
+					else {
+						fish->inputMatrix[j] = fish->inputMatrix[j+1];
+					}
+
+				}
+
+			}
+
+
+			for (unsigned int i = 0; i < retractOutputConnectorsThisManyPlaces; ++i) {
+
+				for (unsigned int j = retractOutputConnectorsStartingAt; j < N_SENSECONNECTORS; ++j)
+				{
+					if (j == N_SENSECONNECTORS-1) {
+						fish->outputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+					}
+					else {
+						fish->outputMatrix[j] = fish->outputMatrix[j+1];
+					}
+
+				}
+
+			}
+
 
 
 			// re-fry the brain without those connectors.
@@ -1611,6 +1666,19 @@ void amputation (int arg) {
 
 
 				  deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
+
+
+				 //  std::list<layerDescriptor>::iterator layer = fish->brain->layers.begin();
+				 // // printf("size of input layer %u\n", layer->n_neurons);
+
+				 //  // if the neuron to be removed is in the input layer, shuffle all the input connectors along by one.
+				 //  if (*neuronsToRemoveIterator < layer->n_neurons) {
+
+				 //  }
+
+
+				 //  // if the neuron to be removed is in the output layer, shuffle all the output connectors along by one.
+
 
 				  std::list<unsigned int>::iterator decrementIndexesInListIterator;
 				  for (decrementIndexesInListIterator = neuronsToRemove.begin(); decrementIndexesInListIterator !=  neuronsToRemove.end(); ++decrementIndexesInListIterator) 	{
