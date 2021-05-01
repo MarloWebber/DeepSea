@@ -764,6 +764,35 @@ void deleteFish (BonyFish * fish) {
 	}
 }
 
+// goes through the brain and adds 'biasNeuron' flag to neurons at the end of each layer. This is mainly so they can be drawn properly.
+void flagBiasNeurons( BonyFish * fish) {
+
+	std::list<layerDescriptor>::iterator layer;
+
+	unsigned int layerIndex = 0;
+
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+
+		std::list<neuronDescriptor>::iterator neuron;
+
+		// iterate through all and flag them false
+		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+			neuron->biasNeuron = false;
+		}
+
+		// on every layer except the last, flag the last neuron as bias.
+		if ( layerIndex < (fish->brain->layers.size() -1 )) {
+
+			neuron = layer->neurons.end();
+			neuron--;
+			neuron->biasNeuron = true;
+		}
+
+		layerIndex++;
+	}
+}
+
+
 void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
 	fishes.push_back(  *(new BonyFish(driedFish, nann, startingPosition)) );
 	BonyFish * fish = &(fishes.back());
@@ -775,6 +804,8 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition)
 		}
 		fish->bones[i]->p_owner = fish; // you need to update the user data pointer, because when you pushed the fish onto the list you pushed a copy of it not the actual thing.
 	}
+
+	flagBiasNeurons(fish);
 }
 
 fann * loadFishBrainFromFile (std::string fileName) {
@@ -1220,6 +1251,8 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 // }
 
 
+
+
 void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
 	neuronDescriptor * newNeuron = new neuronDescriptor();
@@ -1326,6 +1359,8 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
 		targetLayerIterator->neurons.insert( neuron, *newNeuron); 
 	}
+
+	flagBiasNeurons(fish);
 }
 
 
@@ -2574,23 +2609,19 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
  			if (neuron->biasNeuron) {
 
  				b2Vec2 gigggle[] = {
-			b2Vec2(neuron->position.x+0.1f + 0.2f, neuron->position.y-0.1f), 
-			b2Vec2(neuron->position.x+0.1f + 0.2f, neuron->position.y+0.1f), 
-			b2Vec2(neuron->position.x-0.1f + 0.2f, neuron->position.y+0.1f), 
-			b2Vec2(neuron->position.x-0.1f + 0.2f, neuron->position.y-0.1f), 
-		};
+					b2Vec2(neuron->position.x+0.1f + 0.2f, neuron->position.y-0.1f), 
+					b2Vec2(neuron->position.x+0.1f + 0.2f, neuron->position.y+0.1f), 
+					b2Vec2(neuron->position.x-0.1f + 0.2f, neuron->position.y+0.1f), 
+					b2Vec2(neuron->position.x-0.1f + 0.2f, neuron->position.y-0.1f), 
+				};
  				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.5f,0.5f) );
 
 				std::string connectorLabel = std::string("");
 				b2Vec2 mocesfef = b2Vec2(neuron->position.x-0.05, neuron->position.y-0.2);
 
 				connectorLabel = std::string("Bias");
-				// connectorLabel += std::to_string(fish->outputMatrix[j].connectedToLimb);
 				mocesfef = b2Vec2(neuron->position.x-0.05 + 0.2f, neuron->position.y);
 				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
-				// connectorLabel =  "Motor";
-				// mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y+0.3);
-				// local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 
  			}
 
