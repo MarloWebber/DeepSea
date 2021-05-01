@@ -1248,7 +1248,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 		}
 	}
 
-	newNeuron.index = newNeuronIndex;
+	newNeuron.index = newNeuronIndex + 1;
 
 	printf("newNeuronIndex %u\n", newNeuronIndex);
 
@@ -1261,14 +1261,14 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 		
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
- 			if (neuron->index >= newNeuronIndex) {
+ 			if (neuron->index > newNeuronIndex) {
  				neuron->index ++;
  			}
 
  			std::list<connectionDescriptor>::iterator connection;
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
- 				if (connection->connectedTo >= newNeuronIndex) {
+ 				if (connection->connectedTo > newNeuronIndex) {
  					connection->connectedTo ++;
  				}
  			}
@@ -1291,18 +1291,20 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
  	}
 
 
-	neuron = gayer->neurons.end();
-	neuron --; 
-
+	
 	if (targetLayerIndex == fish->brain->layers.size()-1) {
-		gayer->neurons.push_back( newNeuron);
+		gayer->neurons.push_back( newNeuron);		// there is no bias neuron on the last layer so you can drop it right at the end.
 	}
 	else {
+		neuron = gayer->neurons.end();
+		neuron --; 
+
 		gayer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
 	}
 	
 
-
+	// increase the tally of neurons in the layer.
+	layer->n_neurons ++;
 
 
 }
@@ -1386,6 +1388,8 @@ void polydactyly2 (BonyFish * fish) {
 				fish->inputMatrix[i].sensorType = SENSOR_FOODRADAR;
 				fish->inputMatrix[i].connectedToLimb = targetFinger;
 				addNeuronIntoLivingBrain (fish, 0) ;
+				fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
 				break;
 			}
 		}
@@ -1399,12 +1403,15 @@ void polydactyly2 (BonyFish * fish) {
 				fish->inputMatrix[i].sensorType = SENSOR_JOINTANGLE ;
 				fish->inputMatrix[i].connectedToLimb = targetFinger;
 				addNeuronIntoLivingBrain (fish, 0) ;
+				fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
 				break;
 			}
 		}
 	}
 	
 
+if (false) {
 	// add the joint motor senseconnector
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
 	{
@@ -1412,9 +1419,13 @@ void polydactyly2 (BonyFish * fish) {
 			fish->outputMatrix[i].sensorType = SENSECONNECTOR_MOTOR ;
 			fish->outputMatrix[i].connectedToLimb = targetFinger;
 			addNeuronIntoLivingBrain (fish, fish->brain->layers.size()-1 ) ;
+			fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
 			break;
 		}
 	}
+}
+	
 
 
 // std::list<layerDescriptor>::iterator layer;
@@ -1443,8 +1454,7 @@ void polydactyly2 (BonyFish * fish) {
 
 
 
-	fish->ann = createFANNbrainFromDescriptor(fish->brain);
-
+	
 	return;
 
 
@@ -2536,6 +2546,30 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 					b2Vec2(neuron->position.x-0.05f, neuron->position.y-0.05f), 
 				};
 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.3f,0.3f,0.3f) );
+ 			}
+
+
+ 			if (neuron->biasNeuron) {
+
+ 				b2Vec2 gigggle[] = {
+			b2Vec2(neuron->position.x+0.1f + 0.2f, neuron->position.y-0.1f), 
+			b2Vec2(neuron->position.x+0.1f + 0.2f, neuron->position.y+0.1f), 
+			b2Vec2(neuron->position.x-0.1f + 0.2f, neuron->position.y+0.1f), 
+			b2Vec2(neuron->position.x-0.1f + 0.2f, neuron->position.y-0.1f), 
+		};
+ 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.5f,0.5f) );
+
+				std::string connectorLabel = std::string("");
+				b2Vec2 mocesfef = b2Vec2(neuron->position.x-0.05, neuron->position.y-0.2);
+
+				connectorLabel = std::string("Bias");
+				// connectorLabel += std::to_string(fish->outputMatrix[j].connectedToLimb);
+				mocesfef = b2Vec2(neuron->position.x-0.05 + 0.2f, neuron->position.y);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+				// connectorLabel =  "Motor";
+				// mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y+0.3);
+				// local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
  			}
 
  			std::list<connectionDescriptor>::iterator connection;
