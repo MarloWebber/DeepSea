@@ -275,7 +275,7 @@ struct neuronDescriptor {
 	unsigned int activation_function;
 	float activation_steepness;
 
-	unsigned int n_connections;
+	// unsigned int n_connections;
 	std::list<connectionDescriptor> connections;
 
 	b2Vec2 position;
@@ -295,7 +295,7 @@ struct neuronDescriptor {
 
 struct layerDescriptor {
 	bool isUsed;
-	unsigned int n_neurons;
+	// unsigned int n_neurons;
 	std::list<neuronDescriptor> neurons; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
 	layerDescriptor();
@@ -308,7 +308,7 @@ struct networkDescriptor {
 	3. i might as well make an easily modifiable descriptor file, and methods to turn it back into the text file.
 	*/
 
-	unsigned int n_layers;
+	// unsigned int n_layers;
 	std::list<layerDescriptor> layers;
 
 	b2AABB networkWindow;

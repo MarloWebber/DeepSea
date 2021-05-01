@@ -788,7 +788,7 @@ connectionDescriptor::connectionDescriptor (int toNeuron) {
 }
 
 neuronDescriptor::neuronDescriptor() {
-	n_connections = 0;
+	// n_connections = 0;
 	n_inputs = 0;
 	isUsed = false;
 	aabb.upperBound = b2Vec2(0.0f,0.0f);
@@ -797,7 +797,7 @@ neuronDescriptor::neuronDescriptor() {
 }
 
 layerDescriptor::layerDescriptor () {
-	n_neurons = 0;
+	// n_neurons = 0;
 	isUsed = false;
 }
 
@@ -925,7 +925,7 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 
  				if (connection->connectedTo == windex ) {
  					connection = neuron->connections.erase(connection);
- 					neuron->n_connections --;
+ 					// neuron->n_connections --;
  				}
  				else {
  					connection++;
@@ -942,7 +942,7 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ;) {
  			if (neuron->index == windex) {
  				neuron = layer->neurons.erase(neuron);
- 				layer->n_neurons--;
+ 				// layer->n_neurons--;
  				allDone = true;
  				break;
  			}
@@ -1032,7 +1032,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
 			neuron.activation_function = activation_function_hidden;
   			neuron.activation_steepness = activation_steepness_hidden;
-  			neuron.n_connections = 0; 	// so not used uninitialized
+  			// neuron.n_connections = 0; 	// so not used uninitialized
   			neuron.n_inputs = 0; 
   			neuron.isUsed = true;
 
@@ -1060,14 +1060,14 @@ networkDescriptor::networkDescriptor (fann * pann) {
 	unsigned int num_connections = fann_get_total_connections(pann);
 
   	for (layer = this->layers.begin(); layer != this->layers.end(); ++layer)  {
-  		layer->n_neurons = layerCake[i];
+  		// layer->n_neurons = layerCake[i];
   		layer->isUsed = true;
 
   		std::list<neuronDescriptor>::iterator neuron;
 		for (neuron = layer->neurons.begin(); neuron != layer->neurons.end(); ++neuron) {
   			neuron->activation_function = activation_function_hidden;
   			neuron->activation_steepness = activation_steepness_hidden;
-  			neuron->n_connections = 0; 	// so not used uninitialized
+  			// neuron->n_connections = 0; 	// so not used uninitialized
   			neuron->n_inputs = 0; 
   			neuron->isUsed = true;
 
@@ -1236,12 +1236,15 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 	unsigned int layerIndex = 0;
 
 	// unsigned int newNeuronIndex = 0;
+	printf("---\n");
 
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
 
-		// printf("layer of %u neurons\n", layer->n_neurons);
+		printf("layer of %lu neurons\n", layer->neurons.size());
 
-		newNeuron.index += layer->n_neurons; // always adding new neuron at the end of the layer.
+		// newNeuron.index += layer->n_neurons; // always adding new neuron at the end of the layer.
+		newNeuron.index += layer->neurons.size();
+
 
 		if (layerIndex == targetLayerIndex) {
 			targetLayerIterator = layer;
@@ -1309,7 +1312,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 	
 
 	// increase the tally of neurons in the layer.
-	targetLayerIterator->n_neurons ++;
+	// targetLayerIterator->n_neurons ++;
 
 
 
@@ -1403,7 +1406,7 @@ void polydactyly2 (BonyFish * fish) {
 		}
 	}
 
-if (false) {
+// if (false) {
 	if (boneAlone.sensor_jointangle) {
 		for (int i = 0; i < N_SENSECONNECTORS; ++i)
 		{
@@ -1426,13 +1429,16 @@ if (false) {
 		if (fish->outputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 			fish->outputMatrix[i].sensorType = SENSECONNECTOR_MOTOR ;
 			fish->outputMatrix[i].connectedToLimb = targetFinger;
+
+			// printf("BANANA OMOTO %lu\n", fish->brain->layers.size()-1);
+
 			addNeuronIntoLivingBrain (fish, fish->brain->layers.size()-1 ) ;
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 			break;
 		}
 	}
-}
+// }
 	
 
 
@@ -1485,7 +1491,7 @@ void placeLimbOnSelectedFish(int arg) {
 }
 
 void verifyNetworkDescriptor (networkDescriptor * network) {
-	printf(" printConnectionArrayForDebug: %u layers\n", network->n_layers);
+	// printf(" printConnectionArrayForDebug: %u layers\n", network->n_layers);
 
 	std::list<layerDescriptor>::iterator layer;
 	unsigned int layerIndex = 0;
