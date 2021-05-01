@@ -1234,6 +1234,12 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
 		if (layerIndex == targetLayerIndex) {
 			newNeuronIndex += (layer->n_neurons - 1);
+
+			// if the target layer IS the last layer, there is no bias neuron on that layer, so insert at the very end instead of the next-to-last.
+			// if (targetLayerIndex == fish->brain->layers.size()-1) {
+			// 	newNeuronIndex ++;
+			// }
+
 			break;
 		}
 		else {
@@ -1243,6 +1249,9 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 	}
 
 	newNeuron.index = newNeuronIndex;
+
+	printf("newNeuronIndex %u\n", newNeuronIndex);
+
 	std::list<layerDescriptor>::iterator gayer = layer;
 
 	std::list<neuronDescriptor>::iterator neuron;// = layer->neurons.end();
@@ -1284,8 +1293,14 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
 	neuron = gayer->neurons.end();
 	neuron --; 
-	gayer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
 
+	if (targetLayerIndex == fish->brain->layers.size()-1) {
+		gayer->neurons.push_back( newNeuron);
+	}
+	else {
+		gayer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
+	}
+	
 
 
 
@@ -1390,6 +1405,17 @@ void polydactyly2 (BonyFish * fish) {
 	}
 	
 
+	// add the joint motor senseconnector
+	for (int i = 0; i < N_SENSECONNECTORS; ++i)
+	{
+		if (fish->outputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
+			fish->outputMatrix[i].sensorType = SENSECONNECTOR_MOTOR ;
+			fish->outputMatrix[i].connectedToLimb = targetFinger;
+			addNeuronIntoLivingBrain (fish, fish->brain->layers.size()-1 ) ;
+			break;
+		}
+	}
+
 
 // std::list<layerDescriptor>::iterator layer;
 // 		layer = Mugh->layers.begin();
@@ -1417,7 +1443,9 @@ void polydactyly2 (BonyFish * fish) {
 
 
 
+	fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
+	return;
 
 
 
@@ -1577,7 +1605,7 @@ void amputation (int arg) {
 				}
 			}
 
-			verifyNetworkDescriptor(fish->brain);
+			// verifyNetworkDescriptor(fish->brain);
 
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
@@ -2116,7 +2144,7 @@ void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary
 			// create a neurodescriptor.
 			networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
 
-			verifyNetworkDescriptor(muscleCars);
+			// verifyNetworkDescriptor(muscleCars);
 
 			fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
@@ -2526,6 +2554,15 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 			    local_debugDraw_pointer->DrawSegment(neuron->position, (getNeuronByIndex(fish->brain, connection->connectedTo))->position,segmentColor );
 			}
+
+
+			// write the neuron index on the neuron.
+			std::string neuronIndexLabel = std::string("");
+			neuronIndexLabel +=  std::to_string(neuron->index);
+				b2Vec2 neuronIndexLabelPos = b2Vec2(neuron->position.x, neuron->position.y);
+				local_debugDraw_pointer->DrawString(neuronIndexLabelPos, neuronIndexLabel.c_str());
+
+
 		}
 	}
 }
