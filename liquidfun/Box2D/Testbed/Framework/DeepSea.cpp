@@ -1020,12 +1020,12 @@ networkDescriptor::networkDescriptor (fann * pann) {
 			neuronDescriptor neuron = neuronDescriptor();
 			
 
-			if (j == layerCake[i]-1) {
-				neuron.biasNeuron = true;
-			}
-			else {
-				neuron.biasNeuron = false;
-			}
+			// if (j == layerCake[i]-1) {
+			// 	neuron.biasNeuron = true;
+			// }
+			// else {
+			// 	neuron.biasNeuron = false;
+			// }
 
 			neuron.index = rollingIndexCounter;
 			rollingIndexCounter ++;
@@ -1224,6 +1224,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
 	neuronDescriptor newNeuron = neuronDescriptor();
 	newNeuron.isUsed = true;
+	newNeuron.biasNeuron = false;
 
 	std::list<layerDescriptor>::iterator layer;
 	unsigned int layerIndex = 0;
@@ -1248,7 +1249,8 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 		}
 	}
 
-	newNeuron.index = newNeuronIndex + 1;
+	newNeuronIndex ++;
+	newNeuron.index = newNeuronIndex; //+ 1;
 
 	printf("newNeuronIndex %u\n", newNeuronIndex);
 
