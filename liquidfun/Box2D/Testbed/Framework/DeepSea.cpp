@@ -1225,66 +1225,49 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 	neuronDescriptor newNeuron = neuronDescriptor();
 	newNeuron.isUsed = true;
 	newNeuron.biasNeuron = false;
+	newNeuron.index = 0;
 
 	std::list<layerDescriptor>::iterator layer;
-	unsigned int layerIndex = 0;
-
-	unsigned int newNeuronIndex = 0;
-
-	// if you are not on the last layer, ignore bias neurons because they are included implicitly.
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
-		if (layerIndex == targetLayerIndex) {
-			newNeuronIndex += (layer->n_neurons - 1);
-
-			// if the target layer IS the last layer, there is no bias neuron on that layer, so insert at the very end instead of the next-to-last.
-			// if (targetLayerIndex == fish->brain->layers.size()-1) {
-			// 	newNeuronIndex ++;
-			// }
-
-			break;
-		}
-		else {
-			newNeuronIndex += layer->n_neurons; // always adding new neuron at the end of the layer.
-			layerIndex++;
-		}
-	}
-
-	newNeuronIndex ++;
-	newNeuron.index = newNeuronIndex; //+ 1;
-
-	printf("newNeuronIndex %u\n", newNeuronIndex);
-
-	std::list<layerDescriptor>::iterator gayer = layer;
-
+	std::list<layerDescriptor>::iterator targetLayerIterator;
 	std::list<neuronDescriptor>::iterator neuron;// = layer->neurons.end();
 
-	// 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+
+
+	unsigned int layerIndex = 0;
+
+	// unsigned int newNeuronIndex = 0;
+
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
+
+		// printf("layer of %u neurons\n", layer->n_neurons);
+
+		newNeuron.index += layer->n_neurons; // always adding new neuron at the end of the layer.
+
+		if (layerIndex == targetLayerIndex) {
+			targetLayerIterator = layer;
+			
+			break;
+		}
 		
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+		
+		layerIndex++;
+		
+	}
 
- 			if (neuron->index > newNeuronIndex) {
- 				neuron->index ++;
- 			}
+	
 
- 			std::list<connectionDescriptor>::iterator connection;
- 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+	// = newNeuronIndex; 
 
- 				if (connection->connectedTo > newNeuronIndex) {
- 					connection->connectedTo ++;
- 				}
- 			}
- 		}
- 	}	
+	// std::list<layerDescriptor>::iterator layerAboveTarget = layer;
 
+	
  	// make connections for all the next-layer neurons, set to 0, add them to the new neuron
- 	layer = gayer;
  	if (layer != fish->brain->layers.end() ) { // if this isn't the last layer
  		layer++;	
  		if (layer != fish->brain->layers.end() ) { // and the next layer is not off the end of the array
 
  			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- 				int targetIndex = neuron->index;
+ 				unsigned int targetIndex = neuron->index;
  				connectionDescriptor * newConnection = new connectionDescriptor(   targetIndex);
  				newNeuron.connections.push_back( *newConnection  );
  			}
@@ -1293,20 +1276,43 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
  	}
 
 
+ // 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+ 			if (neuron->index >= newNeuron.index) {
+ 				neuron->index ++;
+ 			}
+
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+
+ 				if (connection->connectedTo >= newNeuron.index) {
+ 					connection->connectedTo ++;
+ 				}
+ 			}
+ 		}
+ 	}	
+
+
 	
 	if (targetLayerIndex == fish->brain->layers.size()-1) {
-		gayer->neurons.push_back( newNeuron);		// there is no bias neuron on the last layer so you can drop it right at the end.
+		targetLayerIterator->neurons.push_back( newNeuron);		// there is no bias neuron on the last layer so you can drop it right at the end.
 	}
 	else {
-		neuron = gayer->neurons.end();
+		neuron = targetLayerIterator->neurons.end();
 		neuron --; 
 
-		gayer->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
+		targetLayerIterator->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
 	}
 	
 
 	// increase the tally of neurons in the layer.
-	layer->n_neurons ++;
+	targetLayerIterator->n_neurons ++;
+
+
+
 
 
 }
@@ -1397,7 +1403,7 @@ void polydactyly2 (BonyFish * fish) {
 		}
 	}
 
-
+if (false) {
 	if (boneAlone.sensor_jointangle) {
 		for (int i = 0; i < N_SENSECONNECTORS; ++i)
 		{
@@ -1413,7 +1419,7 @@ void polydactyly2 (BonyFish * fish) {
 	}
 	
 
-if (false) {
+
 	// add the joint motor senseconnector
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
 	{
