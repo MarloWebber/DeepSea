@@ -1245,24 +1245,18 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 		// newNeuron.index += layer->n_neurons; // always adding new neuron at the end of the layer.
 		newNeuron.index += layer->neurons.size();
 
-
 		if (layerIndex == targetLayerIndex) {
-			targetLayerIterator = layer;
-			
+			targetLayerIterator = layer;	
 			break;
 		}
 		
-		
 		layerIndex++;
-		
 	}
 
-	
-
-	// = newNeuronIndex; 
-
-	// std::list<layerDescriptor>::iterator layerAboveTarget = layer;
-
+	// if the neuron is not on the last layer, due to the presence of a bias neuron on the target layer, decrement index by 1.
+	if (! (targetLayerIndex == fish->brain->layers.size()-1) ){
+		newNeuron.index--;
+	}
 	
  	// make connections for all the next-layer neurons, set to 0, add them to the new neuron
  	if (layer != fish->brain->layers.end() ) { // if this isn't the last layer
@@ -1277,7 +1271,6 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
  		}
  	}
-
 
  // 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
@@ -1298,26 +1291,16 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
  		}
  	}	
 
-
 	
 	if (targetLayerIndex == fish->brain->layers.size()-1) {
 		targetLayerIterator->neurons.push_back( newNeuron);		// there is no bias neuron on the last layer so you can drop it right at the end.
 	}
 	else {
-		neuron = targetLayerIterator->neurons.end();
+		neuron = targetLayerIterator->neurons.end();			// 'end' is actually 1 past the last element, in C++ list syntax. So retract by 1 to get the last element.
 		neuron --; 
 
-		targetLayerIterator->neurons.insert( neuron, newNeuron); // minus 1 to convert from 0-indexed to 1-indexed... minus another 1 because we want to insert behind the bias neuron.
+		targetLayerIterator->neurons.insert( neuron, newNeuron); 
 	}
-	
-
-	// increase the tally of neurons in the layer.
-	// targetLayerIterator->n_neurons ++;
-
-
-
-
-
 }
 
 
@@ -1465,7 +1448,7 @@ void polydactyly2 (BonyFish * fish) {
 
 
 // 	// rearrange the network to have the appropriate number of new n layer neurons.
-
+	
 
 
 	
