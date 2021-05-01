@@ -1222,10 +1222,11 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 
 void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
-	neuronDescriptor newNeuron = neuronDescriptor();
-	newNeuron.isUsed = true;
-	newNeuron.biasNeuron = false;
-	newNeuron.index = 0;
+	neuronDescriptor * newNeuron = new neuronDescriptor();
+	newNeuron->isUsed = true;
+	newNeuron->biasNeuron = false;
+	newNeuron->index = 0;
+	newNeuron->position = b2Vec2(0.0f, 0.0f);
 
 	std::list<layerDescriptor>::iterator layer;
 	std::list<layerDescriptor>::iterator targetLayerIterator;
@@ -1243,7 +1244,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 		printf("layer of %lu neurons\n", layer->neurons.size());
 
 		// newNeuron.index += layer->n_neurons; // always adding new neuron at the end of the layer.
-		newNeuron.index += layer->neurons.size();
+		newNeuron->index += layer->neurons.size();
 
 		if (layerIndex == targetLayerIndex) {
 			targetLayerIterator = layer;	
@@ -1255,7 +1256,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
 	// if the neuron is not on the last layer, due to the presence of a bias neuron on the target layer, decrement index by 1.
 	if (! (targetLayerIndex == fish->brain->layers.size()-1) ){
-		newNeuron.index--;
+		newNeuron->index--;
 	}
 	
  	// make connections for all the next-layer neurons, set to 0, add them to the new neuron
@@ -1266,40 +1267,64 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
  			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
  				unsigned int targetIndex = neuron->index;
  				connectionDescriptor * newConnection = new connectionDescriptor(   targetIndex);
- 				newNeuron.connections.push_back( *newConnection  );
+ 				newConnection->isUsed = true;
+ 				newConnection->connectionWeight = 0.0f;
+ 				newNeuron->connections.push_back( *newConnection  );
  			}
 
  		}
  	}
+
+
+ 	// if the neuron is not on the first layer, all the previous-layer neurons get connections to this neuron.
+ 	if (true) {
+	 	layer = targetLayerIterator;
+	 	if (layer != fish->brain->layers.begin() ) { // and the next layer is not off the end of the array
+			layer--;
+			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+				// unsigned int targetIndex = neuron->index;
+				connectionDescriptor * newConnection = new connectionDescriptor(   newNeuron->index);
+				newConnection->isUsed = true;
+ 				newConnection->connectionWeight = 0.0f;
+				neuron->connections.push_back( *newConnection  );
+
+				// printf("new connection from %u to %u\n", neuron->index, newNeuron.index);
+			}
+
+	 	}
+ 	}
+
 
  // 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 		
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
- 			if (neuron->index >= newNeuron.index) {
+ 			if (neuron->index >= newNeuron->index) {
  				neuron->index ++;
  			}
 
  			std::list<connectionDescriptor>::iterator connection;
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
- 				if (connection->connectedTo >= newNeuron.index) {
+ 				if (connection->connectedTo >= newNeuron->index) {
  					connection->connectedTo ++;
  				}
  			}
  		}
  	}	
 
+
+
 	
 	if (targetLayerIndex == fish->brain->layers.size()-1) {
-		targetLayerIterator->neurons.push_back( newNeuron);		// there is no bias neuron on the last layer so you can drop it right at the end.
+		targetLayerIterator->neurons.push_back( *newNeuron);		// there is no bias neuron on the last layer so you can drop it right at the end.
 	}
 	else {
 		neuron = targetLayerIterator->neurons.end();			// 'end' is actually 1 past the last element, in C++ list syntax. So retract by 1 to get the last element.
 		neuron --; 
 
-		targetLayerIterator->neurons.insert( neuron, newNeuron); 
+		targetLayerIterator->neurons.insert( neuron, *newNeuron); 
 	}
 }
 
