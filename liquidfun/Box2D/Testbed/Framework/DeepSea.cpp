@@ -1016,6 +1016,29 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 	}
 }
 
+void deleteSelectedNeuron (int arg) {
+	std::list<BonyFish>::iterator fish;
+
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+		if (fish->selected ){
+
+			std::list<layerDescriptor>::iterator layer;
+			for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+
+				std::list<neuronDescriptor>::iterator neuron;
+ 				for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+ 					if (neuron -> selected) {
+ 						deleteNeuronByIndex(fish->brain, neuron->index);
+ 						return;
+ 					}
+ 				}
+			}
+		}
+	}
+}
+
 // method to create a network descriptor in memory
 networkDescriptor::networkDescriptor (fann * pann) {
 

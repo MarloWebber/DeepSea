@@ -489,6 +489,7 @@ void flagSelectedFishForDeletion(int arg) ;
 
 void placeLimbOnSelectedFish(int arg);
 void amputation(int arg);
+void deleteSelectedNeuron (int arg) ;
 
 void deselectAll(int arg) ;
 void selectAll(int arg) ;

@@ -1003,6 +1003,9 @@ glui->add_button_to_panel(editPanel, "Amputate Limb", 8, amputation);
 glui->add_button_to_panel(editPanel, "Neutralize Brain", 9, meltSelectedFish);
 glui->add_button_to_panel(editPanel, "Randomize Brain", 10, scrambleSelectedFish);
 
+glui->add_button_to_panel(editPanel, "Delete Selected Neuron", 11, deleteSelectedNeuron);
+
+
 
 	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
 	glui->add_checkbox_to_panel(editPanel, "Show body edit window", &showBodyEditWindow);
