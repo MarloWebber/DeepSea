@@ -11,11 +11,8 @@
 #include <stdio.h>
 #include <chrono>
 #include <thread>
-
 #include <math.h>
 #include <cmath>
-
-// #include <b2_draw.h>
 
 float pi = 3.14159f;
 
@@ -837,6 +834,9 @@ senseConnector::senseConnector () {
 	connectedToNeuron = 0;							// neuron index. The position of this neuron's layer will determine how the program uses it.
 	sensorType =  SENSECONNECTOR_UNUSED; 			// what kind of sense it is (touch, smell, etc.how the number will be treated)
 	timerFreq = 0;									// if a timer, the frequency.
+	recursorChannel = 0; 		// 
+	recursorDelay = 64;
+	recursorCursor = 0;
 
 }
 
@@ -1016,28 +1016,7 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 	}
 }
 
-void deleteSelectedNeuron (int arg) {
-	std::list<BonyFish>::iterator fish;
 
-	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-
-		if (fish->selected ){
-
-			std::list<layerDescriptor>::iterator layer;
-			for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
-
-				std::list<neuronDescriptor>::iterator neuron;
- 				for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-
- 					if (neuron -> selected) {
- 						deleteNeuronByIndex(fish->brain, neuron->index);
- 						return;
- 					}
- 				}
-			}
-		}
-	}
-}
 
 // method to create a network descriptor in memory
 networkDescriptor::networkDescriptor (fann * pann) {
@@ -1248,34 +1227,31 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 	return ann;
 }
 
-// // this method is discontinued in favor of ones that add to the living creature.
-// void polydactyly (fishDescriptor_t * driedFish) {
+void deleteSelectedNeuron (int arg) {
+	std::list<BonyFish>::iterator fish;
 
-// 	// generate the limb as the next-unoccupied lowest limb index. attach it to a random existing limb
-// 	int eventualLimb = 0;
-// 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-// 		if (!driedFish->bones[i].used) {
-// 			driedFish->bones[i].attachedTo = RNG() * i;
-// 			driedFish->bones[i].used = true;
-// 			eventualLimb = i;
-// 			break;
-// 		}
-// 	}
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 
-// 	// do up the output connector
-// 	int j = 0;
-// 	while(1){
-// 		if (driedFish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-// 			driedFish->outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
-// 			driedFish->outputMatrix[j].connectedToLimb = eventualLimb;
-// 			break;
-// 		}
-// 		j ++;
-// 	}
-// }
+		if (fish->selected ){
 
+			std::list<layerDescriptor>::iterator layer;
+			for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 
+				std::list<neuronDescriptor>::iterator neuron;
+ 				for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
+ 					if (neuron -> selected) {
+ 						deleteNeuronByIndex(fish->brain, neuron->index);
+
+ 						fish->ann = createFANNbrainFromDescriptor (fish->brain) ;
+
+ 						return;
+ 					}
+ 				}
+			}
+		}
+	}
+}
 
 void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
@@ -1389,30 +1365,72 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 	flagBiasNeurons(fish);
 }
 
+void addRecursorPair(int arg) {
+
+	unused_variable((void *) &arg);
+	std::list<BonyFish>::iterator fish;
+	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+		if (fish->selected && TestMain::getBrainWindowStatus()) {
+
+			unsigned int lowestAvailableRecursionChannel = 0;
+
+			for (int i = 0; i < N_SENSECONNECTORS; ++i)
+			{
+				if (SENSECONNECTOR_RECURSORRECEIVER) {
+					if (fish->inputMatrix[i].recursorChannel > lowestAvailableRecursionChannel ) {
+						lowestAvailableRecursionChannel = fish->inputMatrix[i].recursorChannel;
+					}
+				}
+
+				if (SENSECONNECTOR_RECURSORTRANSMITTER) {
+					if (fish->outputMatrix[i].recursorChannel > lowestAvailableRecursionChannel ) {
+						lowestAvailableRecursionChannel = fish->outputMatrix[i].recursorChannel;
+					}
+				}
+			}
+
+			for (int i = 0; i < N_SENSECONNECTORS; ++i)
+			{
+				if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
+					fish->inputMatrix[i].sensorType = SENSECONNECTOR_RECURSORRECEIVER ;
+					fish->inputMatrix[i].recursorChannel = lowestAvailableRecursionChannel;
+					addNeuronIntoLivingBrain ( &(*fish), 0) ;
+					fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
+				break;
+				}
+			}
+
+			for (int i = 0; i < N_SENSECONNECTORS; ++i)
+			{
+				if (fish->outputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
+					fish->outputMatrix[i].sensorType = SENSECONNECTOR_RECURSORTRANSMITTER ;
+					fish->outputMatrix[i].recursorChannel = lowestAvailableRecursionChannel;
+					addNeuronIntoLivingBrain ( &(*fish), fish->brain->layers.size()-1 ) ;
+					fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
+					break;
+				}
+			}
+		}
+	}
+}
+
 
 // add a limb onto the end of the selected one.
 void polydactyly2 (BonyFish * fish) {
 	uint targetFinger = 0;
-
-	// boneAndJointDescriptor_t boneToDuplicate;
-	// bool dupeExistingBone = false;
 	boneAndJointDescriptor_t  boneAlone = boneAndJointDescriptor_t();
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
 		if (!fish->bones[i]->isUsed) {
 			targetFinger = i;
 		}
-		// else {
 		if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
 			boneAlone = fish->genes.bones[i];
-			// dupeExistingBone = true;
 		}
-		// }
 	}
-
-	
-
-
 
 	boneAlone.used = true;
 	boneAlone.isLeaf = false;
@@ -1420,10 +1438,7 @@ void polydactyly2 (BonyFish * fish) {
 	boneAlone.sensor_jointangle = true;
 	boneAlone.attachedTo = currentlySelectedLimb;
 
-
 	fish->genes.bones[targetFinger] = boneAlone;
-
-
 
 	fish->bones[targetFinger] = new BoneUserData(boneAlone, fish, b2Vec2(0.0f, 0.0f), 0, true);
 
@@ -1432,34 +1447,6 @@ void polydactyly2 (BonyFish * fish) {
 	fish->bones[targetFinger]->joint->isUsed = true;
 
 	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
-
-
-
-// 	// add the bone's senses to new input connectors.
-// 		// foodradar
-// 		int j = 0;
-// 		int sense_neurons_to_add = 0;
-// 		while(1){
-// 			if (fish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-// 				fish->outputMatrix[j].sensorType = SENSECONNECTOR_FOODRADAR;
-// 				fish->outputMatrix[j].connectedToLimb = targetFinger;
-// 				sense_neurons_to_add ++;
-// 				break;
-// 			}
-// 			j ++;
-// 		}
-
-// 		// jointangle
-// 		j = 0;
-// 		while(1){
-// 			if (fish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-// 				fish->outputMatrix[j].sensorType = SENSECONNECTOR_JOINTANGLE;
-// 				fish->outputMatrix[j].connectedToLimb = targetFinger;
-// 				sense_neurons_to_add ++;
-// 				break;
-// 			}
-// 			j ++;
-// 		}
 
 	if (boneAlone.sensor_radar) {
 		for (int i = 0; i < N_SENSECONNECTORS; ++i)
@@ -1475,7 +1462,6 @@ void polydactyly2 (BonyFish * fish) {
 		}
 	}
 
-// if (false) {
 	if (boneAlone.sensor_jointangle) {
 		for (int i = 0; i < N_SENSECONNECTORS; ++i)
 		{
@@ -1489,8 +1475,6 @@ void polydactyly2 (BonyFish * fish) {
 			}
 		}
 	}
-	
-
 
 	// add the joint motor senseconnector
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
@@ -1499,51 +1483,14 @@ void polydactyly2 (BonyFish * fish) {
 			fish->outputMatrix[i].sensorType = SENSECONNECTOR_MOTOR ;
 			fish->outputMatrix[i].connectedToLimb = targetFinger;
 
-			// printf("BANANA OMOTO %lu\n", fish->brain->layers.size()-1);
-
 			addNeuronIntoLivingBrain (fish, fish->brain->layers.size()-1 ) ;
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 			break;
 		}
 	}
-// }
-	
-
-
-// std::list<layerDescriptor>::iterator layer;
-// 		layer = Mugh->layers.begin();
-// 	newNeuronIndex = layer.size()-2;
-
-
-
-
-
- 
-
-// 	// add the bone's motor control to a new output connector.
-// 	int j = 0;
-// 	while(1){
-// 		if (driedFish->outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-// 			driedFish->outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
-// 			driedFish->outputMatrix[j].connectedToLimb = eventualLimb;
-// 			break;
-// 		}
-// 		j ++;
-// 	}
-
-
-// 	// rearrange the network to have the appropriate number of new n layer neurons.
-	
-
-
 	
 	return;
-
-
-
-
-
 }
 
 void placeLimbOnSelectedFish(int arg) {
@@ -1560,7 +1507,6 @@ void placeLimbOnSelectedFish(int arg) {
 }
 
 void verifyNetworkDescriptor (networkDescriptor * network) {
-	// printf(" printConnectionArrayForDebug: %u layers\n", network->n_layers);
 
 	std::list<layerDescriptor>::iterator layer;
 	unsigned int layerIndex = 0;
@@ -1629,7 +1575,6 @@ void amputation (int arg) {
 			{
 				if (fish->inputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
 					fish->inputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
-					// neuronsToRemove.push_back(fish->inputMatrix[i].connectedToNeuron);
 
 					// turns out the 'connectedToNeuron' parameter isnt even used. So for the input layer can can just use the index
 					neuronsToRemove.push_back(i);
@@ -1682,7 +1627,6 @@ void amputation (int arg) {
 			}
 
 			// re-fry the brain without those connectors.
-
 			std::list<unsigned int>::iterator neuronsToRemoveIterator;
 
 			for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
@@ -1697,8 +1641,6 @@ void amputation (int arg) {
 				  	}
 				}
 			}
-
-			// verifyNetworkDescriptor(fish->brain);
 
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
@@ -3054,6 +2996,67 @@ void runBiomechanicalFunctions () {
 					case SENSECONNECTOR_UNUSED:
 						sensorium[j] = 0.0f;
 					break;
+
+					case SENSECONNECTOR_RECURSORRECEIVER:
+						// unsigned int adjustedCursor;
+
+
+						// if ( fish->inputMatrix[j].recursorDelay <= fish->inputMatrix[j].recursorCursor) {
+						// 	adjustedCursor = fish->inputMatrix[j].recursorCursor - fish->inputMatrix[j].recursorDelay;
+						// }
+						// else {
+						// 	unsigned int difference = fish->inputMatrix[j].recursorDelay - fish->inputMatrix[j].recursorCursor;
+						// 	adjustedCursor = 
+						// }
+
+						// sensorium[j] = fish->inputMatrix[j].recursorBuffer[adjustedCursor];
+
+
+
+						// how this works.
+						// the transmitters just set their buffer first place to the sample. that's it
+
+						// the receivers trawl the transmitter list and look for one on the same channel
+						float sample = 0.0f;
+						for (unsigned int k = 0; k < sizeOfOutputLayer; ++k)
+							{
+								if (k >= N_SENSECONNECTORS) {
+									continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
+								}
+
+								if (fish->outputMatrix[k].sensorType == SENSECONNECTOR_RECURSORTRANSMITTER) {
+									if (fish->outputMatrix[k].recursorChannel == fish->inputMatrix[j].recursorChannel ) {
+										sample = fish->outputMatrix[j].recursorBuffer[0];// = motorSignals[j];
+										break;
+									}
+								}
+							}
+
+						// they set their own sample, at the scrolling cursor, to it
+						fish->inputMatrix[j].recursorBuffer[fish->inputMatrix[j].recursorCursor ] = sample;
+
+						// then they take a sample from [delay] samples ago and apply it
+						unsigned int adjustedCursor = fish->inputMatrix[j].recursorCursor;
+
+						unsigned int cursorPlusDelay = fish->inputMatrix[j].recursorCursor + fish->outputMatrix[j].recursorDelay ;
+						if (cursorPlusDelay > SENSECONNECTOR_BUFFERSIZE-1) {
+							adjustedCursor = 0;
+							adjustedCursor += (cursorPlusDelay - SENSECONNECTOR_BUFFERSIZE);
+						}	
+						else {
+							adjustedCursor += fish->outputMatrix[j].recursorDelay ;
+						}
+
+						sensorium[j] = fish->outputMatrix[j].recursorBuffer[adjustedCursor];
+
+						fish->inputMatrix[j].recursorCursor ++;
+
+						// the buffer loops around the max size, but there is no performance downside to doing this because you're not rolling the entire buffer
+						if (fish->inputMatrix[j].recursorCursor > SENSECONNECTOR_BUFFERSIZE-1) {
+							fish->inputMatrix[j].recursorCursor = 0;	
+						}
+
+					break;
 				 
 				}		
 			}
@@ -3068,6 +3071,11 @@ void runBiomechanicalFunctions () {
 				}
 
 				switch (fish->outputMatrix[j].sensorType) {
+
+					case SENSECONNECTOR_RECURSORTRANSMITTER:
+						fish->outputMatrix[j].recursorBuffer[0] = motorSignals[j];
+					break;
+
 					case SENSECONNECTOR_MOTOR:
 	
 						// first just check to make sure the bone and joint is good.

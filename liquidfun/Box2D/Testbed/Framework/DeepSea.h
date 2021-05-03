@@ -146,19 +146,27 @@ struct boneAndJointDescriptor_t {
 };
 
 // these type codes are used to route sensory and motor information between brains and limbs.
-#define SENSECONNECTOR_UNUSED 	0
-#define SENSECONNECTOR_MOTOR 1
-#define SENSOR_FOODRADAR	2
-#define SENSOR_TOUCH 		3
-#define SENSOR_JOINTANGLE 	4
-#define SENSOR_TIMER 		5
+#define SENSECONNECTOR_UNUSED 				0
+#define SENSECONNECTOR_MOTOR 				1
+#define SENSOR_FOODRADAR					2
+#define SENSOR_TOUCH 						3
+#define SENSOR_JOINTANGLE 					4
+#define SENSOR_TIMER 						5
+#define SENSECONNECTOR_RECURSORRECEIVER 	6
+#define SENSECONNECTOR_RECURSORTRANSMITTER 	7
+
+#define SENSECONNECTOR_BUFFERSIZE			512	// the maximum size of the buffer used for recursion delay.
 
 struct senseConnector {
 	unsigned int connectedToLimb;		// what limb the sense is coming from, or motor signal is going to.
 	unsigned int connectedToNeuron;		// neuron index. The position of this neuron's layer will determine how the program uses it.
 	unsigned int sensorType;  			// what kind of sense it is (touch, smell, etc.how the number will be treated)
-	float timerFreq;				// if a timer, the frequency.
-	float timerPhase;			// if a timer, the phase. Used so that the senseconnector can be a fully self contained timer.
+	float timerFreq;					// if a timer, the frequency.
+	float timerPhase;					// if a timer, the phase. Used so that the senseconnector can be a fully self contained timer.
+	unsigned int recursorChannel; 		// 
+	unsigned int recursorDelay;
+	float recursorBuffer[SENSECONNECTOR_BUFFERSIZE];
+	unsigned int recursorCursor;
 
 	senseConnector();
 };
@@ -490,6 +498,9 @@ void flagSelectedFishForDeletion(int arg) ;
 void placeLimbOnSelectedFish(int arg);
 void amputation(int arg);
 void deleteSelectedNeuron (int arg) ;
+
+
+void addRecursorPair(int arg) ;
 
 void deselectAll(int arg) ;
 void selectAll(int arg) ;

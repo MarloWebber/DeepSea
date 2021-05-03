@@ -1005,6 +1005,10 @@ glui->add_button_to_panel(editPanel, "Randomize Brain", 10, scrambleSelectedFish
 
 glui->add_button_to_panel(editPanel, "Delete Selected Neuron", 11, deleteSelectedNeuron);
 
+glui->add_button_to_panel(editPanel, "Add Recursor Pair", 12, addRecursorPair);
+
+
+
 
 
 	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
