@@ -23,8 +23,8 @@
 
 #include "Render.h"
 #include "Test.h"
-#include "Arrow.h"
-#include "FullscreenUI.h"
+// #include "Arrow.h"
+// #include "FullscreenUI.h"
 #include "ParticleParameter.h"
 #if ENABLE_GLUI
 #include "glui/glui.h"
@@ -80,7 +80,7 @@ namespace
 	b2Vec2 extents;
 
 	// Fullscreen UI object.
-	FullscreenUI fullscreenUI;
+	// FullscreenUI fullscreenUI;
 	// Used to control the behavior of particle tests.
 	ParticleParameter particleParameter;
 }
@@ -147,7 +147,7 @@ uint32 SetParticleParameterValue(uint32 value)
 uint32 GetParticleParameterValue()
 {
 	// Enable display of particle type selection arrows.
-	fullscreenUI.SetParticleParameterSelectionEnabled(true);
+	// fullscreenUI.SetParticleParameterSelectionEnabled(true);
 	return particleParameter.GetValue();
 }
 
@@ -188,10 +188,10 @@ static void Resize(int32 w, int32 h)
 	// L/R/B/T
 	LoadOrtho2DMatrix(lower.x, upper.x, lower.y, upper.y);
 
-	if (fullscreenUI.GetEnabled())
-	{
-		fullscreenUI.SetViewParameters(&settings.viewCenter, &extents);
-	}
+	// if (fullscreenUI.GetEnabled())
+	// {
+	// 	fullscreenUI.SetViewParameters(&settings.viewCenter, &extents);
+	// }
 }
 
 static b2Vec2 ConvertScreenToWorld(int32 x, int32 y)
@@ -321,7 +321,7 @@ void PostStep() {
 
 	if (testSelection != testIndex || restartTest)
 	{
-		fullscreenUI.Reset();
+		// fullscreenUI.Reset();
 		if (!restartTest) particleParameter.Reset();
 
 		testIndex = testSelection;
@@ -477,9 +477,9 @@ deepSeaControlA();
 // 		break;
 
 		// Press ~ to enable / disable the fullscreen UI.
-	case '~':
-		fullscreenUI.SetEnabled(!fullscreenUI.GetEnabled());
-		break;
+	// case '~':
+	// 	fullscreenUI.SetEnabled(!fullscreenUI.GetEnabled());
+	// 	break;
 
 	// 	// Press < to select the previous particle parameter setting.
 	// case '<':
@@ -604,23 +604,23 @@ static void Mouse(int32 button, int32 state, int32 x, int32 y)
 		int mod = glutGetModifiers();
 		b2Vec2 p = ConvertScreenToWorld(x, y);
 
-		switch (fullscreenUI.Mouse(button, state, previousMouseState, p))
-		{
-		case FullscreenUI::e_SelectionTestPrevious:
-			testSelection = std::max(0, testSelection - 1);
-			break;
-		case FullscreenUI::e_SelectionTestNext:
-			if (g_testEntries[testSelection + 1].name) testSelection++;
-			break;
-		case FullscreenUI::e_SelectionParameterPrevious:
-			particleParameter.Decrement();
-			break;
-		case FullscreenUI::e_SelectionParameterNext:
-			particleParameter.Increment();
-			break;
-		default:
-			break;
-		}
+		// switch (fullscreenUI.Mouse(button, state, previousMouseState, p))
+		// {
+		// case FullscreenUI::e_SelectionTestPrevious:
+		// 	testSelection = std::max(0, testSelection - 1);
+		// 	break;
+		// case FullscreenUI::e_SelectionTestNext:
+		// 	if (g_testEntries[testSelection + 1].name) testSelection++;
+		// 	break;
+		// case FullscreenUI::e_SelectionParameterPrevious:
+		// 	particleParameter.Decrement();
+		// 	break;
+		// case FullscreenUI::e_SelectionParameterNext:
+		// 	particleParameter.Increment();
+		// 	break;
+		// default:
+		// 	break;
+		// }
 
 		if (state == GLUT_DOWN)
 		{
@@ -660,10 +660,10 @@ static void MouseMotion(int32 x, int32 y)
 {
 	b2Vec2 p = ConvertScreenToWorld(x, y);
 
-	if (fullscreenUI.GetSelection() == FullscreenUI::e_SelectionNone)
-	{
-		test->MouseMove(p);
-	}
+	// if (fullscreenUI.GetSelection() == FullscreenUI::e_SelectionNone)
+	// {
+	// 	test->MouseMove(p);
+	// }
 
 	if (rMouseDown)
 	{
@@ -950,7 +950,7 @@ int main(int argc, char** argv)
 	GLUI_Panel* controlsPanel =	glui->add_panel("Cloning Controls");
 
 	// selection controls
-	glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
+	// glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
 	glui->add_button_to_panel(controlsPanel, "Farthest Traveled", 1, selectFishWhoMovedTheFurthest);
 
 	glui->add_button_to_panel(controlsPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
@@ -1116,7 +1116,7 @@ case 0:
 #endif  // ENABLE_GLUI
 
 	// Configure the fullscreen UI's viewport parameters.
-	fullscreenUI.SetViewParameters(&settings.viewCenter, &extents);
+	// fullscreenUI.SetViewParameters(&settings.viewCenter, &extents);
 
 
 	// Use a timer to control the frame rate.

@@ -6,14 +6,9 @@
 #include <list>
 #include "fann.h"
 
-#define N_FINGERS 8 // the amount of bones a fish can have. you know, fish fingers.
-// #define N_FISHES 128
+#define N_FINGERS 8 													// the amount of bones a fish can have. you know, fish fingers.
 #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
-
-	// int gameMode;
-	 // extern int deepSeaGameMode;
-
 
 #define GAME_MODE_EXPLORATION 0
 #define GAME_MODE_ECOSYSTEM 1
@@ -25,23 +20,23 @@
 #define TERRAIN_TYPE_RIGID 0
 
 
-	 struct deepSeaSettings {
-	 	int gameMode;
-	 	int exploratory_nFood;
-	 	int exploratory_nFish;
-	 	b2Vec2 gravity;
-	 	float mutationRate;
-	 	float mutationSeverity;
-	 	float mentalMutationRate;
-	 	float mentalMutationSeverity;
-	 	int terrainPaintType;
-	 };
+struct deepSeaSettings {
+	int gameMode;
+	int exploratory_nFood;
+	int exploratory_nFish;
+	b2Vec2 gravity;
+	float mutationRate;
+	float mutationSeverity;
+	float mentalMutationRate;
+	float mentalMutationSeverity;
+	int terrainPaintType;
+};
 
-	 extern deepSeaSettings m_deepSeaSettings;
+extern deepSeaSettings m_deepSeaSettings;
 
 b2Vec2 rotatePoint(float cx,float cy,float angle, b2Vec2 p);
 
-struct JointUserData; // forward class declaration
+struct JointUserData;
 struct BoneUserData;
 struct BonyFish;
 
@@ -57,7 +52,7 @@ extern uint32 m_colorIndex;
 void ParticleDrawingKeyboard(int key);
 
 enum Parameters {
-		e_parameterBegin = (1UL << 31), // Start of this parameter namespace.
+		e_parameterBegin = (1UL << 31),
 		e_parameterMove = e_parameterBegin | (1UL << 0),
 		e_parameterRigid = e_parameterBegin | (1UL << 1),
 		e_parameterRigidBarrier = e_parameterBegin | (1UL << 2),
@@ -98,47 +93,38 @@ const ParticleParameter::Definition k_paramDef[] =
 const uint32 k_paramDefCount =
 	B2_ARRAY_SIZE(k_paramDef);
 
+struct Lamp {
+	unsigned int brightness;
+	unsigned int illuminationRadius;
+	b2Vec2 position;
+	b2Color illuminationColor;
 
-// typedef struct DeepSeaSettings {
+	Lamp();
+};
 
-	// bool ecosystemMode = true;
-// } m_deepSeaSettings ;
-
-// DeepSeaSettings m_deepSeaSettings;
-
-	struct Lamp {
-		unsigned int brightness;
-		unsigned int illuminationRadius;
-		b2Vec2 position;
-		b2Color illuminationColor;
-
-		Lamp();
-	};
-
-
-// a condensed form of fish used for data storage and transfer.
-// it is made so that it is safe to serialize and mutate, and that any changes will not crash the program.
+/**
+* @brief condensed information about a fish body segment
+*/
 struct boneAndJointDescriptor_t {
-		uint8_t attachedTo; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
-		float length;
-		float rootThickness;
-		float tipThickness;
-
+		bool used;
 		bool isRoot;
 		bool isMouth;
 		bool isWeapon;
 		bool isLeaf;
-
 		bool sensor_radar; // like an olfactory sensor . senses distance from food
 		bool sensor_touch; // like how you can feel when things touch your skin.
 		bool sensor_jointangle;
-	
+
+		unsigned int attachedTo; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
+
 		float torque;
 		float speedLimit;
 		float upperAngle;
 		float normalAngle;
 		float lowerAngle;
-		bool used;
+		float length;
+		float rootThickness;
+		float tipThickness;
 		b2Color color;
 		b2Color outlineColor;
 
@@ -157,6 +143,12 @@ struct boneAndJointDescriptor_t {
 
 #define SENSECONNECTOR_BUFFERSIZE			512	// the maximum size of the buffer used for recursion delay.
 
+
+/*!
+* @brief associates a brain input to a particular sensor.
+*
+*
+*/
 struct senseConnector {
 	unsigned int connectedToLimb;		// what limb the sense is coming from, or motor signal is going to.
 	unsigned int connectedToNeuron;		// neuron index. The position of this neuron's layer will determine how the program uses it.
@@ -171,12 +163,15 @@ struct senseConnector {
 	senseConnector();
 };
 
-
+/*!
+* @brief condensed form of fish data for storage and transfer.
+* 
+*/
 struct fishDescriptor_t {
 
 	boneAndJointDescriptor_t bones[N_FINGERS];
 
-	// uint8_t heartSpeed;
+	// unsigned int heartSpeed;
 
 	senseConnector inputMatrix[N_SENSECONNECTORS]; // these need to get serialized too. so this is a workable place for them.
 	senseConnector outputMatrix[N_SENSECONNECTORS];
@@ -185,7 +180,10 @@ struct fishDescriptor_t {
 };
 
 
-
+/*!
+* @brief a controllable joint between bodies.
+*
+*/
 struct JointUserData {
 	float torque; 	
 	float speed; 	
@@ -208,6 +206,10 @@ struct JointUserData {
 	JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish) ;
 } ;
 
+/*!
+* @brief the rigid segments of an organism, plant, or food particle.
+*
+*/
 struct BoneUserData {
 	float length;
 	float rootThickness;
@@ -216,7 +218,7 @@ struct BoneUserData {
 	b2Vec2 tipCenter; 				// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	b2Vec2 rootCenter; 
 	JointUserData * joint; 		// the joint that attaches it into its socket		
-	uint8_t attachedTo;	
+	unsigned int attachedTo;	
 	bool isRoot ;
 	bool isMouth ;
 	bool isLeaf;
@@ -264,7 +266,10 @@ struct BoneUserData {
 		bool attached);
 } ;
 
-
+/*!
+* @brief a connection between two neurons inside the brain.
+*
+*/
 struct connectionDescriptor {
 	bool isUsed;
 	unsigned int connectedTo;
@@ -276,7 +281,10 @@ struct connectionDescriptor {
 
 
 
-
+/*!
+* @brief a single living brain cell.
+*
+*/
 struct neuronDescriptor {
 	bool isUsed;
 	unsigned int n_inputs;
@@ -301,6 +309,11 @@ struct neuronDescriptor {
 	neuronDescriptor();
 };
 
+
+/*!
+* @brief a layer of neurons inside the brain, the primary method of organisation for brain cells.
+*
+*/
 struct layerDescriptor {
 	bool isUsed;
 	// unsigned int n_neurons;
@@ -309,6 +322,10 @@ struct layerDescriptor {
 	layerDescriptor();
 };
 
+/*!
+* @brief a whole brain, many layers of many cells connected together.
+*
+*/
 struct networkDescriptor {
 	/*
 	1. it's impossible to modify a FANN network once it is created
@@ -337,8 +354,12 @@ struct networkDescriptor {
 };
 
 
-void LoadFishFromName (uint8_t fishIndex) ;
+void LoadFishFromName (unsigned int fishIndex) ;
 
+/*!
+* @brief an entire living organism, contain a rigid jointed body, a brain, and stored genetic information that can be passed along.
+*
+*/
 struct BonyFish {
 
 	float reproductionEnergyCost;
@@ -347,22 +368,22 @@ struct BonyFish {
 	bool isUsed;	// 
 
 	BoneUserData * bones[N_FINGERS]; // for now, let's just gnetworkDet fish working with a small, hard-linked, flat level set of bones.
-	uint8_t n_bones_used;
+	unsigned int n_bones_used;
 
-	// uint8_t heartCountA; 	// the heart is a neuro input used for timing and frequency control. 
-	// uint8_t heartSpeed; 	//  
+	// unsigned int heartCountA; 	// the heart is a neuro input used for timing and frequency control. 
+	// unsigned int heartSpeed; 	//  
 	// float heartOutputA;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
-	// uint8_t heartCountB; 	// the heart is a neuro input used for timing and frequency control. 
-	// // uint8_t heartSpeedB; 	//  
+	// unsigned int heartCountB; 	// the heart is a neuro input used for timing and frequency control. 
+	// // unsigned int heartSpeedB; 	//  
 	// float heartOutputB;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
-	// uint8_t heartCountC; 	// the heart is a neuro input used for timing and frequency control. 
-	// // uint8_t heartSpeedC; 	//  
+	// unsigned int heartCountC; 	// the heart is a neuro input used for timing and frequency control. 
+	// // unsigned int heartSpeedC; 	//  
 	// float heartOutputC;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
-	// uint8_t heartCountD; 	// the heart is a neuro input used for timing and frequency control. 
-	// // uint8_t heartSpeedD; 	//  
+	// unsigned int heartCountD; 	// the heart is a neuro input used for timing and frequency control. 
+	// // unsigned int heartSpeedD; 	//  
 	// float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
 
 	bool flagDelete;
@@ -373,7 +394,7 @@ struct BonyFish {
 	struct fann *ann;
 
 
-	uint8_t slot; // for reference, the slot the fish is loaded into
+	unsigned int slot; // for reference, the slot the fish is loaded into
 
 	bool selected;
 
@@ -383,7 +404,7 @@ struct BonyFish {
 	senseConnector inputMatrix[N_SENSECONNECTORS]; // these need to get serialized too. so this is a workable place for them.
 	senseConnector outputMatrix[N_SENSECONNECTORS];
 
-	char species[32]; // a textual string describing what species the fish is.
+	// char species[32]; // a textual string describing what species the fish is.
 
 
 	b2Vec2 previousRootPosition;
@@ -432,10 +453,23 @@ struct foodParticle_t {
 
 struct uDataWrap {
 	void * uData;
-	uint8_t dataType;
+	unsigned int dataType;
 
-	uDataWrap(void * dat, uint8_t type);
+	uDataWrap(void * dat, unsigned int type);
 };
+
+
+struct Species {
+
+	std::list<BonyFish> population;
+
+	std::string name;
+
+	Species();
+
+};
+
+
 
 void deepSeaControlA () ;
 void deepSeaControlB () ;
@@ -456,10 +490,10 @@ extern BoneUserData * food[N_FOODPARTICLES];
 // extern BonyFish * fishes[N_FISHES];
 extern std::list<BonyFish> fishes;
 
-extern int currentNumberOfFood;
-extern int currentNumberOfFish;
+extern unsigned int currentNumberOfFood;
+extern unsigned int currentNumberOfFish;
 
-extern int currentlySelectedLimb ;
+extern unsigned int currentlySelectedLimb ;
 
 void collisionHandler (void * boneA, void * boneB, b2Contact * p_contact) ;
 

@@ -80,10 +80,10 @@
 
 // #include "AntiPointy.h"
 // #include "CornerCase.h"
-#include "DamBreak.h"
+// #include "DamBreak.h"
 // #include "DrawingParticles.h"
 // #include "ElasticParticles.h"
-#include "Faucet.h"
+// #include "Faucet.h"
 
 #include "SunPool.h"
 #include "OlympicPool.h"
@@ -110,11 +110,11 @@ TestEntry g_testEntries[] =
 	// {"Sandbox", Sandbox::Create},
 	// {"Sparky", Sparky::Create},
 	{"Olympic Pool", OlympicPool::Create},
-	{"Jellyfish Simulator", DamBreak::Create},
+	// {"Jellyfish Simulator", DamBreak::Create},
 	// {"Liquid Timer", LiquidTimer::Create},
 	// {"Wave Machine", WaveMachine::Create},
 	// {"Particles", Particles::Create},
-	{"Faucet", Faucet::Create},
+	// {"Faucet", Faucet::Create},
 	// {"Particle Drawing", DrawingParticles::Create},
 	{"Sun Pool", SunPool::Create},
 	// {"Tethys Ocean", TethysOcean::Create},
