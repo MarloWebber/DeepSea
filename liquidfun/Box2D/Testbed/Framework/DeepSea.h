@@ -262,7 +262,7 @@ struct connectionDescriptor {
 	unsigned int connectedTo;
 	float connectionWeight;	
 
-	connectionDescriptor(int toNeuron);
+	connectionDescriptor(unsigned int toNeuron);
 };
 
 

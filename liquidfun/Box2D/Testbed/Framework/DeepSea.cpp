@@ -812,7 +812,7 @@ fann * loadFishBrainFromFile (std::string fileName) {
 	return fann_create_from_file( (fileName + std::string(".net")).c_str() );
 }
 
-connectionDescriptor::connectionDescriptor (int toNeuron) {
+connectionDescriptor::connectionDescriptor (unsigned int toNeuron) {
 	isUsed = false;
 	connectedTo = toNeuron;
 	connectionWeight = 0.0f;	
@@ -936,6 +936,7 @@ neuronDescriptor * getNeuronByIndex (networkDescriptor * network, unsigned int w
  			}
 		}
 	}
+	printf("getNeuronByIndex returned null! index: %u\n", windex);
 	return nullptr;
 }
 
@@ -1291,6 +1292,27 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 	if (! (targetLayerIndex == fish->brain->layers.size()-1) ){
 		newNeuron->index--;
 	}
+
+	 // 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+ 			if (neuron->index >= newNeuron->index) {
+ 				neuron->index ++;
+ 			}
+
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+
+ 				if (connection->connectedTo >= newNeuron->index) {
+ 					connection->connectedTo ++;
+ 				}
+ 			}
+ 		}
+ 	}	
+
+
 	
  	// make connections for all the next-layer neurons, set to 0, add them to the new neuron
  	if (layer != fish->brain->layers.end() ) { // if this isn't the last layer
@@ -1310,7 +1332,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 
 
  	// if the neuron is not on the first layer, all the previous-layer neurons get connections to this neuron.
- 	if (true) {
+ 	// if (true) {
 	 	layer = targetLayerIterator;
 	 	if (layer != fish->brain->layers.begin() ) { // and the next layer is not off the end of the array
 			layer--;
@@ -1325,27 +1347,8 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 			}
 
 	 	}
- 	}
+ 	// }
 
-
- // 	// all indexes in the connection map greater than the index of this neuron are incremented by 1.
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
-		
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-
- 			if (neuron->index >= newNeuron->index) {
- 				neuron->index ++;
- 			}
-
- 			std::list<connectionDescriptor>::iterator connection;
- 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
-
- 				if (connection->connectedTo >= newNeuron->index) {
- 					connection->connectedTo ++;
- 				}
- 			}
- 		}
- 	}	
 
 
 
@@ -2591,6 +2594,8 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 		}
 	}
 
+
+
 	// now you know all the positions, you can draw the connections really easily.
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 		std::list<neuronDescriptor>::iterator neuron;
@@ -2625,10 +2630,13 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
  			}
 
+ 			// printf("Got to here without crashing A!\n");
+
  			std::list<connectionDescriptor>::iterator connection;
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
 
 		    	b2Color segmentColor = b2Color(connection->connectionWeight,connection->connectionWeight,connection->connectionWeight);
+		    	// printf("Got to here without crashing B!\n");
 
 		    	if (connection->connectionWeight > 0) {
 		    		// segmentColor = b2Color(0.0f,0.0f,connection->connectionWeight,connection->connectionWeight ); // the connection weight is also used as alpha, so if the connection is less than 1, it will be partially transparent (and invisible at 0)
@@ -2638,10 +2646,17 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 		    		// segmentColor = b2Color(abs(connection->connectionWeight),0.0f,0.0f, connection->connectionWeight);
 		    		segmentColor.Set(abs(connection->connectionWeight),0.0f,0.0f);
 		    	}
+		    	// printf("Got to here without crashing C!\n");
 
-			    local_debugDraw_pointer->DrawSegment(neuron->position, (getNeuronByIndex(fish->brain, connection->connectedTo))->position,segmentColor );
+		    	// printf("posA x: %f y: %f, posB x: %f, y: %f\n", neuron->position.x, neuron->position.y, (getNeuronByIndex(fish->brain, connection->connectedTo))->position.x, (getNeuronByIndex(fish->brain, connection->connectedTo))->position.y);
+
+		    	// b2Color altSegmentColor = b2Color(1.0f, 1.0f, 1.);
+
+			    local_debugDraw_pointer->DrawSegment(neuron->position, (getNeuronByIndex(fish->brain, connection->connectedTo))->position,segmentColor );  // <--- this one is crashing it
+			    // printf("Got to here without crashing D!\n");
 			}
 
+			// printf("Got to here without crashing E!\n");
 
 			// write the neuron index on the neuron.
 			std::string neuronIndexLabel = std::string("");
