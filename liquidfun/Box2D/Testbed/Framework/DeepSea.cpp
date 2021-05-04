@@ -900,13 +900,17 @@ senseConnector::senseConnector () {
 }
 
 fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4 segment nematode creature.
-	for (int i = 0; i < N_SENSECONNECTORS; ++i) {
+
+	unsigned int numberOfRecursorsToStartWith = 3;
+	unsigned int numberOfRecursorsPerTime = 2;
+
+	for (unsigned int i = 0; i < N_SENSECONNECTORS; ++i) {
 		senseConnector moshuns = senseConnector();
 		outputMatrix[i] = moshuns;
 		inputMatrix[i] = moshuns;
 	}
 
-	for (int i = 0; i < N_FINGERS; ++i) {
+	for (unsigned int i = 0; i < N_FINGERS; ++i) {
 	
 		bones[i].color.r = 0.5f;
 		bones[i].color.g = 0.5f;
@@ -929,11 +933,32 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 		}
 	}
 
-	for (unsigned int i = 0; i < 4; ++i) {
-		outputMatrix[i].connectedToLimb = i;
-		outputMatrix[i].sensorType = SENSECONNECTOR_MOTOR;
-	}
 	unsigned int j = 0;
+
+	for (unsigned int i = 0; i < 4; ++i) {
+		outputMatrix[j].connectedToLimb = i;
+		outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
+		j++;
+	}
+
+		unsigned int channel = 0;
+	for (unsigned int i = 0; i < numberOfRecursorsToStartWith; ++i)
+	{
+		for (unsigned int k = 0; k < numberOfRecursorsPerTime; ++k)
+		{
+			outputMatrix[j].sensorType = SENSECONNECTOR_RECURSORTRANSMITTER;
+
+		outputMatrix[j].recursorChannel = channel;
+		outputMatrix[j].recursorDelay = (i*i )* 8;
+
+		channel++;
+		j++;
+		}
+		
+	}
+
+	j = 0; // reset for next matrix.
+
 	for (unsigned int i = 0; i < 4; ++i) {
 		inputMatrix[j].connectedToLimb = i;
 		inputMatrix[j].sensorType = SENSOR_FOODRADAR;
@@ -964,6 +989,22 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 
 		inputMatrix[j].timerPhase = RNG();
 		j++;
+	}
+
+	 channel = 0;
+	for (unsigned int i = 0; i < numberOfRecursorsToStartWith; ++i)
+	{
+		for (unsigned int k = 0; k < numberOfRecursorsPerTime; ++k)
+		{
+				inputMatrix[j].sensorType = SENSECONNECTOR_RECURSORRECEIVER;
+
+		inputMatrix[j].recursorChannel = channel;
+		inputMatrix[j].recursorDelay = (i*i )* 8;
+
+		channel++;
+		j++;
+		}
+	
 	}
 }
 
@@ -1360,11 +1401,11 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 	unsigned int layerIndex = 0;
 
 	// unsigned int newNeuronIndex = 0;
-	printf("---\n");
+	// printf("---\n");
 
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
 
-		printf("layer of %lu neurons\n", layer->neurons.size());
+		// printf("layer of %lu neurons\n", layer->neurons.size());
 
 		// newNeuron.index += layer->n_neurons; // always adding new neuron at the end of the layer.
 		newNeuron->index += layer->neurons.size();
@@ -3293,7 +3334,7 @@ void runBiomechanicalFunctions () {
 
 								if (fish->outputMatrix[k].sensorType == SENSECONNECTOR_RECURSORTRANSMITTER && fish->outputMatrix[k].recursorChannel == fish->inputMatrix[j].recursorChannel ) {
 										receivedSample = fish->outputMatrix[k].recursorBuffer[0];// = motorSignals[j];
-										printf("original sample: %f\n",fish->outputMatrix[k].recursorBuffer[0] );
+										// printf("original sample: %f\n",fish->outputMatrix[k].recursorBuffer[0] );
 										break;
 									
 								}
@@ -3345,7 +3386,7 @@ void runBiomechanicalFunctions () {
 
 					case SENSECONNECTOR_RECURSORTRANSMITTER:
 						fish->outputMatrix[j].recursorBuffer[0] = motorSignals[j];
-						printf("txing: %f\n", fish->outputMatrix[j].recursorBuffer[0]);
+						// printf("txing: %f\n", fish->outputMatrix[j].recursorBuffer[0]);
 					break;
 
 					case SENSECONNECTOR_MOTOR:
