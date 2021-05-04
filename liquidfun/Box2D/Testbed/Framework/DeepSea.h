@@ -141,7 +141,7 @@ struct boneAndJointDescriptor_t {
 #define SENSECONNECTOR_RECURSORRECEIVER 	6
 #define SENSECONNECTOR_RECURSORTRANSMITTER 	7
 
-#define SENSECONNECTOR_BUFFERSIZE			512	// the maximum size of the buffer used for recursion delay.
+#define SENSECONNECTOR_BUFFERSIZE			64	// the maximum size of the buffer used for recursion delay.
 
 
 /*!

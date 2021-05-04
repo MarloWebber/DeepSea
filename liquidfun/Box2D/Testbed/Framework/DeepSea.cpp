@@ -889,8 +889,13 @@ senseConnector::senseConnector () {
 	sensorType =  SENSECONNECTOR_UNUSED; 			// what kind of sense it is (touch, smell, etc.how the number will be treated)
 	timerFreq = 0;									// if a timer, the frequency.
 	recursorChannel = 0; 		// 
-	recursorDelay = 64;
+	recursorDelay = 8;
 	recursorCursor = 0;
+
+	for (int i = 0; i < SENSECONNECTOR_BUFFERSIZE; ++i)
+	{
+		recursorBuffer[i] = 0.0f;
+	}
 
 }
 
@@ -1463,24 +1468,36 @@ void addRecursorPair(int arg) {
 
 			if (fish->selected && TestMain::getBrainWindowStatus()) {
 
+				unsigned int greatestUsedRecursionChannel = 0;
 				unsigned int lowestAvailableRecursionChannel = 0;
 
-				for (int i = 0; i < N_SENSECONNECTORS; ++i)
+				bool channelsFound = false;
+
+				for (unsigned int i = 0; i < N_SENSECONNECTORS; ++i)
 				{
-					if (SENSECONNECTOR_RECURSORRECEIVER) {
-						if (fish->inputMatrix[i].recursorChannel > lowestAvailableRecursionChannel ) {
-							lowestAvailableRecursionChannel = fish->inputMatrix[i].recursorChannel;
+					if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_RECURSORRECEIVER || fish->inputMatrix[i].sensorType == SENSECONNECTOR_RECURSORTRANSMITTER) {
+						if (fish->inputMatrix[i].recursorChannel > greatestUsedRecursionChannel ) {
+							greatestUsedRecursionChannel = fish->inputMatrix[i].recursorChannel;
+							// printf("a channel was greater\n");
+							
 						}
+						channelsFound = true;
 					}
 
-					if (SENSECONNECTOR_RECURSORTRANSMITTER) {
-						if (fish->outputMatrix[i].recursorChannel > lowestAvailableRecursionChannel ) {
-							lowestAvailableRecursionChannel = fish->outputMatrix[i].recursorChannel;
+					if (fish->outputMatrix[i].sensorType == SENSECONNECTOR_RECURSORTRANSMITTER  || fish->outputMatrix[i].sensorType == SENSECONNECTOR_RECURSORTRANSMITTER) {
+						if (fish->outputMatrix[i].recursorChannel > greatestUsedRecursionChannel ) {
+							greatestUsedRecursionChannel = fish->outputMatrix[i].recursorChannel;
+							
 						}
+						channelsFound = true;
 					}
 				}
 
-				for (int i = 0; i < N_SENSECONNECTORS; ++i)
+				if (channelsFound) {
+					lowestAvailableRecursionChannel = greatestUsedRecursionChannel+1;
+				}
+
+				for (unsigned int i = 0; i < N_SENSECONNECTORS; ++i)
 				{
 					if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 						fish->inputMatrix[i].sensorType = SENSECONNECTOR_RECURSORRECEIVER ;
@@ -2694,7 +2711,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 			case SENSECONNECTOR_RECURSORRECEIVER:	
 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.5f,0.5f) );
-				connectorLabel =  "Receive";
+				connectorLabel =  "Rx";
 
 				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
 				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
@@ -2757,7 +2774,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 			{	
 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.5f,0.5f) );
 
-				std::string connectorLabel = std::string("Transmit ");
+				std::string connectorLabel = std::string("Tx ");
 				b2Vec2 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
 
 				// connectorLabel = std::string("Transmit ");
@@ -3261,23 +3278,29 @@ void runBiomechanicalFunctions () {
 						// the transmitters just set their buffer first place to the sample. that's it
 
 						// the receivers trawl the transmitter list and look for one on the same channel
-						float sample = 0.0f;
+						float receivedSample = 0.0f;
 						for (unsigned int k = 0; k < sizeOfOutputLayer; ++k)
 							{
+
+
+
 								if (k >= N_SENSECONNECTORS) {
 									continue;	// if the sensorium array is bigger than the array of input connectors, you can just leave the rest blank.
 								}
 
-								if (fish->outputMatrix[k].sensorType == SENSECONNECTOR_RECURSORTRANSMITTER) {
-									if (fish->outputMatrix[k].recursorChannel == fish->inputMatrix[j].recursorChannel ) {
-										sample = fish->outputMatrix[j].recursorBuffer[0];// = motorSignals[j];
+
+										// printf("smonadp.: %f\n",fish->outputMatrix[j].recursorBuffer[0] );
+
+								if (fish->outputMatrix[k].sensorType == SENSECONNECTOR_RECURSORTRANSMITTER && fish->outputMatrix[k].recursorChannel == fish->inputMatrix[j].recursorChannel ) {
+										receivedSample = fish->outputMatrix[k].recursorBuffer[0];// = motorSignals[j];
+										printf("original sample: %f\n",fish->outputMatrix[k].recursorBuffer[0] );
 										break;
-									}
+									
 								}
 							}
 
 						// they set their own sample, at the scrolling cursor, to it
-						fish->inputMatrix[j].recursorBuffer[fish->inputMatrix[j].recursorCursor ] = sample;
+						fish->inputMatrix[j].recursorBuffer[ fish->inputMatrix[j].recursorCursor ] = receivedSample;
 
 						// then they take a sample from [delay] samples ago and apply it
 						unsigned int adjustedCursor = fish->inputMatrix[j].recursorCursor;
@@ -3285,21 +3308,25 @@ void runBiomechanicalFunctions () {
 						unsigned int cursorPlusDelay = fish->inputMatrix[j].recursorCursor + fish->outputMatrix[j].recursorDelay ;
 						if (cursorPlusDelay > SENSECONNECTOR_BUFFERSIZE-1) {
 							adjustedCursor = 0;
-							adjustedCursor += (cursorPlusDelay - SENSECONNECTOR_BUFFERSIZE);
+							unsigned int bufferSize = SENSECONNECTOR_BUFFERSIZE;
+							adjustedCursor += (cursorPlusDelay - bufferSize);
 						}	
 						else {
 							adjustedCursor += fish->outputMatrix[j].recursorDelay ;
 						}
 
-						sensorium[j] = fish->outputMatrix[j].recursorBuffer[adjustedCursor];
+						sensorium[j] = fish->inputMatrix[j].recursorBuffer[adjustedCursor];
+						// printf("cursor: %u, txsample: %f, usedsample: %f\n", fish->inputMatrix[j].recursorCursor, receivedSample , fish->outputMatrix[j].recursorBuffer[adjustedCursor]);
+
 
 						fish->inputMatrix[j].recursorCursor ++;
 
 						// the buffer loops around the max size, but there is no performance downside to doing this because you're not rolling the entire buffer
-						if (fish->inputMatrix[j].recursorCursor > SENSECONNECTOR_BUFFERSIZE-1) {
+						if (fish->inputMatrix[j].recursorCursor >= SENSECONNECTOR_BUFFERSIZE) {
 							fish->inputMatrix[j].recursorCursor = 0;	
 						}
 
+						
 					break;
 				 
 				}		
@@ -3318,6 +3345,7 @@ void runBiomechanicalFunctions () {
 
 					case SENSECONNECTOR_RECURSORTRANSMITTER:
 						fish->outputMatrix[j].recursorBuffer[0] = motorSignals[j];
+						printf("txing: %f\n", fish->outputMatrix[j].recursorBuffer[0]);
 					break;
 
 					case SENSECONNECTOR_MOTOR:
