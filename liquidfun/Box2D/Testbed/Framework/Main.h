@@ -63,6 +63,7 @@ int getFluidDynamicForcesViewStatus() ;
 int getVotingMode();
 
 int getTriggerRadiusStatus() ;
+int getFoodRadiusStatus() ;
 
 }  // namespace TestMain
 

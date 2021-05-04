@@ -50,6 +50,7 @@ namespace
 	int originStartStatus = 0;
 	int persistentFoodStatus = 0;
 	int triggerRadiusStatus = 0;
+	int foodRadiusStatus = 0;
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
 	int voting_mode = 0;
@@ -120,6 +121,10 @@ int getFluidDynamicForcesViewStatus() {
 
 int getTriggerRadiusStatus() {
 	return triggerRadiusStatus;
+}
+
+int getFoodRadiusStatus() {
+	return foodRadiusStatus;
 }
 
 // int getGridPinStatus() {
@@ -897,6 +902,12 @@ int main(int argc, char** argv)
 
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Persistent Food", &persistentFoodStatus);
+
+	glui->add_checkbox_to_panel(laboratoryPanel, "Food walks around radius", &foodRadiusStatus);
+
+GLUI_Spinner* foodRadiusAngleJitterSpinner =
+glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.foodRadiusAngleJitter);
+	foodRadiusAngleJitterSpinner->set_float_limits(0.0f, 2 * pi);
 
 
 	glui->add_button_to_panel(laboratoryPanel, "Add Random Food", 0, addRandomFoodParticle);

@@ -19,6 +19,7 @@
 #define TERRAIN_TYPE_ELASTIC 0
 #define TERRAIN_TYPE_RIGID 0
 
+extern float pi;
 
 struct deepSeaSettings {
 	int gameMode;
@@ -32,7 +33,7 @@ struct deepSeaSettings {
 	int terrainPaintType;
 
 	float originTriggerRadius;
-	
+	float foodRadiusAngleJitter;
 
 };
 

@@ -4243,7 +4243,7 @@ void test_runAllUnitTests() {
 // game logic which is run only once at startup
 void deepSeaStart() {
 
-	m_deepSeaSettings.originTriggerRadius = 10.0f;
+	// m_deepSeaSettings.originTriggerRadius = 10.0f;
 
 	ecosystem.push_back(*defaultSpecies);
 
