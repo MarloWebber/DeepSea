@@ -62,6 +62,8 @@ int getFluidDynamicForcesViewStatus() ;
 
 int getVotingMode();
 
+int getTriggerRadiusStatus() ;
+
 }  // namespace TestMain
 
 // void SimulationLoop();

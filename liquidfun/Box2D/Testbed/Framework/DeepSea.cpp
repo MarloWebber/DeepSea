@@ -2143,6 +2143,20 @@ void sexBetweenTwoMinds () {
 
 void drawingTest() {
 
+
+	if (TestMain::getTriggerRadiusStatus()) {
+		// void
+
+		// printf("gleelee\n");
+		b2Vec2 position = b2Vec2(0.0f, 0.0f);
+		b2Color color = b2Color(0.2f, 0.2f, 0.2f);
+		 local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.originTriggerRadius, color);
+
+
+	
+
+	}
+
 	// draw the particle system
 	if (false) {
 		int32 particleCount = local_m_particleSystem->GetParticleCount();
@@ -3834,6 +3848,51 @@ void deepSeaLoop () {
 
 	if (!local_m_world->IsLocked() ) {
 
+		if (TestMain::getTriggerRadiusStatus()) {
+
+			// if radius trigger is turned on, check the distances of the fish. when the average distance is greater than the trigger radius, the generation is reset.
+
+
+			std::list<Species>::iterator currentSpecies;
+			std::list<BonyFish>::iterator fish;
+			currentSpecies= ecosystem.begin();
+			fish = currentSpecies->population.begin();
+
+
+			// BonyFish * theFurthest = &(*fish);
+
+			float avgDistance = 0.0f;
+
+			unsigned int tally = 0;
+			// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+			// std::list<Species>::iterator currentSpecies;
+				for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+				{
+					// std::list<BonyFish>::iterator fish;
+					for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+					{
+
+
+					 avgDistance += magnitude(fish->bones[0]->p_body->GetWorldCenter() );
+					 tally += 1;
+				}
+				// theFurthest->selected = true;
+			}
+
+			float floatTally = tally;
+			avgDistance = avgDistance	/ floatTally;
+
+			if (avgDistance > m_deepSeaSettings.originTriggerRadius) {
+				reloadTheSim(0);
+			} 
+
+
+		}
+
+
+
+
+
 		if (loopCounter < loopSafetyLimit) {
 			// startNextGeneration = false;
 		}		
@@ -4183,6 +4242,9 @@ void test_runAllUnitTests() {
 
 // game logic which is run only once at startup
 void deepSeaStart() {
+
+	m_deepSeaSettings.originTriggerRadius = 10.0f;
+
 	ecosystem.push_back(*defaultSpecies);
 
 }

@@ -49,6 +49,7 @@ namespace
 	int  noClipStatus = 0;
 	int originStartStatus = 0;
 	int persistentFoodStatus = 0;
+	int triggerRadiusStatus = 0;
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
 	int voting_mode = 0;
@@ -117,6 +118,9 @@ int getFluidDynamicForcesViewStatus() {
 	return showFluidDynamicForces;
 }
 
+int getTriggerRadiusStatus() {
+	return triggerRadiusStatus;
+}
 
 // int getGridPinStatus() {
 // 	return gridPinStatus;
@@ -896,6 +900,14 @@ int main(int argc, char** argv)
 
 
 	glui->add_button_to_panel(laboratoryPanel, "Add Random Food", 0, addRandomFoodParticle);
+
+
+
+	glui->add_checkbox_to_panel(laboratoryPanel, "Trigger generation at radius", &triggerRadiusStatus);
+	GLUI_Spinner* triggerRadiusSpinner =
+		glui->add_spinner_to_panel(laboratoryPanel, "Trigger radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.originTriggerRadius);
+	triggerRadiusSpinner->set_float_limits(0.0f, 100.0f);
+
 
 
 	GLUI_Panel* EcosystemPanel =	glui->add_panel("Ecosystem Mode");

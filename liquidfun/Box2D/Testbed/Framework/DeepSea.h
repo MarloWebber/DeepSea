@@ -30,6 +30,10 @@ struct deepSeaSettings {
 	float mentalMutationRate;
 	float mentalMutationSeverity;
 	int terrainPaintType;
+
+	float originTriggerRadius;
+	
+
 };
 
 extern deepSeaSettings m_deepSeaSettings;
