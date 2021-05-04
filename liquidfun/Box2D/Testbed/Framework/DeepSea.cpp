@@ -1304,15 +1304,32 @@ void deleteSelectedNeuron (int arg) {
 					for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 
 						std::list<neuronDescriptor>::iterator neuron;
+						unsigned int neuronIndexInThisLayer = 0;
 		 				for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
 		 					if (neuron -> selected) {
 		 						deleteNeuronByIndex(fish->brain, neuron->index);
 
+
+
+		 						// if the neuron is on the first or last layer, delete any associated sense connector.
+		 						if (layer == fish->brain->layers.begin()  ) {	
+
+		 							fish->inputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED;
+
+		 						}
+
+		 						else if ( layer == ((fish->brain->layers.end() )-- )) {
+		 							fish->outputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED;
+		 						}
+
+
+
 		 						fish->ann = createFANNbrainFromDescriptor (fish->brain) ;
 
 		 						return;
 		 					}
+		 					neuronIndexInThisLayer++;
 		 				}
 					}
 				}
@@ -1913,6 +1930,13 @@ void reloadTheSim  (int arg) {
 void  vote (BonyFish * winner) {
 	if ( loopCounter > loopSafetyLimit) {
 
+		// the fish's input and output matrix configurations should be passed on to offspring
+	for (int i = 0; i < N_SENSECONNECTORS; ++i)
+	{
+		winner->genes.inputMatrix[i] = winner->inputMatrix[i];
+		winner->genes.outputMatrix[i] = winner->outputMatrix[i];
+	}
+
 		fann * wann = winner->ann;
 
 		// save the winner to file with a new name.
@@ -2217,6 +2241,14 @@ void shine (Lamp * nancy) {
 }
 
 void ecosystemModeBeginGeneration (BonyFish * fish) {
+
+	// the fish's input and output matrix configurations should be passed on to offspring
+	for (int i = 0; i < N_SENSECONNECTORS; ++i)
+	{
+		fish->genes.inputMatrix[i] = fish->inputMatrix[i];
+		fish->genes.outputMatrix[i] = fish->outputMatrix[i];
+	}
+
 	for (int i = 0; i < 3; ++i) {
 		fishDescriptor_t newFishBody = fish->genes;
 
@@ -2659,6 +2691,24 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
 				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 			break;
+
+			case SENSECONNECTOR_RECURSORRECEIVER:	
+				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.5f,0.5f) );
+				connectorLabel =  "Receive";
+
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+				connectorLabel = std::string("Ch ");
+				connectorLabel += std::to_string(fish->inputMatrix[j].recursorChannel);
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.3);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+				connectorLabel = std::string("Delay ");
+				connectorLabel += std::to_string(fish->inputMatrix[j].recursorDelay);
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.4);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+			break;
 		}
 	}
 
@@ -2681,11 +2731,12 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 
 		switch (fish->outputMatrix[j].sensorType) {
-			case SENSECONNECTOR_UNUSED:	
+			case SENSECONNECTOR_UNUSED:	{
 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.1f,0.1f,0.1f) );
-			break;
+				break;
+			}
 
-			case SENSECONNECTOR_MOTOR:	
+			case SENSECONNECTOR_MOTOR:	{
 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.3f,0.15f) );
 
 				std::string connectorLabel = std::string("");
@@ -2699,7 +2750,42 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y+0.3);
 				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 
-			break;
+				break;
+			}
+
+			case SENSECONNECTOR_RECURSORTRANSMITTER:
+			{	
+				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.5f,0.5f) );
+
+				std::string connectorLabel = std::string("Transmit ");
+				b2Vec2 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+
+				// connectorLabel = std::string("Transmit ");
+				// connectorLabel += std::to_string(fish->outputMatrix[j].connectedToLimb);
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y+0.2);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+				connectorLabel =  "Ch ";
+
+				connectorLabel += std::to_string(fish->outputMatrix[j].recursorChannel);
+
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y+0.3);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+				break;
+			}
+
+			// case SENSECONNECTOR_RECURSORTRANSMITTER:	
+			// 	local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.5f,0.5f) );
+			// 	connectorLabel =  "Transmit";
+
+			// 	mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+			// 	local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+			// 	connectorLabel = std::string("Ch ");
+			// 	connectorLabel += std::to_string(fish->inputMatrix[j].recursorChannel);
+			// 	mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.3);
+			// 	local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+			// break;
 		}
 	}
 
@@ -2728,7 +2814,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 					b2Vec2(neuron->position.x-0.1f + 0.2f, neuron->position.y+0.1f), 
 					b2Vec2(neuron->position.x-0.1f + 0.2f, neuron->position.y-0.1f), 
 				};
- 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.5f,0.5f,0.5f) );
+ 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.2f,0.2f,0.2f) );
 
 				std::string connectorLabel = std::string("");
 				b2Vec2 mocesfef = b2Vec2(neuron->position.x-0.05, neuron->position.y-0.2);
