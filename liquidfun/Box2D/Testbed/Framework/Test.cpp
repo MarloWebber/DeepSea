@@ -302,8 +302,15 @@ void Test::MouseDown(const b2Vec2& p)
 		// printf("");
 
 
-	std::list<BonyFish>::iterator fish;
-	for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+	// std::list<BonyFish>::iterator fish;
+	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+			std::list<Species>::iterator currentSpecies;
+		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+		{
+			std::list<BonyFish>::iterator fish;
+			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			{
 
 for (int i = 0; i < N_FINGERS; ++i) {
 				if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
@@ -331,6 +338,7 @@ for (int i = 0; i < N_FINGERS; ++i) {
 			}
 
 	}
+}
 
 
 	// iterate through food particles and select clicked food

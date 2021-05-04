@@ -488,7 +488,9 @@ void makeAJellyfish (BonyFish * p_fish) ;
 extern BoneUserData * food[N_FOODPARTICLES];
 // extern std::list<foodParticle_t*> food;
 // extern BonyFish * fishes[N_FISHES];
-extern std::list<BonyFish> fishes;
+// extern std::list<BonyFish> fishes;
+
+extern std::list<Species> ecosystem;
 
 extern unsigned int currentNumberOfFood;
 extern unsigned int currentNumberOfFish;

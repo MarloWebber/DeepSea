@@ -26,6 +26,8 @@ deepSeaSettings m_deepSeaSettings = {
 64,	//  	int exploratory_nFish;
 b2Vec2(0.0f,0.0f),	//  	b2Vec2 gravity;
 0.1,	//  	float mutationRate;
+	// std::list<BonyFish>::iterator fish;
+	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 0.2,	//  	float mutationSeverity;
 0.1,	//  	float mentalMutationRate;
 0.5,	//  	float mentalMutationSeverity;
@@ -42,7 +44,7 @@ bool userControlInputB;
 unsigned int currentlySelectedLimb =0;
 
 // collections of objects in the game world.
-std::list<BonyFish> fishes;
+// std::list<BonyFish> fishes;
 std::list<Lamp> lamps;
 BoneUserData * food[N_FOODPARTICLES];
 
@@ -796,8 +798,21 @@ void flagBiasNeurons( BonyFish * fish) {
 
 
 void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
-	fishes.push_back(  *(new BonyFish(driedFish, nann, startingPosition)) );
-	BonyFish * fish = &(fishes.back());
+
+
+std::list<Species>::iterator currentSpecies;
+		// for 
+			// (
+				currentSpecies = ecosystem.begin(); 
+				// currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+		// {
+			// std::list<BonyFish>::iterator fish;
+			// for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			// {
+
+
+	currentSpecies->population.push_back(  *(new BonyFish(driedFish, nann, startingPosition)) );
+	BonyFish * fish = &(currentSpecies->population.back());
 	fish->isUsed = true;
 
 	for (int i = 0; i < N_FINGERS; ++i) {
@@ -1247,7 +1262,7 @@ void deleteSelectedNeuron (int arg) {
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
 
-			for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+			// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 
 				if (fish->selected ){
 
@@ -1267,7 +1282,7 @@ void deleteSelectedNeuron (int arg) {
 		 				}
 					}
 				}
-			}
+			// }
 		}
 	}
 }
@@ -1526,13 +1541,13 @@ void placeLimbOnSelectedFish(int arg) {
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-			for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+			// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 
 				if (fish->selected && TestMain::getBodyWindowStatus()) {
 					polydactyly2( &(*fish));
 					break;
 				}
-			}
+			// }
 		}
 	}
 }
@@ -1819,20 +1834,23 @@ void removeDeletableFish() {
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
 
-			for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+			// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 				if (fish->flagDelete && fish->isUsed) {
 					deleteFish ( &(*fish)) ;
-					fishes.erase(fish++);
+					currentSpecies->population.erase(fish++);
 				}
+
 			}
+		}
+			// }
 
 			for (int i = 0; i < N_FOODPARTICLES; ++i) {
 				if (food[i]->flagDelete) {
 					deleteBone(food[i]);
 				}
 			}
-		}
-	}
+	// 	}
+	// }
 }
 
 // this function just sets the flags and labels. it is done inside the step.
@@ -2198,7 +2216,24 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 
 		loadFish ( newFishBody, jann, desiredPosition) ;
 
-		moveAWholeFish ( &fishes.back(),  desiredPosition);
+		// moveAWholeFish ( &fishes.back(),  desiredPosition);
+
+
+		std::list<Species>::iterator currentSpecies;
+	// for (
+		currentSpecies = ecosystem.begin();
+		 // currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	// {
+		// std::list<BonyFish>::iterator fish;
+		// for (
+			// fish = currentSpecies->population.back();
+			 // fish !=  currentSpecies->population.end(); ++fish) 	
+		// {
+
+		 moveAWholeFish ( &(currentSpecies->population.back() ),  desiredPosition);
+
+
+
 	}
 }
 
