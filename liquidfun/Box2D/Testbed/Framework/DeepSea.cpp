@@ -22,8 +22,8 @@ unsigned int generationsThisGame = 0;
 bool startNextGeneration = false;
 deepSeaSettings m_deepSeaSettings = {
 0,	// int gameMode;
-0,	//  	int exploratory_nFood;
-64,	//  	int exploratory_nFish;
+0,	//  	int laboratory_nFood;
+64,	//  	int laboratory_nFish;
 b2Vec2(0.0f,0.0f),	//  	b2Vec2 gravity;
 0.1,	//  	float mutationRate;
 	// std::list<BonyFish>::iterator fish;
@@ -48,7 +48,10 @@ unsigned int currentlySelectedLimb =0;
 std::list<Lamp> lamps;
 BoneUserData * food[N_FOODPARTICLES];
 
-std::list<Species> ecosystem;
+std::list<Species> ecosystem = *(new std::list<Species>);
+Species * defaultSpecies = new Species; // a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
+
+
 
 // local copies of pointers mean that the references to these objects only need to be given once at setup (they come from main).
 b2World * local_m_world = nullptr;
@@ -254,7 +257,7 @@ BoneUserData::BoneUserData(
 	tipCenter = b2Vec2(0.0f,0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	rootCenter = b2Vec2(0.0f,0.0f); 	
 
-	int count = 4;
+	unsigned int count = 4;
 
 	// bones in a set can't collide with each other.
 	collisionGroup = newCollisionGroup;
@@ -585,6 +588,10 @@ void BonyFish::feed(float amount) {
 }
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
+	printf("bonyfish constructor");
+
+
+
 	genes = driedFish;
 	reproductionEnergyCost = 0.0f; // the amount of energy required to make a clutch of viable offspring. to be calculated
 
@@ -601,11 +608,24 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		if (i == 0) {
 			driedFish.bones[i].isRoot = true;
 		}
+
 		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup, true);
+
+
+
+	// while(1){;}
+
 		reproductionEnergyCost += bones[i]->energy;
+
+
+
 	}
 
-	energy = reproductionEnergyCost * 0.5;
+
+
+
+	energy = reproductionEnergyCost * 0.5; // this was what was crashing it? lmao
+
 
 	n_bones_used = 0;
 	for (int i = 0; i < N_FINGERS; ++i) {
@@ -621,6 +641,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 	distanceMovedSoFar = 0.0f;
 	filteredOutputWiggle = 0.0f;
 	previousOutputs = nullptr;
+
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i) { // if the limb doesn't already have sense and motor connectors, add them in.
 
@@ -690,6 +711,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		}
 	}
 
+
     if (nann == NULL) {
     		for (int i = 0; i < N_FINGERS; ++i) {
 				driedFish.bones[i].color = b2Color(RNG()* 255, RNG() * 255, RNG() * 255);
@@ -716,6 +738,8 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
     	brain = createEmptyNetworkOfCorrectSize (nann) ;
     }
+
+    printf("bonyfish ready");
 };
 
 void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
@@ -800,18 +824,25 @@ void flagBiasNeurons( BonyFish * fish) {
 void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
 
 
-std::list<Species>::iterator currentSpecies;
-		// for 
-			// (
-				currentSpecies = ecosystem.begin(); 
+std::list<Species>::iterator currentSpecies = ecosystem.begin(); 
 				// currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		// {
 			// std::list<BonyFish>::iterator fish;
 			// for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 			// {
 
+	printf("gingethrine %lu\n", currentSpecies->population.size() );
 
-	currentSpecies->population.push_back(  *(new BonyFish(driedFish, nann, startingPosition)) );
+
+	BonyFish newFish = *(new BonyFish(driedFish, nann, startingPosition));
+
+
+	printf("sonos\n");
+
+	currentSpecies->population.push_back(  newFish );
+
+	printf("mout loadde\n");
+
 	BonyFish * fish = &(currentSpecies->population.back());
 	fish->isUsed = true;
 
@@ -821,6 +852,9 @@ std::list<Species>::iterator currentSpecies;
 		}
 		fish->bones[i]->p_owner = fish; // you need to update the user data pointer, because when you pushed the fish onto the list you pushed a copy of it not the actual thing.
 	}
+
+
+	printf("mesines\n");
 
 	flagBiasNeurons(fish);
 }
@@ -1152,7 +1186,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
 
 Species::Species () {
-	// population = new std::list<BonyFish>;
+	population = *(new std::list<BonyFish>);
 	name = "unnamed_species";
 }
 
@@ -2237,9 +2271,9 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 	}
 }
 
-void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
+void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
-	for (int i = 0; i < m_deepSeaSettings.exploratory_nFish; ++i) {
+	for (unsigned int i = 0; i < m_deepSeaSettings.laboratory_nFish; ++i) {
 
 		bool thereIsAFile = false;
 
@@ -2256,12 +2290,17 @@ void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary
 			fishDescriptor_t newFishBody;
 			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
+			printf("loaded fish\n");
+
 			mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 		
+
 		    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
 
 			// now you can load the mutant ANN.
 			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+
+				printf("mutaded fish\n");
 
 			// create a neurodescriptor.
 			networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
@@ -2288,7 +2327,12 @@ void exploratoryModeBeginGeneration ( ) { // select an animal as an evolutionary
 				// printf("notuo \n");
 			}
 
+
+				printf("rigged brain\n");
+
 			loadFish ( newFishBody, jann, position) ;
+
+				printf("emplaced fish\n");
 
 		}
 		else { 						// if there is no winner, its probably a reset or new install. make one up
@@ -3403,7 +3447,7 @@ void pinToGrid(int arg) {
 
 	// std::list<BonyFish>::iterator fish;
 
-	uint gridSize = int(sqrt(m_deepSeaSettings.exploratory_nFish));
+	uint gridSize = int(sqrt(m_deepSeaSettings.laboratory_nFish));
 
 	// b2Vec2 gridPosition = b2Vec2(0.0f, 0.0f);
 	float gridSpacing = 5.0f;
@@ -3603,8 +3647,11 @@ void selectClosestToFood (int arg) {
 void deepSeaLoop () {
 
 	TestMain::PreStep();
+	printf("prestep complete\n");
 
 	TestMain::Step();
+
+	printf("step complete\n");
 
 	if (!local_m_world->IsLocked() ) {
 
@@ -3616,12 +3663,16 @@ void deepSeaLoop () {
 
 		removeDeletableFish();
 
-		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION ) {
+	printf("removed deletable fish\n");
+
+		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) {
 			if (loopCounter > loopSafetyLimit) {
-				exploratoryModeBeginGeneration ( );
+				laboratoryModeBeginGeneration ( );
 				loopCounter = 0;
 			}
 		}
+
+	printf("began generation\n");
 		
 		startNextGeneration = false;
 
@@ -3635,7 +3686,11 @@ void deepSeaLoop () {
 
 		drawingTest();
 
+	printf("performed drawing\n");
+
 		runBiomechanicalFunctions();
+
+	printf("analyzed biology\n");
 
 		if (flagAddFood) {
 			flagAddFood = false;
@@ -3663,9 +3718,15 @@ void deepSeaLoop () {
 				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
 			}
 		}
+
+	printf("performed fluid physics\n");
 	}
 
+	printf("DS logic complete\n");
+
 	TestMain::PostStep();
+
+	printf("poststep complete\n");
 }
 
 void deepSeaControlP () {
@@ -3741,7 +3802,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
-			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
+			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 			    vote(fish);
 			}
 
@@ -3753,7 +3814,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		else if (dataA.dataType == TYPE_MOUTH) {
 			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
-			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
+			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 				vote(fish);
 			}
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
@@ -3769,7 +3830,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
-			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
+			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 			    vote(fish);
 			}
 
@@ -3781,7 +3842,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		else if (dataA.dataType == TYPE_MOUTH) {
 			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
-			if (m_deepSeaSettings.gameMode == GAME_MODE_EXPLORATION) {
+			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 				vote(fish);
 			}
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
@@ -3939,4 +4000,10 @@ void test_runAllUnitTests() {
 	if ( test_chooseDMostVertex() ) { n_failures++; } tests_so_far++;
 
 	printf("performed %u tests with %u failures\n", tests_so_far, n_failures);
+}
+
+// game logic which is run only once at startup
+void deepSeaStart() {
+	ecosystem.push_back(*defaultSpecies);
+
 }

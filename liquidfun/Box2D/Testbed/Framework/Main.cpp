@@ -872,7 +872,7 @@ int main(int argc, char** argv)
 	// glui->add_checkbox_to_panel(gamePanel, "Shapes", booger);
 	GLUI_Listbox* modeList =
 		glui->add_listbox_to_panel(gamePanel, "Mode", &(m_deepSeaSettings.gameMode ));
-		modeList->add_item(GAME_MODE_EXPLORATION, "Exploratory Mode" );
+		modeList->add_item(GAME_MODE_LABORATORY, "Laboratory Mode" );
 		modeList->add_item(GAME_MODE_ECOSYSTEM, "Ecosystem Mode" );
 
 
@@ -883,19 +883,19 @@ int main(int argc, char** argv)
 	// glui->add_separator_to_panel(gamePanel);
 
 
-	GLUI_Panel* ExploratoryPanel =	glui->add_panel("Exploratory Mode");
+	GLUI_Panel* laboratoryPanel =	glui->add_panel("Laboratory Mode");
 
 
 		// int fakeNumberOfFish;
 		GLUI_Spinner* numberOfFishSpinner =
-		glui->add_spinner_to_panel(ExploratoryPanel,"Number of fish", GLUI_SPINNER_INT, &m_deepSeaSettings.exploratory_nFish);
+		glui->add_spinner_to_panel(laboratoryPanel,"Number of fish", GLUI_SPINNER_INT, &m_deepSeaSettings.laboratory_nFish);
 	numberOfFishSpinner->set_int_limits(1, 256);
 
 
-	glui->add_checkbox_to_panel(ExploratoryPanel, "Persistent Food", &persistentFoodStatus);
+	glui->add_checkbox_to_panel(laboratoryPanel, "Persistent Food", &persistentFoodStatus);
 
 
-	glui->add_button_to_panel(ExploratoryPanel, "Add Random Food", 0, addRandomFoodParticle);
+	glui->add_button_to_panel(laboratoryPanel, "Add Random Food", 0, addRandomFoodParticle);
 
 
 	GLUI_Panel* EcosystemPanel =	glui->add_panel("Ecosystem Mode");
@@ -1123,6 +1123,8 @@ case 0:
 	glutTimerFunc(framePeriod, Timer, 0);
 
 	test_runAllUnitTests();
+
+	deepSeaStart();
 
 	glutMainLoop();
 

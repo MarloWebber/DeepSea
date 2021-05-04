@@ -10,7 +10,7 @@
 #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
 
-#define GAME_MODE_EXPLORATION 0
+#define GAME_MODE_LABORATORY 0
 #define GAME_MODE_ECOSYSTEM 1
 
 #define TERRAIN_TYPE_LIQUID 0
@@ -22,8 +22,8 @@
 
 struct deepSeaSettings {
 	int gameMode;
-	int exploratory_nFood;
-	int exploratory_nFish;
+	int laboratory_nFood;
+	int laboratory_nFish;
 	b2Vec2 gravity;
 	float mutationRate;
 	float mutationSeverity;
@@ -492,6 +492,9 @@ extern BoneUserData * food[N_FOODPARTICLES];
 
 extern std::list<Species> ecosystem;
 
+extern Species * defaultSpecies;// = new Species; // a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
+
+
 extern unsigned int currentNumberOfFood;
 extern unsigned int currentNumberOfFish;
 
@@ -550,6 +553,7 @@ void addRandomFoodParticle(int arg);
 
 void test_runAllUnitTests();
 
+void deepSeaStart();
 
 	// }
 #endif
