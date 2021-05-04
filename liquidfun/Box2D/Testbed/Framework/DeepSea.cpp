@@ -588,7 +588,7 @@ void BonyFish::feed(float amount) {
 }
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
-	printf("bonyfish constructor");
+	// printf("bonyfish constructor");
 
 
 
@@ -600,9 +600,9 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 	int randomCollisionGroup = - (RNG() * 16.0f);
 
-	if (TestMain::getNoClipStatus()) {
+	// if (TestMain::getNoClipStatus()) {
 		randomCollisionGroup = -1; // if this option box is checked, the fish never collide with each other.
-	}
+	// }
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (i == 0) {
@@ -739,7 +739,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
     	brain = createEmptyNetworkOfCorrectSize (nann) ;
     }
 
-    printf("bonyfish ready");
+    // printf("bonyfish ready");
 };
 
 void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
@@ -831,17 +831,17 @@ std::list<Species>::iterator currentSpecies = ecosystem.begin();
 			// for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 			// {
 
-	printf("gingethrine %lu\n", currentSpecies->population.size() );
+	// printf("gingethrine %lu\n", currentSpecies->population.size() );
 
 
 	BonyFish newFish = *(new BonyFish(driedFish, nann, startingPosition));
 
 
-	printf("sonos\n");
+	// printf("sonos\n");
 
 	currentSpecies->population.push_back(  newFish );
 
-	printf("mout loadde\n");
+	// printf("mout loadde\n");
 
 	BonyFish * fish = &(currentSpecies->population.back());
 	fish->isUsed = true;
@@ -854,7 +854,7 @@ std::list<Species>::iterator currentSpecies = ecosystem.begin();
 	}
 
 
-	printf("mesines\n");
+	// printf("mesines\n");
 
 	flagBiasNeurons(fish);
 }
@@ -2273,7 +2273,7 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 
 void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
-	for (unsigned int i = 0; i < m_deepSeaSettings.laboratory_nFish; ++i) {
+	for (int i = 0; i < m_deepSeaSettings.laboratory_nFish; ++i) {
 
 		bool thereIsAFile = false;
 
@@ -2290,7 +2290,7 @@ void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary 
 			fishDescriptor_t newFishBody;
 			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
 
-			printf("loaded fish\n");
+			// printf("loaded fish\n");
 
 			mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 		
@@ -2300,7 +2300,7 @@ void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary 
 			// now you can load the mutant ANN.
 			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
 
-				printf("mutaded fish\n");
+				// printf("mutaded fish\n");
 
 			// create a neurodescriptor.
 			networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
@@ -2315,31 +2315,27 @@ void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary 
 				}
 			}
 
-			b2Vec2 position = getRandomPosition();
+			b2Vec2 position = b2Vec2(0.0f,0.0f);
+			// }
+			// else {
+			// 	// printf("notuo \n");
+			// }
 
 
-
-			if (TestMain::getOriginStartStatus()) {
-				// printf("junpamd a\n");
-				position = b2Vec2(0.0f,0.0f);
-			}
-			else {
-				// printf("notuo \n");
-			}
-
-
-				printf("rigged brain\n");
+				// printf("rigged brain\n");
 
 			loadFish ( newFishBody, jann, position) ;
 
-				printf("emplaced fish\n");
+				// printf("emplaced fish\n");
 
 		}
 		else { 						// if there is no winner, its probably a reset or new install. make one up
 			// printf("No genetic material found in game folder. Loading default animal.\n");
 			fishDescriptor_t nematode = fishDescriptor_t();
+				b2Vec2 position = b2Vec2(0.0f,0.0f);
+			// }
 
-			loadFish ( nematode, NULL,  getRandomPosition()) ;
+			loadFish ( nematode, NULL,  position) ;
 		}
 	}
 	startNextGeneration = false;
@@ -3391,6 +3387,34 @@ void voteSelectedFish(int arg) {
 	}
 }
 
+// in lab mode, this clears out all the fish and makes n of the selected one.
+// in eco mode, this clears out the selected fish only and drops children at it.
+void handleReproduceSelectedButton (int arg) {
+
+	if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
+		voteSelectedFish(arg);
+	}
+	else  {
+
+		// ecosystemModeBeginGeneration ( fish) ;
+
+			std::list<Species>::iterator currentSpecies;
+		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+		{
+			std::list<BonyFish>::iterator fish;
+			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			{
+		if (fish->selected) {
+			// vote( &(*fish) );
+			ecosystemModeBeginGeneration (  &(*fish) ) ;
+			}
+		}
+	}
+
+	}
+
+}
+
 void deselectAll (int arg) {
 
 	unused_variable((void *)&arg);
@@ -3647,11 +3671,11 @@ void selectClosestToFood (int arg) {
 void deepSeaLoop () {
 
 	TestMain::PreStep();
-	printf("prestep complete\n");
+	// printf("prestep complete\n");
 
 	TestMain::Step();
 
-	printf("step complete\n");
+	// printf("step complete\n");
 
 	if (!local_m_world->IsLocked() ) {
 
@@ -3663,7 +3687,7 @@ void deepSeaLoop () {
 
 		removeDeletableFish();
 
-	printf("removed deletable fish\n");
+	// printf("removed deletable fish\n");
 
 		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) {
 			if (loopCounter > loopSafetyLimit) {
@@ -3672,7 +3696,7 @@ void deepSeaLoop () {
 			}
 		}
 
-	printf("began generation\n");
+	// printf("began generation\n");
 		
 		startNextGeneration = false;
 
@@ -3686,11 +3710,11 @@ void deepSeaLoop () {
 
 		drawingTest();
 
-	printf("performed drawing\n");
+	// printf("performed drawing\n");
 
 		runBiomechanicalFunctions();
 
-	printf("analyzed biology\n");
+	// printf("analyzed biology\n");
 
 		if (flagAddFood) {
 			flagAddFood = false;
@@ -3719,14 +3743,14 @@ void deepSeaLoop () {
 			}
 		}
 
-	printf("performed fluid physics\n");
+	// printf("performed fluid physics\n");
 	}
 
-	printf("DS logic complete\n");
+	// printf("DS logic complete\n");
 
 	TestMain::PostStep();
 
-	printf("poststep complete\n");
+	// printf("poststep complete\n");
 }
 
 void deepSeaControlP () {

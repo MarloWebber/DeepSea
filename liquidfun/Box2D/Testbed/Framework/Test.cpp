@@ -272,140 +272,80 @@ void Test::MouseDown(const b2Vec2& p)
 	QueryCallback callback(p);
 	m_world->QueryAABB(&callback, aabb);
 
-
 	BonyFish * clickedFishy = checkNeuroWindow (aabb);
 
-	if (clickedFishy  != nullptr) {
-		// u caught a fish
-
-
+	if (clickedFishy  != nullptr) { // u caught a fish
 		if (checkNeuronsInWindow(aabb, clickedFishy) >= 0) {
 			;
 		}
-
 	}
-
-
 
 	if (callback.m_fixture)
 	{
 
-
 		b2Body* body = callback.m_fixture->GetBody();
 
+
 		if (TestMain::getVotingMode()) {
-			// find fish struct from user data and save its genetic material.
+		// find fish struct from user data and save its genetic material.
 		// uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
 		// BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
 		// BonyFish * winner = wishBone->p_owner;
-
 		// printf("");
 
 
-	// std::list<BonyFish>::iterator fish;
-	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+		// std::list<BonyFish>::iterator fish;
+		// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
 
 			std::list<Species>::iterator currentSpecies;
-		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-		{
-			std::list<BonyFish>::iterator fish;
-			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 			{
+				std::list<BonyFish>::iterator fish;
+				for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+				{
 
-for (int i = 0; i < N_FINGERS; ++i) {
-				if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
-					;
-				}
-				else {
-					if (fish->bones[i]->p_body == NULL || fish->bones[i]->p_body == nullptr) {
-						continue;
-					}
+					for (int i = 0; i < N_FINGERS; ++i) {
+						if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
+							;
+						}
+						else {
+							if (fish->bones[i]->p_body == NULL || fish->bones[i]->p_body == nullptr) {
+								continue;
+							}
 
-
-					if (body == fish->bones[i]->p_body) {
-						// printf("YOU BEAT JUMANJI\n");
-
-							if (fish->selected) {
-			fish->selected = false;
-		}
-		else {
-						// printf("neen\n");
-
-			fish->selected = true;
-		}
+							if (body == fish->bones[i]->p_body) {
+								if (fish->selected) {
+									fish->selected = false;
+								}
+								else {
+									fish->selected = true;
+								}
+							}
+						}
 					}
 				}
 			}
 
-	}
-}
-
-
-	// iterate through food particles and select clicked food
-	// for (int i = 0; i < N_FOODPARTICLES; ++i)
-	// {
-	// 	/* code */
-	// }
-
-	// std::list<BonyFish>::iterator fish;
-	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-
-	// if (body == fish->bones[i]->p_body) {
-	// }
-
-	// }
-
-	for (int i = 0; i < N_FOODPARTICLES; ++i)
-	{
-		if (food[i]->isUsed) {
-			// emptyFoodIndex ++;
-
-			if (body == food[i]->p_body) {
-				food[i]->selected = !food[i]->selected;
+			for (int i = 0; i < N_FOODPARTICLES; ++i)
+			{
+				if (food[i]->isUsed) {
+					if (body == food[i]->p_body) {
+						food[i]->selected = !food[i]->selected;
+					}
+				}
 			}
- 
-
-		}
-		// else {
-		// 	break;
-		// }
-	}
-
-	
-
-		
-			// if (!winner->init || !winner->isUsed) {
-			// 	;
-			// } 
-			// else {
-
-
-			// TestMain::Pause2();
-
-					// vote(winner);
-			// }
-		
-
-		// Settings.pause = true;
-	
-
 		}
 		else {
+			// printf("SEYDA NEEEEN\n");
 
-
-
-		
-		b2MouseJointDef md;
-		md.bodyA = m_groundBody;
-		md.bodyB = body;
-		md.target = p;
-		md.maxForce = 1000.0f * body->GetMass();
-		m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
-		body->SetAwake(true);
-
-	}
-		
-	
+			b2MouseJointDef md;
+			md.bodyA = m_groundBody;
+			md.bodyB = body;
+			md.target = p;
+			md.maxForce = 1000.0f * body->GetMass();
+			m_mouseJoint = (b2MouseJoint*)m_world->CreateJoint(&md);
+			body->SetAwake(true);
+		}
 	}
 }
 
@@ -449,6 +389,9 @@ void Test::MouseUp(const b2Vec2& p)
 	{
 		m_world->DestroyJoint(m_mouseJoint);
 		m_mouseJoint = NULL;
+
+		// printf("SEYDA NEEEEN\n");
+
 	}
 
 	if (m_bombSpawning)

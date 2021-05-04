@@ -508,6 +508,7 @@ void reloadTheSim(int arg);
 // void exitScienceMode ();
 // void enterScienceModeInterruptableEntry();
 void vote(BonyFish * winner);
+void handleReproduceSelectedButton (int arg);
 
 void  mutateFANNFileDirectly();
 

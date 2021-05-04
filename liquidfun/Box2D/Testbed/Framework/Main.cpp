@@ -662,7 +662,7 @@ static void MouseMotion(int32 x, int32 y)
 
 	// if (fullscreenUI.GetSelection() == FullscreenUI::e_SelectionNone)
 	// {
-	// 	test->MouseMove(p);
+		test->MouseMove(p);
 	// }
 
 	if (rMouseDown)
@@ -968,7 +968,7 @@ int main(int argc, char** argv)
 
 	// cloning controls
 	glui->add_button_to_panel(controlsPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
-	glui->add_button_to_panel(controlsPanel, "Reproduce Selected", 3, voteSelectedFish);
+	glui->add_button_to_panel(controlsPanel, "Reproduce Selected", 3, handleReproduceSelectedButton);
 	glui->add_button_to_panel(controlsPanel, "Re-run generation", 4, reloadTheSim);
 
 
@@ -984,8 +984,8 @@ glui->add_checkbox_to_panel(controlsPanel, "Select with LMB", &voting_mode);
 
 
 	// spawning options
-	glui->add_checkbox_to_panel(controlsPanel, "Fish don't clip", &noClipStatus);
-	glui->add_checkbox_to_panel(controlsPanel, "Start origin/random", &originStartStatus);
+	// glui->add_checkbox_to_panel(controlsPanel, "Fish don't clip", &noClipStatus);
+	// glui->add_checkbox_to_panel(controlsPanel, "Start origin/random", &originStartStatus);
 	// glui->add_checkbox_to_panel(controlsPanel, "Pin to Grid", &gridPinStatus);
 
 
