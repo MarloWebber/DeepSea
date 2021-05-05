@@ -31,7 +31,9 @@ b2Vec2(0.0f,0.0f),	//  	b2Vec2 gravity;
 0.2,	//  	float mutationSeverity;
 0.1,	//  	float mentalMutationRate;
 0.5,	//  	float mentalMutationSeverity;
-0	//  	int terrainPaintType;
+0,	//  	int terrainPaintType;
+10,
+0.1
 };
 uint64 loopCounter = 0 ;
 uint32 loopSafetyLimit = 100;
@@ -2377,6 +2379,41 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 
 void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
+
+	if (TestMain::getFoodRadiusStatus()) {
+
+		// take the food, measure its angle from the origin, and then place it at the designated radius with some angle jitter
+
+		// iterate through food particles
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+			if  (food[i]->init && food[i]->isUsed) {
+				// food[i]->flagDelete = true;
+				// food[i]->selected = false;
+
+				b2Vec2 origin   = b2Vec2(0.0f, 0.0f);
+				b2Vec2 foodPosition =  food[i]->p_body->GetWorldCenter();
+
+				float angle = atan2( foodPosition.y - origin.y,  foodPosition.x - origin.x );
+				// float faceAngle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
+
+				angle += ( m_deepSeaSettings.foodRadiusAngleJitter * (RNG()-0.5) );
+
+				// if () {
+
+				// }
+
+				printf("angle: %f\n", angle);
+				b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originTriggerRadius , sin(angle)* m_deepSeaSettings.originTriggerRadius );
+				food[i]->p_body->SetTransform(foodRadiusPosition, 0.0f);
+
+
+
+
+
+			}
+		}
+	}
+
 	for (int i = 0; i < m_deepSeaSettings.laboratory_nFish; ++i) {
 
 		bool thereIsAFile = false;
@@ -4243,7 +4280,7 @@ void test_runAllUnitTests() {
 // game logic which is run only once at startup
 void deepSeaStart() {
 
-	// m_deepSeaSettings.originTriggerRadius = 10.0f;
+	m_deepSeaSettings.originTriggerRadius = 10.0f;
 
 	ecosystem.push_back(*defaultSpecies);
 
