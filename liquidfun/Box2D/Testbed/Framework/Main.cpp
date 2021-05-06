@@ -823,7 +823,7 @@ int main(int argc, char** argv)
 		GLUI_SUBWINDOW_RIGHT );
 
 
-	GLUI_Panel* gamePanel =	glui->add_panel("Game");
+	GLUI_Panel* gamePanel =	glui->add_rollout("Game");
 
 	// glui->add_statictext_to_panel(gamePanel, "Map");
 	GLUI_Listbox* testList =
@@ -892,7 +892,7 @@ int main(int argc, char** argv)
 	// glui->add_separator_to_panel(gamePanel);
 
 
-	GLUI_Panel* laboratoryPanel =	glui->add_panel("Laboratory Mode");
+	GLUI_Panel* laboratoryPanel =	glui->add_rollout("Laboratory Mode");
 
 
 		// int fakeNumberOfFish;
@@ -921,7 +921,7 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 
 
 
-	GLUI_Panel* EcosystemPanel =	glui->add_panel("Ecosystem Mode");
+	GLUI_Panel* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
 	int fakeNumberOfFood;
 		GLUI_Spinner* numberOfFoodSpinner =
 		glui->add_spinner_to_panel(EcosystemPanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
@@ -944,7 +944,7 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 
 
 
-	GLUI_Panel* bioPanel =	glui->add_panel("Biology");
+	GLUI_Panel* bioPanel =	glui->add_rollout("Biology");
 
 	// float fakeMutationRate;
 		GLUI_Spinner* mutationRateSpinner =
@@ -970,7 +970,7 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 
 
 
-	GLUI_Panel* controlsPanel =	glui->add_panel("Cloning Controls");
+	GLUI_Panel* controlsPanel =	glui->add_rollout("Cloning Controls");
 
 	// selection controls
 	// glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
@@ -1013,7 +1013,7 @@ glui->add_checkbox_to_panel(controlsPanel, "Select with LMB", &voting_mode);
 
 
 
-	GLUI_Panel* editPanel =	glui->add_panel("Surgical Modification");
+	GLUI_Panel* editPanel =	glui->add_rollout("Surgical Modification");
 	glui->add_button_to_panel(editPanel, "Pin to Grid", 5, pinToGrid);
 	glui->add_button_to_panel(editPanel, "Release", 6, releaseFromGrid);
 
@@ -1044,7 +1044,7 @@ glui->add_button_to_panel(editPanel, "Add Recursor Pair", 12, addRecursorPair);
 
 
 
-	GLUI_Panel* terrainPanel =	glui->add_panel("Terrain Paint");
+	GLUI_Panel* terrainPanel =	glui->add_rollout("Terrain Paint");
 
 	
 	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);

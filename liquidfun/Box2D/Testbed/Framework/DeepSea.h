@@ -470,6 +470,14 @@ struct Species {
 
 	std::string name;
 
+
+	unsigned int nominalPopulation; // how many animals the ecosystem should be set to, if enforced
+
+	bool enforcePopulationLimit;	// whether or not the animals should obey the population limit
+
+	bool asexual;					// whether or not the animal has sexy times sex or one player sex
+
+
 	Species();
 
 };
