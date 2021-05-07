@@ -990,7 +990,7 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 			break;
 		}
 
-		inputMatrix[j].timerPhase = RNG();
+		inputMatrix[j].timerPhase = 0.0f;//RNG();
 		j++;
 	}
 
@@ -1585,7 +1585,7 @@ void addLayerIntoLivingBrain(BonyFish * fish, unsigned int newLayerIndex) {
 
 // involved in the join are 3 layers: the one preceding the insertion, the new layer itself, and the one succeeding the new layer.
 // connections between the preceding and new layers are kept as is
-// connections betwe
+// connections between the new and succeeding layer have 
 
 
 }
@@ -2144,25 +2144,101 @@ float  getSciNumberFromFANNFile (char c) {
 	return val;
 }
 
-fishDescriptor_t sexBetweenTwoBodies (fishDescriptor_t partnerA, fishDescriptor_t partnerB) {
-	fishDescriptor_t offspring;
+// fishDescriptor_t sexBetweenTwoBodies (fishDescriptor_t partnerA, fishDescriptor_t partnerB) {
+// 	fishDescriptor_t offspring;
 
-	for (int i = 0; i < N_FINGERS; ++i)
-	{
-		if (RNG() > 0.5) {
-			offspring.bones[i] = partnerA.bones[i];
-		}
-		else {
-			offspring.bones[i] = partnerB.bones[i];
-		}
-	}
+// 	for (int i = 0; i < N_FINGERS; ++i)
+// 	{
+// 		if (RNG() > 0.5) {
+// 			offspring.bones[i] = partnerA.bones[i];
+// 		}
+// 		else {
+// 			offspring.bones[i] = partnerB.bones[i];
+// 		}
+// 	}
 
-	return offspring;
-}
+// 	return offspring;
+// }
 
 // combines two neuro descriptors to produce an offspring with a random mix of traits
-void sexBetweenTwoMinds () {
-	;
+void sex (BonyFish * partnerA, BonyFish * partnerB) {
+	
+
+	// networkDescriptor child = new networkDescriptor;
+	// child = partnerA;
+
+
+	fishDescriptor_t * childDescriptor = new fishDescriptor_t;
+
+	for (int i = 0; i < N_SENSECONNECTORS; ++i)
+	{
+
+		// input connectors
+		bool connectorPresentA = true;
+		bool connectorPresentB = true;
+
+		if (partnerA->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) { connectorPresentA = false;}
+		if (partnerB->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) { connectorPresentB = false;}
+
+		if (connectorPresentA && !(connectorPresentB) ) {childDescriptor->inputMatrix[i] = partnerA->inputMatrix[i]; }
+		else if (connectorPresentB && !(connectorPresentA) ) {childDescriptor->inputMatrix[i] = partnerB->inputMatrix[i]; }
+		else if (connectorPresentA && connectorPresentB) 
+		{  
+			if (RNG() > 0.5) {
+				childDescriptor->inputMatrix[i] = partnerA->inputMatrix[i];
+			}
+			else {
+				childDescriptor->inputMatrix[i] = partnerB->inputMatrix[i];
+			}
+		} 
+
+		// output connectors
+		 connectorPresentA = true;
+		 connectorPresentB = true;
+
+		if (partnerA->outputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) { connectorPresentA = false;}
+		if (partnerB->outputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) { connectorPresentB = false;}
+
+		if (connectorPresentA && !(connectorPresentB) ) {childDescriptor->outputMatrix[i] = partnerA->outputMatrix[i]; }
+		else if (connectorPresentB && !(connectorPresentA) ) {childDescriptor->outputMatrix[i] = partnerB->outputMatrix[i]; }
+		else if (connectorPresentA && connectorPresentB) 
+		{  
+			if (RNG() > 0.5) {
+				childDescriptor->outputMatrix[i] = partnerA->outputMatrix[i];
+			}
+			else {
+				childDescriptor->outputMatrix[i] = partnerB->outputMatrix[i];
+			}
+		} 
+
+	}
+
+
+	// bones
+	for (int i = 0; i < N_FINGERS; ++i)
+	{
+		bool bonePresentA = false;
+		bool bonePresentB = false;
+
+		if (partnerA->bones[i]->isUsed ) { bonePresentA = true;}
+		if (partnerB->bones[i]->isUsed ) { bonePresentA = true;}
+
+		if (bonePresentA && !(bonePresentB) ) { childDescriptor->bones[i] = partnerA->genes.bones[i]; }
+		else if (bonePresentB && !(bonePresentA) ) { childDescriptor->bones[i] = partnerB->genes.bones[i]; }
+		else if (bonePresentA && bonePresentB) {
+			if (RNG() >0.5) {
+				childDescriptor->bones[i] = partnerA->genes.bones[i];
+			}
+			else {
+				childDescriptor->bones[i] = partnerB->genes.bones[i];
+			}
+		}
+		
+	}
+
+	// brain
+
+
 }
 
 void drawingTest() {
@@ -2367,12 +2443,12 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 		// verifyNetworkDescriptor(muscleCars);
 		// fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
-		for (int i = 0; i < N_SENSECONNECTORS; ++i)
-		{
-			if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
-					newFishBody.inputMatrix[i].timerPhase = RNG();
-			}
-		}
+		// for (int i = 0; i < N_SENSECONNECTORS; ++i)
+		// {
+		// 	if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
+		// 			// newFishBody.inputMatrix[i].timerPhase = RNG(); DO NOT RANDOMISE TIMER PHASES THEY MUST REMAIN IN SYNC. would be ok to have a phaseoffset for the whole animal
+		// 	}
+		// }
 
 		b2Vec2 desiredPosition = fish->bones[0]->p_body->GetWorldCenter();
 
@@ -2472,11 +2548,11 @@ void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary 
 
 			fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
-			for (int i = 0; i < N_SENSECONNECTORS; ++i) {
-				if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
-						newFishBody.inputMatrix[i].timerPhase = RNG();
-				}
-			}
+			// for (int i = 0; i < N_SENSECONNECTORS; ++i) {
+			// 	if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
+			// 			newFishBody.inputMatrix[i].timerPhase = RNG();
+			// 	}
+			// }
 
 			b2Vec2 position = b2Vec2(0.0f,0.0f);
 			// }
