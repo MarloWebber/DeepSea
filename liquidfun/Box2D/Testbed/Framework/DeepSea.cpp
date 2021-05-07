@@ -33,7 +33,8 @@ b2Vec2(0.0f,0.0f),	//  	b2Vec2 gravity;
 0.5,	//  	float mentalMutationSeverity;
 0,	//  	int terrainPaintType;
 10,
-0.1
+0.1,
+0
 };
 uint64 loopCounter = 0 ;
 uint32 loopSafetyLimit = 100;
@@ -1568,6 +1569,27 @@ void addRecursorPair(int arg) {
 	}
 }
 
+
+
+// void addNeuronToLayer() {
+
+// }
+
+
+void addLayerIntoLivingBrain(BonyFish * fish, unsigned int newLayerIndex) {
+// the layer will be introduced into the brain at the index, pushing the layer that used to be there up by 1.
+	
+// all indexes after the cut will be incremented by 1
+
+
+
+// involved in the join are 3 layers: the one preceding the insertion, the new layer itself, and the one succeeding the new layer.
+// connections between the preceding and new layers are kept as is
+// connections betwe
+
+
+}
+
 // add a limb onto the end of the selected one.
 void polydactyly2 (BonyFish * fish) {
 	uint targetFinger = 0;
@@ -2725,8 +2747,47 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
  			neuron->position = b2Vec2(drawingStartingPosition.x + (neuronIndex * spacingDistance), drawingStartingPosition.y + (layerIndex * spacingDistance));
  			neuronIndex ++;
 		}
+
+
+
 		layerIndex++;
 	}
+
+
+
+	// while you're here, draw a dark grey box around selected layers. but not as light as the selected neuron.
+
+	b2Vec2 layerSelectionIndicator[4];
+
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+
+		if (layer->selected) {
+
+			std::list<neuronDescriptor>::iterator neuron;
+
+	 		 neuron = layer->neurons.begin(); 
+	 		 layerSelectionIndicator[0] = b2Vec2( neuron->position.x-0.1f , neuron->position.y-0.1f);
+	 		 layerSelectionIndicator[1] = b2Vec2( neuron->position.x-0.1f , neuron->position.y+0.1f);
+
+	 		 neuron = layer->neurons.end(); 
+	 		 neuron --;
+	 		 layerSelectionIndicator[2] = b2Vec2( neuron->position.x+0.1f , neuron->position.y+0.1f);
+	 		 layerSelectionIndicator[3] = b2Vec2( neuron->position.x+0.1f , neuron->position.y-0.1f);
+
+
+
+
+	 		 		local_debugDraw_pointer->DrawFlatPolygon(layerSelectionIndicator, 4 ,b2Color(0.2,0.2,0.2) );
+
+
+			
+		}
+
+
+
+
+	}
+
 
  	// draw in sensorium
 	for (unsigned int j = 0; j < sizeOfInputLayer; ++j) {
@@ -2997,9 +3058,12 @@ BonyFish * checkNeuroWindow (b2AABB mousePointer) {
 int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
 	
 	std::list<layerDescriptor>::iterator layer;
+	std::list<neuronDescriptor>::iterator neuron;
+
+	unsigned int layerIndex = 0;
+
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 
-		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
 			if (neuron->position.x < mousePointer.upperBound.x && neuron->position.x > mousePointer.lowerBound.x) {
@@ -3010,6 +3074,43 @@ int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
 				}
 			}
 		}
+
+
+
+		// if (neuron->position.x < mousePointer.upperBound.x && neuron->position.x > mousePointer.lowerBound.x) {
+		// 	if (neuron->position.y < mousePointer.upperBound.y && neuron->position.y > mousePointer.lowerBound.y) {
+
+		// 		neuron->selected = !(neuron->selected);
+		// 		return neuron->index;
+		// 	}
+		// }
+
+		b2Vec2 clickCenter = b2Vec2( (mousePointer.lowerBound.x + mousePointer.upperBound.x )/ 2  ,(mousePointer.lowerBound.y + mousePointer.upperBound.y )/ 2   );
+
+		neuron = layer->neurons.begin();
+
+
+		if ( clickCenter.y >  (neuron->position.y  - 0.2f ) && ( clickCenter.y < neuron->position.y + 0.2f ) ) {
+			if (clickCenter.x > (neuron->position.x -0.2f)) {
+
+				neuron = layer->neurons.end();
+				neuron--;
+
+				if (clickCenter.x < (neuron->position.x +0.2f)) {
+
+						layer->selected = !(layer->selected);
+						// printf("layer %u selected!\n", layerIndex);
+				}
+
+
+
+			}
+
+		}
+
+		layerIndex ++;
+
+
 	}
 	return -1;
 }

@@ -35,6 +35,8 @@ struct deepSeaSettings {
 	float originTriggerRadius;
 	float foodRadiusAngleJitter;
 
+	int currentlySelectedSpecies;
+
 };
 
 extern deepSeaSettings m_deepSeaSettings;
@@ -323,6 +325,8 @@ struct layerDescriptor {
 	bool isUsed;
 	// unsigned int n_neurons;
 	std::list<neuronDescriptor> neurons; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
+
+	bool selected;
 
 	layerDescriptor();
 };

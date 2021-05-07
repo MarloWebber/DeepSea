@@ -762,6 +762,9 @@ void updateParticleDrawingKeyboard(int bobi) {
 	ParticleDrawingKeyboard(m_deepSeaSettings.terrainPaintType);
 }
 
+void updateSpeciesList(int bobi) {
+
+}
 
 
 int main(int argc, char** argv)
@@ -941,8 +944,35 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 
 
 
+	// GLUI_Panel* speciesPanel =	glui->add_rollout("Taxonomy");
+
+		// GLUI_Listbox* SpeciesList =
+		// glui->add_listbox_to_panel(speciesPanel, "Species: ", &(m_deepSeaSettings.currentlySelectedSpecies ) ,-1, updateSpeciesList);
+
+	// 	int NominalPopulation;
+	// 	GLUI_Spinner* nominalPopulationSpinner =
+	// 	glui->add_spinner_to_panel(speciesPanel,"NominalPopulation", GLUI_SPINNER_INT, &NominalPopulation);
+	// numberOfSpeciesSpinner->set_int_limits(1, 1000);
 
 
+
+// terrainTypesList->add_item(0, "Elastic | SolidGroup" );
+// 		terrainTypesList->add_item(1, "Powder" );
+// 		terrainTypesList->add_item(2, "Rigid | SolidGroup" );
+// 		terrainTypesList->add_item(3, "Spring | SolidGroup" );
+// 		terrainTypesList->add_item(4, "Tensile" );
+// 		terrainTypesList->add_item(5, "Viscous" );
+// 		terrainTypesList->add_item(6, "Wall | SolidGroup" );
+// 		terrainTypesList->add_item(7, "Barrier | WallParticle" );
+// 		terrainTypesList->add_item(8, "Barrier | RigidGroup" );
+// 		terrainTypesList->add_item(9, "Barrier | ElasticParticle | SolidGroup" );
+// 		terrainTypesList->add_item(10, "Barrier | SpringParticle | SolidGroup" );
+// 		terrainTypesList->add_item(11, "Wall | RepulsiveParticle" );
+// 		terrainTypesList->add_item(12, "ColorMixing" );
+// 		terrainTypesList->add_item(12, "Zombie" );
+
+		// GLUI_Listbox* SpeciesFileBrowser =
+		// glui->add_filebrowser_to_panel(speciesPanel);
 
 	GLUI_Panel* bioPanel =	glui->add_rollout("Biology");
 
