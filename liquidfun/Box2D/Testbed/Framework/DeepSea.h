@@ -585,5 +585,7 @@ void saveIndividualToFile (int arg) ;
 
 void selectAllInSpecies (int arg) ;
 
+void mateSelectedFish (int arg) ;
+
 	// }
 #endif

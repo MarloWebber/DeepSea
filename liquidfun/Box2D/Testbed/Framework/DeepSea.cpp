@@ -2343,85 +2343,259 @@ float  getSciNumberFromFANNFile (char c) {
 
 
 
-void combineTwoNetworks (networkDescriptor * partnerA, networkDescriptor * partnerB) {
+// void combineTwoNetworks (networkDescriptor * partnerA, networkDescriptor * partnerB) {
 
 
-	// the child network is shaped by adding the shapes of both networks together.
-	networkDescriptor * childNetwork = new networkDescriptor;
+// 	// the child network is shaped by adding the shapes of both networks together.
+// 	networkDescriptor * childNetwork = new networkDescriptor;
 
-		// first, find the tallest network.
-		unsigned int layersA = partnerA.layers.size();
-		unsigned int layersB = partnerB.layers.size();
+// 		// first, find the tallest network.
+// 		unsigned int layersA = partnerA.layers.size();
+// 		unsigned int layersB = partnerB.layers.size();
 
-		unsigned int tallestPartner;
-		if (layersA > layersB) {
-			tallestPartner = layersA;
+// 		unsigned int tallestPartner = 0;
+// 		unsigned int widestLayer = 0;
+
+// 		if (layersA > layersB) {
+// 			tallestPartner = layersA;
+// 		}
+// 		else {
+// 			tallestPartner = layersB;
+// 		}
+
+// 		for (unsigned int  i = 0; i < tallestPartner; ++i)
+// 		{
+// 			addLayerIntoLivingBrain(childNetwork);
+// 		}
+
+// 		//three iterators are made: one each for the originals, and one for the child.
+// 		std::list<layerDescriptor>::iterator layerA = partnerA.layers.begin();
+// 		std::list<layerDescriptor>::iterator layerB = partnerB.layers.begin();
+// 		std::list<layerDescriptor>::iterator layerC;
+
+
+// 		// scroll through the layers of both partners and set child layer width to be the widest of both of them.
+// 		// unsigned int layerIndex = 0;
+
+// 		for (unsigned int layerIndex = 0; layerIndex < tallestPartner; ++layerIndex)
+// 		{
+// 			// unsigned int partnerALayerWidth 
+// 			addLayerIntoLivingBrain(childNetwork);
+
+// 			if (layerIndex > layersA-1) 		{
+
+// 				// if partner A doesn't have this layer, just set it to the width of this layer in partner B.
+// 				for (unsigned int  i = 0; i < layerB.neurons.size(); ++i)
+// 				{
+// 					addNeuronIntoLivingBrain(childNetwork, layerIndex, false);
+// 				}
+// 			}
+// 			else if (layerIndex > layersB-1) 	{
+// 				// if partner B doesn't have this layer, just set it to the width of this layer in partner A.
+// 				for (unsigned int  i = 0; i < layerA.neurons.size(); ++i)
+// 				{
+// 					addNeuronIntoLivingBrain(childNetwork, layerIndex, false);
+// 				}
+// 			}
+// 			else {
+// 				// if both partners have it, choose the widest one.
+
+				
+// 				if (layerB.neurons.size() > layerA.neurons.size()) {
+// 					widestLayer = layerB.neurons.size();
+// 				}
+// 				else {
+// 					widestLayer = layerA.neurons.size();
+// 				}
+
+// 				for (unsigned int  i = 0; i < widestLayer; ++i)
+// 				{
+// 					addNeuronIntoLivingBrain(childNetwork, layerIndex, false);
+// 				}
+
+// 			}
+
+// 			if (layerA != partnerA.layers.end()) {layerA++;}
+// 			if (layerB != partnerB.layers.end()) {layerB++;}
+
+// 		}
+
+
+
+// 	// they are stepped through neuron by neuron, layer by layer. NOT by index.
+// 	layerA = partnerA.layers.begin();
+// 	layerB = partnerB.layers.begin();
+// 	layerC = childNetwork.layers.begin();
+
+// 	std::list<neuronDescriptor>::iterator neuronA; 
+// 	std::list<neuronDescriptor>::iterator neuronB ;
+// 	std::list<neuronDescriptor>::iterator neuronC ;
+
+	
+
+// 	for (unsigned int  i = 0; i < tallestPartner; ++i)
+// 	{
+
+// 		neuronA = layerA->neurons.begin();
+// 		neuronB = layerB->neurons.begin();
+// 		neuronC = layerC->neurons.begin();
+
+// 		for (unsigned int  j = 0; j < widestLayer; ++j)
+// 		{
+// 			// if a connection is present in one parent, it is definitely carried over.
+// 			// if it is present in both, it is chosen from one at random.
+// 			// if it is present in none, it is added as zero weight.
+
+
+
+
+
+
+// 			if (neuronA != layerA->neurons.end()) {neuronA++;}
+// 			if (neuronB != layerB->neurons.end()) {neuronB++;}
+// 			if (neuronC != layerC->neurons.end()) {neuronC++;}
+
+// 		}
+
+
+// 		if (layerA != partnerA.layers.end()) {layerA++;}
+// 		if (layerB != partnerB.layers.end()) {layerB++;}
+// 		if (layerC != childNetwork.layers.end()) {layerC++;}
+
+// 	}
+
+
+// }
+
+
+
+void combineTwoNetworks2 (networkDescriptor * partnerA, networkDescriptor * partnerB) {
+
+	// copies are made of both parents.
+	// blank neurons are added to the copies to make them the same shape.
+	// then, connections can be chosen at random without having to compute anything special.
+
+	networkDescriptor copyParentA = *partnerA;
+	networkDescriptor copyParentB = *partnerB;
+	
+	
+	// first, find the tallest network.
+	unsigned int layersA = copyParentA.layers.size();
+	unsigned int layersB = copyParentB.layers.size();
+	unsigned int tallestPartner;
+
+	if (layersA > layersB) {
+		tallestPartner = layersA;
+		for (unsigned int i = 0; i < (layersA - layersB); ++i)
+		{
+			addLayerIntoLivingBrain(&copyParentB);
+		}
+	}
+	else if (layersB > layersA) {
+		tallestPartner = layersB;
+		for (unsigned int i = 0; i < (layersB - layersA); ++i)
+		{
+			addLayerIntoLivingBrain(&copyParentA);
+		}
+	}
+	else {
+		// they are the same!
+		tallestPartner = layersA;
+	}
+
+	// now go through them layer at a time.
+	std::list<layerDescriptor>::iterator layerA = copyParentA.layers.begin();
+	std::list<layerDescriptor>::iterator layerB = copyParentB.layers.begin();
+
+	for (unsigned int i = 0; i < tallestPartner; ++i)
+	{
+
+
+		// find which is the widest.
+		// unsigned int widestPartner;
+
+		unsigned int widthA = layerA->neurons.size();
+		unsigned int widthB = layerB->neurons.size();
+
+		// add enough neurons to the other that makes them the same.
+		if (widthA > widthB) {
+			// widestPartner = widthA;
+			for (unsigned int j = 0; j < (widthA - widthB); ++j)
+			{
+				addNeuronIntoLivingBrain(&copyParentB, i, false);
+			}
+		}
+		else if (widthB > widthA) {
+			// widestPartner = widthB;
+			for (unsigned int j = 0; j < (widthB - widthA); ++j)
+			{
+				addNeuronIntoLivingBrain(&copyParentA, i, false);
+			}
 		}
 		else {
-			tallestPartner = layersB;
+			// they are the same! do nothing.
 		}
+		
+		layerA++;
+		layerB++;
 
-		for (int i = 0; i < tallestPartner; ++i)
+	}
+
+	// congrats, the network copies are now exactly the same shape.
+	// duplicate one of them to create the child.
+	fann * wann = createFANNbrainFromDescriptor(&copyParentA);
+	networkDescriptor * child = new networkDescriptor(wann);
+
+	layerA = copyParentA.layers.begin();
+	layerB = copyParentB.layers.begin();
+	std::list<layerDescriptor>::iterator layerC = child->layers.begin();
+
+	std::list<neuronDescriptor>::iterator neuronA; 
+	std::list<neuronDescriptor>::iterator neuronB ;
+	std::list<neuronDescriptor>::iterator neuronC ;
+
+	std::list<connectionDescriptor>::iterator connectionA;
+	std::list<connectionDescriptor>::iterator connectionB;
+	std::list<connectionDescriptor>::iterator connectionC;
+
+	for (unsigned int i = 0; i < tallestPartner; ++i)
+	{
+		
+		neuronA = layerA->neurons.begin();
+		neuronB = layerB->neurons.begin();
+		neuronC = layerC->neurons.begin();
+
+		for (unsigned int j = 0; j < layerA->neurons.size(); ++j)
 		{
-			addLayerIntoLivingBrain(childNetwork);
-		}
+						
+			connectionA = neuronA->connections.begin();
+			connectionB = neuronB->connections.begin();
+			connectionC = neuronC->connections.begin();
 
-		//three iterators are made: one each for the originals, and one for the child.
-		std::list<layerDescriptor>::iterator layerA = partnerA.layers.begin();
-		std::list<layerDescriptor>::iterator layerB = partnerB.layers.begin();
-		// std::list<layerDescriptor>::iterator childLayer;
+			for (unsigned int k = 0; k < neuronA->connections.size(); ++k)
+			{
+				
 
+				printf("connection A, B. %u %u %f %f\n", connectionA->connectedTo, connectionB->connectedTo, connectionA->connectionWeight, connectionB->connectionWeight);
 
-		// scroll through the layers of both partners and set child layer width to be the widest of both of them.
-		// unsigned int layerIndex = 0;
-
-		for (unsigned int layerIndex = 0; layerIndex < tallestPartner; ++layerIndex)
-		{
-			// unsigned int partnerALayerWidth 
-			addLayerIntoLivingBrain(childNetwork);
-
-			if (layerIndex > layersA-1) 		{
-
-				// if partner A doesn't have this layer, just set it to the width of this layer in partner B.
-			}
-			else if (layerIndex > layersB-1) 	{
-				// if partner B doesn't have this layer, just set it to the width of this layer in partner A.
-			}
-			else {
-				// if both partners have it, choose the widest one.
+				connectionA++;
+				connectionB++;
+				connectionC++;
 			}
 
 
+			neuronA++;
+			neuronB++;
+			neuronC++;
 		}
 
 
-		// for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
-
-
-
-		// }
-
-			// for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-
-
-
-
-
-
-		// std::list<neuronDescriptor>::iterator neuron;
-
-
-	// 
-
-	// they are stepped through neuron by neuron, layer by layer. NOT by index.
-
-	// if a connection is present in one parent, it is definitely carried over.
-	// if it is present in both, it is chosen from one at random.
-	// if it is present in none, it is added as zero weight.
-
+		layerA++;
+		layerB++;
+		layerC++;
+	}
 
 }
-
 
 
 // combines two neuro descriptors to produce an offspring with a random mix of traits
@@ -2502,7 +2676,52 @@ void sex (BonyFish * partnerA, BonyFish * partnerB) {
 
 	// brain
 
+	combineTwoNetworks2 (partnerA->brain, partnerB->brain) ;
 
+
+
+}
+
+void mateSelectedFish (int arg) {
+
+
+	BonyFish * partnerA;
+	BonyFish * partnerB;
+
+	bool foundPartnerA = false;
+
+
+		std::list<Species>::iterator currentSpecies;
+		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+		{
+			std::list<BonyFish>::iterator fish;
+			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			{
+				if (fish->selected) {
+					// brainMelter ( &(*fish));
+
+					// refresh the water in the brain jar.
+					// fish->ann = createFANNbrainFromDescriptor(fish->brain);
+					// return;
+
+					if (foundPartnerA) {
+						partnerB = &(*fish);
+
+						sex(partnerA, partnerB);
+
+						return;
+					}
+					else {
+						foundPartnerA = true;
+						partnerA = &(*fish);
+					}
+
+				}
+				// else {
+				// 	continue;
+				// }
+			}
+		}
 
 
 }

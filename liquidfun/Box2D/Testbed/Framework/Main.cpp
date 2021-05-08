@@ -1065,6 +1065,8 @@ glui->add_checkbox_to_panel(speciesPanel, "Sexual/Asexual", &selectedSpeciesSexu
 	// cloning controls
 	glui->add_button_to_panel(controlsPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
 	glui->add_button_to_panel(controlsPanel, "Reproduce Selected", 3, handleReproduceSelectedButton);
+
+	glui->add_button_to_panel(controlsPanel, "Mate 2 Selected", 3, mateSelectedFish);
 	glui->add_button_to_panel(controlsPanel, "Re-run generation", 4, reloadTheSim);
 
 
