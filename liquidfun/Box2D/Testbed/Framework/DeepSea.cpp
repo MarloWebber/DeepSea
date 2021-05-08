@@ -14,7 +14,7 @@
 #include <math.h>
 #include <cmath>
 
-bool debugggggg_waitonnewlayer = false;
+// bool debugggggg_waitonnewlayer = false;
 
 float pi = 3.14159f;
 
@@ -798,13 +798,13 @@ void deleteFish (BonyFish * fish) {
 }
 
 // goes through the brain and adds 'biasNeuron' flag to neurons at the end of each layer. This is mainly so they can be drawn properly.
-void flagBiasNeurons( BonyFish * fish) {
+void flagBiasNeurons( networkDescriptor * network) {
 
 	std::list<layerDescriptor>::iterator layer;
 
 	unsigned int layerIndex = 0;
 
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
 
 		std::list<neuronDescriptor>::iterator neuron;
 
@@ -814,7 +814,7 @@ void flagBiasNeurons( BonyFish * fish) {
 		}
 
 		// on every layer except the last, flag the last neuron as bias.
-		if ( layerIndex < (fish->brain->layers.size() -1 )) {
+		if ( layerIndex < (network->layers.size() -1 )) {
 
 			neuron = layer->neurons.end();
 			neuron--;
@@ -861,7 +861,7 @@ std::list<Species>::iterator currentSpecies = ecosystem.begin();
 
 	// printf("mesines\n");
 
-	flagBiasNeurons(fish);
+	flagBiasNeurons(fish->brain);
 }
 
 fann * loadFishBrainFromFile (std::string fileName) {
@@ -1380,7 +1380,7 @@ void deleteSelectedNeuron (int arg) {
 	}
 }
 
-void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex, bool bias) {
+void addNeuronIntoLivingBrain (networkDescriptor * network, unsigned int targetLayerIndex, bool bias) {
 	neuronDescriptor * newNeuron = new neuronDescriptor();
 	newNeuron->isUsed = true;
 	newNeuron->biasNeuron = false;
@@ -1394,7 +1394,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex, b
 	unsigned int layerIndex = 0;
 
 	// set the target layer iterator, so you can refer back to it later
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer)  {
 		newNeuron->index += layer->neurons.size(); // always adding new neuron at the end of the layer.
 
 		if (layerIndex == targetLayerIndex) {
@@ -1406,12 +1406,12 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex, b
 	}
 
 	// if the neuron is not on the last layer, due to the presence of a bias neuron on the target layer, decrement index by 1.
-	if (! (targetLayerIndex == fish->brain->layers.size()-1) ){
+	if (! (targetLayerIndex == network->layers.size()-1) ){
 		newNeuron->index--;
 	}
 
 	 // all indexes in the connection map greater than the index of this neuron are incremented by 1.
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
  			if (neuron->index >= newNeuron->index) {
  				neuron->index ++;
@@ -1427,7 +1427,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex, b
  	}	
 
  	// make connections for all the next-layer neurons, set to 0, add them to the new neuron
- 	if (targetLayerIndex != (fish->brain->layers.size() -1 ) ) { // if this isn't the last layer
+ 	if (targetLayerIndex != (network->layers.size() -1 ) ) { // if this isn't the last layer
  		layer= targetLayerIterator;
  		layer++;
 
@@ -1446,7 +1446,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex, b
  	// if the neuron is not on the first layer (and not a bias neuron), all the previous-layer neurons get connections to this neuron.
  	if (!bias) {
  		layer = targetLayerIterator;
-	 	if (layer != fish->brain->layers.begin() ) { // and the next layer is not off the end of the array
+	 	if (layer != network->layers.begin() ) { // and the next layer is not off the end of the array
 			layer--;
 			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 				connectionDescriptor * newConnection = new connectionDescriptor(   newNeuron->index);
@@ -1461,7 +1461,7 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex, b
  		newNeuron ->biasNeuron = true;
  	}
 	
-	if (targetLayerIndex == fish->brain->layers.size()-1) {
+	if (targetLayerIndex == network->layers.size()-1) {
 		targetLayerIterator->neurons.push_back( *newNeuron);		// there is no bias neuron on the last layer so you can drop it right at the end.
 	}
 	else {
@@ -1471,14 +1471,12 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex, b
 		targetLayerIterator->neurons.insert( neuron, *newNeuron); 
 	}
 
-	flagBiasNeurons(fish);
+	flagBiasNeurons(network);
 }
 
-void deleteLayer(BonyFish * fish, unsigned int layerToDelete) {
+void deleteLayer(networkDescriptor * network, unsigned int layerToDelete) {
 
 	// connections from this layer to the next will be automatically destroyed when the neurons are deleted
-
-
 
 	std::list<layerDescriptor>::iterator layer;
 	std::list<layerDescriptor>::iterator targetLayerIterator;
@@ -1488,7 +1486,7 @@ void deleteLayer(BonyFish * fish, unsigned int layerToDelete) {
 	unsigned int layerIndex = 0;
 	unsigned int numberOfNeuronsInLayer = 0;
 
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer)  {
 		if (layerIndex == layerToDelete) {
 			numberOfNeuronsInLayer = layer->neurons.size();
 			break;
@@ -1496,12 +1494,12 @@ void deleteLayer(BonyFish * fish, unsigned int layerToDelete) {
 		layerIndex++;
 	}
 
-	fish->brain->layers.erase(layer);
+	network->layers.erase(layer);
 
 	// decrement the indexes of all subsequent neurons and connections by the amount that was removed
 	unsigned int actualNeuronIndex = 0;
 	layerIndex = 0;
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer)  {
 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 			if (layerIndex >=layerToDelete ) {
 
@@ -1520,60 +1518,36 @@ void deleteLayer(BonyFish * fish, unsigned int layerToDelete) {
 
 	// go through the preceding layer and make sure all the neurons are connected to the ones in the new layer (it might have changed if the layers were different sizes)
 	layerIndex = 0;
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer)  {
 
 		// scroll ahead 1 layer, find the highest index in it.
 		layer++;
 		unsigned int maxIndexInNextLayer = 0;
-		if (layer != fish->brain->layers.end()) {
+		if (layer != network->layers.end()) {
 			neuron = layer->neurons.end();
 			neuron--;
 
-			if (layerIndex < fish->brain->layers.size()-1) { // not the last layer
+			if (layerIndex < network->layers.size()-1) { // not the last layer
 				neuron--;
 				maxIndexInNextLayer = neuron->index;
 			}
 		}	
 		layer--;
 
+		// if a neuron has connections to an index greater than what is available in the next level, add the spurious connection to a list 
+		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			neuron->connections.remove_if( [maxIndexInNextLayer](connectionDescriptor connection)
+ 				{
+ 					if (connection.connectedTo > maxIndexInNextLayer) {
+ 						return true;
+ 					}
+ 					else {
+ 						return false;
+ 					}
+ 				} 
+ 			);
+		}
 
-
-			// if a neuron has connections to an index greater than what is available in the next level, add the spurious connection to a list 
-			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-
-
-				// std::list<connectionDescriptor> connectionsToDelete;
-
-
-	 			// std::list<connectionDescriptor>::iterator connection;
-	 			// for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
-
-	 				// if (connection->connectedTo > maxIndexInNextLayer) {
-	 				// 	// connectionsToDelete.push_back( *connection);
-	 				// }
-
-
-	 			neuron->connections.remove_if( [maxIndexInNextLayer](connectionDescriptor connection)
-	 				{
-	 					if (connection.connectedTo > maxIndexInNextLayer) {
-	 						return true;
-	 					}
-	 					else {
-	 						return false;
-	 					}
-	 				} 
-	 			);
-
-	 			// }
-
-	 			// then delete the contents of the list from the neuron's connection set
-	 			// for (connection = connectionsToDelete.begin(); connection != connectionsToDelete.end(); connection++) {
-	 			// 	neuron->connections.remove( *connection );
-	 			// }
-			}
-
-
-		// }
 		layerIndex++;
 	}
 
@@ -1583,12 +1557,12 @@ void deleteLayer(BonyFish * fish, unsigned int layerToDelete) {
 	std::list<neuronDescriptor>::iterator neuronB;
 	std::list<connectionDescriptor>::iterator connection;
 
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer)  {
 
 			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
 				layer++;
-				if (layer != fish->brain->layers.end() ){
+				if (layer != network->layers.end() ){
 
 					// go through the indexes in the layer after this one, make sure none of the neurons on this layer are missing potential connections.
 					for ( neuronB = layer->neurons.begin(); neuronB != layer->neurons.end() ; neuronB++) {
@@ -1606,29 +1580,21 @@ void deleteLayer(BonyFish * fish, unsigned int layerToDelete) {
 			 			}
 
 			 			if (!connectedToNeuronB) {
-			 				printf("added connection %u to %u\n", neuron->index, neuronB->index);
+			 				// printf("added connection %u to %u\n", neuron->index, neuronB->index);
 			 				connectionDescriptor * newConnection = new connectionDescriptor(   neuronB->index);
 							newConnection->isUsed = true;
 			 				newConnection->connectionWeight = 0.0f;
 							neuron->connections.push_back( *newConnection  );
 			 			}
-
 					}
-
-
 				}
 				layer--;
-
 			}
-
-		// }
 		layerIndex++;
 	}
-
 }
 
 void deleteSelectedLayer(int arg) {
-
 
 	unused_variable((void *) &arg);
 	std::list<Species>::iterator currentSpecies;
@@ -1640,24 +1606,13 @@ void deleteSelectedLayer(int arg) {
 			if (fish->selected && TestMain::getBrainWindowStatus()) {
 				std::list<layerDescriptor>::iterator layer;
 				unsigned int layerIndex = 0;
-				// unsigned int neuronIndex = 0;
-				// unsigned int connectionIndex = 0;
 
 				for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 
 					if (	layer->selected	) {
 
-						// addNeuronToLayer()
-
-
-// void 
-						// addNeuronIntoLivingBrain ( &(*fish), layerIndex, false) ;
-						//{
-
-
-						 deleteLayer( &(*fish) , layerIndex) ;
+						 deleteLayer( fish->brain , layerIndex) ;
 						 fish->ann = createFANNbrainFromDescriptor(fish->brain);
-
 
 						return;
 					}
@@ -1667,7 +1622,6 @@ void deleteSelectedLayer(int arg) {
 			}
 		}
 	}
-
 }
 
 void addRecursorPair(int arg) {
@@ -1714,7 +1668,7 @@ void addRecursorPair(int arg) {
 					if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 						fish->inputMatrix[i].sensorType = SENSECONNECTOR_RECURSORRECEIVER ;
 						fish->inputMatrix[i].recursorChannel = lowestAvailableRecursionChannel;
-						addNeuronIntoLivingBrain ( &(*fish), 0, false) ;
+						addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
 						fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 					break;
@@ -1726,7 +1680,7 @@ void addRecursorPair(int arg) {
 					if (fish->outputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 						fish->outputMatrix[i].sensorType = SENSECONNECTOR_RECURSORTRANSMITTER ;
 						fish->outputMatrix[i].recursorChannel = lowestAvailableRecursionChannel;
-						addNeuronIntoLivingBrain ( &(*fish), fish->brain->layers.size()-1, false ) ;
+						addNeuronIntoLivingBrain (fish->brain, fish->brain->layers.size()-1, false ) ;
 						fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 						break;
@@ -1763,66 +1717,34 @@ void verifyNetworkDescriptor (networkDescriptor * network) {
 	}
 }
 
-void addLayerIntoLivingBrain(BonyFish * fish) {
+void addLayerIntoLivingBrain(networkDescriptor * network) {
 
+	std::list<layerDescriptor>::iterator layer;
 
-// debugggggg_waitonnewlayer = true;
-
-// push onto end of brain
-
-std::list<layerDescriptor>::iterator layer;
-
-layerDescriptor * newLayer = new layerDescriptor;
+	layerDescriptor * newLayer = new layerDescriptor;
 	newLayer ->isUsed = true;
 	newLayer ->selected = false;
 
-	fish->brain->layers.push_back(*newLayer);
+	network->layers.push_back(*newLayer);
 
-	layer = fish->brain->layers.end();
+	layer = network->layers.end();
 	layer --;
 	layer --; // scroll back to the layer before the one you just added
-
-	// printf("mahangajarbeng\n");
-
-
 
 	// add as many neurons as there are ouput connectors
 	unsigned int sizeOfPrevLayer = layer->neurons.size();
 
 	for (unsigned int i = 0; i < sizeOfPrevLayer; ++i)
 	{
-		addNeuronIntoLivingBrain( fish, (fish->brain->layers.size() -1), false );
+		addNeuronIntoLivingBrain( network, (network->layers.size() -1), false );
 	}
 
-
-
 	// add a bias neuron to the layer that used to be last. and connect it to all the new neurons.
-	addNeuronIntoLivingBrain( fish, (fish->brain->layers.size() -2), true);
+	addNeuronIntoLivingBrain( network, (network->layers.size() -2), true);
 
-
-	layer = fish->brain->layers.end();
-	layer--; // scroll to the new layer
-
-	std::list<neuronDescriptor>::iterator neuron;
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
-
-
-
- 		}
-
-
-
-	// printf("number of neurons in new layer: %lu\n", (fish->brain->layers.back() ).neurons.size() );
-
-	// verifyNetworkDescriptor(fish->brain);
-
-
-				fish->ann = createFANNbrainFromDescriptor(fish->brain);
-
-
-
-
+	// fish->ann = createFANNbrainFromDescriptor(network);
 }
+
 
 
 // add neuron to a selected INTERNAL layer.
@@ -1838,20 +1760,13 @@ void addNeuronInSelectedLayer(int arg) {
 			if (fish->selected && TestMain::getBrainWindowStatus()) {
 				std::list<layerDescriptor>::iterator layer;
 				unsigned int layerIndex = 0;
-				// unsigned int neuronIndex = 0;
-				// unsigned int connectionIndex = 0;
 
 				for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 
 					if (	layer->selected	) {
 
-						// addNeuronToLayer()
-
-
-// void 
-						addNeuronIntoLivingBrain ( &(*fish), layerIndex, false) ;
-						//{
-
+					
+						addNeuronIntoLivingBrain ( fish->brain, layerIndex, false) ;
 
 						return;
 					}
@@ -1871,16 +1786,11 @@ void addLayerToSelectedFish(int arg) {
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-			// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-
-				if (fish->selected && TestMain::getBrainWindowStatus()) {
-					// polydactyly2( &(*fish));
-
-					addLayerIntoLivingBrain(&(*fish));
-
-					return;
-				}
-			// }
+			if (fish->selected && TestMain::getBrainWindowStatus()) {
+				addLayerIntoLivingBrain( fish->brain);
+				fish->ann = createFANNbrainFromDescriptor(fish->brain);
+				return;
+			}
 		}
 	}
 }
@@ -1921,7 +1831,7 @@ void polydactyly2 (BonyFish * fish) {
 			if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 				fish->inputMatrix[i].sensorType = SENSOR_FOODRADAR;
 				fish->inputMatrix[i].connectedToLimb = targetFinger;
-				addNeuronIntoLivingBrain (fish, 0, false) ;
+				addNeuronIntoLivingBrain (fish->brain, 0, false) ;
 				fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 				break;
@@ -1935,7 +1845,7 @@ void polydactyly2 (BonyFish * fish) {
 			if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 				fish->inputMatrix[i].sensorType = SENSOR_JOINTANGLE ;
 				fish->inputMatrix[i].connectedToLimb = targetFinger;
-				addNeuronIntoLivingBrain (fish, 0, false) ;
+				addNeuronIntoLivingBrain (fish->brain, 0, false) ;
 				fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 				break;
@@ -1950,7 +1860,7 @@ void polydactyly2 (BonyFish * fish) {
 			fish->outputMatrix[i].sensorType = SENSECONNECTOR_MOTOR ;
 			fish->outputMatrix[i].connectedToLimb = targetFinger;
 
-			addNeuronIntoLivingBrain (fish, fish->brain->layers.size()-1, false ) ;
+			addNeuronIntoLivingBrain (fish->brain, fish->brain->layers.size()-1, false ) ;
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 			break;
@@ -2430,6 +2340,89 @@ float  getSciNumberFromFANNFile (char c) {
 
 // 	return offspring;
 // }
+
+
+
+void combineTwoNetworks (networkDescriptor * partnerA, networkDescriptor * partnerB) {
+
+
+	// the child network is shaped by adding the shapes of both networks together.
+	networkDescriptor * childNetwork = new networkDescriptor;
+
+		// first, find the tallest network.
+		unsigned int layersA = partnerA.layers.size();
+		unsigned int layersB = partnerB.layers.size();
+
+		unsigned int tallestPartner;
+		if (layersA > layersB) {
+			tallestPartner = layersA;
+		}
+		else {
+			tallestPartner = layersB;
+		}
+
+		for (int i = 0; i < tallestPartner; ++i)
+		{
+			addLayerIntoLivingBrain(childNetwork);
+		}
+
+		//three iterators are made: one each for the originals, and one for the child.
+		std::list<layerDescriptor>::iterator layerA = partnerA.layers.begin();
+		std::list<layerDescriptor>::iterator layerB = partnerB.layers.begin();
+		// std::list<layerDescriptor>::iterator childLayer;
+
+
+		// scroll through the layers of both partners and set child layer width to be the widest of both of them.
+		// unsigned int layerIndex = 0;
+
+		for (unsigned int layerIndex = 0; layerIndex < tallestPartner; ++layerIndex)
+		{
+			// unsigned int partnerALayerWidth 
+			addLayerIntoLivingBrain(childNetwork);
+
+			if (layerIndex > layersA-1) 		{
+
+				// if partner A doesn't have this layer, just set it to the width of this layer in partner B.
+			}
+			else if (layerIndex > layersB-1) 	{
+				// if partner B doesn't have this layer, just set it to the width of this layer in partner A.
+			}
+			else {
+				// if both partners have it, choose the widest one.
+			}
+
+
+		}
+
+
+		// for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
+
+
+
+		// }
+
+			// for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+
+
+
+
+
+		// std::list<neuronDescriptor>::iterator neuron;
+
+
+	// 
+
+	// they are stepped through neuron by neuron, layer by layer. NOT by index.
+
+	// if a connection is present in one parent, it is definitely carried over.
+	// if it is present in both, it is chosen from one at random.
+	// if it is present in none, it is added as zero weight.
+
+
+}
+
+
 
 // combines two neuro descriptors to produce an offspring with a random mix of traits
 void sex (BonyFish * partnerA, BonyFish * partnerB) {
