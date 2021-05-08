@@ -1577,17 +1577,51 @@ void deleteLayer(BonyFish * fish, unsigned int layerToDelete) {
 		layerIndex++;
 	}
 
-	// go through the next layer and make sure none of the connections that got carried over are greater than the highest-indexed neuron in the layer (it might have changed if the layers were different sizes)
-
+	
 	layerIndex = 0;
+
+	std::list<neuronDescriptor>::iterator neuronB;
+	std::list<connectionDescriptor>::iterator connection;
+
 	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer)  {
 
-		if (layerIndex == layerToDelete+1) {
-
 			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+				layer++;
+				if (layer != fish->brain->layers.end() ){
+
+					// go through the indexes in the layer after this one, make sure none of the neurons on this layer are missing potential connections.
+					for ( neuronB = layer->neurons.begin(); neuronB != layer->neurons.end() ; neuronB++) {
+
+						if (neuronB->biasNeuron) {
+							continue;
+						}
+
+						// check if neuron has a connection to neuronB
+						bool connectedToNeuronB = false;
+			 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+			 				if (connection->connectedTo == neuronB->index) {
+			 					connectedToNeuronB = true;
+			 				}
+			 			}
+
+			 			if (!connectedToNeuronB) {
+			 				printf("added connection %u to %u\n", neuron->index, neuronB->index);
+			 				connectionDescriptor * newConnection = new connectionDescriptor(   neuronB->index);
+							newConnection->isUsed = true;
+			 				newConnection->connectionWeight = 0.0f;
+							neuron->connections.push_back( *newConnection  );
+			 			}
+
+					}
+
+
+				}
+				layer--;
+
 			}
 
-		}
+		// }
 		layerIndex++;
 	}
 
