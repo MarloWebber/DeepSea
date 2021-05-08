@@ -561,6 +561,8 @@ void addLayerToSelectedFish(int arg) ;
 
 void addNeuronInSelectedLayer(int arg) ;
 
+void deleteSelectedLayer(int arg) ;
+
 void addRecursorPair(int arg) ;
 
 void deselectAll(int arg) ;

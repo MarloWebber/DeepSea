@@ -1109,6 +1109,9 @@ glui->add_button_to_panel(editPanel, "Add Neuron in selected layer", 13, addNeur
 
 glui->add_button_to_panel(editPanel, "Add layer", 14, addLayerToSelectedFish);
 
+glui->add_button_to_panel(editPanel, "Delete selected layer", 15, deleteSelectedLayer);
+
+
 
 
 
