@@ -14,6 +14,8 @@
 #include <math.h>
 #include <cmath>
 
+bool debugggggg_waitonnewlayer = false;
+
 float pi = 3.14159f;
 
 // global settings to keep track of the game parameters.
@@ -874,7 +876,7 @@ connectionDescriptor::connectionDescriptor (unsigned int toNeuron) {
 
 neuronDescriptor::neuronDescriptor() {
 	// n_connections = 0;
-	n_inputs = 0;
+	// n_inputs = 0;
 	isUsed = false;
 	aabb.upperBound = b2Vec2(0.0f,0.0f);
 	aabb.lowerBound = b2Vec2(0.0f,0.0f);
@@ -972,6 +974,9 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 	}
 
 	// a wide range of timing options is most helpful to the creature.
+
+	// float wholeFishTimerPhase = RNG();
+
 	for (unsigned int i = 0; i < 4; ++i) {
 		inputMatrix[j].connectedToLimb = 0;
 		inputMatrix[j].sensorType = SENSOR_TIMER;
@@ -990,7 +995,7 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 			break;
 		}
 
-		inputMatrix[j].timerPhase = 0.0f;//RNG();
+		inputMatrix[j].timerPhase = 0.0f;//wholeFishTimerPhase;//RNG();
 		j++;
 	}
 
@@ -1170,7 +1175,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 			neuron.activation_function = activation_function_hidden;
   			neuron.activation_steepness = activation_steepness_hidden;
   			// neuron.n_connections = 0; 	// so not used uninitialized
-  			neuron.n_inputs = 0; 
+  			// neuron.n_inputs = 0; 
   			neuron.isUsed = true;
 
   			// output neurons have a different function than the others. this applies to all in the last row.
@@ -1205,7 +1210,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
   			neuron->activation_function = activation_function_hidden;
   			neuron->activation_steepness = activation_steepness_hidden;
   			// neuron->n_connections = 0; 	// so not used uninitialized
-  			neuron->n_inputs = 0; 
+  			// neuron->n_inputs = 0; 
   			neuron->isUsed = true;
 
   			// output neurons have a different function than the others. this applies to all in the last row.
@@ -1229,7 +1234,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 	
 		getNeuronByIndex(this, con[c].from_neuron)->connections.push_back(connection);
   			
-		getNeuronByIndex(this, con[c].to_neuron)->n_inputs++;
+		// getNeuronByIndex(this, con[c].to_neuron)->n_inputs++;
 	}				
 }
 
@@ -1292,28 +1297,54 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 	std::list<layerDescriptor>::iterator layer;
 	unsigned int layerIndex = 0;
 
+	// printf("check A\n");
+
 	// if you are not on the last layer, ignore bias neurons because they are included implicitly.
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		creationLayerCake[layerIndex] = 0;
 		if (layerIndex == ((unsigned long)network->layers.size() - 1 )) {
 			creationLayerCake[layerIndex] = layer->neurons.size();
 		}
 		else {
 			creationLayerCake[layerIndex] = layer->neurons.size() - 1;
 		}
+
+		// std::list<neuronDescriptor>::iterator neuron;
+ 	// 	for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+ 	// 		if (! (neuron->biasNeuron) ) {
+ 	// 			creationLayerCake[layerIndex] ++;
+ 	// 		}
+
+ 		// }
+
+
+
+
+
 		layerIndex++;
 	}
+
+
+	// printf("check B\n");
 
 	fann * ann = fann_create_standard_array((unsigned long)network->layers.size(), creationLayerCake);
     fann_set_activation_function_hidden(ann, FANN_SIGMOID_SYMMETRIC);
     fann_set_activation_function_output(ann, FANN_SIGMOID_SYMMETRIC);
 
+
+	// printf("check C\n");
+
     unsigned int num_connections = fann_get_total_connections(ann);
+
+
+	// printf("check D\n");
 
     struct fann_connection margles[num_connections] ;
   	memset(&margles, 0x00, sizeof(fann_connection[num_connections]));
 
-	layerIndex = 0;
-	unsigned int neuronIndex = 0;
+	// layerIndex = 0;
+	// unsigned int neuronIndex = 0;
 	unsigned int connectionIndex = 0;
 
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
@@ -1321,19 +1352,37 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
  			std::list<connectionDescriptor>::iterator connection;
  			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
- 				fann_connection conc;
+ 				fann_connection conc ;
  				conc.from_neuron = neuron->index;
  				conc.to_neuron = connection->connectedTo;
  				conc.weight = connection->connectionWeight;
  				margles[connectionIndex] = conc;
+ 				// printf("connection: %")
 				connectionIndex++;
+				// printf("spb\n");
 			}
-			neuronIndex ++;
+			// neuronIndex ++;
+			// printf("fesad\n");
 		}
-		layerIndex ++;
+
+		// printf("nene\n");
+
+		// layerIndex ++;
 	}
 
+	// printf("connection index: %u, num_connections: %u\n", connectionIndex, num_connections);
+
+	// if (debugggggg_waitonnewlayer) {
+	// 		while(1){;}
+	// }
+	
+
+	// printf("check E\n");
+
 	fann_set_weight_array(ann, margles, num_connections);
+
+
+	// printf("check F\n");
 	return ann;
 }
 
@@ -1387,7 +1436,7 @@ void deleteSelectedNeuron (int arg) {
 	}
 }
 
-void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
+void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex, bool bias) {
 
 	neuronDescriptor * newNeuron = new neuronDescriptor();
 	newNeuron->isUsed = true;
@@ -1464,9 +1513,11 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
  	}
 
 
- 	// if the neuron is not on the first layer, all the previous-layer neurons get connections to this neuron.
+ 	// if the neuron is not on the first layer (and not a bias neuron), all the previous-layer neurons get connections to this neuron.
  	// if (true) {
-	 	layer = targetLayerIterator;
+
+ 	if (!bias) {
+ 	layer = targetLayerIterator;
 	 	if (layer != fish->brain->layers.begin() ) { // and the next layer is not off the end of the array
 			layer--;
 			for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
@@ -1479,7 +1530,31 @@ void addNeuronIntoLivingBrain (BonyFish * fish, unsigned int targetLayerIndex) {
 				// printf("new connection from %u to %u\n", neuron->index, newNeuron.index);
 			}
 
-	 	}
+	 	}	
+
+	 	newNeuron ->biasNeuron = false;
+ 	}
+ 	else {
+ 		newNeuron ->biasNeuron = true;
+ 	}
+
+
+ 	if (bias) {
+
+
+ 			// if its a bias neuron, decrement all the connections attached to it by 1. 
+
+
+ 			// std::list<connectionDescriptor>::iterator connection;
+ 			// for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+
+ 			// 	// if (connection->connectedTo >= newNeuron->index) {
+ 			// 		connection->connectedTo ++;
+ 			// 	// }
+ 			// }
+
+ 	}
+	 	
  	// }
 
 
@@ -1546,7 +1621,7 @@ void addRecursorPair(int arg) {
 					if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 						fish->inputMatrix[i].sensorType = SENSECONNECTOR_RECURSORRECEIVER ;
 						fish->inputMatrix[i].recursorChannel = lowestAvailableRecursionChannel;
-						addNeuronIntoLivingBrain ( &(*fish), 0) ;
+						addNeuronIntoLivingBrain ( &(*fish), 0, false) ;
 						fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 					break;
@@ -1558,7 +1633,7 @@ void addRecursorPair(int arg) {
 					if (fish->outputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 						fish->outputMatrix[i].sensorType = SENSECONNECTOR_RECURSORTRANSMITTER ;
 						fish->outputMatrix[i].recursorChannel = lowestAvailableRecursionChannel;
-						addNeuronIntoLivingBrain ( &(*fish), fish->brain->layers.size()-1 ) ;
+						addNeuronIntoLivingBrain ( &(*fish), fish->brain->layers.size()-1, false ) ;
 						fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 						break;
@@ -1576,18 +1651,150 @@ void addRecursorPair(int arg) {
 // }
 
 
-void addLayerIntoLivingBrain(BonyFish * fish, unsigned int newLayerIndex) {
-// the layer will be introduced into the brain at the index, pushing the layer that used to be there up by 1.
-	
-// all indexes after the cut will be incremented by 1
+void verifyNetworkDescriptor (networkDescriptor * network) {
+
+	std::list<layerDescriptor>::iterator layer;
+	unsigned int layerIndex = 0;
+	unsigned int neuronIndex = 0;
+	unsigned int connectionIndex = 0;
+
+	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
+		printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
+
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			printf("		neuron %u connections: %lu bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->biasNeuron);
+
+ 			std::list<connectionDescriptor>::iterator connection;
+ 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
+ 				printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
+
+				connectionIndex++;
+			}
+			neuronIndex ++;
+		}
+		layerIndex ++;
+	}
+}
+
+void addLayerIntoLivingBrain(BonyFish * fish) {
+
+
+// debugggggg_waitonnewlayer = true;
+
+// push onto end of brain
+
+std::list<layerDescriptor>::iterator layer;
+
+layerDescriptor * newLayer = new layerDescriptor;
+	newLayer ->isUsed = true;
+	newLayer ->selected = false;
+
+	fish->brain->layers.push_back(*newLayer);
+
+	layer = fish->brain->layers.end();
+	layer --;
+	layer --; // scroll back to the layer before the one you just added
+
+	// printf("mahangajarbeng\n");
 
 
 
-// involved in the join are 3 layers: the one preceding the insertion, the new layer itself, and the one succeeding the new layer.
-// connections between the preceding and new layers are kept as is
-// connections between the new and succeeding layer have 
+	// add as many neurons as there are ouput connectors
+	unsigned int sizeOfPrevLayer = layer->neurons.size();
+
+	for (unsigned int i = 0; i < sizeOfPrevLayer; ++i)
+	{
+		addNeuronIntoLivingBrain( fish, (fish->brain->layers.size() -1), false );
+	}
 
 
+
+	// add a bias neuron to the layer that used to be last. and connect it to all the new neurons.
+	addNeuronIntoLivingBrain( fish, (fish->brain->layers.size() -2), true);
+
+
+	layer = fish->brain->layers.end();
+	layer--; // scroll to the new layer
+
+	std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+
+
+ 		}
+
+
+
+	// printf("number of neurons in new layer: %lu\n", (fish->brain->layers.back() ).neurons.size() );
+
+	// verifyNetworkDescriptor(fish->brain);
+
+
+				fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
+
+
+
+}
+
+void addNeuronInSelectedLayer(int arg) {
+
+	unused_variable((void *) &arg);
+	std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			if (fish->selected && TestMain::getBrainWindowStatus()) {
+				std::list<layerDescriptor>::iterator layer;
+				unsigned int layerIndex = 0;
+				// unsigned int neuronIndex = 0;
+				// unsigned int connectionIndex = 0;
+
+				for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+
+					if (	layer->selected	) {
+
+						// addNeuronToLayer()
+
+
+// void 
+						addNeuronIntoLivingBrain ( &(*fish), layerIndex, false) ;
+						//{
+
+
+						return;
+					}
+
+					layerIndex ++;
+				}
+			}
+		}
+	}
+}
+
+void addLayerToSelectedFish(int arg) {
+	unused_variable((void *) &arg);
+	std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+
+				if (fish->selected && TestMain::getBrainWindowStatus()) {
+					// polydactyly2( &(*fish));
+
+					addLayerIntoLivingBrain(&(*fish));
+
+					return;
+				}
+			// }
+		}
+	}
 }
 
 // add a limb onto the end of the selected one.
@@ -1626,7 +1833,7 @@ void polydactyly2 (BonyFish * fish) {
 			if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 				fish->inputMatrix[i].sensorType = SENSOR_FOODRADAR;
 				fish->inputMatrix[i].connectedToLimb = targetFinger;
-				addNeuronIntoLivingBrain (fish, 0) ;
+				addNeuronIntoLivingBrain (fish, 0, false) ;
 				fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 				break;
@@ -1640,7 +1847,7 @@ void polydactyly2 (BonyFish * fish) {
 			if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_UNUSED ) {
 				fish->inputMatrix[i].sensorType = SENSOR_JOINTANGLE ;
 				fish->inputMatrix[i].connectedToLimb = targetFinger;
-				addNeuronIntoLivingBrain (fish, 0) ;
+				addNeuronIntoLivingBrain (fish, 0, false) ;
 				fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 				break;
@@ -1655,7 +1862,7 @@ void polydactyly2 (BonyFish * fish) {
 			fish->outputMatrix[i].sensorType = SENSECONNECTOR_MOTOR ;
 			fish->outputMatrix[i].connectedToLimb = targetFinger;
 
-			addNeuronIntoLivingBrain (fish, fish->brain->layers.size()-1 ) ;
+			addNeuronIntoLivingBrain (fish, fish->brain->layers.size()-1, false ) ;
 			fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 			break;
@@ -1685,31 +1892,7 @@ void placeLimbOnSelectedFish(int arg) {
 	}
 }
 
-void verifyNetworkDescriptor (networkDescriptor * network) {
 
-	std::list<layerDescriptor>::iterator layer;
-	unsigned int layerIndex = 0;
-	unsigned int neuronIndex = 0;
-	unsigned int connectionIndex = 0;
-
-	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
-		printf("	layer %u neurons: %lu\n", layerIndex, (unsigned long)layer->neurons.size());
-
-		std::list<neuronDescriptor>::iterator neuron;
- 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
- 			printf("		neuron %u connections: %lu inputs: %u bias: %i\n", neuronIndex, (unsigned long)neuron->connections.size(), neuron->n_inputs, neuron->biasNeuron);
-
- 			std::list<connectionDescriptor>::iterator connection;
- 			for (connection = neuron->connections.begin(); connection != neuron->connections.end(); connection++) {
- 				printf("			connection %u to: %u, weight:%f\n", connectionIndex, connection->connectedTo, connection->connectionWeight );
-
-				connectionIndex++;
-			}
-			neuronIndex ++;
-		}
-		layerIndex ++;
-	}
-}
 
 void amputation (int arg) {
 	unused_variable((void *) &arg);
@@ -1875,88 +2058,88 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 	}
 }
 
-void jellyfishTrainer () {
-	int n_inputs = 8;
-	int n_outputs = 8;
-	int n_examples = 10000;
-	// there are actually 6*n_examples examples.
+// void jellyfishTrainer () {
+// 	int n_inputs = 8;
+// 	int n_outputs = 8;
+// 	int n_examples = 10000;
+// 	// there are actually 6*n_examples examples.
 
-	float noise = 0.25f;
-	float maxSensation = 0.75f;
+// 	float noise = 0.25f;
+// 	float maxSensation = 0.75f;
 
-	float bellAOpen = 0.3f;//0.9f;
-	float bellAClose = -0.9f; //0.3f;
-	float bellASoftClose = 0.3f;
+// 	float bellAOpen = 0.3f;//0.9f;
+// 	float bellAClose = -0.9f; //0.3f;
+// 	float bellASoftClose = 0.3f;
 
-	float bellBOpen = -0.3f;//0.9f;
-	float bellBClose = 0.9f; //0.3f;
-	float bellBSoftClose = -0.3f;
+// 	float bellBOpen = -0.3f;//0.9f;
+// 	float bellBClose = 0.9f; //0.3f;
+// 	float bellBSoftClose = -0.3f;
 
-	FILE *fp;
-    fp = fopen("jellyfishTrainer.data","wb");
+// 	FILE *fp;
+//     fp = fopen("jellyfishTrainer.data","wb");
 
-    fprintf(fp, "%i %i% i\n", n_examples*6, n_inputs, n_outputs );
+//     fprintf(fp, "%i %i% i\n", n_examples*6, n_inputs, n_outputs );
 
-	for (int i = 0; i < n_examples; ++i) {
+// 	for (int i = 0; i < n_examples; ++i) {
 
-		float noiseThisTurn = ((RNG() - 0.5) * noise);
-		float outputNoiseThisTurn = ((RNG() - 0.5) * noise) * 0.5;
-		float sensationThisTurn = RNG() * maxSensation;
-		float sensationAThisTime = (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
-		float sensationBThisTime =  ((RNG() - 0.5) * noiseThisTurn);
+// 		float noiseThisTurn = ((RNG() - 0.5) * noise);
+// 		float outputNoiseThisTurn = ((RNG() - 0.5) * noise) * 0.5;
+// 		float sensationThisTurn = RNG() * maxSensation;
+// 		float sensationAThisTime = (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
+// 		float sensationBThisTime =  ((RNG() - 0.5) * noiseThisTurn);
 
-		// for a sense on side A, jiggle the bell on side B
-		// one with heartbeat OFF, bell open
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
-		fprintf(fp, "%f %f\n", 
-										bellAOpen + ((RNG() - 0.5) * outputNoiseThisTurn),
-										bellBOpen +((RNG() - 0.5) * outputNoiseThisTurn)	
-										);
+// 		// for a sense on side A, jiggle the bell on side B
+// 		// one with heartbeat OFF, bell open
+// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
+// 		fprintf(fp, "%f %f\n", 
+// 										bellAOpen + ((RNG() - 0.5) * outputNoiseThisTurn),
+// 										bellBOpen +((RNG() - 0.5) * outputNoiseThisTurn)	
+// 										);
 
-		// one with heartbeat ON, bell closed
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
-		fprintf(fp, "%f %f\n",			
-										bellASoftClose + ((RNG() - 0.5) * outputNoiseThisTurn),
-										bellBClose + ((RNG() - 0.5) * outputNoiseThisTurn)
-										);
+// 		// one with heartbeat ON, bell closed
+// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
+// 		fprintf(fp, "%f %f\n",			
+// 										bellASoftClose + ((RNG() - 0.5) * outputNoiseThisTurn),
+// 										bellBClose + ((RNG() - 0.5) * outputNoiseThisTurn)
+// 										);
 
-		// for a sense on side B, jiggle the bell on side A
-		sensationAThisTime = ((RNG() - 0.5) * noiseThisTurn);
-		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
+// 		// for a sense on side B, jiggle the bell on side A
+// 		sensationAThisTime = ((RNG() - 0.5) * noiseThisTurn);
+// 		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
 		
-		// for a sense on side A, jiggle the bell on side B
-		// one with heartbeat OFF, bell open
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
-		fprintf(fp, "%f %f\n", 			
-										bellAOpen+((RNG() - 0.5) * outputNoiseThisTurn),
-										bellBOpen + ((RNG() - 0.5) * outputNoiseThisTurn));
+// 		// for a sense on side A, jiggle the bell on side B
+// 		// one with heartbeat OFF, bell open
+// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
+// 		fprintf(fp, "%f %f\n", 			
+// 										bellAOpen+((RNG() - 0.5) * outputNoiseThisTurn),
+// 										bellBOpen + ((RNG() - 0.5) * outputNoiseThisTurn));
 
-		// one with heartbeat ON, bell closed
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
-		fprintf(fp, "%f %f\n", 
-										bellAClose + ((RNG() - 0.5) * outputNoiseThisTurn),
-										bellBSoftClose + ((RNG() - 0.5) * outputNoiseThisTurn)
-										);
+// 		// one with heartbeat ON, bell closed
+// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
+// 		fprintf(fp, "%f %f\n", 
+// 										bellAClose + ((RNG() - 0.5) * outputNoiseThisTurn),
+// 										bellBSoftClose + ((RNG() - 0.5) * outputNoiseThisTurn)
+// 										);
 
-		// for straight ahead, jiggle both?
-		sensationAThisTime = (sensationThisTurn) +((RNG() - 0.5) * noiseThisTurn);
-		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
+// 		// for straight ahead, jiggle both?
+// 		sensationAThisTime = (sensationThisTurn) +((RNG() - 0.5) * noiseThisTurn);
+// 		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
 		
-		// // for a sense on side A, jiggle the bell on side B
-		// one with heartbeat OFF, bell open
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
-		fprintf(fp, "%f %f\n", 			
-										bellAOpen + ((RNG() - 0.5) * outputNoiseThisTurn),
-										bellBOpen + ((RNG() - 0.5) * outputNoiseThisTurn));
+// 		// // for a sense on side A, jiggle the bell on side B
+// 		// one with heartbeat OFF, bell open
+// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
+// 		fprintf(fp, "%f %f\n", 			
+// 										bellAOpen + ((RNG() - 0.5) * outputNoiseThisTurn),
+// 										bellBOpen + ((RNG() - 0.5) * outputNoiseThisTurn));
 
-		// one with heartbeat ON, bell closed
-		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
-		fprintf(fp, "%f %f\n",
-										bellAClose + ((RNG() - 0.5) * outputNoiseThisTurn),
-										bellBClose + ((RNG() - 0.5) * outputNoiseThisTurn));
-	}
-	fclose(fp);
-}
+// 		// one with heartbeat ON, bell closed
+// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
+// 		fprintf(fp, "%f %f\n",
+// 										bellAClose + ((RNG() - 0.5) * outputNoiseThisTurn),
+// 										bellBClose + ((RNG() - 0.5) * outputNoiseThisTurn));
+// 	}
+// 	fclose(fp);
+// }
 
 // this function does the legwork of actually erasing stuff from the world. it is done outside of the step.
 void removeDeletableFish() {
@@ -2239,6 +2422,8 @@ void sex (BonyFish * partnerA, BonyFish * partnerB) {
 	// brain
 
 
+
+
 }
 
 void drawingTest() {
@@ -2346,8 +2531,41 @@ void drawingTest() {
 			}
 		}
 	}
+
+
+	// draw the species window
+	if (TestMain::getSpeciesWindowStatus()) {
+
+			b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+
+	// fish->brain->networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
+	// fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((num_layers *spacingDistance ) + (spacingDistance) ));
+
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+
+
+	}
+
+
 }
 
+void populateSpeciesFromFile(int arg) {
+
+}
+
+void saveIndividualToFile (int arg) {
+
+}
+
+void selectAllInSpecies (int arg) {
+
+}
 
 class RayCastClosestCallback : public b2RayCastCallback
 {

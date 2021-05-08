@@ -294,7 +294,7 @@ struct connectionDescriptor {
 */
 struct neuronDescriptor {
 	bool isUsed;
-	unsigned int n_inputs;
+	// unsigned int n_inputs;
 	unsigned int activation_function;
 	float activation_steepness;
 
@@ -481,10 +481,12 @@ struct Species {
 
 	bool asexual;					// whether or not the animal has sexy times sex or one player sex
 
+	bool selected;
 
 	Species();
 
 };
+
 
 
 
@@ -555,7 +557,9 @@ void flagSelectedFishForDeletion(int arg) ;
 void placeLimbOnSelectedFish(int arg);
 void amputation(int arg);
 void deleteSelectedNeuron (int arg) ;
+void addLayerToSelectedFish(int arg) ;
 
+void addNeuronInSelectedLayer(int arg) ;
 
 void addRecursorPair(int arg) ;
 
@@ -572,6 +576,12 @@ void addRandomFoodParticle(int arg);
 void test_runAllUnitTests();
 
 void deepSeaStart();
+
+void populateSpeciesFromFile(int arg) ;
+
+void saveIndividualToFile (int arg) ;
+
+void selectAllInSpecies (int arg) ;
 
 	// }
 #endif

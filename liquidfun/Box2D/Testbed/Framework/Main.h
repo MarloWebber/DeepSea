@@ -65,6 +65,8 @@ int getVotingMode();
 int getTriggerRadiusStatus() ;
 int getFoodRadiusStatus() ;
 
+int getSpeciesWindowStatus() ;
+
 }  // namespace TestMain
 
 // void SimulationLoop();

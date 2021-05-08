@@ -53,8 +53,12 @@ namespace
 	int foodRadiusStatus = 0;
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
+	int showSpeciesWindow = 0;
 	int voting_mode = 0;
 	int showFluidDynamicForces = 0;
+
+	int selectedSpeciesEnforcePopLimit = 0;
+	int selectedSpeciesSexuality = 0;
 
 	// int gridPinStatus = 0;
 
@@ -125,6 +129,10 @@ int getTriggerRadiusStatus() {
 
 int getFoodRadiusStatus() {
 	return foodRadiusStatus;
+}
+
+int getSpeciesWindowStatus() {
+	return showSpeciesWindow;
 }
 
 // int getGridPinStatus() {
@@ -792,7 +800,7 @@ int main(int argc, char** argv)
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
 	glutInitWindowSize(width, height);
 	char title[32];
-	sprintf(title, "Box2D Version %d.%d.%d", b2_version.major, b2_version.minor, b2_version.revision);
+	sprintf(title, "DeepSea");
 	mainWindow = glutCreateWindow(title);
 	//glutSetOption (GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
@@ -826,7 +834,8 @@ int main(int argc, char** argv)
 		GLUI_SUBWINDOW_RIGHT );
 
 
-	GLUI_Panel* gamePanel =	glui->add_rollout("Game");
+	GLUI_Rollout* gamePanel =	glui->add_rollout("Game");
+	gamePanel->close();
 
 	// glui->add_statictext_to_panel(gamePanel, "Map");
 	GLUI_Listbox* testList =
@@ -895,8 +904,8 @@ int main(int argc, char** argv)
 	// glui->add_separator_to_panel(gamePanel);
 
 
-	GLUI_Panel* laboratoryPanel =	glui->add_rollout("Laboratory Mode");
-
+	GLUI_Rollout* laboratoryPanel =	glui->add_rollout("Laboratory Mode");
+laboratoryPanel->close();
 
 		// int fakeNumberOfFish;
 		GLUI_Spinner* numberOfFishSpinner =
@@ -924,18 +933,14 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 
 
 
-	GLUI_Panel* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
+	GLUI_Rollout* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
+	EcosystemPanel->close();
 	int fakeNumberOfFood;
 		GLUI_Spinner* numberOfFoodSpinner =
 		glui->add_spinner_to_panel(EcosystemPanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
 	numberOfFoodSpinner->set_int_limits(1, 8);
 
 		
-	int fakeNumberOfSpecies;
-		GLUI_Spinner* numberOfSpeciesSpinner =
-		glui->add_spinner_to_panel(EcosystemPanel,"Number of species", GLUI_SPINNER_INT, &fakeNumberOfSpecies);
-	numberOfSpeciesSpinner->set_int_limits(1, 8);
-
 
 // float fakeGravity;
 // 		GLUI_Spinner* gravitySpinner =
@@ -944,10 +949,18 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 
 
 
-	// GLUI_Panel* speciesPanel =	glui->add_rollout("Taxonomy");
+	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");
+speciesPanel->close();
 
-		// GLUI_Listbox* SpeciesList =
-		// glui->add_listbox_to_panel(speciesPanel, "Species: ", &(m_deepSeaSettings.currentlySelectedSpecies ) ,-1, updateSpeciesList);
+	int fakeNumberOfSpecies;
+		GLUI_Spinner* numberOfSpeciesSpinner =
+		glui->add_spinner_to_panel(speciesPanel,"Number of species", GLUI_SPINNER_INT, &fakeNumberOfSpecies);
+	numberOfSpeciesSpinner->set_int_limits(1, 8);
+
+
+
+
+		// GLUI_Listbox* SpeciesList = glui->add_listbox_to_panel(speciesPanel, "Selected species: ", &(m_deepSeaSettings.currentlySelectedSpecies ) ,-1, updateSpeciesList);
 
 	// 	int NominalPopulation;
 	// 	GLUI_Spinner* nominalPopulationSpinner =
@@ -956,7 +969,7 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 
 
 
-// terrainTypesList->add_item(0, "Elastic | SolidGroup" );
+// SpeciesList->add_item(0, "Bamp" );
 // 		terrainTypesList->add_item(1, "Powder" );
 // 		terrainTypesList->add_item(2, "Rigid | SolidGroup" );
 // 		terrainTypesList->add_item(3, "Spring | SolidGroup" );
@@ -972,9 +985,37 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 // 		terrainTypesList->add_item(12, "Zombie" );
 
 		// GLUI_Listbox* SpeciesFileBrowser =
-		// glui->add_filebrowser_to_panel(speciesPanel);
+		glui->add_edittext_to_panel(speciesPanel, "Filename",GLUI_EDITTEXT_TEXT );
+		glui->add_button_to_panel(speciesPanel, "Populate selected species from file", 0, populateSpeciesFromFile);
+		glui->add_button_to_panel(speciesPanel, "Save selected individual to file", 1, saveIndividualToFile);
 
-	GLUI_Panel* bioPanel =	glui->add_rollout("Biology");
+		glui->add_button_to_panel(speciesPanel, "Select all in species", 1, selectAllInSpecies);
+
+
+
+		int NominalPopulation;
+		GLUI_Spinner* nominalPopulationSpinner =
+		glui->add_spinner_to_panel(speciesPanel,"Nominal Population", GLUI_SPINNER_INT, &NominalPopulation);
+	nominalPopulationSpinner->set_int_limits(1, 1000);
+
+
+
+
+glui->add_checkbox_to_panel(speciesPanel, "Enforce population limit", &selectedSpeciesEnforcePopLimit);
+
+
+
+glui->add_checkbox_to_panel(speciesPanel, "Sexual/Asexual", &selectedSpeciesSexuality);
+
+
+
+		// *GLUI
+// ::add_edittext_to_panel( GLUI_Panel *panel, char *name,int data_type=GLUI_EDITTEXT_TEXT,void *live_var=NULL, int id=-1,GLUI_Update_CB callback=NULL );
+
+
+
+	GLUI_Rollout* bioPanel =	glui->add_rollout("Biology");
+	bioPanel->close();
 
 	// float fakeMutationRate;
 		GLUI_Spinner* mutationRateSpinner =
@@ -1000,7 +1041,9 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 
 
 
-	GLUI_Panel* controlsPanel =	glui->add_rollout("Cloning Controls");
+	GLUI_Rollout* controlsPanel =	glui->add_rollout("Cloning Controls");
+
+	controlsPanel->open();
 
 	// selection controls
 	// glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
@@ -1043,7 +1086,8 @@ glui->add_checkbox_to_panel(controlsPanel, "Select with LMB", &voting_mode);
 
 
 
-	GLUI_Panel* editPanel =	glui->add_rollout("Surgical Modification");
+	GLUI_Rollout* editPanel =	glui->add_rollout("Surgical Modification");
+	editPanel->close();
 	glui->add_button_to_panel(editPanel, "Pin to Grid", 5, pinToGrid);
 	glui->add_button_to_panel(editPanel, "Release", 6, releaseFromGrid);
 
@@ -1059,13 +1103,19 @@ glui->add_button_to_panel(editPanel, "Randomize Brain", 10, scrambleSelectedFish
 glui->add_button_to_panel(editPanel, "Delete Selected Neuron", 11, deleteSelectedNeuron);
 
 glui->add_button_to_panel(editPanel, "Add Recursor Pair", 12, addRecursorPair);
+glui->add_button_to_panel(editPanel, "Add Neuron in selected layer", 13, addNeuronInSelectedLayer);
 
+// addLayerToSelectedFish
+
+glui->add_button_to_panel(editPanel, "Add layer", 14, addLayerToSelectedFish);
 
 
 
 
 	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
 	glui->add_checkbox_to_panel(editPanel, "Show body edit window", &showBodyEditWindow);
+
+	glui->add_checkbox_to_panel(editPanel, "Show species window", &showSpeciesWindow);
 	glui->add_checkbox_to_panel(editPanel, "Show fluid dynamic forces", &showFluidDynamicForces);
 
 
@@ -1074,8 +1124,8 @@ glui->add_button_to_panel(editPanel, "Add Recursor Pair", 12, addRecursorPair);
 
 
 
-	GLUI_Panel* terrainPanel =	glui->add_rollout("Terrain Paint");
-
+	GLUI_Rollout* terrainPanel =	glui->add_rollout("Terrain Paint");
+terrainPanel->close();
 	
 	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
 
