@@ -886,6 +886,7 @@ neuronDescriptor::neuronDescriptor() {
 layerDescriptor::layerDescriptor () {
 	// n_neurons = 0;
 	isUsed = false;
+	selected = false;
 }
 
 senseConnector::senseConnector () {
@@ -2469,7 +2470,7 @@ float  getSciNumberFromFANNFile (char c) {
 
 
 
-void combineTwoNetworks2 (networkDescriptor * partnerA, networkDescriptor * partnerB) {
+networkDescriptor * combineTwoNetworks2 (networkDescriptor * partnerA, networkDescriptor * partnerB) {
 
 	// copies are made of both parents.
 	// blank neurons are added to the copies to make them the same shape.
@@ -2576,7 +2577,32 @@ void combineTwoNetworks2 (networkDescriptor * partnerA, networkDescriptor * part
 			{
 				
 
-				printf("connection A, B. %u %u %f %f\n", connectionA->connectedTo, connectionB->connectedTo, connectionA->connectionWeight, connectionB->connectionWeight);
+				// printf("connection A, B. %u %u %f %f\n", connectionA->connectedTo, connectionB->connectedTo, connectionA->connectionWeight, connectionB->connectionWeight);
+
+
+				if (connectionA->connectionWeight != 0.0f && connectionB->connectionWeight !=  0.0f) {
+
+					if (RNG() > 0.5) { // if they are both nonzero, choose one at random
+						connectionC -> connectionWeight = connectionA->connectionWeight ;
+					}
+					else {
+						connectionC -> connectionWeight = connectionB->connectionWeight ;
+					}
+
+				}
+				else if (connectionA->connectionWeight !=  0.0f) {
+					connectionC -> connectionWeight = connectionA->connectionWeight ;
+
+				}
+				else if (connectionB->connectionWeight !=  0.0f) {
+					connectionC -> connectionWeight = connectionB->connectionWeight ;
+
+				}
+				else {
+					// the weight will be 0
+
+				}
+
 
 				connectionA++;
 				connectionB++;
@@ -2594,6 +2620,9 @@ void combineTwoNetworks2 (networkDescriptor * partnerA, networkDescriptor * part
 		layerB++;
 		layerC++;
 	}
+
+
+	return child;
 
 }
 
@@ -2676,8 +2705,13 @@ void sex (BonyFish * partnerA, BonyFish * partnerB) {
 
 	// brain
 
-	combineTwoNetworks2 (partnerA->brain, partnerB->brain) ;
+	networkDescriptor * childBrain = combineTwoNetworks2 (partnerA->brain, partnerB->brain) ;
 
+
+
+	b2Vec2 startingPosition = partnerA->bones[0]->p_body->GetWorldCenter();
+
+	loadFish (*childDescriptor, createFANNbrainFromDescriptor(childBrain), startingPosition) ;
 
 
 }
