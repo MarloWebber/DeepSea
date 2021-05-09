@@ -2768,8 +2768,22 @@ void drawingTest() {
 
 		// printf("gleelee\n");
 		b2Vec2 position = b2Vec2(0.0f, 0.0f);
-		b2Color color = b2Color(0.2f, 0.2f, 0.2f);
+		b2Color color = b2Color(0.5f, 0.1f, 0.05f);
 		 local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.originTriggerRadius, color);
+
+
+	
+
+	}
+
+
+	if (TestMain::getFoodRadiusStatus()) {
+		// void
+
+		// printf("gleelee\n");
+		b2Vec2 position = b2Vec2(0.0f, 0.0f);
+		b2Color color = b2Color(0.3f, 0.3f, 0.3f);
+		 local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.originFoodRadius, color);
 
 
 	
@@ -3053,7 +3067,7 @@ void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary 
 				// }
 
 				printf("angle: %f\n", angle);
-				b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originTriggerRadius , sin(angle)* m_deepSeaSettings.originTriggerRadius );
+				b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originFoodRadius , sin(angle)* m_deepSeaSettings.originFoodRadius );
 				food[i]->p_body->SetTransform(foodRadiusPosition, 0.0f);
 
 
@@ -5020,7 +5034,10 @@ void test_runAllUnitTests() {
 // game logic which is run only once at startup
 void deepSeaStart() {
 
-	m_deepSeaSettings.originTriggerRadius = 10.0f;
+	m_deepSeaSettings.originTriggerRadius = 15.0f;
+
+	m_deepSeaSettings.originFoodRadius = 10.0f;
+	
 
 	ecosystem.push_back(*defaultSpecies);
 

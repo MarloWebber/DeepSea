@@ -916,10 +916,17 @@ laboratoryPanel->close();
 	glui->add_checkbox_to_panel(laboratoryPanel, "Persistent Food", &persistentFoodStatus);
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Food walks around radius", &foodRadiusStatus);
+	GLUI_Spinner* foodRadiusSpinner =
+		glui->add_spinner_to_panel(laboratoryPanel, "Food walk radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.originFoodRadius);
+	foodRadiusSpinner->set_float_limits(0.0f, 100.0f);
+
+
 
 GLUI_Spinner* foodRadiusAngleJitterSpinner =
 glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.foodRadiusAngleJitter);
 	foodRadiusAngleJitterSpinner->set_float_limits(0.0f, 2 * pi);
+
+
 
 
 	glui->add_button_to_panel(laboratoryPanel, "Add Random Food", 0, addRandomFoodParticle);
@@ -930,6 +937,8 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 	GLUI_Spinner* triggerRadiusSpinner =
 		glui->add_spinner_to_panel(laboratoryPanel, "Trigger radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.originTriggerRadius);
 	triggerRadiusSpinner->set_float_limits(0.0f, 100.0f);
+
+
 
 
 

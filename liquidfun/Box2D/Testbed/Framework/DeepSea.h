@@ -33,9 +33,13 @@ struct deepSeaSettings {
 	int terrainPaintType;
 
 	float originTriggerRadius;
+	float originFoodRadius;
 	float foodRadiusAngleJitter;
 
+
 	int currentlySelectedSpecies;
+
+
 
 };
 
