@@ -832,10 +832,10 @@ void flagBiasNeurons( networkDescriptor * network) {
 }
 
 
-void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
+void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition, std::list<Species>::iterator currentSpecies ) {
 
 
-std::list<Species>::iterator currentSpecies = ecosystem.begin(); 
+// std::list<Species>::iterator currentSpecies = ecosystem.begin(); 
 				// currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		// {
 			// std::list<BonyFish>::iterator fish;
@@ -2400,7 +2400,7 @@ networkDescriptor * combineTwoNetworks2 (networkDescriptor * partnerA, networkDe
 
 
 // combines two neuro descriptors to produce an offspring with a random mix of traits
-void sex (BonyFish * partnerA, BonyFish * partnerB) {
+void sex (BonyFish * partnerA, BonyFish * partnerB, std::list<Species>::iterator currentSpecies) {
 	
 
 	// networkDescriptor child = new networkDescriptor;
@@ -2479,11 +2479,10 @@ void sex (BonyFish * partnerA, BonyFish * partnerB) {
 
 	networkDescriptor * childBrain = combineTwoNetworks2 (partnerA->brain, partnerB->brain) ;
 
-
-
 	b2Vec2 startingPosition = partnerA->bones[0]->p_body->GetWorldCenter();
 
-	loadFish (*childDescriptor, createFANNbrainFromDescriptor(childBrain), startingPosition) ;
+	loadFish (*childDescriptor, createFANNbrainFromDescriptor(childBrain), startingPosition, currentSpecies) ;
+
 
 
 }
@@ -2504,7 +2503,10 @@ void mateSelectedFish (int arg) {
 				if (foundPartnerA) {
 					partnerB = &(*fish);
 
-					sex(partnerA, partnerB);
+					sex(partnerA, partnerB, currentSpecies);
+
+
+						
 
 					return;
 				}
@@ -2695,9 +2697,146 @@ void drawingTest() {
 
 void populateSpeciesFromFile(int arg) {
 
+		std::list<Species>::iterator currentSpecies;
+
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		if (currentSpecies->selected) {
+
+
+
+
+
+		bool thereIsAFile = false;
+
+		// std::string speciesFileName = std::string()
+		std::string nnfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string(".net");
+	    std::string fdescfilename =  std::string("Aquarium/") + currentSpecies->name + std::string(".fsh");
+
+		if (FILE *file = fopen(nnfilename.c_str(), "r")) {
+	        fclose(file);
+	        if (FILE *file = fopen(fdescfilename.c_str(), "r")) {
+		        thereIsAFile = true;
+		        fclose(file);
+		    }
+	    } 
+
+		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
+
+			fishDescriptor_t newFishBody;
+			loadFishFromFile(std::string(fdescfilename), newFishBody);
+
+			// printf("loaded fish\n");
+
+			mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
+		
+
+		    mutateFANNFileDirectly(std::string(nnfilename));
+
+			// now you can load the mutant ANN.
+			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+
+				// printf("mutaded fish\n");
+
+			// create a neurodescriptor.
+			networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+
+			// verifyNetworkDescriptor(muscleCars);
+
+			fann * jann = createFANNbrainFromDescriptor(muscleCars);
+
+			// for (int i = 0; i < N_SENSECONNECTORS; ++i) {
+			// 	if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
+			// 			newFishBody.inputMatrix[i].timerPhase = RNG();
+			// 	}
+			// }
+
+			b2Vec2 position = b2Vec2(0.0f,0.0f);
+			// }
+			// else {
+			// 	// printf("notuo \n");
+			// }
+
+
+				// printf("rigged brain\n");
+
+			loadFish ( newFishBody, jann, position, currentSpecies) ;
+
+				// printf("emplaced fish\n");
+
+		}
+		else { 						// if there is no winner, its probably a reset or new install. make one up
+			// printf("No genetic material found in game folder. Loading default animal.\n");
+			fishDescriptor_t nematode = fishDescriptor_t();
+				b2Vec2 position = b2Vec2(0.0f,0.0f);
+			// }
+
+			loadFish ( nematode, NULL,  position, currentSpecies) ;
+		}
+
+
+			
+			
+
+		}
+
+
+	}
+
 }
 
 void saveIndividualToFile (int arg) {
+
+
+	// the first selected individual of a particular species is saved to that species' file.
+
+		std::list<Species>::iterator currentSpecies;
+
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		// if (currentSpecies->selected) {
+
+			std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			
+
+			if (fish->selected ) {
+
+
+
+					// the fish's input and output matrix configurations should be passed on to offspring
+					for (int i = 0; i < N_SENSECONNECTORS; ++i)
+					{
+						fish->genes.inputMatrix[i] = fish->inputMatrix[i];
+						fish->genes.outputMatrix[i] = fish->outputMatrix[i];
+					}
+
+						fann * wann = fish->ann;
+
+						// save the winner to file with a new name.
+						std::string nnfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string(".net");
+					    std::string fdescfilename =  std::string("Aquarium/") + currentSpecies->name + std::string(".fsh");
+					    std::ofstream file { nnfilename };
+					    saveFishToFile (fdescfilename, fish->genes);
+					    fann_save(  wann , nnfilename.c_str()); 
+
+
+
+
+
+				return;
+
+			}
+		}
+
+		// }
+	}
+
+
+
+
+	
 
 }
 
@@ -2860,7 +2999,7 @@ void shine (Lamp * nancy) {
 	local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
 }
 
-void ecosystemModeBeginGeneration (BonyFish * fish) {
+void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator currentSpecies ) {
 
 	// the fish's input and output matrix configurations should be passed on to offspring
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
@@ -2900,14 +3039,14 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 
 		b2Vec2 desiredPosition = fish->bones[0]->p_body->GetWorldCenter();
 
-		loadFish ( newFishBody, jann, desiredPosition) ;
+		loadFish ( newFishBody, jann, desiredPosition, currentSpecies) ;
 
 		// moveAWholeFish ( &fishes.back(),  desiredPosition);
 
 
-		std::list<Species>::iterator currentSpecies;
-	// for (
-		currentSpecies = ecosystem.begin();
+	// 	std::list<Species>::iterator currentSpecies;
+	// // for (
+	// 	currentSpecies = ecosystem.begin();
 		 // currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	// {
 		// std::list<BonyFish>::iterator fish;
@@ -2923,42 +3062,10 @@ void ecosystemModeBeginGeneration (BonyFish * fish) {
 	}
 }
 
-void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary winner, passing its genes on to the next generation
+void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
 
-	if (TestMain::getFoodRadiusStatus()) {
-
-		// take the food, measure its angle from the origin, and then place it at the designated radius with some angle jitter
-
-		// iterate through food particles
-		for  (int i = 0; i < N_FOODPARTICLES; i++) {
-			if  (food[i]->init && food[i]->isUsed) {
-				// food[i]->flagDelete = true;
-				// food[i]->selected = false;
-
-				b2Vec2 origin   = b2Vec2(0.0f, 0.0f);
-				b2Vec2 foodPosition =  food[i]->p_body->GetWorldCenter();
-
-				float angle = atan2( foodPosition.y - origin.y,  foodPosition.x - origin.x );
-				// float faceAngle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
-
-				angle += ( m_deepSeaSettings.foodRadiusAngleJitter * (RNG()-0.5) );
-
-				// if () {
-
-				// }
-
-				printf("angle: %f\n", angle);
-				b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originFoodRadius , sin(angle)* m_deepSeaSettings.originFoodRadius );
-				food[i]->p_body->SetTransform(foodRadiusPosition, 0.0f);
-
-
-
-
-
-			}
-		}
-	}
+	
 
 	for (int i = 0; i < m_deepSeaSettings.laboratory_nFish; ++i) {
 
@@ -3011,7 +3118,7 @@ void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary 
 
 				// printf("rigged brain\n");
 
-			loadFish ( newFishBody, jann, position) ;
+			loadFish ( newFishBody, jann, position, currentSpecies) ;
 
 				// printf("emplaced fish\n");
 
@@ -3022,7 +3129,7 @@ void laboratoryModeBeginGeneration ( ) { // select an animal as an evolutionary 
 				b2Vec2 position = b2Vec2(0.0f,0.0f);
 			// }
 
-			loadFish ( nematode, NULL,  position) ;
+			loadFish ( nematode, NULL,  position, currentSpecies) ;
 		}
 	}
 	startNextGeneration = false;
@@ -4172,7 +4279,7 @@ void runBiomechanicalFunctions () {
 
 				// give the fish some bebes if it has collected enough food.
 				if (fish->energy > fish->reproductionEnergyCost) {
-					ecosystemModeBeginGeneration( &(*fish) );
+					ecosystemModeBeginGeneration( &(*fish), currentSpecies );
 					fish->energy -= fish->reproductionEnergyCost;
 				}
 
@@ -4278,7 +4385,7 @@ void handleReproduceSelectedButton (int arg) {
 			{
 		if (fish->selected) {
 			// vote( &(*fish) );
-			ecosystemModeBeginGeneration (  &(*fish) ) ;
+			ecosystemModeBeginGeneration (  &(*fish), currentSpecies ) ;
 			}
 		}
 	}
@@ -4551,13 +4658,15 @@ void deepSeaLoop () {
 
 	if (!local_m_world->IsLocked() ) {
 
+		std::list<Species>::iterator currentSpecies;
+			std::list<BonyFish>::iterator fish;
+
 		if (TestMain::getTriggerRadiusStatus()) {
 
 			// if radius trigger is turned on, check the distances of the fish. when the average distance is greater than the trigger radius, the generation is reset.
 
 
-			std::list<Species>::iterator currentSpecies;
-			std::list<BonyFish>::iterator fish;
+			
 			currentSpecies= ecosystem.begin();
 			fish = currentSpecies->population.begin();
 
@@ -4611,7 +4720,52 @@ void deepSeaLoop () {
 
 		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) {
 			if (loopCounter > loopSafetyLimit) {
-				laboratoryModeBeginGeneration ( );
+
+
+
+
+				if (TestMain::getFoodRadiusStatus()) {
+
+		// take the food, measure its angle from the origin, and then place it at the designated radius with some angle jitter
+
+		// iterate through food particles
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+			if  (food[i]->init && food[i]->isUsed) {
+				// food[i]->flagDelete = true;
+				// food[i]->selected = false;
+
+				b2Vec2 origin   = b2Vec2(0.0f, 0.0f);
+				b2Vec2 foodPosition =  food[i]->p_body->GetWorldCenter();
+
+				float angle = atan2( foodPosition.y - origin.y,  foodPosition.x - origin.x );
+				// float faceAngle = atan2(p1r.y - p2r.y, p1r.x - p2r.x);
+
+				angle += ( m_deepSeaSettings.foodRadiusAngleJitter * (RNG()-0.5) );
+
+				// if () {
+
+				// }
+
+				printf("angle: %f\n", angle);
+				b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originFoodRadius , sin(angle)* m_deepSeaSettings.originFoodRadius );
+				food[i]->p_body->SetTransform(foodRadiusPosition, 0.0f);
+
+
+
+
+
+			}
+		}
+	}
+
+
+
+
+					for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+				{
+				laboratoryModeBeginGeneration (currentSpecies );
+
+				}
 				loopCounter = 0;
 			}
 		}
@@ -4645,11 +4799,11 @@ void deepSeaLoop () {
 			flagAddPlant = false;
 
 
-			fishDescriptor_t * newFishBody = basicPlant();
+			// fishDescriptor_t * newFishBody = basicPlant();
 
-			mutateFishDescriptor (newFishBody, 0.1, 0.5);
+			// mutateFishDescriptor (newFishBody, 0.1, 0.5);
 
-			loadFish ( *newFishBody, NULL, b2Vec2(0.0f, 0.0f)) ;
+			// loadFish ( *newFishBody, NULL, b2Vec2(0.0f, 0.0f)) ;
 		}
 
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
