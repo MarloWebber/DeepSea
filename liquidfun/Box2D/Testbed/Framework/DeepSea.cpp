@@ -14,6 +14,9 @@
 #include <math.h>
 #include <cmath>
 
+
+#include "glui/glui.h"
+
 // bool debugggggg_waitonnewlayer = false;
 
 float pi = 3.14159f;
@@ -47,6 +50,9 @@ bool userControlInputA;
 bool userControlInputB;
 
 unsigned int currentlySelectedLimb =0;
+
+
+ // std::string speciesNameBar;
 
 // collections of objects in the game world.
 // std::list<BonyFish> fishes;
@@ -1242,7 +1248,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
 Species::Species () {
 	population = *(new std::list<BonyFish>);
-	name = "unnamed_species";
+	name = std::string("unnamed_species");
 }
 
 
@@ -2057,89 +2063,6 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 	}
 }
 
-// void jellyfishTrainer () {
-// 	int n_inputs = 8;
-// 	int n_outputs = 8;
-// 	int n_examples = 10000;
-// 	// there are actually 6*n_examples examples.
-
-// 	float noise = 0.25f;
-// 	float maxSensation = 0.75f;
-
-// 	float bellAOpen = 0.3f;//0.9f;
-// 	float bellAClose = -0.9f; //0.3f;
-// 	float bellASoftClose = 0.3f;
-
-// 	float bellBOpen = -0.3f;//0.9f;
-// 	float bellBClose = 0.9f; //0.3f;
-// 	float bellBSoftClose = -0.3f;
-
-// 	FILE *fp;
-//     fp = fopen("jellyfishTrainer.data","wb");
-
-//     fprintf(fp, "%i %i% i\n", n_examples*6, n_inputs, n_outputs );
-
-// 	for (int i = 0; i < n_examples; ++i) {
-
-// 		float noiseThisTurn = ((RNG() - 0.5) * noise);
-// 		float outputNoiseThisTurn = ((RNG() - 0.5) * noise) * 0.5;
-// 		float sensationThisTurn = RNG() * maxSensation;
-// 		float sensationAThisTime = (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
-// 		float sensationBThisTime =  ((RNG() - 0.5) * noiseThisTurn);
-
-// 		// for a sense on side A, jiggle the bell on side B
-// 		// one with heartbeat OFF, bell open
-// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
-// 		fprintf(fp, "%f %f\n", 
-// 										bellAOpen + ((RNG() - 0.5) * outputNoiseThisTurn),
-// 										bellBOpen +((RNG() - 0.5) * outputNoiseThisTurn)	
-// 										);
-
-// 		// one with heartbeat ON, bell closed
-// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
-// 		fprintf(fp, "%f %f\n",			
-// 										bellASoftClose + ((RNG() - 0.5) * outputNoiseThisTurn),
-// 										bellBClose + ((RNG() - 0.5) * outputNoiseThisTurn)
-// 										);
-
-// 		// for a sense on side B, jiggle the bell on side A
-// 		sensationAThisTime = ((RNG() - 0.5) * noiseThisTurn);
-// 		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
-		
-// 		// for a sense on side A, jiggle the bell on side B
-// 		// one with heartbeat OFF, bell open
-// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
-// 		fprintf(fp, "%f %f\n", 			
-// 										bellAOpen+((RNG() - 0.5) * outputNoiseThisTurn),
-// 										bellBOpen + ((RNG() - 0.5) * outputNoiseThisTurn));
-
-// 		// one with heartbeat ON, bell closed
-// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
-// 		fprintf(fp, "%f %f\n", 
-// 										bellAClose + ((RNG() - 0.5) * outputNoiseThisTurn),
-// 										bellBSoftClose + ((RNG() - 0.5) * outputNoiseThisTurn)
-// 										);
-
-// 		// for straight ahead, jiggle both?
-// 		sensationAThisTime = (sensationThisTurn) +((RNG() - 0.5) * noiseThisTurn);
-// 		sensationBThisTime =  (sensationThisTurn) + ((RNG() - 0.5) * noiseThisTurn);
-		
-// 		// // for a sense on side A, jiggle the bell on side B
-// 		// one with heartbeat OFF, bell open
-// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,-0.9f + ((RNG() - 0.5) * noiseThisTurn));
-// 		fprintf(fp, "%f %f\n", 			
-// 										bellAOpen + ((RNG() - 0.5) * outputNoiseThisTurn),
-// 										bellBOpen + ((RNG() - 0.5) * outputNoiseThisTurn));
-
-// 		// one with heartbeat ON, bell closed
-// 		fprintf(fp, "%f %f %f\n", sensationAThisTime,sensationBThisTime,0.9f + ((RNG() - 0.5) * noiseThisTurn));
-// 		fprintf(fp, "%f %f\n",
-// 										bellAClose + ((RNG() - 0.5) * outputNoiseThisTurn),
-// 										bellBClose + ((RNG() - 0.5) * outputNoiseThisTurn));
-// 	}
-// 	fclose(fp);
-// }
-
 // this function does the legwork of actually erasing stuff from the world. it is done outside of the step.
 void removeDeletableFish() {
 	std::list<Species>::iterator currentSpecies;
@@ -2148,24 +2071,17 @@ void removeDeletableFish() {
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-
-			// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-				if (fish->flagDelete && fish->isUsed) {
-					deleteFish ( &(*fish)) ;
-					currentSpecies->population.erase(fish++);
-				}
-
+			if (fish->flagDelete && fish->isUsed) {
+				deleteFish ( &(*fish)) ;
+				currentSpecies->population.erase(fish++);
 			}
 		}
-			// }
-
-			for (int i = 0; i < N_FOODPARTICLES; ++i) {
-				if (food[i]->flagDelete) {
-					deleteBone(food[i]);
-				}
-			}
-	// 	}
-	// }
+	}
+	for (int i = 0; i < N_FOODPARTICLES; ++i) {
+		if (food[i]->flagDelete) {
+			deleteBone(food[i]);
+		}
+	}
 }
 
 // this function just sets the flags and labels. it is done inside the step.
@@ -2325,150 +2241,6 @@ float  getSciNumberFromFANNFile (char c) {
 	float val = std::stof(sciNumber);
 	return val;
 }
-
-// fishDescriptor_t sexBetweenTwoBodies (fishDescriptor_t partnerA, fishDescriptor_t partnerB) {
-// 	fishDescriptor_t offspring;
-
-// 	for (int i = 0; i < N_FINGERS; ++i)
-// 	{
-// 		if (RNG() > 0.5) {
-// 			offspring.bones[i] = partnerA.bones[i];
-// 		}
-// 		else {
-// 			offspring.bones[i] = partnerB.bones[i];
-// 		}
-// 	}
-
-// 	return offspring;
-// }
-
-
-
-// void combineTwoNetworks (networkDescriptor * partnerA, networkDescriptor * partnerB) {
-
-
-// 	// the child network is shaped by adding the shapes of both networks together.
-// 	networkDescriptor * childNetwork = new networkDescriptor;
-
-// 		// first, find the tallest network.
-// 		unsigned int layersA = partnerA.layers.size();
-// 		unsigned int layersB = partnerB.layers.size();
-
-// 		unsigned int tallestPartner = 0;
-// 		unsigned int widestLayer = 0;
-
-// 		if (layersA > layersB) {
-// 			tallestPartner = layersA;
-// 		}
-// 		else {
-// 			tallestPartner = layersB;
-// 		}
-
-// 		for (unsigned int  i = 0; i < tallestPartner; ++i)
-// 		{
-// 			addLayerIntoLivingBrain(childNetwork);
-// 		}
-
-// 		//three iterators are made: one each for the originals, and one for the child.
-// 		std::list<layerDescriptor>::iterator layerA = partnerA.layers.begin();
-// 		std::list<layerDescriptor>::iterator layerB = partnerB.layers.begin();
-// 		std::list<layerDescriptor>::iterator layerC;
-
-
-// 		// scroll through the layers of both partners and set child layer width to be the widest of both of them.
-// 		// unsigned int layerIndex = 0;
-
-// 		for (unsigned int layerIndex = 0; layerIndex < tallestPartner; ++layerIndex)
-// 		{
-// 			// unsigned int partnerALayerWidth 
-// 			addLayerIntoLivingBrain(childNetwork);
-
-// 			if (layerIndex > layersA-1) 		{
-
-// 				// if partner A doesn't have this layer, just set it to the width of this layer in partner B.
-// 				for (unsigned int  i = 0; i < layerB.neurons.size(); ++i)
-// 				{
-// 					addNeuronIntoLivingBrain(childNetwork, layerIndex, false);
-// 				}
-// 			}
-// 			else if (layerIndex > layersB-1) 	{
-// 				// if partner B doesn't have this layer, just set it to the width of this layer in partner A.
-// 				for (unsigned int  i = 0; i < layerA.neurons.size(); ++i)
-// 				{
-// 					addNeuronIntoLivingBrain(childNetwork, layerIndex, false);
-// 				}
-// 			}
-// 			else {
-// 				// if both partners have it, choose the widest one.
-
-				
-// 				if (layerB.neurons.size() > layerA.neurons.size()) {
-// 					widestLayer = layerB.neurons.size();
-// 				}
-// 				else {
-// 					widestLayer = layerA.neurons.size();
-// 				}
-
-// 				for (unsigned int  i = 0; i < widestLayer; ++i)
-// 				{
-// 					addNeuronIntoLivingBrain(childNetwork, layerIndex, false);
-// 				}
-
-// 			}
-
-// 			if (layerA != partnerA.layers.end()) {layerA++;}
-// 			if (layerB != partnerB.layers.end()) {layerB++;}
-
-// 		}
-
-
-
-// 	// they are stepped through neuron by neuron, layer by layer. NOT by index.
-// 	layerA = partnerA.layers.begin();
-// 	layerB = partnerB.layers.begin();
-// 	layerC = childNetwork.layers.begin();
-
-// 	std::list<neuronDescriptor>::iterator neuronA; 
-// 	std::list<neuronDescriptor>::iterator neuronB ;
-// 	std::list<neuronDescriptor>::iterator neuronC ;
-
-	
-
-// 	for (unsigned int  i = 0; i < tallestPartner; ++i)
-// 	{
-
-// 		neuronA = layerA->neurons.begin();
-// 		neuronB = layerB->neurons.begin();
-// 		neuronC = layerC->neurons.begin();
-
-// 		for (unsigned int  j = 0; j < widestLayer; ++j)
-// 		{
-// 			// if a connection is present in one parent, it is definitely carried over.
-// 			// if it is present in both, it is chosen from one at random.
-// 			// if it is present in none, it is added as zero weight.
-
-
-
-
-
-
-// 			if (neuronA != layerA->neurons.end()) {neuronA++;}
-// 			if (neuronB != layerB->neurons.end()) {neuronB++;}
-// 			if (neuronC != layerC->neurons.end()) {neuronC++;}
-
-// 		}
-
-
-// 		if (layerA != partnerA.layers.end()) {layerA++;}
-// 		if (layerB != partnerB.layers.end()) {layerB++;}
-// 		if (layerC != childNetwork.layers.end()) {layerC++;}
-
-// 	}
-
-
-// }
-
-
 
 networkDescriptor * combineTwoNetworks2 (networkDescriptor * partnerA, networkDescriptor * partnerB) {
 
@@ -2717,47 +2489,32 @@ void sex (BonyFish * partnerA, BonyFish * partnerB) {
 }
 
 void mateSelectedFish (int arg) {
-
-
 	BonyFish * partnerA;
 	BonyFish * partnerB;
 
 	bool foundPartnerA = false;
 
-
-		std::list<Species>::iterator currentSpecies;
-		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-			std::list<BonyFish>::iterator fish;
-			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-			{
-				if (fish->selected) {
-					// brainMelter ( &(*fish));
+			if (fish->selected) {
+				if (foundPartnerA) {
+					partnerB = &(*fish);
 
-					// refresh the water in the brain jar.
-					// fish->ann = createFANNbrainFromDescriptor(fish->brain);
-					// return;
+					sex(partnerA, partnerB);
 
-					if (foundPartnerA) {
-						partnerB = &(*fish);
-
-						sex(partnerA, partnerB);
-
-						return;
-					}
-					else {
-						foundPartnerA = true;
-						partnerA = &(*fish);
-					}
-
+					return;
 				}
-				// else {
-				// 	continue;
-				// }
+				else {
+					foundPartnerA = true;
+					partnerA = &(*fish);
+				}
 			}
 		}
-
-
+	}
 }
 
 void drawingTest() {
@@ -2880,23 +2637,56 @@ void drawingTest() {
 		}
 	}
 
-
 	// draw the species window
 	if (TestMain::getSpeciesWindowStatus()) {
-
-			b2Vec2 windowVertices[] = {
-			b2Vec2(+10.0f, -10.0f), 
-			b2Vec2(+10.0f, +10.0f), 
-			b2Vec2(-10.0f, +10.0f), 
-			b2Vec2(-10.0f, -10.0f)
-		};
-
-	// fish->brain->networkWindow.lowerBound = b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance);
-	// fish->brain->networkWindow.upperBound = b2Vec2(drawingStartingPosition.x + ((sizeOfBiggestLayer *spacingDistance ) + (spacingDistance) ), drawingStartingPosition.y+ ((num_layers *spacingDistance ) + (spacingDistance) ));
+		b2Vec2 windowVertices[] = {
+		b2Vec2(+10.0f, -10.0f), 
+		b2Vec2(+10.0f, +10.0f), 
+		b2Vec2(-10.0f, +10.0f), 
+		b2Vec2(-10.0f, -10.0f)
+	};
 
 	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
 
+	// go through the list of species and figure out their window positions.
+	unsigned int i = 0;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		currentSpecies->windowVertices[0] = b2Vec2(+0.5f, -0.5f + (i * 3));
+		currentSpecies->windowVertices[1] = b2Vec2(+0.5f, +0.5f + (i * 3)) ;
+		currentSpecies->windowVertices[2] = b2Vec2(-0.5f, +0.5f + (i * 3)); 
+		currentSpecies->windowVertices[3] = b2Vec2(-0.5f, -0.5f + (i * 3));
+		i++;
+	}
 
+	// now draw them
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+
+		local_debugDraw_pointer->DrawFlatPolygon(currentSpecies->windowVertices, 4 ,b2Color(0.35,0.3,0.1) );
+
+		if (currentSpecies->selected) {
+			local_debugDraw_pointer->DrawPolygon(currentSpecies->windowVertices, 4 , b2Color(1,0.8,2));
+		}
+
+
+
+		// say the species name
+		std::string connectorLabel = std::string("");
+		connectorLabel +=   currentSpecies->name  ;
+		b2Vec2 mocesfef = b2Vec2(currentSpecies->windowVertices[0].x-0.25, currentSpecies->windowVertices[0].y+0.5);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+
+		// say the current population
+		connectorLabel = std::string("population: ");
+		connectorLabel +=  std::to_string(currentSpecies->population.size());
+		 mocesfef = b2Vec2(currentSpecies->windowVertices[0].x-0.25, currentSpecies->windowVertices[0].y+0.5 -0.5);
+		local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+
+
+	}
 
 	}
 
@@ -2911,7 +2701,99 @@ void saveIndividualToFile (int arg) {
 
 }
 
-void selectAllInSpecies (int arg) {
+void selectAllInSpecies (int arg ) {
+
+	std::list<Species>::iterator currentSpecies;
+
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		if (currentSpecies->selected) {
+
+			std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			fish->selected = true;
+		}
+
+		}
+	}
+
+}
+
+void addNewSpecies (int arg) {
+	Species * newSpecies = new Species();
+
+	ecosystem.push_back(*newSpecies);
+}
+
+void deleteSelectedSpecies (int arg) {
+
+	std::list<Species>::iterator currentSpecies;
+
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		if (currentSpecies->selected) {
+
+			deselectAll (0) ;
+
+			selectAllInSpecies(0);
+
+			// first go through and delete all the fish
+			flagSelectedFishForDeletion(0) ;
+
+			currentSpecies->flagDelete = true;
+
+		}
+	}
+
+}
+
+void deleteFlaggedSpecies() {
+
+
+	ecosystem.remove_if( [](Species currentSpecies)
+ 				{
+ 					return currentSpecies.flagDelete;
+ 				} 
+ 			);
+
+	// std::list<Species>::iterator currentSpecies;
+
+	// for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	// {	
+	// 	if (currentSpecies->selected) {
+	// 		currentSpecies->flagDelete = false;
+	// 		ecosystem.erase(currentSpecies);
+
+	// 	}
+	// }
+
+}
+
+void speciesNameBarCallback(int arg) {
+
+	unused_variable((void *)&arg);
+	// std::string * speciesNameBar = 
+
+	// std::string * fuckName = new std::string;
+	// *fuckName = *TestMain::getSpeciesNameBar();
+
+	std::list<Species>::iterator currentSpecies;
+
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		if (currentSpecies->selected) {
+
+			// std::cout << TestMain::getSpeciesNameBar();
+
+			currentSpecies->name = (TestMain::getSpeciesNameBar() )->get_text();
+
+			// printf("bokunde\n");
+			return;
+		}
+	}
+
+
 
 }
 
@@ -3766,6 +3648,36 @@ int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
 
 	}
 	return -1;
+}
+
+void checkClickInSpeciesWindow( b2AABB mousePointer ) {
+
+
+	b2Vec2 click = b2Vec2( (mousePointer.upperBound.x + mousePointer.lowerBound.x )/ 2 , (mousePointer.upperBound.y + mousePointer.lowerBound.y) /2 );
+
+
+	std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		if (
+
+			// this will actually break if you change the order of the vertices in the species window. bad design.
+			click.x < currentSpecies->windowVertices[0].x &&
+			click.x > currentSpecies->windowVertices[2].x &&
+
+			click.y > currentSpecies->windowVertices[0].y &&
+			click.y < currentSpecies->windowVertices[1].y
+			) 
+		{
+			currentSpecies->selected = !(currentSpecies->selected);
+
+
+		}
+
+	}
+
+
+
 }
 
 
@@ -4691,6 +4603,9 @@ void deepSeaLoop () {
 		loopCounter ++;
 
 		removeDeletableFish();
+
+
+	 deleteFlaggedSpecies() ;
 
 	// printf("removed deletable fish\n");
 

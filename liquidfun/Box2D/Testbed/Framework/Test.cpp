@@ -280,6 +280,12 @@ void Test::MouseDown(const b2Vec2& p)
 		}
 	}
 
+
+	if  (TestMain::getSpeciesWindowStatus()) {
+		checkClickInSpeciesWindow(aabb);
+	}
+
+
 	if (callback.m_fixture)
 	{
 

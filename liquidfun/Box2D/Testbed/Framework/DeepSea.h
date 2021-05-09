@@ -487,11 +487,15 @@ struct Species {
 
 	bool selected;
 
+	b2Vec2 windowVertices[4];
+
+	bool flagDelete;
+
 	Species();
 
 };
 
-
+// extern std::string speciesNameBar;
 
 
 void deepSeaControlA () ;
@@ -591,5 +595,12 @@ void selectAllInSpecies (int arg) ;
 
 void mateSelectedFish (int arg) ;
 
+void checkClickInSpeciesWindow(b2AABB mousePointer) ;
+
+void addNewSpecies (int arg) ;
+void deleteSelectedSpecies (int arg) ;
+
+
+void speciesNameBarCallback(int arg) ;
 	// }
 #endif

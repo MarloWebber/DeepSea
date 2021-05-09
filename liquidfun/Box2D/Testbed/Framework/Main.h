@@ -20,10 +20,14 @@
 #include <Box2D/Box2D.h>
 #include "ParticleParameter.h"
 
+#include "glui/glui.h"
 // int deepSeaGameMode;
 
 namespace TestMain
 {
+
+
+
 // Set whether to restart the test on particle parameter changes.
 // This parameter is re-enabled when the test changes.
 void SetRestartOnParticleParameterChange(bool enable);
@@ -66,6 +70,8 @@ int getTriggerRadiusStatus() ;
 int getFoodRadiusStatus() ;
 
 int getSpeciesWindowStatus() ;
+
+GLUI_EditText* getSpeciesNameBar() ;
 
 }  // namespace TestMain
 

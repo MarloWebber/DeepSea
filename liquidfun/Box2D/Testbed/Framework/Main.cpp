@@ -60,6 +60,13 @@ namespace
 	int selectedSpeciesEnforcePopLimit = 0;
 	int selectedSpeciesSexuality = 0;
 
+	// std::string * memow = new std::string("memeo");
+
+	std::string speciesNameBarContent =std::string("memow"); //std::string("unnamed_species");
+
+	// GLUI_EditText* speciesNameBar;
+	 GLUI_EditText* speciesNameBar;
+
 	// int gridPinStatus = 0;
 
 	int32 testIndex = 0;
@@ -89,6 +96,10 @@ namespace
 	// FullscreenUI fullscreenUI;
 	// Used to control the behavior of particle tests.
 	ParticleParameter particleParameter;
+}
+
+GLUI_EditText* getSpeciesNameBar() {
+	return speciesNameBar;
 }
 
 int getPaintingStatus() {
@@ -961,10 +972,10 @@ glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FL
 	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");
 speciesPanel->close();
 
-	int fakeNumberOfSpecies;
-		GLUI_Spinner* numberOfSpeciesSpinner =
-		glui->add_spinner_to_panel(speciesPanel,"Number of species", GLUI_SPINNER_INT, &fakeNumberOfSpecies);
-	numberOfSpeciesSpinner->set_int_limits(1, 8);
+	// int fakeNumberOfSpecies;
+	// 	GLUI_Spinner* numberOfSpeciesSpinner =
+	// 	// glui->add_spinner_to_panel(speciesPanel,"Number of species", GLUI_SPINNER_INT, &fakeNumberOfSpecies);
+	// numberOfSpeciesSpinner->set_int_limits(1, 8);
 
 
 
@@ -994,7 +1005,17 @@ speciesPanel->close();
 // 		terrainTypesList->add_item(12, "Zombie" );
 
 		// GLUI_Listbox* SpeciesFileBrowser =
-		glui->add_edittext_to_panel(speciesPanel, "Filename",GLUI_EDITTEXT_TEXT );
+		
+
+		// GLUI_EditText*
+		 // speciesNameBar =
+
+		  // glui->add_edittext_to_panel(speciesPanel, "Filename",GLUI_EDITTEXT_TEXT , speciesNameBarContent, 0, speciesNameBarCallback );
+ // edittext = new GLUI_EditText( glui, "Text:", text, 3, control_cb );
+
+speciesNameBar = glui->add_edittext_to_panel(speciesPanel, "butst: ", GLUI_EDITTEXT_TEXT, &speciesNameBarContent, 1, speciesNameBarCallback);
+
+		
 		glui->add_button_to_panel(speciesPanel, "Populate selected species from file", 0, populateSpeciesFromFile);
 		glui->add_button_to_panel(speciesPanel, "Save selected individual to file", 1, saveIndividualToFile);
 
@@ -1015,6 +1036,12 @@ glui->add_checkbox_to_panel(speciesPanel, "Enforce population limit", &selectedS
 
 
 glui->add_checkbox_to_panel(speciesPanel, "Sexual/Asexual", &selectedSpeciesSexuality);
+
+glui->add_button_to_panel(speciesPanel, "Add new species", 0, addNewSpecies);
+glui->add_button_to_panel(speciesPanel, "Delete selected species", 0, deleteSelectedSpecies);
+
+
+
 
 
 
