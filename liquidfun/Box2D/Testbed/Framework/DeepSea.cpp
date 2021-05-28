@@ -2999,6 +2999,66 @@ void shine (Lamp * nancy) {
 	local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
 }
 
+
+
+// bool fishInList (  std::list<BonyFish> population , BonyFish  element) {
+
+// 	std::list<BonyFish>::iterator fish;
+// 	for (fish = population.begin(); fish !=  population.end(); ++fish) 	
+// 	{
+// 		if (*fish == element) {
+// 			return true;
+// 		}
+// 	}
+
+// 	return false;
+
+// }
+
+
+// https://stackoverflow.com/questions/20004873/why-cant-the-operator-be-applied-to-a-struct-and-defaultstruct
+// static bool operator == (BonyFish u1, BonyFish u2) 
+// {
+//    return u1.Equals(u2);  // use ValueType.Equals() which compares field-by-field.
+// }
+
+
+// bool fishInList(const std::list<BonyFish> v, BonyFish t)
+// {
+//     // bool found = (std::find(v.begin(), v.end(), t) != v.end());
+
+// 	if (std::find(std::begin(v), std::end(v), t) != std::end(v)) {
+// 		return true;
+// 	}
+
+//     return false;
+// }
+
+
+void flagNLowestEnergyFishForDeletion (unsigned int n, std::list<Species>::iterator currentSpecies) {
+
+	// traverse the list n times and find the lowest each time, excluding ones that have previously been found.
+	std::list<BonyFish>::iterator fish;
+	std::list<BonyFish>::iterator lowestFishThisTurn;
+
+	for (unsigned int i = 0; i < n; ++i)
+	{
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+
+			if (!(fish->flagDelete)) {
+
+				if (fish->energy < lowestFishThisTurn->energy) {
+
+					lowestFishThisTurn = fish;
+				}
+			}
+		}
+
+		lowestFishThisTurn->flagDelete = true;
+	}
+}
+
 void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator currentSpecies ) {
 
 	// the fish's input and output matrix configurations should be passed on to offspring
@@ -3008,7 +3068,20 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 		fish->genes.outputMatrix[i] = fish->outputMatrix[i];
 	}
 
-	for (int i = 0; i < 3; ++i) {
+
+
+	// go through the species list and find the members with the lowest energy and replace them
+
+	#define N_OFFSPRING 3
+
+
+	// first delete the old fish
+	// std::list<BonyFish> oldFish = 
+	flagNLowestEnergyFishForDeletion(N_OFFSPRING , currentSpecies);
+
+
+	// then add the new ones
+	for (int i = 0; i < N_OFFSPRING; ++i) {
 		fishDescriptor_t newFishBody = fish->genes;
 
 		mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
@@ -3033,11 +3106,13 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 		// for (int i = 0; i < N_SENSECONNECTORS; ++i)
 		// {
 		// 	if (newFishBody.inputMatrix[i].sensorType == SENSOR_TIMER) {
-		// 			// newFishBody.inputMatrix[i].timerPhase = RNG(); DO NOT RANDOMISE TIMER PHASES THEY MUST REMAIN IN SYNC. would be ok to have a phaseoffset for the whole animal
+		// 			// newFishBody.inputMatrix[i].timerPhase = RNG(); DO NOT RANDOMISE TIMER PHASES THEY MUST REMAIN IN SYNC with each other. would be ok to have a phase offset for the whole animal
 		// 	}
 		// }
 
-		b2Vec2 desiredPosition = fish->bones[0]->p_body->GetWorldCenter();
+
+
+		b2Vec2 desiredPosition = getRandomPosition(); // fish->bones[0]->p_body->GetWorldCenter();
 
 		loadFish ( newFishBody, jann, desiredPosition, currentSpecies) ;
 
