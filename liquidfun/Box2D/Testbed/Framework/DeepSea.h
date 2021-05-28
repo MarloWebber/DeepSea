@@ -122,6 +122,7 @@ struct boneAndJointDescriptor_t {
 		bool isMouth;
 		bool isWeapon;
 		bool isLeaf;
+		bool isFood;
 		bool sensor_radar; // like an olfactory sensor . senses distance from food
 		bool sensor_touch; // like how you can feel when things touch your skin.
 		bool sensor_jointangle;

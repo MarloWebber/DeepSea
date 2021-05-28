@@ -248,7 +248,7 @@ BoneUserData::BoneUserData(
 
 	flagPhotosynth = false;
 
-	isFood = false;
+	isFood =  boneDescription.isFood;//false;
 
 	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * length * density; 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
@@ -357,6 +357,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	else if (p_bone->isFood) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_FOOD);
 		// bodyDef.userData = (void *)p_dataWrapper;
+		printf("incorporated food!\n");
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 	}
 	else {
@@ -445,6 +446,10 @@ void addFoodParticle(b2Vec2 position) {
 		boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
 		foodDescriptor.used = true;
 		foodDescriptor.isRoot = true;
+		foodDescriptor.isFood = true;
+		foodDescriptor.isMouth = false;
+		foodDescriptor.sensor_touch = false;
+		foodDescriptor.isLeaf = false;
 		food[emptyFoodIndex] = new BoneUserData(foodDescriptor, nullptr, position, 0, false);
 
 		//(boneAndJointDescriptor_t boneDescription, BoneUserData * p_bone, BonyFish * fish)
@@ -456,7 +461,7 @@ void addFoodParticle(b2Vec2 position) {
 		food[emptyFoodIndex]->joint->isUsed = false;
 		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
 
-		food[emptyFoodIndex]->energy = food[emptyFoodIndex]->energy * 5; // this is a constant that sets the value of food. Typical creatures are made from 4 segments; setting this to 4 or above should allow the creature to reproduce after eating just 1 segment.
+		food[emptyFoodIndex]->energy = 10000;//food[emptyFoodIndex]->energy * 5; // this is a constant that sets the value of food. Typical creatures are made from 4 segments; setting this to 4 or above should allow the creature to reproduce after eating just 1 segment.
 }
 
 void addRandomFoodParticle(int arg) {
@@ -595,6 +600,8 @@ networkDescriptor * createEmptyNetworkOfCorrectSize (fann * temp_ann) {
 }
 
 void BonyFish::feed(float amount) {
+	printf("fed %f\n", amount);
+
 	energy += amount;
 }
 
@@ -749,6 +756,8 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
     	brain = createEmptyNetworkOfCorrectSize (nann) ;
     }
+
+    printf("Bony fish created, reproduces at %f energy\n", reproductionEnergyCost);
 
     // printf("bonyfish ready");
 };
@@ -3039,7 +3048,7 @@ void flagNLowestEnergyFishForDeletion (unsigned int n, std::list<Species>::itera
 
 	// traverse the list n times and find the lowest each time, excluding ones that have previously been found.
 	std::list<BonyFish>::iterator fish;
-	std::list<BonyFish>::iterator lowestFishThisTurn;
+	std::list<BonyFish>::iterator lowestFishThisTurn = currentSpecies->population.begin();
 
 	for (unsigned int i = 0; i < n; ++i)
 	{
@@ -3048,7 +3057,7 @@ void flagNLowestEnergyFishForDeletion (unsigned int n, std::list<Species>::itera
 
 			if (!(fish->flagDelete)) {
 
-				if (fish->energy < lowestFishThisTurn->energy) {
+				if (fish->energy <= lowestFishThisTurn->energy) {
 
 					lowestFishThisTurn = fish;
 				}
@@ -3061,6 +3070,8 @@ void flagNLowestEnergyFishForDeletion (unsigned int n, std::list<Species>::itera
 
 void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator currentSpecies ) {
 
+	// printf("A\n");
+
 	// the fish's input and output matrix configurations should be passed on to offspring
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
 	{
@@ -3068,8 +3079,7 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 		fish->genes.outputMatrix[i] = fish->outputMatrix[i];
 	}
 
-
-
+	// printf("b\n");
 	// go through the species list and find the members with the lowest energy and replace them
 
 	#define N_OFFSPRING 3
@@ -3078,6 +3088,8 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 	// first delete the old fish
 	// std::list<BonyFish> oldFish = 
 	flagNLowestEnergyFishForDeletion(N_OFFSPRING , currentSpecies);
+
+		// printf("B\n");
 
 
 	// then add the new ones
@@ -3112,7 +3124,10 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 
 
-		b2Vec2 desiredPosition = getRandomPosition(); // fish->bones[0]->p_body->GetWorldCenter();
+		b2Vec2 desiredPosition = fish->bones[0]->p_body->GetWorldCenter();
+
+		desiredPosition.x += ((RNG()-0.5) * 5);
+		desiredPosition.y += ((RNG()-0.5) * 5);
 
 		loadFish ( newFishBody, jann, desiredPosition, currentSpecies) ;
 
@@ -3135,6 +3150,8 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 
 	}
+
+		// printf("C\n");
 }
 
 void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies) { // select an animal as an evolutionary winner, passing its genes on to the next generation
@@ -4354,6 +4371,9 @@ void runBiomechanicalFunctions () {
 
 				// give the fish some bebes if it has collected enough food.
 				if (fish->energy > fish->reproductionEnergyCost) {
+
+					// printf("smasti\n");
+
 					ecosystemModeBeginGeneration( &(*fish), currentSpecies );
 					fish->energy -= fish->reproductionEnergyCost;
 				}
@@ -4910,26 +4930,35 @@ void deepSeaControlA () {
 	flagAddFood = true;
 }
 void deepSeaControlB () {
-	// std::list<BonyFish>::iterator fish;
-	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-	// 	if (fish->selected) {
-	// 		fish->flagDelete = true;
-	// 		fish->selected = false;
-	// 	}
-	// }
 }
 
 void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) {
 	bool et = false;
 	bool fud = false;
-	bool lef = false;
 
-	if (userDataA == nullptr || userDataB == nullptr || startNextGeneration || loopCounter < loopSafetyLimit) {
+	printf("A\n");
+
+
+	if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
+		if (startNextGeneration || loopCounter < loopSafetyLimit) {
+			return;
+		}
+	}
+
+	if (userDataA == nullptr  ) {
+		printf("A null\n");
+
 		return;
 	}
-	else {
-		;
+
+	if ( userDataB == nullptr ) {
+		printf("B null\n");
+
+		return;
 	}
+	// else {
+	// 	;
+	// }
 
 	uDataWrap * p_dataA = (uDataWrap *) userDataA;
 	uDataWrap * p_dataB = (uDataWrap *) userDataB;
@@ -4945,41 +4974,59 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 	}
 
 	if( dataA.dataType == TYPE_MOUTH ) {
+		printf("1\n");
 		et = true;
-		if( dataB.dataType == TYPE_FOOD && !
-				((foodParticle_t*)(dataB.uData) )->flagDelete ) {
+		if( dataB.dataType == TYPE_FOOD 
+			// && !	((foodParticle_t*)(dataB.uData) )->flagDelete ) 
+			)
+		{
+			printf("2\n");
 			fud = true;
 		}
-		if( dataB.dataType == TYPE_LEAF && !
-				((foodParticle_t*)(dataA.uData) )->flagDelete) {
-			lef = true;
-		}
+		// if( dataB.dataType == TYPE_LEAF && !
+		// 		((foodParticle_t*)(dataA.uData) )->flagDelete) {
+		// 	lef = true;
+		// }
 	}
 
-	else if( dataB.dataType == TYPE_MOUTH ) {
+	if( dataB.dataType == TYPE_MOUTH ) {
 		et = true;
-		if( dataA.dataType == TYPE_FOOD && !
-				((foodParticle_t*)(dataA.uData) )->flagDelete) {
+		printf("3\n");
+		if( dataA.dataType == TYPE_FOOD
+		 // && !((foodParticle_t*)(dataA.uData) )->flagDelete) 
+			)
+		{
+			printf("4\n");
 			fud = true;
 		}
-		if( dataA.dataType == TYPE_LEAF && !
-				((foodParticle_t*)(dataA.uData) )->flagDelete) {
-			lef = true;
-		}
+		// if( dataA.dataType == TYPE_LEAF && !
+		// 		((foodParticle_t*)(dataA.uData) )->flagDelete) {
+		// 	lef = true;
+		// }
 	}
 	
+
+
+
 	if (et && fud) {
+		printf("B\n");
 		// printf("monch");
 
 		if( dataB.dataType == TYPE_MOUTH ) {
 			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
+			if (fish->flagDelete || food->flagDelete) {
+				return;
+			}
+
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
+				printf("C\n");
 			    vote(fish);
 			}
 
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
+				printf("D\n");
 				food->flagDelete = true;
 				fish->feed(food->energy);
 			}
@@ -4988,42 +5035,44 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
+				printf("E\n");
 				vote(fish);
 			}
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
+				printf("F\n");
 				food->flagDelete = true;
 				fish->feed(food->energy);
 			}
 		}
 	}
-	if (et && lef) {
-		// printf("monch");
+	// if (et && lef) {
+	// 	// printf("monch");
 
-		if( dataB.dataType == TYPE_MOUTH ) {
-			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
-			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
+	// 	if( dataB.dataType == TYPE_MOUTH ) {
+	// 		BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
+	// 		BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
-			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
-			    vote(fish);
-			}
+	// 		if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
+	// 		    vote(fish);
+	// 		}
 
-			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-				food->p_owner->flagDelete = true;
-				fish->feed(food->energy);
-			}
-		}
-		else if (dataA.dataType == TYPE_MOUTH) {
-			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
-			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
-			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
-				vote(fish);
-			}
-			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-				food->p_owner->flagDelete = true;
-				fish->feed(food->energy);
-			}
-		}
-	}
+	// 		else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
+	// 			food->p_owner->flagDelete = true;
+	// 			fish->feed(food->energy);
+	// 		}
+	// 	}
+	// 	else if (dataA.dataType == TYPE_MOUTH) {
+	// 		BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
+	// 		BoneUserData * food = ((BoneUserData *)(dataB.uData) );
+	// 		if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
+	// 			vote(fish);
+	// 		}
+	// 		else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
+	// 			food->p_owner->flagDelete = true;
+	// 			fish->feed(food->energy);
+	// 		}
+	// 	}
+	// }
 }
 
 // ------------------------------------------------------------------
