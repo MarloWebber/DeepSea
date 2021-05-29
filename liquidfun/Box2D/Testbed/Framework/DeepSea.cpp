@@ -51,6 +51,7 @@ bool userControlInputB;
 
 unsigned int currentlySelectedLimb =0;
 
+const std::string defaultFishName = std::string("default") ;
 
  // std::string speciesNameBar;
 
@@ -839,6 +840,7 @@ void flagBiasNeurons( networkDescriptor * network) {
 		layerIndex++;
 	}
 }
+
 
 
 void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition, std::list<Species>::iterator currentSpecies ) {
@@ -2129,8 +2131,8 @@ void  vote (BonyFish * winner) {
 		fann * wann = winner->ann;
 
 		// save the winner to file with a new name.
-		std::string nnfilename =  std::string("mostCurrentWinner.net");
-	    std::string fdescfilename =  std::string("mostCurrentWinner.fsh");
+		std::string nnfilename =  std::string("labModeWinner.net");
+	    std::string fdescfilename =  std::string("labModeWinner.fsh");
 	    std::ofstream file { nnfilename };
 	    saveFishToFile (fdescfilename, winner->genes);
 	    fann_save(  wann , nnfilename.c_str()); 
@@ -2141,7 +2143,7 @@ void  vote (BonyFish * winner) {
 
 void mutateFANNFileDirectly (std::string filename) {
 
-	std::ofstream outFile("mutantGimp.net");
+	std::ofstream outFile("labModeMutant.net");
 	std::string line;
 
 	std::ifstream inFile(filename);
@@ -2706,11 +2708,17 @@ void drawingTest() {
 
 void populateSpeciesFromFile(int arg) {
 
-		std::list<Species>::iterator currentSpecies;
+	std::list<Species>::iterator currentSpecies;
 
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{	
 		if (currentSpecies->selected) {
+
+
+			for (int i = 0; i < m_deepSeaSettings.laboratory_nFish; ++i)
+			{
+				/* code */
+			
 
 
 
@@ -2784,8 +2792,8 @@ void populateSpeciesFromFile(int arg) {
 		}
 
 
-			
-			
+			}
+				return;
 
 		}
 
@@ -3044,7 +3052,7 @@ void shine (Lamp * nancy) {
 // }
 
 
-void flagNLowestEnergyFishForDeletion (unsigned int n, std::list<Species>::iterator currentSpecies) {
+void selectNLowestEnergyFish (unsigned int n, std::list<Species>::iterator currentSpecies) {
 
 	// traverse the list n times and find the lowest each time, excluding ones that have previously been found.
 	std::list<BonyFish>::iterator fish;
@@ -3064,7 +3072,7 @@ void flagNLowestEnergyFishForDeletion (unsigned int n, std::list<Species>::itera
 			}
 		}
 
-		lowestFishThisTurn->flagDelete = true;
+		lowestFishThisTurn->selected = true;
 	}
 }
 
@@ -3087,7 +3095,13 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 	// first delete the old fish
 	// std::list<BonyFish> oldFish = 
-	flagNLowestEnergyFishForDeletion(N_OFFSPRING , currentSpecies);
+
+	deselectAll(0);
+
+
+	selectNLowestEnergyFish(N_OFFSPRING , currentSpecies);
+
+	flagSelectedFishForDeletion(0);
 
 		// printf("B\n");
 
@@ -3163,9 +3177,9 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 
 		bool thereIsAFile = false;
 
-		if (FILE *file = fopen("mostCurrentWinner.net", "r")) {
+		if (FILE *file = fopen("labModeWinner.net", "r")) {
 	        fclose(file);
-	        if (FILE *file = fopen("mostCurrentWinner.fsh", "r")) {
+	        if (FILE *file = fopen("labModeWinner.fsh", "r")) {
 		        thereIsAFile = true;
 		        fclose(file);
 		    }
@@ -3174,17 +3188,17 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
 
 			fishDescriptor_t newFishBody;
-			loadFishFromFile(std::string("mostCurrentWinner.fsh"), newFishBody);
+			loadFishFromFile(std::string("labModeWinner.fsh"), newFishBody);
 
 			// printf("loaded fish\n");
 
 			mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 		
 
-		    mutateFANNFileDirectly(std::string("mostCurrentWinner.net"));
+		    mutateFANNFileDirectly(std::string("labModeWinner.net"));
 
 			// now you can load the mutant ANN.
-			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+			fann *mann = loadFishBrainFromFile (std::string("labModeMutant")) ;
 
 				// printf("mutaded fish\n");
 
@@ -3269,6 +3283,34 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	// add a lamp
 	Lamp monog = Lamp();
 	lamps.push_back(monog);
+
+	// save the default nematode into the aquarium so that it is accesible
+
+	fishDescriptor_t driedWorm  =  fishDescriptor_t();
+
+	// loadFish ( nematode, NULL,  position, currentSpecies) ;
+
+	BonyFish rehydratedWorm =  BonyFish(driedWorm, NULL, b2Vec2(0.0f, 0.0f));
+
+
+		// the fish's input and output matrix configurations should be passed on to offspring
+					// for (int i = 0; i < N_SENSECONNECTORS; ++i)
+					// {
+					// 	fish->genes.inputMatrix[i] = fish->inputMatrix[i];
+					// 	fish->genes.outputMatrix[i] = fish->outputMatrix[i];
+					// }
+
+					// 	fann * wann = fish->ann;
+
+						// save the winner to file with a new name.
+						std::string nnfilename =  std::string("Aquarium/")  + defaultFishName + std::string(".net");
+					    std::string fdescfilename =  std::string("Aquarium/") + defaultFishName + std::string(".fsh");
+					    std::ofstream file { nnfilename };
+					    saveFishToFile (fdescfilename, driedWorm);
+					    fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
+
+
+
 }
 
 // completely nullifies the animals brain

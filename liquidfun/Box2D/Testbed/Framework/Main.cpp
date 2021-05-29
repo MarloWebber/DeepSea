@@ -62,7 +62,8 @@ namespace
 
 	// std::string * memow = new std::string("memeo");
 
-	std::string speciesNameBarContent =std::string("memow"); //std::string("unnamed_species");
+	// std::string
+	GLUI_String speciesNameBarContent = "default";
 
 	// GLUI_EditText* speciesNameBar;
 	 GLUI_EditText* speciesNameBar;
