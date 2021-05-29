@@ -3926,6 +3926,9 @@ void checkClickInSpeciesWindow( b2AABB mousePointer ) {
 			currentSpecies->selected = !(currentSpecies->selected);
 
 
+		TestMain::getSpeciesNameBar() -> set_text(	currentSpecies->name );
+
+
 		}
 
 	}
@@ -4977,15 +4980,15 @@ void deepSeaLoop () {
 	// printf("poststep complete\n");
 }
 
-void deepSeaControlP () {
-	flagAddPlant = true;
-}
+// void deepSeaControlP () {
+// 	flagAddPlant = true;
+// }
 
-void deepSeaControlA () { 
-	flagAddFood = true;
-}
-void deepSeaControlB () {
-}
+// void deepSeaControlA () { 
+// 	flagAddFood = true;
+// }
+// void deepSeaControlB () {
+// }
 
 void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) {
 	bool et = false;

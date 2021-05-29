@@ -169,13 +169,13 @@ public:
 	virtual void MouseDown(const b2Vec2& p);
 	virtual void MouseUp(const b2Vec2& p);
 	virtual void MouseMove(const b2Vec2& p);
-	void LaunchBomb();
-	void LaunchBomb(const b2Vec2& position, const b2Vec2& velocity);
+	// void LaunchBomb();
+	// void LaunchBomb(const b2Vec2& position, const b2Vec2& velocity);
 	void EnableVotingMode();
 	// void addFoodParticle();
 	void jointMotorSetpoint();
-	void controlA();
-	void controlB();
+	// void controlA();
+	// void controlB();
 	void drawPoint (b2Vec2 position) ;
 	void drawSegment(b2Vec2 p1, b2Vec2 p2, b2Color color);
 	bool IsWorldLocked() ;

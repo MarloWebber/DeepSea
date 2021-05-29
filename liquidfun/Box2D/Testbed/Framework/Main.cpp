@@ -404,7 +404,7 @@ static void Keyboard(unsigned char key, int x, int y)
 		// 	// settings.pause = false;
 		// }
 		// else {
-deepSeaControlA();
+// deepSeaControlA();
 		// 	enterScienceModeInterruptableEntry();
 		// 	// enterScienceMode();	
 		// 	// settings.pause = true;
@@ -417,7 +417,7 @@ deepSeaControlA();
 		if (test)
 		{
 			// test->jointMotorSetpoint();
-			deepSeaControlP();
+			// deepSeaControlP();
 		}
 		break;
 
@@ -425,7 +425,7 @@ deepSeaControlA();
 		if (test)
 		{
 			// test->controlA();
-			deepSeaControlB();
+			// deepSeaControlB();
 		}
 		break;
 	// case 'd':
@@ -1014,8 +1014,8 @@ speciesPanel->close();
 		  // glui->add_edittext_to_panel(speciesPanel, "Filename",GLUI_EDITTEXT_TEXT , speciesNameBarContent, 0, speciesNameBarCallback );
  // edittext = new GLUI_EditText( glui, "Text:", text, 3, control_cb );
 
-speciesNameBar = glui->add_edittext_to_panel(speciesPanel, "butst: ", GLUI_EDITTEXT_TEXT, &speciesNameBarContent, 1, speciesNameBarCallback);
-
+speciesNameBar = glui->add_edittext_to_panel(speciesPanel, "Species name: ", GLUI_EDITTEXT_TEXT, &speciesNameBarContent, 1, speciesNameBarCallback);
+speciesNameBar->set_text(speciesNameBarContent);
 		
 		glui->add_button_to_panel(speciesPanel, "Populate selected species from file", 0, populateSpeciesFromFile);
 		glui->add_button_to_panel(speciesPanel, "Save selected individual to file", 1, saveIndividualToFile);

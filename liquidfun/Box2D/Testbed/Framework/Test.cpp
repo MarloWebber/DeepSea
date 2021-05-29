@@ -355,25 +355,25 @@ void Test::MouseDown(const b2Vec2& p)
 	}
 }
 
-void Test::SpawnBomb(const b2Vec2& worldPt)
-{
-	m_bombSpawnPoint = worldPt;
-	m_bombSpawning = true;
-}
+// void Test::SpawnBomb(const b2Vec2& worldPt)
+// {
+// 	m_bombSpawnPoint = worldPt;
+// 	m_bombSpawning = true;
+// }
 
-void Test::CompleteBombSpawn(const b2Vec2& p)
-{
-	if (m_bombSpawning == false)
-	{
-		return;
-	}
+// void Test::CompleteBombSpawn(const b2Vec2& p)
+// {
+// 	if (m_bombSpawning == false)
+// 	{
+// 		return;
+// 	}
 
-	const float multiplier = 30.0f;
-	b2Vec2 vel = m_bombSpawnPoint - p;
-	vel *= multiplier;
-	LaunchBomb(m_bombSpawnPoint,vel);
-	m_bombSpawning = false;
-}
+// 	const float multiplier = 30.0f;
+// 	b2Vec2 vel = m_bombSpawnPoint - p;
+// 	vel *= multiplier;
+// 	// LaunchBomb(m_bombSpawnPoint,vel);
+// 	m_bombSpawning = false;
+// }
 
 void Test::ShiftMouseDown(const b2Vec2& p)
 {
@@ -384,7 +384,7 @@ void Test::ShiftMouseDown(const b2Vec2& p)
 		return;
 	}
 
-	SpawnBomb(p);
+	// SpawnBomb(p);
 }
 
 void Test::MouseUp(const b2Vec2& p)
@@ -400,10 +400,10 @@ void Test::MouseUp(const b2Vec2& p)
 
 	}
 
-	if (m_bombSpawning)
-	{
-		CompleteBombSpawn(p);
-	}
+	// if (m_bombSpawning)
+	// {
+	// 	CompleteBombSpawn(p);
+	// }
 
 
 	// void MouseUp(const b2Vec2& p)
@@ -479,60 +479,60 @@ void Test::jointMotorSetpoint()
 
 }
 
-void Test::controlA()
-{
+// void Test::controlA()
+// {
 
-	// mutateFANNFileDirectly();
-	// deepSeaControlA();
-	// setUserControlInputA();
-}
-void Test::controlB()
-{
-	// deepSeaControlB();
-	// userControlInputB = true;
-	// setUserControlInputB();
-}
+// 	// mutateFANNFileDirectly();
+// 	// deepSeaControlA();
+// 	// setUserControlInputA();
+// }
+// void Test::controlB()
+// {
+// 	// deepSeaControlB();
+// 	// userControlInputB = true;
+// 	// setUserControlInputB();
+// }
 
 
-void Test::LaunchBomb()
-{
-	b2Vec2 p(RandomFloat(-15.0f, 15.0f), 30.0f);
-	b2Vec2 v = -5.0f * p;
-	LaunchBomb(p, v);
-}
+// void Test::LaunchBomb()
+// {
+// 	// b2Vec2 p(RandomFloat(-15.0f, 15.0f), 30.0f);
+// 	// b2Vec2 v = -5.0f * p;
+// 	// LaunchBomb(p, v);
+// }
 
-void Test::LaunchBomb(const b2Vec2& position, const b2Vec2& velocity)
-{
-	if (m_bomb)
-	{
-		m_world->DestroyBody(m_bomb);
-		m_bomb = NULL;
-	}
+// void Test::LaunchBomb(const b2Vec2& position, const b2Vec2& velocity)
+// {
+// 	// if (m_bomb)
+// 	// {
+// 	// 	m_world->DestroyBody(m_bomb);
+// 	// 	m_bomb = NULL;
+// 	// }
 
-	b2BodyDef bd;
-	bd.type = b2_dynamicBody;
-	bd.position = position;
-	bd.bullet = true;
-	m_bomb = m_world->CreateBody(&bd);
-	m_bomb->SetLinearVelocity(velocity);
+// 	// b2BodyDef bd;
+// 	// bd.type = b2_dynamicBody;
+// 	// bd.position = position;
+// 	// bd.bullet = true;
+// 	// m_bomb = m_world->CreateBody(&bd);
+// 	// m_bomb->SetLinearVelocity(velocity);
 
-	b2CircleShape circle;
-	circle.m_radius = 0.3f;
+// 	// b2CircleShape circle;
+// 	// circle.m_radius = 0.3f;
 
-	b2FixtureDef fd;
-	fd.shape = &circle;
-	fd.density = 20.0f;
-	fd.restitution = 0.0f;
+// 	// b2FixtureDef fd;
+// 	// fd.shape = &circle;
+// 	// fd.density = 20.0f;
+// 	// fd.restitution = 0.0f;
 
-	b2Vec2 minV = position - b2Vec2(0.3f,0.3f);
-	b2Vec2 maxV = position + b2Vec2(0.3f,0.3f);
+// 	// b2Vec2 minV = position - b2Vec2(0.3f,0.3f);
+// 	// b2Vec2 maxV = position + b2Vec2(0.3f,0.3f);
 
-	b2AABB aabb;
-	aabb.lowerBound = minV;
-	aabb.upperBound = maxV;
+// 	// b2AABB aabb;
+// 	// aabb.lowerBound = minV;
+// 	// aabb.upperBound = maxV;
 
-	m_bomb->CreateFixture(&fd);
-}
+// 	// m_bomb->CreateFixture(&fd);
+// }
 
 // void Test::Pause()
 

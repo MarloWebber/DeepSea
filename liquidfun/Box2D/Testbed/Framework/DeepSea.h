@@ -499,9 +499,9 @@ struct Species {
 // extern std::string speciesNameBar;
 
 
-void deepSeaControlA () ;
-void deepSeaControlB () ;
-void deepSeaControlP () ;
+// void deepSeaControlA () ;
+// void deepSeaControlB () ;
+// void deepSeaControlP () ;
 
 void addFoodParticle ( b2Vec2 position) ;
 void fishIncorporator (BonyFish * p_fish) ;
