@@ -63,6 +63,7 @@ BoneUserData * food[N_FOODPARTICLES];
 std::list<Species> ecosystem = *(new std::list<Species>);
 Species * defaultSpecies = new Species; // a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
 
+std::list<Terrain> map = *(new std::list<Terrain>);
 
 
 // local copies of pointers mean that the references to these objects only need to be given once at setup (they come from main).
@@ -2924,6 +2925,20 @@ void deleteFlaggedSpecies() {
 	// 	}
 	// }
 
+}
+
+void mapNameBarCallback(int arg) {
+
+	unused_variable((void *)&arg);
+}
+
+void loadSavedMapFromFile(int arg) {
+
+	unused_variable((void *)&arg);
+}
+void saveCurrentMapToFile(int arg) {
+
+	unused_variable((void *)&arg);
 }
 
 void speciesNameBarCallback(int arg) {

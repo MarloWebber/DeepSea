@@ -72,6 +72,7 @@ int getFoodRadiusStatus() ;
 int getSpeciesWindowStatus() ;
 
 GLUI_EditText* getSpeciesNameBar() ;
+GLUI_EditText* getMapNameBar() ;
 
 }  // namespace TestMain
 

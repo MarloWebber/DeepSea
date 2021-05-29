@@ -64,9 +64,11 @@ namespace
 
 	// std::string
 	GLUI_String speciesNameBarContent = "default";
+	GLUI_String mapNameBarContent = "default";
 
 	// GLUI_EditText* speciesNameBar;
 	 GLUI_EditText* speciesNameBar;
+	 GLUI_EditText* mapNameBar;
 
 	// int gridPinStatus = 0;
 
@@ -102,6 +104,11 @@ namespace
 GLUI_EditText* getSpeciesNameBar() {
 	return speciesNameBar;
 }
+
+GLUI_EditText* getMapNameBar() {
+	return mapNameBar;
+}
+
 
 int getPaintingStatus() {
 	return currentlyPainting;
@@ -288,9 +295,9 @@ void PostStep() {
 	
 
 	// Update the state of the particle parameter.
-	bool restartTest;
-	const bool changed = particleParameter.Changed(&restartTest);
-	B2_NOT_USED(changed);
+	// bool restartTest;
+	// const bool changed = particleParameter.Changed(&restartTest);
+	// B2_NOT_USED(changed);
 
 
 	
@@ -348,19 +355,19 @@ void PostStep() {
 
 	glutSwapBuffers();
 
-	if (testSelection != testIndex || restartTest)
-	{
-		// fullscreenUI.Reset();
-		if (!restartTest) particleParameter.Reset();
+	// if (testSelection != testIndex || restartTest)
+	// {
+	// 	// fullscreenUI.Reset();
+	// 	if (!restartTest) particleParameter.Reset();
 
-		testIndex = testSelection;
-		delete test;
-		entry = g_testEntries + testIndex;
-		test = entry->createFcn();
-		viewZoom = test->GetDefaultViewZoom();
-		settings.viewCenter.Set(0.0f, 20.0f * viewZoom);
-		Resize(width, height);
-	}
+	// 	testIndex = testSelection;
+	// 	delete test;
+	// 	entry = g_testEntries + testIndex;
+	// 	test = entry->createFcn();
+	// 	viewZoom = test->GetDefaultViewZoom();
+	// 	settings.viewCenter.Set(0.0f, 20.0f * viewZoom);
+	// 	Resize(width, height);
+	// }
 
 }
 
@@ -850,18 +857,18 @@ int main(int argc, char** argv)
 	gamePanel->close();
 
 	// glui->add_statictext_to_panel(gamePanel, "Map");
-	GLUI_Listbox* testList =
-		glui->add_listbox_to_panel(gamePanel, "Map", &testSelection);
+	// GLUI_Listbox* testList =
+	// 	glui->add_listbox_to_panel(gamePanel, "Map", &testSelection);
 
 
-	int32 testCount = 0;
-	TestEntry* e = g_testEntries;
-	while (e->createFcn)
-	{
-		testList->add_item(testCount, e->name);
-		++testCount;
-		++e;
-	}
+	// int32 testCount = 0;
+	// TestEntry* e = g_testEntries;
+	// while (e->createFcn)
+	// {
+	// 	testList->add_item(testCount, e->name);
+	// 	++testCount;
+	// 	++e;
+	// }
 
 	// GLUI_Spinner* velocityIterationSpinner =
 	// 	glui->add_spinner("Vel Iters", GLUI_SPINNER_INT, &settings.velocityIterations);
@@ -1170,6 +1177,19 @@ glui->add_button_to_panel(editPanel, "Delete selected layer", 15, deleteSelected
 
 	GLUI_Rollout* terrainPanel =	glui->add_rollout("Terrain Paint");
 terrainPanel->close();
+
+
+
+
+	mapNameBar = glui->add_edittext_to_panel(terrainPanel, "Map name: ", GLUI_EDITTEXT_TEXT, &mapNameBarContent, 1, mapNameBarCallback);
+mapNameBar->set_text(mapNameBarContent);
+		
+		glui->add_button_to_panel(terrainPanel, "Load saved map from file", 0, loadSavedMapFromFile);
+		glui->add_button_to_panel(terrainPanel, "Save current map to file", 1, saveCurrentMapToFile);
+
+		// glui->add_button_to_panel(speciesPanel, "Save current map to file", 1, );
+
+
 	
 	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
 

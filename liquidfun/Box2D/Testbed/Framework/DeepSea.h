@@ -496,6 +496,25 @@ struct Species {
 
 };
 
+struct Terrain {
+
+	b2Vec2 position; 			// starting position of the object in the game world
+
+	b2BodyDef bodyDef;
+	b2Body * u_body;
+	b2PolygonShape shape; 
+
+	bool flagDelete;
+
+	bool selected;
+
+	b2Color color;
+	b2Color outlineColor;
+
+	Terrain(b2Vec2 position);
+};
+
+
 // extern std::string speciesNameBar;
 
 
@@ -519,6 +538,8 @@ extern BoneUserData * food[N_FOODPARTICLES];
 // extern std::list<BonyFish> fishes;
 
 extern std::list<Species> ecosystem;
+
+extern std::list<Terrain> map;
 
 extern Species * defaultSpecies;// = new Species; // a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
 
@@ -604,5 +625,10 @@ void deleteSelectedSpecies (int arg) ;
 void selectLowestEnergyFish(int arg) ;
 
 void speciesNameBarCallback(int arg) ;
+
+void mapNameBarCallback(int arg) ;
+
+void loadSavedMapFromFile(int arg);
+void saveCurrentMapToFile(int arg);
 	// }
 #endif
