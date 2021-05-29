@@ -48,33 +48,30 @@ namespace
 	int currentlyPainting = 0;
 	int  noClipStatus = 0;
 	int originStartStatus = 0;
-	int persistentFoodStatus = 0;
-	int triggerRadiusStatus = 0;
-	int foodRadiusStatus = 0;
+	int persistentFoodStatus = 1;
+	int triggerRadiusStatus = 1;
+	int foodRadiusStatus = 1;
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
 	int showSpeciesWindow = 0;
 	int voting_mode = 0;
 	int showFluidDynamicForces = 0;
+	int entropyStatus = 0;
+	// int 
 
 	int selectedSpeciesEnforcePopLimit = 0;
 	int selectedSpeciesSexuality = 0;
 
-	// std::string * memow = new std::string("memeo");
-
-	// std::string
 	GLUI_String speciesNameBarContent = "default";
 	GLUI_String mapNameBarContent = "default";
 
-	// GLUI_EditText* speciesNameBar;
-	 GLUI_EditText* speciesNameBar;
-	 GLUI_EditText* mapNameBar;
+	GLUI_EditText* speciesNameBar;
+	GLUI_EditText* mapNameBar;
 
-	// int gridPinStatus = 0;
+	GLUI_Spinner* nominalPopulationSpinner;
 
 	int32 testIndex = 0;
 	int32 testSelection = 0;
-	// int32 modeSelection = 0;
 	int32 testCount = 0;
 	TestEntry* entry;
 	Test* test;
@@ -90,6 +87,7 @@ namespace
 	float32 viewZoom = 1.0f;
 	int tx, ty, tw, th;
 	bool rMouseDown = false;
+
 	// State of the mouse on the previous call of Mouse().
 	int32 previousMouseState = -1;
 	b2Vec2 lastp;
@@ -101,12 +99,20 @@ namespace
 	ParticleParameter particleParameter;
 }
 
+GLUI_Spinner* getSpeciesNominalPopulationSpinner() {
+	return nominalPopulationSpinner;
+}
+
 GLUI_EditText* getSpeciesNameBar() {
 	return speciesNameBar;
 }
 
 GLUI_EditText* getMapNameBar() {
 	return mapNameBar;
+}
+
+bool gameIsPaused() {
+	return settings.pause;
 }
 
 
@@ -154,9 +160,11 @@ int getSpeciesWindowStatus() {
 	return showSpeciesWindow;
 }
 
-// int getGridPinStatus() {
-// 	return gridPinStatus;
-// }
+
+int getEntropyStatus() {
+	return entropyStatus;
+}
+
 
 
 // Set whether to restart the test on particle parameter changes.
@@ -223,11 +231,6 @@ static void Resize(int32 w, int32 h)
 
 	// L/R/B/T
 	LoadOrtho2DMatrix(lower.x, upper.x, lower.y, upper.y);
-
-	// if (fullscreenUI.GetEnabled())
-	// {
-	// 	fullscreenUI.SetViewParameters(&settings.viewCenter, &extents);
-	// }
 }
 
 static b2Vec2 ConvertScreenToWorld(int32 x, int32 y)
@@ -265,110 +268,18 @@ static void Timer(int)
 	// call this each frame, to function correctly with devices that may recreate
 	// the GL Context without us asking for it
 	Resize(width, height);
-
-
-
-	// if (!queryScienceMode()) {
-		
-	
 }
 
 void Step () {
-		test->Step(&settings);
-
-
+	test->Step(&settings);
 }
 
 
 void PostStep() {
-			// if (test->IsWorldLocked() == false && !settings.pause) {
-		// 	// deepSeaLoop();
-		// }
-	// }
-	// else {
-	// 	if (test->IsWorldLocked() == false && !settings.pause) {
-	// 		scienceModeLoop();
-	// 	}
-	// 	test->Step(&settings);
-	// }
-
 	
-
-	// Update the state of the particle parameter.
-	// bool restartTest;
-	// const bool changed = particleParameter.Changed(&restartTest);
-	// B2_NOT_USED(changed);
-
-
-	
-
-
-	// if (fullscreenUI.GetEnabled())
-	// {
-	// 	// Set framework settings options based on parameters
-	// 	const uint32 options = particleParameter.GetOptions();
-
-	// 	settings.strictContacts 	= options &
-	// 		ParticleParameter::OptionStrictContacts;
-	// 	settings.drawContactPoints	= options &
-	// 		ParticleParameter::OptionDrawContactPoints;
-	// 	settings.drawContactNormals	= options &
-	// 		ParticleParameter::OptionDrawContactNormals;
-	// 	settings.drawContactImpulse	= options &
-	// 		ParticleParameter::OptionDrawContactImpulse;
-	// 	settings.drawFrictionImpulse = options &
-	// 		ParticleParameter::OptionDrawFrictionImpulse;
-	// 	settings.drawStats 			 = options &
-	// 		ParticleParameter::OptionDrawStats;
-	// 	settings.drawProfile		 = options &
-	// 		ParticleParameter::OptionDrawProfile;
-
-	// 	// The b2Draw based flags must be exactly 0 or 1 currently.
-	// 	settings.drawShapes 	= options &
-	// 		ParticleParameter::OptionDrawShapes ? 1 : 0;
-	// 	settings.drawParticles 	= options &
-	// 		ParticleParameter::OptionDrawParticles ? 1 : 0;
-	// 	settings.drawJoints		= options &
-	// 		ParticleParameter::OptionDrawJoints ? 1 : 0;
-	// 	settings.drawAABBs		= options &
-	// 		ParticleParameter::OptionDrawAABBs ? 1 : 0;
-	// 	settings.drawCOMs 		= options &
-	// 		ParticleParameter::OptionDrawCOMs ? 1 : 0;
-
-	// 	// Draw the full screen UI with
-	// 	// "test_name [: particle_parameter] / fps" at the bottom of the
-	// 	// screen.
-	// 	std::string msg = entry->name;
-	// 	if (fullscreenUI.GetParticleParameterSelectionEnabled())
-	// 	{
-	// 		msg += " : ";
-	// 		msg += particleParameter.GetName();
-	// 	}
-
-	// 	std::stringstream ss;
-	// 	ss << int(1000.0f / ComputeFPS());
-	// 	msg += " / " + ss.str() + " fps";
-	// 	fullscreenUI.Draw(msg);
-	// }
-
-	test->DrawTitle(entry->name);
+	// test->DrawTitle(entry->name);
 
 	glutSwapBuffers();
-
-	// if (testSelection != testIndex || restartTest)
-	// {
-	// 	// fullscreenUI.Reset();
-	// 	if (!restartTest) particleParameter.Reset();
-
-	// 	testIndex = testSelection;
-	// 	delete test;
-	// 	entry = g_testEntries + testIndex;
-	// 	test = entry->createFcn();
-	// 	viewZoom = test->GetDefaultViewZoom();
-	// 	settings.viewCenter.Set(0.0f, 20.0f * viewZoom);
-	// 	Resize(width, height);
-	// }
-
 }
 
 static void Keyboard(unsigned char key, int x, int y)
@@ -398,51 +309,6 @@ static void Keyboard(unsigned char key, int x, int y)
 		Resize(width, height);
 		break;
 
-		// Press 'r' to reset.
-	// case 'r':
-	// 	// delete test;
-	// 	// test = entry->createFcn();
-	// 	reloadTheSim();
-	// 	break;
-
-	case 's':
-		// if (queryScienceMode()) {
-		// 	exitScienceMode();
-		// 	// settings.pause = false;
-		// }
-		// else {
-// deepSeaControlA();
-		// 	enterScienceModeInterruptableEntry();
-		// 	// enterScienceMode();	
-		// 	// settings.pause = true;
-		// }
-		break;
-
-
-		// Press space to launch a bomb.
-	case ' ':
-		if (test)
-		{
-			// test->jointMotorSetpoint();
-			// deepSeaControlP();
-		}
-		break;
-
-	case 'a':
-		if (test)
-		{
-			// test->controlA();
-			// deepSeaControlB();
-		}
-		break;
-	// case 'd':
-	// 	if (test)
-	// 	{
-	// 		// test->controlB();
-	// 		meltSelectedFish(0);
-	// 	}
-		break;
-
 	case '-':
 		decrementSelectedConnection();
 		;
@@ -453,7 +319,6 @@ static void Keyboard(unsigned char key, int x, int y)
 		break;
 
 	case 'k':
-		// printf("SKOOOJ\n");
 		currentlySelectedLimb--;
 		if (currentlySelectedLimb < 0) {
 			currentlySelectedLimb = N_FINGERS-1;
@@ -461,90 +326,18 @@ static void Keyboard(unsigned char key, int x, int y)
 		break;
 
 	case 'l':
-	// printf("MEMENE\n");
 		currentlySelectedLimb++;
 		if (currentlySelectedLimb > N_FINGERS-1) {
 			currentlySelectedLimb = 0;
 		}
 		break;
 
-
-	case 'p':
-		settings.pause = !settings.pause;
-		break;
-
-	case 'q':
-		if (test)
-		{
-			// test->controlA();
-			// selectFishWithGreatestWiggle();
-		}
-		break;
-	case 'u':
-		if (test)
-		{
-			// test->controlA();
-			// selectFishWhoMovedTheFurthest();
-		}
-		break;
-
-		// Press [ to prev test.
-// 	case '[':
-// 		--testSelection;
-// 		if (testSelection < 0)
-// 		{
-// 			testSelection = testCount - 1;
-// 		}
-// #if ENABLE_GLUI
-// 		if (glui) glui->sync_live();
-// #endif  // ENABLE_GLUI
-// 		break;
-
-		// Press ] to next test.
-// 	case ']':
-// 		++testSelection;
-// 		if (testSelection == testCount)
-// 		{
-// 			testSelection = 0;
-// 		}
-// #if ENABLE_GLUI
-// 		if (glui) glui->sync_live();
-// #endif  // ENABLE_GLUI
-// 		break;
-
-		// Press ~ to enable / disable the fullscreen UI.
-	// case '~':
-	// 	fullscreenUI.SetEnabled(!fullscreenUI.GetEnabled());
-	// 	break;
-
-	// 	// Press < to select the previous particle parameter setting.
-	// case '<':
-	// 	particleParameter.Decrement();
-	// 	break;
-
-	// 	// Press > to select the next particle parameter setting.
-	// case '>':
-	// 	particleParameter.Increment();
-	// 	break;
-
-	// case 'w':
-	// 	// particleParameter.Increment();
-	// // voting_mode = true;
-	// test->EnableVotingMode();
-	// 	break;
-
-
 	default:
 		if (test)
 		{
 			test->Keyboard(key);
 		}
-
-
-
 	}
-
-	// ParticleDrawingKeyboard(key); // this is called by a menu action instead now
 }
 
 static void KeyboardSpecial(int key, int x, int y)
@@ -640,24 +433,6 @@ static void Mouse(int32 button, int32 state, int32 x, int32 y)
 		int mod = glutGetModifiers();
 		b2Vec2 p = ConvertScreenToWorld(x, y);
 
-		// switch (fullscreenUI.Mouse(button, state, previousMouseState, p))
-		// {
-		// case FullscreenUI::e_SelectionTestPrevious:
-		// 	testSelection = std::max(0, testSelection - 1);
-		// 	break;
-		// case FullscreenUI::e_SelectionTestNext:
-		// 	if (g_testEntries[testSelection + 1].name) testSelection++;
-		// 	break;
-		// case FullscreenUI::e_SelectionParameterPrevious:
-		// 	particleParameter.Decrement();
-		// 	break;
-		// case FullscreenUI::e_SelectionParameterNext:
-		// 	particleParameter.Increment();
-		// 	break;
-		// default:
-		// 	break;
-		// }
-
 		if (state == GLUT_DOWN)
 		{
 			b2Vec2 p = ConvertScreenToWorld(x, y);
@@ -696,11 +471,8 @@ static void MouseMotion(int32 x, int32 y)
 {
 	b2Vec2 p = ConvertScreenToWorld(x, y);
 
-	// if (fullscreenUI.GetSelection() == FullscreenUI::e_SelectionNone)
-	// {
-		test->MouseMove(p);
-	// }
-
+	test->MouseMove(p);
+	
 	if (rMouseDown)
 	{
 		b2Vec2 diff = p - lastp;
@@ -729,23 +501,10 @@ static void MouseWheel(int wheel, int direction, int x, int y)
 }
 #endif
 
-#if ENABLE_GLUI
-// static void Restart(int)
-// {
-// 	delete test;
-// 	entry = g_testEntries + testIndex;
-// 	test = entry->createFcn();
-// 	Resize(width, height);
-// }
-#endif  // ENABLE_GLUI
-
-
  void Pause2()
 {
-	settings.pause = false;
+	settings.pause = true;
 }
-// #endif  // ENABLE_GLUI
-
  void Resume2()
 {
 	settings.pause = false;
@@ -759,30 +518,11 @@ static void Pause(int)
 }
 #endif  // ENABLE_GLUI
 
-// #if ENABLE_GLUI
-// static void Exit(int code)
-// {
-// 	// TODO: freeglut is not building on OSX
-// #ifdef FREEGLUT
-// 	glutLeaveMainLoop();
-// #endif
-// 	exit(code);
-// }
-// #endif  // ENABLE_GLUI
-
-// #if ENABLE_GLUI
-// static void SingleStep(int)
-// {
-// 	settings.pause = 1;
-// 	settings.singleStep = 1;
-// }
-// #endif  // ENABLE_GLUI
-
 }  // namespace TestMain
 
 
 void menuHandler(int bobi) {
-	printf("feet %i\n", bobi);
+	// printf("feet %i\n", bobi);
 }
 
 void updateParticleDrawingKeyboard(int bobi) {
@@ -821,10 +561,12 @@ int main(int argc, char** argv)
 	char title[32];
 	sprintf(title, "DeepSea");
 	mainWindow = glutCreateWindow(title);
-	//glutSetOption (GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-	// glutDisplayFunc(SimulationLoop);
-		glutDisplayFunc(deepSeaLoop);
+	glutDisplayFunc(deepSeaLoop);
+
+
+	deepSeaStart();
+
 
 
 #if ENABLE_GLUI
@@ -856,397 +598,204 @@ int main(int argc, char** argv)
 	GLUI_Rollout* gamePanel =	glui->add_rollout("Game");
 	gamePanel->close();
 
-	// glui->add_statictext_to_panel(gamePanel, "Map");
-	// GLUI_Listbox* testList =
-	// 	glui->add_listbox_to_panel(gamePanel, "Map", &testSelection);
-
-
-	// int32 testCount = 0;
-	// TestEntry* e = g_testEntries;
-	// while (e->createFcn)
-	// {
-	// 	testList->add_item(testCount, e->name);
-	// 	++testCount;
-	// 	++e;
-	// }
-
-	// GLUI_Spinner* velocityIterationSpinner =
-	// 	glui->add_spinner("Vel Iters", GLUI_SPINNER_INT, &settings.velocityIterations);
-	// velocityIterationSpinner->set_int_limits(1, 500);
-
-	// GLUI_Spinner* positionIterationSpinner =
-	// 	glui->add_spinner("Pos Iters", GLUI_SPINNER_INT, &settings.positionIterations);
-	// positionIterationSpinner->set_int_limits(0, 100);
-
-	// GLUI_Spinner* particleIterationSpinner =
-	// 	glui->add_spinner("Pcl Iters", GLUI_SPINNER_INT, &settings.particleIterations);
-	// particleIterationSpinner->set_int_limits(1, 100);
-
-	// GLUI_Spinner* hertzSpinner =
-	// 	glui->add_spinner("Speed (Hz)", GLUI_SPINNER_FLOAT, &settingsHz);
-
-	// hertzSpinner->set_float_limits(5.0f, 200.0f);
-
-	// glui->add_checkbox("Sleep", &settings.enableSleep);
-	// glui->add_checkbox("Warm Starting", &settings.enableWarmStarting);
-	// glui->add_checkbox("Time of Impact", &settings.enableContinuous);
-	// glui->add_checkbox("Sub-Stepping", &settings.enableSubStepping);
-	// glui->add_checkbox("Strict Particle/Body Contacts", &settings.strictContacts);
-
-	//glui->add_separator();
-
-	// GLUI_Panel* drawPanel =	glui->add_panel("Draw");
-	// glui->add_checkbox_to_panel(drawPanel, "Shapes", &settings.drawShapes);
-	// glui->add_checkbox_to_panel(drawPanel, "Particles", &settings.drawParticles);
-	// glui->add_checkbox_to_panel(drawPanel, "Joints", &settings.drawJoints);
-	// glui->add_checkbox_to_panel(drawPanel, "AABBs", &settings.drawAABBs);
-	// glui->add_checkbox_to_panel(drawPanel, "Contact Points", &settings.drawContactPoints);
-	// glui->add_checkbox_to_panel(drawPanel, "Contact Normals", &settings.drawContactNormals);
-	// glui->add_checkbox_to_panel(drawPanel, "Contact Impulses", &settings.drawContactImpulse);
-	// glui->add_checkbox_to_panel(drawPanel, "Friction Impulses", &settings.drawFrictionImpulse);
-	// glui->add_checkbox_to_panel(drawPanel, "Center of Masses", &settings.drawCOMs);
-	// glui->add_checkbox_to_panel(drawPanel, "Statistics", &settings.drawStats);
-	// glui->add_checkbox_to_panel(drawPanel, "Profile", &settings.drawProfile);
-
-	// int booger = 0;
-	// glui->add_checkbox_to_panel(gamePanel, "Shapes", booger);
-	GLUI_Listbox* modeList =
-		glui->add_listbox_to_panel(gamePanel, "Mode", &(m_deepSeaSettings.gameMode ));
-		modeList->add_item(GAME_MODE_LABORATORY, "Laboratory Mode" );
-		modeList->add_item(GAME_MODE_ECOSYSTEM, "Ecosystem Mode" );
-
-
+	// GLUI_Listbox* modeList =
+		// glui->add_listbox_to_panel(gamePanel, "Mode", &(m_deepSeaSettings.gameMode ));
+		// modeList->add_item(GAME_MODE_LABORATORY, "Laboratory Mode" );
+		// modeList->add_item(GAME_MODE_ECOSYSTEM, "Ecosystem Mode" );
 
 	glui->add_button_to_panel(gamePanel, "Pause", 0, Pause);
 
-
-	// glui->add_separator_to_panel(gamePanel);
-
-
-	GLUI_Rollout* laboratoryPanel =	glui->add_rollout("Laboratory Mode");
-laboratoryPanel->close();
-
-		// int fakeNumberOfFish;
-		GLUI_Spinner* numberOfFishSpinner =
-		glui->add_spinner_to_panel(laboratoryPanel,"Number of fish", GLUI_SPINNER_INT, &m_deepSeaSettings.laboratory_nFish);
-	numberOfFishSpinner->set_int_limits(1, 256);
+	glui->add_checkbox_to_panel(gamePanel, "Show fluid dynamic forces", &showFluidDynamicForces);
 
 
-	glui->add_checkbox_to_panel(laboratoryPanel, "Persistent Food", &persistentFoodStatus);
+
+	GLUI_Rollout* laboratoryPanel =	glui->add_rollout("Laboratory");
+	// laboratoryPanel->close();
+
+	// GLUI_Spinner* numberOfFishSpinner =
+		// glui->add_spinner_to_panel(laboratoryPanel,"Number of fish", GLUI_SPINNER_INT, &m_deepSeaSettings.laboratory_nFish);
+	// numberOfFishSpinner->set_int_limits(1, 256);
+
+
+	glui->add_checkbox_to_panel(laboratoryPanel, "Laboratory Mode", &m_deepSeaSettings.gameMode );
+
+	glui->add_separator_to_panel(laboratoryPanel);
+
+	glui->add_checkbox_to_panel(laboratoryPanel, "Trigger generation at radius", &triggerRadiusStatus);
+	
+	GLUI_Spinner* triggerRadiusSpinner =
+		glui->add_spinner_to_panel(laboratoryPanel, "Trigger radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.originTriggerRadius);
+	triggerRadiusSpinner->set_float_limits(0.0f, 100.0f);
+	triggerRadiusSpinner->set_float_val(m_deepSeaSettings.originTriggerRadius);
+
+	glui->add_separator_to_panel(laboratoryPanel);
+
+
+	
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Food walks around radius", &foodRadiusStatus);
 	GLUI_Spinner* foodRadiusSpinner =
 		glui->add_spinner_to_panel(laboratoryPanel, "Food walk radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.originFoodRadius);
 	foodRadiusSpinner->set_float_limits(0.0f, 100.0f);
+	foodRadiusSpinner->set_float_val(m_deepSeaSettings.originFoodRadius);
 
-
-
-GLUI_Spinner* foodRadiusAngleJitterSpinner =
-glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.foodRadiusAngleJitter);
+	GLUI_Spinner* foodRadiusAngleJitterSpinner =
+		glui->add_spinner_to_panel(laboratoryPanel, "Food angle jitter", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.foodRadiusAngleJitter);
 	foodRadiusAngleJitterSpinner->set_float_limits(0.0f, 2 * pi);
-
-
-
+	foodRadiusAngleJitterSpinner->set_float_val(m_deepSeaSettings.foodRadiusAngleJitter);
 
 	glui->add_button_to_panel(laboratoryPanel, "Add Random Food", 0, addRandomFoodParticle);
 
-
-
-	glui->add_checkbox_to_panel(laboratoryPanel, "Trigger generation at radius", &triggerRadiusStatus);
-	GLUI_Spinner* triggerRadiusSpinner =
-		glui->add_spinner_to_panel(laboratoryPanel, "Trigger radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.originTriggerRadius);
-	triggerRadiusSpinner->set_float_limits(0.0f, 100.0f);
-
-
-
-
-
+	
 	GLUI_Rollout* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
 	EcosystemPanel->close();
+
 	int fakeNumberOfFood;
 		GLUI_Spinner* numberOfFoodSpinner =
 		glui->add_spinner_to_panel(EcosystemPanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
 	numberOfFoodSpinner->set_int_limits(1, 8);
 
-		
-
-// float fakeGravity;
-// 		GLUI_Spinner* gravitySpinner =
-// 		glui->add_spinner_to_panel(gamePanel, "Gravity", GLUI_SPINNER_FLOAT, &fakeGravity);
-// 	gravitySpinner->set_float_limits(-10.0f, 10.0f);
 
 
+	glui->add_checkbox_to_panel(EcosystemPanel, "Persistent Food", &persistentFoodStatus);
+
+	glui->add_checkbox_to_panel(EcosystemPanel, "Entropy", &entropyStatus);
+	
 
 	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");
-speciesPanel->close();
+	speciesPanel->close();
 
-	// int fakeNumberOfSpecies;
-	// 	GLUI_Spinner* numberOfSpeciesSpinner =
-	// 	// glui->add_spinner_to_panel(speciesPanel,"Number of species", GLUI_SPINNER_INT, &fakeNumberOfSpecies);
-	// numberOfSpeciesSpinner->set_int_limits(1, 8);
-
-
-
-
-		// GLUI_Listbox* SpeciesList = glui->add_listbox_to_panel(speciesPanel, "Selected species: ", &(m_deepSeaSettings.currentlySelectedSpecies ) ,-1, updateSpeciesList);
-
-	// 	int NominalPopulation;
-	// 	GLUI_Spinner* nominalPopulationSpinner =
-	// 	glui->add_spinner_to_panel(speciesPanel,"NominalPopulation", GLUI_SPINNER_INT, &NominalPopulation);
-	// numberOfSpeciesSpinner->set_int_limits(1, 1000);
-
-
-
-// SpeciesList->add_item(0, "Bamp" );
-// 		terrainTypesList->add_item(1, "Powder" );
-// 		terrainTypesList->add_item(2, "Rigid | SolidGroup" );
-// 		terrainTypesList->add_item(3, "Spring | SolidGroup" );
-// 		terrainTypesList->add_item(4, "Tensile" );
-// 		terrainTypesList->add_item(5, "Viscous" );
-// 		terrainTypesList->add_item(6, "Wall | SolidGroup" );
-// 		terrainTypesList->add_item(7, "Barrier | WallParticle" );
-// 		terrainTypesList->add_item(8, "Barrier | RigidGroup" );
-// 		terrainTypesList->add_item(9, "Barrier | ElasticParticle | SolidGroup" );
-// 		terrainTypesList->add_item(10, "Barrier | SpringParticle | SolidGroup" );
-// 		terrainTypesList->add_item(11, "Wall | RepulsiveParticle" );
-// 		terrainTypesList->add_item(12, "ColorMixing" );
-// 		terrainTypesList->add_item(12, "Zombie" );
-
-		// GLUI_Listbox* SpeciesFileBrowser =
+	speciesNameBar = glui->add_edittext_to_panel(speciesPanel, "Species name: ", GLUI_EDITTEXT_TEXT, &speciesNameBarContent, 1, speciesNameBarCallback);
+	speciesNameBar->set_text(speciesNameBarContent);
 		
+	glui->add_button_to_panel(speciesPanel, "Populate selected species from file", 0, populateSpeciesFromFile);
+	glui->add_button_to_panel(speciesPanel, "Save selected individual to file", 1, saveIndividualToFile);
 
-		// GLUI_EditText*
-		 // speciesNameBar =
+	glui->add_button_to_panel(speciesPanel, "Select all in species", 1, selectAllInSpecies);
 
-		  // glui->add_edittext_to_panel(speciesPanel, "Filename",GLUI_EDITTEXT_TEXT , speciesNameBarContent, 0, speciesNameBarCallback );
- // edittext = new GLUI_EditText( glui, "Text:", text, 3, control_cb );
+	glui->add_checkbox_to_panel(speciesPanel, "Show species window", &showSpeciesWindow);
 
-speciesNameBar = glui->add_edittext_to_panel(speciesPanel, "Species name: ", GLUI_EDITTEXT_TEXT, &speciesNameBarContent, 1, speciesNameBarCallback);
-speciesNameBar->set_text(speciesNameBarContent);
-		
-		glui->add_button_to_panel(speciesPanel, "Populate selected species from file", 0, populateSpeciesFromFile);
-		glui->add_button_to_panel(speciesPanel, "Save selected individual to file", 1, saveIndividualToFile);
-
-		glui->add_button_to_panel(speciesPanel, "Select all in species", 1, selectAllInSpecies);
-
-
-
-		int NominalPopulation;
-		GLUI_Spinner* nominalPopulationSpinner =
-		glui->add_spinner_to_panel(speciesPanel,"Nominal Population", GLUI_SPINNER_INT, &NominalPopulation);
+	int NominalPopulation;
+	// GLUI_Spinner* n
+	nominalPopulationSpinner =
+	glui->add_spinner_to_panel(speciesPanel,"Nominal Population", GLUI_SPINNER_INT, &NominalPopulation, 1, nominalPopulationCallback);
 	nominalPopulationSpinner->set_int_limits(1, 1000);
 
+	glui->add_checkbox_to_panel(speciesPanel, "Enforce population limit", &selectedSpeciesEnforcePopLimit);
 
+	glui->add_checkbox_to_panel(speciesPanel, "Sexual/Asexual", &selectedSpeciesSexuality);
 
-
-glui->add_checkbox_to_panel(speciesPanel, "Enforce population limit", &selectedSpeciesEnforcePopLimit);
-
-
-
-glui->add_checkbox_to_panel(speciesPanel, "Sexual/Asexual", &selectedSpeciesSexuality);
-
-glui->add_button_to_panel(speciesPanel, "Add new species", 0, addNewSpecies);
-glui->add_button_to_panel(speciesPanel, "Delete selected species", 0, deleteSelectedSpecies);
-
-
-
-
-
-
-		// *GLUI
-// ::add_edittext_to_panel( GLUI_Panel *panel, char *name,int data_type=GLUI_EDITTEXT_TEXT,void *live_var=NULL, int id=-1,GLUI_Update_CB callback=NULL );
+	glui->add_button_to_panel(speciesPanel, "Add new species", 0, addNewSpecies);
+	glui->add_button_to_panel(speciesPanel, "Delete selected species", 0, deleteSelectedSpecies);
 
 
 
 	GLUI_Rollout* bioPanel =	glui->add_rollout("Biology");
 	bioPanel->close();
 
-	// float fakeMutationRate;
-		GLUI_Spinner* mutationRateSpinner =
+	GLUI_Spinner* mutationRateSpinner =
 		glui->add_spinner_to_panel(bioPanel, "Body Mutation Rate", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationRate);
 	mutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
-	// float fakeMutationSeverity;
-		GLUI_Spinner* mutationSeveritySpinner =
+	GLUI_Spinner* mutationSeveritySpinner =
 		glui->add_spinner_to_panel(bioPanel, "Body Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationSeverity);
 	mutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
-	// float fakeMentalMutationRate;
-		GLUI_Spinner* mentalMutationRateSpinner =
+	GLUI_Spinner* mentalMutationRateSpinner =
 		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Rate", GLUI_SPINNER_FLOAT,&m_deepSeaSettings.mentalMutationRate);
 	mentalMutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
-	// float fakeMentalMutationSeverity;
-		GLUI_Spinner* mentalMutationSeveritySpinner =
+	GLUI_Spinner* mentalMutationSeveritySpinner =
 		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
 	mentalMutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
 
 
 
+	GLUI_Rollout* selectionPanel =	glui->add_rollout("Cloning Controls");
+	selectionPanel->open();
 
-	GLUI_Rollout* controlsPanel =	glui->add_rollout("Cloning Controls");
+	glui->add_button_to_panel(selectionPanel, "Farthest Traveled", 1, selectFishWhoMovedTheFurthest);
+	glui->add_button_to_panel(selectionPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
+	glui->add_button_to_panel(selectionPanel, "Closest to Food", 3, selectClosestToFood);
+	glui->add_button_to_panel(selectionPanel, "Lowest Energy", 3, selectLowestEnergyFish);
 
-	controlsPanel->open();
+	glui->add_separator_to_panel(selectionPanel);
 
-	// selection controls
-	// glui->add_button_to_panel(controlsPanel, "Select Wiggliest", 0, selectFishWithGreatestWiggle);
-	glui->add_button_to_panel(controlsPanel, "Farthest Traveled", 1, selectFishWhoMovedTheFurthest);
+	glui->add_button_to_panel(selectionPanel, "Deselect All", 4, deselectAll);
+	glui->add_button_to_panel(selectionPanel, "Select All", 5, selectAll);
+	glui->add_button_to_panel(selectionPanel, "Invert Selection", 6, invertSelection);
 
-	glui->add_button_to_panel(controlsPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
-
-	glui->add_button_to_panel(controlsPanel, "Closest to Food", 3, selectClosestToFood);
-
-	glui->add_button_to_panel(controlsPanel, "Lowest Energy", 3, selectLowestEnergyFish);
-
-	glui->add_button_to_panel(controlsPanel, "Deselect All", 4, deselectAll);
-	glui->add_button_to_panel(controlsPanel, "Select All", 5, selectAll);
-	glui->add_button_to_panel(controlsPanel, "Invert Selection", 6, invertSelection);
-
-
-
-
-	glui->add_separator_to_panel(controlsPanel);
+	glui->add_separator_to_panel(selectionPanel);
 
 	// cloning controls
-	glui->add_button_to_panel(controlsPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
-	glui->add_button_to_panel(controlsPanel, "Reproduce Selected", 3, handleReproduceSelectedButton);
+	glui->add_button_to_panel(selectionPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
+	glui->add_separator_to_panel(selectionPanel);
 
-	glui->add_button_to_panel(controlsPanel, "Mate 2 Selected", 3, mateSelectedFish);
-	glui->add_button_to_panel(controlsPanel, "Re-run generation", 4, reloadTheSim);
+	glui->add_button_to_panel(selectionPanel, "Reproduce Selected", 3, handleReproduceSelectedButton);
+	glui->add_button_to_panel(selectionPanel, "Mate 2 Selected", 3, mateSelectedFish);
+	glui->add_separator_to_panel(selectionPanel);
 
+	// glui->add_button_to_panel(bioPanel, "Re-run generation", 4, reloadTheSim);
 
-	glui->add_separator_to_panel(controlsPanel);
+	// glui->add_separator_to_panel(bioPanel);
 
+	glui->add_checkbox_to_panel(selectionPanel, "Select with LMB", &voting_mode);
 
-
-glui->add_checkbox_to_panel(controlsPanel, "Select with LMB", &voting_mode);
-
-
-	glui->add_separator_to_panel(controlsPanel);
-
-
-
-	// spawning options
-	// glui->add_checkbox_to_panel(controlsPanel, "Fish don't clip", &noClipStatus);
-	// glui->add_checkbox_to_panel(controlsPanel, "Start origin/random", &originStartStatus);
-	// glui->add_checkbox_to_panel(controlsPanel, "Pin to Grid", &gridPinStatus);
+	
 
 
 
-	GLUI_Rollout* editPanel =	glui->add_rollout("Surgical Modification");
-	editPanel->close();
-	glui->add_button_to_panel(editPanel, "Pin to Grid", 5, pinToGrid);
-	glui->add_button_to_panel(editPanel, "Release", 6, releaseFromGrid);
+	GLUI_Rollout* brainEditPanel =	glui->add_rollout("Neuroscience");
+	brainEditPanel->close();
+
+	glui->add_button_to_panel(brainEditPanel, "Neutralize Brain", 9, meltSelectedFish);
+	glui->add_button_to_panel(brainEditPanel, "Randomize Brain", 10, scrambleSelectedFish);
+
+	glui->add_button_to_panel(brainEditPanel, "Delete Selected Neuron", 11, deleteSelectedNeuron);
+
+	glui->add_button_to_panel(brainEditPanel, "Add Recursor Pair", 12, addRecursorPair);
+	glui->add_button_to_panel(brainEditPanel, "Add Neuron in selected layer", 13, addNeuronInSelectedLayer);
+
+	glui->add_button_to_panel(brainEditPanel, "Add layer", 14, addLayerToSelectedFish);
+
+	glui->add_button_to_panel(brainEditPanel, "Delete selected layer", 15, deleteSelectedLayer);
+
+	glui->add_checkbox_to_panel(brainEditPanel, "Show brain edit window", &showBrainEditWindow);
 
 
 
-	glui->add_button_to_panel(editPanel, "Add Limb", 7, placeLimbOnSelectedFish);
-glui->add_button_to_panel(editPanel, "Amputate Limb", 8, amputation);
+	GLUI_Rollout* bodyEditPanel =	glui->add_rollout("Surgery");
+	bodyEditPanel->close();
 
+	glui->add_button_to_panel(bodyEditPanel, "Pin to Grid", 5, pinToGrid);
+	glui->add_button_to_panel(bodyEditPanel, "Release", 6, releaseFromGrid);
 
-glui->add_button_to_panel(editPanel, "Neutralize Brain", 9, meltSelectedFish);
-glui->add_button_to_panel(editPanel, "Randomize Brain", 10, scrambleSelectedFish);
+	glui->add_button_to_panel(bodyEditPanel, "Add Limb", 7, placeLimbOnSelectedFish);
+	glui->add_button_to_panel(bodyEditPanel, "Amputate Limb", 8, amputation);
 
-glui->add_button_to_panel(editPanel, "Delete Selected Neuron", 11, deleteSelectedNeuron);
-
-glui->add_button_to_panel(editPanel, "Add Recursor Pair", 12, addRecursorPair);
-glui->add_button_to_panel(editPanel, "Add Neuron in selected layer", 13, addNeuronInSelectedLayer);
-
-// addLayerToSelectedFish
-
-glui->add_button_to_panel(editPanel, "Add layer", 14, addLayerToSelectedFish);
-
-glui->add_button_to_panel(editPanel, "Delete selected layer", 15, deleteSelectedLayer);
+	glui->add_checkbox_to_panel(bodyEditPanel, "Show body edit window", &showBodyEditWindow);
 
 
 
 
-
-	glui->add_checkbox_to_panel(editPanel, "Show brain edit window", &showBrainEditWindow);
-	glui->add_checkbox_to_panel(editPanel, "Show body edit window", &showBodyEditWindow);
-
-	glui->add_checkbox_to_panel(editPanel, "Show species window", &showSpeciesWindow);
-	glui->add_checkbox_to_panel(editPanel, "Show fluid dynamic forces", &showFluidDynamicForces);
-
-
-
-
-
-
-
-	GLUI_Rollout* terrainPanel =	glui->add_rollout("Terrain Paint");
-terrainPanel->close();
+	GLUI_Rollout* terrainPanel =	glui->add_rollout("Habitat");
+	terrainPanel->close();
 
 
 
 
 	mapNameBar = glui->add_edittext_to_panel(terrainPanel, "Map name: ", GLUI_EDITTEXT_TEXT, &mapNameBarContent, 1, mapNameBarCallback);
-mapNameBar->set_text(mapNameBarContent);
-		
-		glui->add_button_to_panel(terrainPanel, "Load saved map from file", 0, loadSavedMapFromFile);
-		glui->add_button_to_panel(terrainPanel, "Save current map to file", 1, saveCurrentMapToFile);
-
-		// glui->add_button_to_panel(speciesPanel, "Save current map to file", 1, );
-
-
+	mapNameBar->set_text(mapNameBarContent);
+	
+	glui->add_button_to_panel(terrainPanel, "Load saved map from file", 0, loadSavedMapFromFile);
+	glui->add_button_to_panel(terrainPanel, "Save current map to file", 1, saveCurrentMapToFile);
 	
 	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
 
 
-		GLUI_Listbox* terrainTypesList =
+	GLUI_Listbox* terrainTypesList =
 		glui->add_listbox_to_panel(terrainPanel, "Terrain Type ", &(m_deepSeaSettings.terrainPaintType ) ,-1, updateParticleDrawingKeyboard);
-
-		/*
-case 0:
-		m_particleFlags = b2_elasticParticle;
-		m_groupFlags = b2_solidParticleGroup;
-		break;
-	case 1:
-		m_particleFlags = b2_powderParticle;
-		break;
-	case 2:
-		m_groupFlags = b2_rigidParticleGroup | b2_solidParticleGroup;
-		break;
-	case 3:
-		m_particleFlags = b2_springParticle;
-		m_groupFlags = b2_solidParticleGroup;
-		break;
-	case 4:
-		m_particleFlags = b2_tensileParticle;
-		break;
-	case 5:
-		m_particleFlags = b2_viscousParticle;
-		break;
-	case 6:
-		m_particleFlags = b2_wallParticle;
-		m_groupFlags = b2_solidParticleGroup;
-		break;
-	case 7:
-		m_particleFlags = b2_barrierParticle | b2_wallParticle;
-		break;
-	case 8:
-		m_particleFlags = b2_barrierParticle;
-		m_groupFlags = b2_rigidParticleGroup;
-		break;
-	case 9:
-		m_particleFlags = b2_barrierParticle | b2_elasticParticle;
-		m_groupFlags = b2_solidParticleGroup;
-		break;
-	case 10:
-		m_particleFlags = b2_barrierParticle | b2_springParticle;
-		m_groupFlags = b2_solidParticleGroup;
-		break;
-	case 11:
-		m_particleFlags = b2_wallParticle | b2_repulsiveParticle;
-		break;
-	case 12:
-		m_particleFlags = b2_colorMixingParticle;
-		break;
-	case 13:
-		m_particleFlags = b2_zombieParticle;
-		break;
-		*/
 
 		terrainTypesList->add_item(0, "Elastic | SolidGroup" );
 		terrainTypesList->add_item(1, "Powder" );
@@ -1263,20 +812,10 @@ case 0:
 		terrainTypesList->add_item(12, "ColorMixing" );
 		terrainTypesList->add_item(12, "Zombie" );
 		ParticleDrawingKeyboard(0);
-		// updateParticleDrawingKeyboard(0);
+
 
 
 	glutCreateMenu(menuHandler);
-
-        // Add menu items
-        // glutAddMenuEntry("hello", 0);
-        //   glutAttachMenu(GLUT_RIGHT_BUTTON);
-
-
-	// glui->add_button("Single Step", 0, SingleStep);
-	// glui->add_button("Restart", 0, Restart);
-
-	// glui->add_button("Quit", 0,(GLUI_Update_CB)Exit);
 
 	glui->set_main_gfx_window( mainWindow );
 
@@ -1291,13 +830,8 @@ case 0:
 
 	test_runAllUnitTests();
 
-	deepSeaStart();
 
 	glutMainLoop();
-
-
-
-
 
 	return 0;
 }

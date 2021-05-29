@@ -10,8 +10,8 @@
 #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
 
-#define GAME_MODE_LABORATORY 0
-#define GAME_MODE_ECOSYSTEM 1
+#define GAME_MODE_ECOSYSTEM 0
+#define GAME_MODE_LABORATORY 1
 
 #define TERRAIN_TYPE_LIQUID 0
 #define TERRAIN_TYPE_OIL 0
@@ -627,6 +627,9 @@ void selectLowestEnergyFish(int arg) ;
 void speciesNameBarCallback(int arg) ;
 
 void mapNameBarCallback(int arg) ;
+
+
+void nominalPopulationCallback (int arg) ;
 
 void loadSavedMapFromFile(int arg);
 void saveCurrentMapToFile(int arg);

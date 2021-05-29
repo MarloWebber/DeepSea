@@ -23,9 +23,27 @@
 #include "glui/glui.h"
 // int deepSeaGameMode;
 
+
+#include "Render.h"
+#include "Test.h"
+// #include "Arrow.h"
+// #include "FullscreenUI.h"
+// #include "ParticleParameter.h"
+#if ENABLE_GLUI
+// #include "glui/glui.h"
+#else
+#include "GL/freeglut.h"
+#endif  // ENABLE_GLUI
+#include <stdio.h>
+#include "AndroidUtil/AndroidLogPrint.h"
+#include <algorithm>
+#include <string>
+#include <sstream>
+
+#include "DeepSea.h"
+
 namespace TestMain
 {
-
 
 
 // Set whether to restart the test on particle parameter changes.
@@ -69,10 +87,17 @@ int getVotingMode();
 int getTriggerRadiusStatus() ;
 int getFoodRadiusStatus() ;
 
+int getEntropyStatus() ;
 int getSpeciesWindowStatus() ;
+
+
+GLUI_Spinner* getSpeciesNominalPopulationSpinner() ;
 
 GLUI_EditText* getSpeciesNameBar() ;
 GLUI_EditText* getMapNameBar() ;
+bool gameIsPaused() ;
+
+// extern Settings settings;
 
 }  // namespace TestMain
 

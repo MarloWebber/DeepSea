@@ -43,7 +43,7 @@ b2Vec2(0.0f,0.0f),	//  	b2Vec2 gravity;
 };
 uint64 loopCounter = 0 ;
 uint32 loopSafetyLimit = 100;
-bool flagAddFood = false;
+bool flagAddFood = false;	// true so it adds once on startup!
 bool flagAddPlant= false;
 
 bool userControlInputA;
@@ -359,7 +359,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	else if (p_bone->isFood) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_FOOD);
 		// bodyDef.userData = (void *)p_dataWrapper;
-		printf("incorporated food!\n");
+		// printf("incorporated food!\n");
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 	}
 	else {
@@ -378,6 +378,8 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 			p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
 	}
 	p_bone->isUsed = true;
+	p_bone->init = true;
+	p_bone->selected = false;
 }
 
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
@@ -435,7 +437,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 void addFoodParticle(b2Vec2 position) {
 	unsigned int emptyFoodIndex = 0;
-	for (int i = 0; i < N_FOODPARTICLES; ++i)
+	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i)
 	{
 		if (food[i]->isUsed) {
 			emptyFoodIndex ++;
@@ -459,15 +461,26 @@ void addFoodParticle(b2Vec2 position) {
 
 		food[emptyFoodIndex]->isFood = true;
 
-		food[emptyFoodIndex]->joint->init = false;
-		food[emptyFoodIndex]->joint->isUsed = false;
+		// food[emptyFoodIndex]->joint->init = false;
+		// food[emptyFoodIndex]->joint->isUsed = false;
 		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
 
 		food[emptyFoodIndex]->energy = 10000;//food[emptyFoodIndex]->energy * 5; // this is a constant that sets the value of food. Typical creatures are made from 4 segments; setting this to 4 or above should allow the creature to reproduce after eating just 1 segment.
+
+		food[emptyFoodIndex]->p_body->SetTransform(position, (RNG() * 2 * pi) );
+
+
 }
 
 void addRandomFoodParticle(int arg) {
-	addFoodParticle(getRandomPosition());
+
+	float randomFoodAngle = 2 * pi * RNG();
+
+	b2Vec2 position = b2Vec2( cos( randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
+
+	printf("position: %f, %f\n", position.x, position.y);
+
+	addFoodParticle(position);
 }
 
 void saveFishToFile(const std::string& file_name, fishDescriptor_t& data) {
@@ -1261,6 +1274,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 Species::Species () {
 	population = *(new std::list<BonyFish>);
 	name = std::string("unnamed_species");
+	nominalPopulation = 8;
 }
 
 
@@ -2716,7 +2730,7 @@ void populateSpeciesFromFile(int arg) {
 		if (currentSpecies->selected) {
 
 
-			for (int i = 0; i < m_deepSeaSettings.laboratory_nFish; ++i)
+			for (unsigned int i = 0; i < currentSpecies->nominalPopulation ; ++i)
 			{
 				/* code */
 			
@@ -2939,6 +2953,22 @@ void loadSavedMapFromFile(int arg) {
 void saveCurrentMapToFile(int arg) {
 
 	unused_variable((void *)&arg);
+}
+
+void nominalPopulationCallback (int arg) {
+
+	std::list<Species>::iterator currentSpecies;
+
+
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		if (currentSpecies->selected) {
+			currentSpecies->nominalPopulation = TestMain::getSpeciesNominalPopulationSpinner() ->get_float_val();
+			return;
+
+		}
+	}
+
 }
 
 void speciesNameBarCallback(int arg) {
@@ -3201,7 +3231,7 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 
 	
 
-	for (int i = 0; i < m_deepSeaSettings.laboratory_nFish; ++i) {
+	for (unsigned int i = 0; i < currentSpecies->nominalPopulation; ++i) {
 
 		bool thereIsAFile = false;
 
@@ -3337,6 +3367,9 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 					    saveFishToFile (fdescfilename, driedWorm);
 					    fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
 
+
+
+// flagAddFood = true;
 
 
 }
@@ -3942,6 +3975,8 @@ void checkClickInSpeciesWindow( b2AABB mousePointer ) {
 
 
 		TestMain::getSpeciesNameBar() -> set_text(	currentSpecies->name );
+
+		TestMain::getSpeciesNominalPopulationSpinner() ->set_float_val(currentSpecies->nominalPopulation);
 
 
 		}
@@ -4618,7 +4653,7 @@ void pinToGrid(int arg) {
 
 	// std::list<BonyFish>::iterator fish;
 
-	uint gridSize = int(sqrt(m_deepSeaSettings.laboratory_nFish));
+	
 
 	// b2Vec2 gridPosition = b2Vec2(0.0f, 0.0f);
 	float gridSpacing = 5.0f;
@@ -4628,6 +4663,9 @@ void pinToGrid(int arg) {
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{
+
+		uint gridSize = int(sqrt(currentSpecies->nominalPopulation));
+
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
@@ -4817,10 +4855,21 @@ void selectClosestToFood (int arg) {
 
 void deepSeaLoop () {
 
+
+if (TestMain::gameIsPaused()) {
+	local_debugDraw_pointer->DrawString(b2Vec2(100,100), std::string("Paused").c_str());
+		return;
+	}
+	
+
 	TestMain::PreStep();
 	// printf("prestep complete\n");
 
 	TestMain::Step();
+
+
+
+
 
 	// printf("step complete\n");
 
