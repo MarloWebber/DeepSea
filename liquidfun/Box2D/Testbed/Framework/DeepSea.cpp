@@ -478,7 +478,7 @@ void addRandomFoodParticle(int arg) {
 
 	b2Vec2 position = b2Vec2( cos( randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
 
-	printf("position: %f, %f\n", position.x, position.y);
+	// printf("position: %f, %f\n", position.x, position.y);
 
 	addFoodParticle(position);
 }
@@ -2123,11 +2123,11 @@ void reloadTheSim  (int arg) {
 		}
 	}		
 
-	if (!TestMain::getPersistentFoodStatus()) {
-		for (int i = 0; i < N_FOODPARTICLES; ++i) {
-			food[i]->flagDelete = true;
-		}
-	}
+	// if (!TestMain::getPersistentFoodStatus()) {
+	// 	for (int i = 0; i < N_FOODPARTICLES; ++i) {
+	// 		food[i]->flagDelete = true;
+	// 	}
+	// }
 	
 	startNextGeneration = true;
 }
@@ -2548,7 +2548,7 @@ void mateSelectedFish (int arg) {
 void drawingTest() {
 
 
-	if (TestMain::getTriggerRadiusStatus() && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY  ) {
+	if (TestMain::getTriggerRadiusStatus()  ) {
 		// void
 
 		// printf("gleelee\n");
@@ -2562,7 +2562,7 @@ void drawingTest() {
 	}
 
 
-	if (TestMain::getFoodRadiusStatus() && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY  ) {
+	if (TestMain::getFoodRadiusStatus()  ) {
 		// void
 
 		// printf("gleelee\n");
@@ -4483,17 +4483,24 @@ void runBiomechanicalFunctions () {
 					}
 
 					// 1 energy is lost per bone per turn for homeostasis or whatever. this is also so that plants can't live forever without sunlight.
-					fish->energy -= 0.1f;
+					if (TestMain::getEntropyStatus()) {
+						fish->energy -= 0.1f;
+					}
+					
 				}
 
 				// kill the fish if it is out of energy.
-				fish->energy -= energyUsedThisTurn;
-				// printf("charhe: %f\n", fish->energy);
-				if (fish->energy < 0) {
-					fish->flagDelete = true;
+				if (TestMain::getEntropyStatus()) {
+					fish->energy -= energyUsedThisTurn;
+
+					// printf("charhe: %f\n", fish->energy);
+					if (fish->energy < 0) {
+						fish->flagDelete = true;
+					}
+
 				}
 
-				// give the fish some bebes if it has collected enough food.
+				// give the fish some bebes if it has collected enough food. This always costs energy, even if entropy is turned off.
 				if (fish->energy > fish->reproductionEnergyCost) {
 
 					// printf("smasti\n");
@@ -4932,7 +4939,7 @@ if (TestMain::gameIsPaused()) {
 
 			}
 
-		if ( TestMain::getTriggerRadiusStatus() && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY  ) {
+		if ( TestMain::getTriggerRadiusStatus()   ) {
 
 			// if radius trigger is turned on, check the distances of the fish. when the average distance is greater than the trigger radius, the generation is reset.
 
@@ -5017,7 +5024,7 @@ if (TestMain::gameIsPaused()) {
 
 				// }
 
-				printf("angle: %f\n", angle);
+				// printf("angle: %f\n", angle);
 				b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originFoodRadius , sin(angle)* m_deepSeaSettings.originFoodRadius );
 				food[i]->p_body->SetTransform(foodRadiusPosition, 0.0f);
 
@@ -5066,16 +5073,16 @@ if (TestMain::gameIsPaused()) {
 			addRandomFoodParticle(0);
 		}
 
-		if (flagAddPlant) {
-			flagAddPlant = false;
+		// if (flagAddPlant) {
+		// 	flagAddPlant = false;
 
 
-			// fishDescriptor_t * newFishBody = basicPlant();
+		// 	// fishDescriptor_t * newFishBody = basicPlant();
 
-			// mutateFishDescriptor (newFishBody, 0.1, 0.5);
+		// 	// mutateFishDescriptor (newFishBody, 0.1, 0.5);
 
-			// loadFish ( *newFishBody, NULL, b2Vec2(0.0f, 0.0f)) ;
-		}
+		// 	// loadFish ( *newFishBody, NULL, b2Vec2(0.0f, 0.0f)) ;
+		// }
 
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
@@ -5112,7 +5119,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 	bool et = false;
 	bool fud = false;
 
-	printf("A\n");
+	// printf("A\n");
 
 
 	if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
@@ -5122,13 +5129,13 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 	}
 
 	if (userDataA == nullptr  ) {
-		printf("A null\n");
+		// printf("A null\n");
 
 		return;
 	}
 
 	if ( userDataB == nullptr ) {
-		printf("B null\n");
+		// printf("B null\n");
 
 		return;
 	}
@@ -5150,13 +5157,13 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 	}
 
 	if( dataA.dataType == TYPE_MOUTH ) {
-		printf("1\n");
+		// printf("1\n");
 		et = true;
 		if( dataB.dataType == TYPE_FOOD 
 			// && !	((foodParticle_t*)(dataB.uData) )->flagDelete ) 
 			)
 		{
-			printf("2\n");
+			// printf("2\n");
 			fud = true;
 		}
 		// if( dataB.dataType == TYPE_LEAF && !
@@ -5167,12 +5174,12 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 	if( dataB.dataType == TYPE_MOUTH ) {
 		et = true;
-		printf("3\n");
+		// printf("3\n");
 		if( dataA.dataType == TYPE_FOOD
 		 // && !((foodParticle_t*)(dataA.uData) )->flagDelete) 
 			)
 		{
-			printf("4\n");
+			// printf("4\n");
 			fud = true;
 		}
 		// if( dataA.dataType == TYPE_LEAF && !
@@ -5185,7 +5192,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 
 	if (et && fud) {
-		printf("B\n");
+		// printf("B\n");
 		// printf("monch");
 
 		if( dataB.dataType == TYPE_MOUTH ) {
@@ -5197,13 +5204,27 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			}
 
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
-				printf("C\n");
+				// printf("C\n");
 			    vote(fish);
 			}
 
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-				printf("D\n");
+				// printf("D\n");
 				food->flagDelete = true;
+				flagAddFood = true;
+				// addRandomFoodParticle(0);
+				// float randomFoodAngle = 2 * pi * RNG();
+
+				// b2Vec2 position = b2Vec2( cos( randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
+
+
+				// food->p_body->SetTransform(position, food->p_body->GetAngle());
+
+				// b2Vec2 foodRadiusPosition = b2Vec2( cos(randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
+				// food->p_body->SetTransform(foodRadiusPosition, 0.0f);
+
+
+
 				fish->feed(food->energy);
 			}
 		}
@@ -5211,13 +5232,31 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
-				printf("E\n");
+				// printf("E\n");
 				vote(fish);
 			}
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-				printf("F\n");
+				// printf("F\n");
 				food->flagDelete = true;
+				flagAddFood = true;
+				// addRandomFoodParticle(0);
+
+				// float randomFoodAngle = 2 * pi * RNG();
+
+				// b2Vec2 position = b2Vec2( cos( randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
+
+				// food->p_body->SetTransform(position, food->p_body->GetAngle());
+
+				// b2Vec2 foodRadiusPosition = b2Vec2( cos(randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
+				// food->p_body->SetTransform(foodRadiusPosition, 0.0f);
+
+
+
 				fish->feed(food->energy);
+
+
+
+
 			}
 		}
 	}

@@ -48,7 +48,7 @@ namespace
 	int currentlyPainting = 0;
 	int  noClipStatus = 0;
 	int originStartStatus = 0;
-	int persistentFoodStatus = 1;
+	// int persistentFoodStatus = 1;
 	int triggerRadiusStatus = 1;
 	int foodRadiusStatus = 1;
 	int showBrainEditWindow = 0;
@@ -134,9 +134,9 @@ int getOriginStartStatus() {
 	return originStartStatus;
 }
 
-int getPersistentFoodStatus() {
-	return persistentFoodStatus;
-}
+// int getPersistentFoodStatus() {
+// 	return persistentFoodStatus;
+// }
 
 int getBrainWindowStatus() {
 	return showBrainEditWindow;
@@ -623,7 +623,7 @@ int main(int argc, char** argv)
 	// numberOfFishSpinner->set_int_limits(1, 256);
 
 
-	glui->add_checkbox_to_panel(laboratoryPanel, "Laboratory Mode", &m_deepSeaSettings.gameMode );
+	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce species to origin", &m_deepSeaSettings.gameMode );
 
 	glui->add_separator_to_panel(laboratoryPanel);
 
@@ -650,22 +650,22 @@ int main(int argc, char** argv)
 	foodRadiusAngleJitterSpinner->set_float_limits(0.0f, 2 * pi);
 	foodRadiusAngleJitterSpinner->set_float_val(m_deepSeaSettings.foodRadiusAngleJitter);
 
-	glui->add_button_to_panel(laboratoryPanel, "Add Random Food", 0, addRandomFoodParticle);
+	glui->add_button_to_panel(laboratoryPanel, "Add random food", 0, addRandomFoodParticle);
 
 	
 	GLUI_Rollout* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
 	EcosystemPanel->close();
 
-	int fakeNumberOfFood;
-		GLUI_Spinner* numberOfFoodSpinner =
-		glui->add_spinner_to_panel(EcosystemPanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
-	numberOfFoodSpinner->set_int_limits(1, 8);
+	// int fakeNumberOfFood;
+	// 	GLUI_Spinner* numberOfFoodSpinner =
+	// 	glui->add_spinner_to_panel(EcosystemPanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
+	// numberOfFoodSpinner->set_int_limits(1, 8);
 
 
 
-	glui->add_checkbox_to_panel(EcosystemPanel, "Persistent Food", &persistentFoodStatus);
+	// glui->add_checkbox_to_panel(EcosystemPanel, "Persistent food", &persistentFoodStatus);
 
-	glui->add_checkbox_to_panel(EcosystemPanel, "Entropy", &entropyStatus);
+	glui->add_checkbox_to_panel(EcosystemPanel, "Movement costs energy", &entropyStatus);
 
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Barrier", &barrierRadiusStatus);
