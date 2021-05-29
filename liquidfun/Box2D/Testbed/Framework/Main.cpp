@@ -1090,6 +1090,8 @@ glui->add_button_to_panel(speciesPanel, "Delete selected species", 0, deleteSele
 
 	glui->add_button_to_panel(controlsPanel, "Closest to Food", 3, selectClosestToFood);
 
+	glui->add_button_to_panel(controlsPanel, "Lowest Energy", 3, selectLowestEnergyFish);
+
 	glui->add_button_to_panel(controlsPanel, "Deselect All", 4, deselectAll);
 	glui->add_button_to_panel(controlsPanel, "Select All", 5, selectAll);
 	glui->add_button_to_panel(controlsPanel, "Invert Selection", 6, invertSelection);

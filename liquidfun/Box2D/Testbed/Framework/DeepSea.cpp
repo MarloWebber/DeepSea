@@ -3056,23 +3056,36 @@ void selectNLowestEnergyFish (unsigned int n, std::list<Species>::iterator curre
 
 	// traverse the list n times and find the lowest each time, excluding ones that have previously been found.
 	std::list<BonyFish>::iterator fish;
-	std::list<BonyFish>::iterator lowestFishThisTurn = currentSpecies->population.begin();
+
+	BonyFish * lowestFishThisTurn = &(*currentSpecies->population.begin());
 
 	for (unsigned int i = 0; i < n; ++i)
 	{
+		lowestFishThisTurn = &(*currentSpecies->population.begin());
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-
-			if (!(fish->flagDelete)) {
-
-				if (fish->energy <= lowestFishThisTurn->energy) {
-
-					lowestFishThisTurn = fish;
+			if ( !fish->selected) 
+			{
+				if (fish->energy < lowestFishThisTurn->energy) 
+				{
+					lowestFishThisTurn = &(*fish);
 				}
 			}
 		}
 
 		lowestFishThisTurn->selected = true;
+	}
+}
+
+
+void selectLowestEnergyFish(int arg) {
+	unsigned int n = 3;
+
+	std::list<Species>::iterator currentSpecies;
+
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		selectNLowestEnergyFish(n , currentSpecies);
 	}
 }
 

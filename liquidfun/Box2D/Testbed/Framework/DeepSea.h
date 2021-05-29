@@ -601,6 +601,7 @@ void checkClickInSpeciesWindow(b2AABB mousePointer) ;
 void addNewSpecies (int arg) ;
 void deleteSelectedSpecies (int arg) ;
 
+void selectLowestEnergyFish(int arg) ;
 
 void speciesNameBarCallback(int arg) ;
 	// }
