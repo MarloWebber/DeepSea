@@ -2548,7 +2548,7 @@ void mateSelectedFish (int arg) {
 void drawingTest() {
 
 
-	if (TestMain::getTriggerRadiusStatus()) {
+	if (TestMain::getTriggerRadiusStatus() && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY  ) {
 		// void
 
 		// printf("gleelee\n");
@@ -2562,7 +2562,7 @@ void drawingTest() {
 	}
 
 
-	if (TestMain::getFoodRadiusStatus()) {
+	if (TestMain::getFoodRadiusStatus() && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY  ) {
 		// void
 
 		// printf("gleelee\n");
@@ -2574,6 +2574,22 @@ void drawingTest() {
 	
 
 	}
+
+
+	if (TestMain::getBarrierRadiusStatus()  ) { // works in both lab and eco modes
+		// void
+
+		// printf("gleelee\n");
+		b2Vec2 position = b2Vec2(0.0f, 0.0f);
+		b2Color color = b2Color(0.25f, 0.5f, 0.75f);
+		 local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.barrierRadius, color);
+
+
+	
+
+	}
+
+
 
 	// draw the particle system
 	if (false) {
@@ -4878,7 +4894,45 @@ if (TestMain::gameIsPaused()) {
 		std::list<Species>::iterator currentSpecies;
 			std::list<BonyFish>::iterator fish;
 
-		if (TestMain::getTriggerRadiusStatus()) {
+
+			if ( TestMain::getBarrierRadiusStatus()) {
+					currentSpecies= ecosystem.begin();
+			fish = currentSpecies->population.begin();
+
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+				{
+					// std::list<BonyFish>::iterator fish;
+					for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+					{
+
+
+
+						// get distance from center
+						b2Vec2 fishPosition = fish->bones[0]->p_body->GetWorldCenter();
+						float fishDistance = magnitude(fishPosition);
+
+						if (fishDistance > m_deepSeaSettings.barrierRadius) {
+
+
+							// measure angle and relocate 
+							float fishAngle = atan2(fishPosition.y, fishPosition.x);
+							b2Vec2 newPosition = b2Vec2(cos(fishAngle) * m_deepSeaSettings.barrierRadius, sin(fishAngle) * m_deepSeaSettings.barrierRadius);
+
+							moveAWholeFish(&(*fish), newPosition);
+
+
+						}
+
+
+
+					}
+
+				}
+
+
+			}
+
+		if ( TestMain::getTriggerRadiusStatus() && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY  ) {
 
 			// if radius trigger is turned on, check the distances of the fish. when the average distance is greater than the trigger radius, the generation is reset.
 
@@ -4941,7 +4995,7 @@ if (TestMain::gameIsPaused()) {
 
 
 
-				if (TestMain::getFoodRadiusStatus()) {
+				if (TestMain::getFoodRadiusStatus() ) {
 
 		// take the food, measure its angle from the origin, and then place it at the designated radius with some angle jitter
 
@@ -5352,6 +5406,8 @@ void deepSeaStart() {
 	m_deepSeaSettings.originTriggerRadius = 15.0f;
 
 	m_deepSeaSettings.originFoodRadius = 10.0f;
+
+	m_deepSeaSettings.barrierRadius = 50.0f;
 	
 
 	ecosystem.push_back(*defaultSpecies);

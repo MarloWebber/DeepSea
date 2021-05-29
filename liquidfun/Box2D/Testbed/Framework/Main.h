@@ -90,6 +90,7 @@ int getFoodRadiusStatus() ;
 int getEntropyStatus() ;
 int getSpeciesWindowStatus() ;
 
+int getBarrierRadiusStatus() ;
 
 GLUI_Spinner* getSpeciesNominalPopulationSpinner() ;
 

@@ -57,6 +57,7 @@ namespace
 	int voting_mode = 0;
 	int showFluidDynamicForces = 0;
 	int entropyStatus = 0;
+	int barrierRadiusStatus = 1;
 	// int 
 
 	int selectedSpeciesEnforcePopLimit = 0;
@@ -69,6 +70,8 @@ namespace
 	GLUI_EditText* mapNameBar;
 
 	GLUI_Spinner* nominalPopulationSpinner;
+
+	GLUI_Spinner* barrierRadiusSpinner;
 
 	int32 testIndex = 0;
 	int32 testSelection = 0;
@@ -115,6 +118,9 @@ bool gameIsPaused() {
 	return settings.pause;
 }
 
+int getBarrierRadiusStatus() {
+	return barrierRadiusStatus;
+}
 
 int getPaintingStatus() {
 	return currentlyPainting;
@@ -660,6 +666,17 @@ int main(int argc, char** argv)
 	glui->add_checkbox_to_panel(EcosystemPanel, "Persistent Food", &persistentFoodStatus);
 
 	glui->add_checkbox_to_panel(EcosystemPanel, "Entropy", &entropyStatus);
+
+
+	glui->add_checkbox_to_panel(laboratoryPanel, "Barrier", &barrierRadiusStatus);
+	
+	// GLUI_Spinner* 
+	barrierRadiusSpinner =
+		glui->add_spinner_to_panel(laboratoryPanel, "Barrier radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.barrierRadius);
+	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
+
+
+
 	
 
 	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");

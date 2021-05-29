@@ -39,7 +39,8 @@ struct deepSeaSettings {
 
 	int currentlySelectedSpecies;
 
-
+	float barrierRadius;
+	float barrierRadiusStatus;
 
 };
 
