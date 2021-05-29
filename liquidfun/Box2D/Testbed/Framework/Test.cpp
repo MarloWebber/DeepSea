@@ -311,10 +311,8 @@ void Test::MouseDown(const b2Vec2& p)
 				{
 
 					for (int i = 0; i < N_FINGERS; ++i) {
-						if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
-							;
-						}
-						else {
+						if (fish->bones[i]->isUsed) {
+							
 							if (fish->bones[i]->p_body == NULL || fish->bones[i]->p_body == nullptr) {
 								continue;
 							}

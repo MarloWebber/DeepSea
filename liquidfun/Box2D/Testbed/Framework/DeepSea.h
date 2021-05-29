@@ -210,7 +210,7 @@ struct JointUserData {
 	b2RevoluteJointDef jointDef;
 	b2RevoluteJoint * p_joint; // the joint that this user data struct gets pinned to
 
-	bool init;
+	// bool init;
 	bool isUsed;
 
 	BoneUserData * attaches;
@@ -259,7 +259,7 @@ struct BoneUserData {
 	int collisionGroup;
 
 	b2Vec2 position;
-	bool init;		// if the struct has been created properly
+	// bool init;		// if the struct has been created properly
 	bool isUsed;	// if the bone is actually used in the game, presumably not all animals will use all 8
 
 	b2Color color;
@@ -379,7 +379,7 @@ struct BonyFish {
 
 	float reproductionEnergyCost;
 	float energy; 	// the animal spends energy to move and must replenish it by eating
-	bool init; 		// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+	// bool init; 		// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;	// 
 
 	BoneUserData * bones[N_FINGERS]; // for now, let's just gnetworkDet fish working with a small, hard-linked, flat level set of bones.
@@ -441,7 +441,7 @@ struct foodParticle_t {
 	b2Body * u_body;
 	b2PolygonShape shape; 
 
-	bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+	// bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;
 
 	bool flagDelete;

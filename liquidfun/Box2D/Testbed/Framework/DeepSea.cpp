@@ -185,7 +185,7 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 	    jointDef.maxMotorTorque = torque;
 	}
     jointDef.userData = this;
-    init = true;
+    // init = true;
 }
 
 boneAndJointDescriptor_t::boneAndJointDescriptor_t () {
@@ -331,14 +331,14 @@ BoneUserData::BoneUserData(
 		joint = new JointUserData( boneDescription, this, fish); 	// the joint that attaches it into its socket 
 	}	
 
-	init = true;
+	// init = true;
 	isUsed=  false;
 };
 
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
-	if (!p_bone->init) {
-		return;
-	}
+	// if (!p_bone->init) {
+	// 	return;
+	// }
 
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 
@@ -378,12 +378,12 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 			p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
 	}
 	p_bone->isUsed = true;
-	p_bone->init = true;
+	// p_bone->init = true;
 	p_bone->selected = false;
 }
 
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
-	if (!p_bone->init || !p_bone->isUsed) {
+	if ( !p_bone->isUsed) {
 		return;
 	}
 
@@ -397,7 +397,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		p_bone->sensation_radar = 0.0f;
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-			if (food[i]->init && food[i]->isUsed) {
+			if (food[i]->isUsed) {
 				b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
 				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
 				float distance = magnitude (positionalDifference);
@@ -420,7 +420,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 				{
 					if ( fish->bones[i]->isLeaf ) {
 
-						if (fish->bones[i]->init && fish->bones[i]->isUsed) {
+						if (fish->bones[i]->isUsed) {
 							b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
 							b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - fish->bones[i]->position.x),(boneCenterWorldPosition.y - fish->bones[i]->position.y));
 							float distance = magnitude (positionalDifference);
@@ -461,11 +461,11 @@ void addFoodParticle(b2Vec2 position) {
 
 		food[emptyFoodIndex]->isFood = true;
 
-		// food[emptyFoodIndex]->joint->init = false;
+		// food[emptyFoodIndex]->joint->init = true;
 		// food[emptyFoodIndex]->joint->isUsed = false;
 		nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
 
-		food[emptyFoodIndex]->energy = 10000;//food[emptyFoodIndex]->energy * 5; // this is a constant that sets the value of food. Typical creatures are made from 4 segments; setting this to 4 or above should allow the creature to reproduce after eating just 1 segment.
+		food[emptyFoodIndex]->energy = 10000 + (RNG() * 5000);//food[emptyFoodIndex]->energy * 5; // this is a constant that sets the value of food. Typical creatures are made from 4 segments; setting this to 4 or above should allow the creature to reproduce after eating just 1 segment.
 
 		food[emptyFoodIndex]->p_body->SetTransform(position, (RNG() * 2 * pi) );
 
@@ -657,8 +657,8 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 
 
-	energy = reproductionEnergyCost * 0.5; // this was what was crashing it? lmao
-
+	energy = (reproductionEnergyCost * 0.5); // this was what was crashing it? lmao
+	energy = energy + (RNG() * 0.25 * energy);
 
 	n_bones_used = 0;
 	for (int i = 0; i < N_FINGERS; ++i) {
@@ -668,7 +668,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		}
 	}
 
-	init = false; 										// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+	// init = false; 										// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	isUsed = false; 									// only true when the part is added to the world
 
 	distanceMovedSoFar = 0.0f;
@@ -772,7 +772,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
     	brain = createEmptyNetworkOfCorrectSize (nann) ;
     }
 
-    printf("Bony fish created, reproduces at %f energy\n", reproductionEnergyCost);
+    // printf("Bony fish created, reproduces at %f energy\n", reproductionEnergyCost);
 
     // printf("bonyfish ready");
 };
@@ -780,7 +780,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 	for (int i = 0; i < N_FINGERS; ++i)
 	{
-		if ( !fish->bones[i]->isUsed && !fish->bones[i]->init) {
+		if ( !fish->bones[i]->isUsed ) {
 				continue;
 		}
 		fish->bones[i]->p_body->SetTransform(position, fish->bones[i]->p_body->GetAngle());
@@ -790,11 +790,11 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 void deleteJoint(BoneUserData * bone) {
 	if (!bone->isRoot) { // root bones dont have joints
 		if (bone->joint != NULL && bone->joint != nullptr) {
-			if (bone->joint->isUsed && bone->joint->init) {
+			if (bone->joint->isUsed ) {
 				if (bone->joint->p_joint != NULL && bone->joint->p_joint != nullptr) {
 					local_m_world->DestroyJoint(bone->joint->p_joint);	
 					bone->joint->isUsed = false;
-					bone->joint->init = false;
+					// bone->joint->init = false;
 				}
 			}
 		}
@@ -802,10 +802,10 @@ void deleteJoint(BoneUserData * bone) {
 }
 
 void deleteBone (BoneUserData * bone) {
-	if (bone->isUsed && bone->init && bone->flagDelete) {		
+	if (bone->isUsed && bone->flagDelete) {		
 		local_m_world->DestroyBody(bone->p_body);
 		bone->isUsed = false;
-		bone->init = false;
+		// bone->init = false;
 	}
 }
 
@@ -1853,7 +1853,7 @@ void polydactyly2 (BonyFish * fish) {
 	fish->bones[targetFinger] = new BoneUserData(boneAlone, fish, b2Vec2(0.0f, 0.0f), 0, true);
 
 	fish->bones[targetFinger]->joint = new JointUserData(boneAlone, fish->bones[targetFinger], fish);
-	fish->bones[targetFinger]->joint->init = true;
+	// fish->bones[targetFinger]->joint->init = true;
 	fish->bones[targetFinger]->joint->isUsed = true;
 
 	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
@@ -2146,8 +2146,8 @@ void  vote (BonyFish * winner) {
 		fann * wann = winner->ann;
 
 		// save the winner to file with a new name.
-		std::string nnfilename =  std::string("labModeWinner.net");
-	    std::string fdescfilename =  std::string("labModeWinner.fsh");
+		std::string nnfilename =  std::string("child.net");
+	    std::string fdescfilename =  std::string("child.fsh");
 	    std::ofstream file { nnfilename };
 	    saveFishToFile (fdescfilename, winner->genes);
 	    fann_save(  wann , nnfilename.c_str()); 
@@ -2158,7 +2158,7 @@ void  vote (BonyFish * winner) {
 
 void mutateFANNFileDirectly (std::string filename) {
 
-	std::ofstream outFile("labModeMutant.net");
+	std::ofstream outFile("mutant.net");
 	std::string line;
 
 	std::ifstream inFile(filename);
@@ -2612,7 +2612,7 @@ void drawingTest() {
 	b2Color fishFoodDyeOutlineWhite 	= b2Color(1.0f, 1.0f, 1.0f);
 
 	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
-		if (food[i]-> init && food[i]->isUsed) {
+		if ( food[i]->isUsed) {
 			b2Vec2 vertices[4];
 			b2Vec2 boneCenterWorldPosition = food[i]->p_body->GetWorldCenter();
 			for (int j = 0; j < 4; ++j) {	
@@ -2645,7 +2645,7 @@ void drawingTest() {
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
 			for (int i = 0; i < N_FINGERS; ++i) {
-				if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
+				if (!fish->bones[i]->isUsed) {
 					;
 				}
 				else {
@@ -2782,7 +2782,7 @@ void populateSpeciesFromFile(int arg) {
 		    mutateFANNFileDirectly(std::string(nnfilename));
 
 			// now you can load the mutant ANN.
-			fann *mann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+			fann *mann = loadFishBrainFromFile (std::string("mutant")) ;
 
 				// printf("mutaded fish\n");
 
@@ -3120,16 +3120,20 @@ void selectNLowestEnergyFish (unsigned int n, std::list<Species>::iterator curre
 
 	BonyFish * lowestFishThisTurn = &(*currentSpecies->population.begin());
 
+	float lowestEnergyThisTurn = 1000000000.0f;
+
 	for (unsigned int i = 0; i < n; ++i)
 	{
+		lowestEnergyThisTurn = 1000000000.0f;
 		lowestFishThisTurn = &(*currentSpecies->population.begin());
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
 			if ( !fish->selected) 
 			{
-				if (fish->energy < lowestFishThisTurn->energy) 
+				if (fish->energy < lowestEnergyThisTurn) 
 				{
 					lowestFishThisTurn = &(*fish);
+					lowestEnergyThisTurn = lowestFishThisTurn->energy;
 				}
 			}
 		}
@@ -3190,13 +3194,13 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 		fann * wann = createFANNbrainFromDescriptor(&ickyBrain);
 
-		std::string nnfilename =  std::string("someFishBrain.net");
+		std::string nnfilename =  std::string("child.net");
 	    fann_save(  wann , nnfilename.c_str()); 
 
-	    mutateFANNFileDirectly(std::string("someFishBrain.net"));
+	    mutateFANNFileDirectly(std::string("child.net"));
 
 		// now you can load the mutant ANN.
-		fann *jann = loadFishBrainFromFile (std::string("mutantGimp")) ;
+		fann *jann = loadFishBrainFromFile (std::string("mutant")) ;
 
 		// create a neurodescriptor.
 		// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
@@ -3251,9 +3255,9 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 
 		bool thereIsAFile = false;
 
-		if (FILE *file = fopen("labModeWinner.net", "r")) {
+		if (FILE *file = fopen("child.net", "r")) {
 	        fclose(file);
-	        if (FILE *file = fopen("labModeWinner.fsh", "r")) {
+	        if (FILE *file = fopen("child.fsh", "r")) {
 		        thereIsAFile = true;
 		        fclose(file);
 		    }
@@ -3262,17 +3266,17 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
 
 			fishDescriptor_t newFishBody;
-			loadFishFromFile(std::string("labModeWinner.fsh"), newFishBody);
+			loadFishFromFile(std::string("child.fsh"), newFishBody);
 
 			// printf("loaded fish\n");
 
 			mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 		
 
-		    mutateFANNFileDirectly(std::string("labModeWinner.net"));
+		    mutateFANNFileDirectly(std::string("child.net"));
 
 			// now you can load the mutant ANN.
-			fann *mann = loadFishBrainFromFile (std::string("labModeMutant")) ;
+			fann *mann = loadFishBrainFromFile (std::string("mutant")) ;
 
 				// printf("mutaded fish\n");
 
@@ -3343,7 +3347,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	{
 		boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
 		food[i] = new BoneUserData(foodDescriptor, NULL, b2Vec2(0.0f, 0.0f), 0, false);
-		food[i]->init = false;
+		// food[i]->init = false;
 		food[i]->isUsed = false;
 	}
 
@@ -4027,7 +4031,7 @@ void drawBodyEditingWindow(BonyFish * fish) {
 
 	b2Vec2 rootPosition = b2Vec2(0.0f, 0.0f);
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-		if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
+		if ( !fish->bones[i]->isUsed) {
 			;
 		}
 		else {
@@ -4045,7 +4049,7 @@ void drawBodyEditingWindow(BonyFish * fish) {
 
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-		if (!fish->bones[i]->init || !fish->bones[i]->isUsed) {
+		if ( !fish->bones[i]->isUsed) {
 			;
 		}
 		else {
@@ -4433,14 +4437,14 @@ void runBiomechanicalFunctions () {
 	
 						// first just check to make sure the bone and joint is good.
 						// this paragraph could be condensed very easily
-						if ( !fish->bones[fish->outputMatrix[j].connectedToLimb]->isUsed || !fish->bones[fish->outputMatrix[j].connectedToLimb]->init) {
+						if ( !fish->bones[fish->outputMatrix[j].connectedToLimb]->isUsed) {
 							continue;
 						}
 						else {
 							if (fish->bones[fish->outputMatrix[j].connectedToLimb]->isRoot) {
 								continue;
 							}
-							if (fish->bones[fish->outputMatrix[j].connectedToLimb]->joint->isUsed && fish->bones[fish->outputMatrix[j].connectedToLimb]->joint->init) {
+							if (fish->bones[fish->outputMatrix[j].connectedToLimb]->joint->isUsed) {
 								if (fish->bones[fish->outputMatrix[j].connectedToLimb]->joint->p_joint != nullptr) {
 
 									float motorSpeed = motorSignals[j] * 10;
@@ -4852,7 +4856,7 @@ void selectClosestToFood (int arg) {
 			// iterate through food particles
 			for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-				if (food[i]->init && food[i]->isUsed) {
+				if (food[i]->isUsed) {
 
 					b2Vec2 vectorToFood = b2Vec2(food[i]->position.x - fish->bones[0]->p_body->GetWorldCenter().x , food[i]->position.y - fish->bones[0]->p_body->GetWorldCenter().y);
 
@@ -5008,7 +5012,7 @@ if (TestMain::gameIsPaused()) {
 
 		// iterate through food particles
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
-			if  (food[i]->init && food[i]->isUsed) {
+			if  ( food[i]->isUsed) {
 				// food[i]->flagDelete = true;
 				// food[i]->selected = false;
 
@@ -5086,7 +5090,7 @@ if (TestMain::gameIsPaused()) {
 
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-			if (food[i]->init && food[i]->isUsed) {
+			if ( food[i]->isUsed) {
 
 				// perform the flight simulation on the fish
 				flightModel( food[i] );
