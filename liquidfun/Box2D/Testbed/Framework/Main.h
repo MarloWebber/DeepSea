@@ -98,6 +98,14 @@ GLUI_EditText* getSpeciesNameBar() ;
 GLUI_EditText* getMapNameBar() ;
 bool gameIsPaused() ;
 
+b2Vec2 getUpperScreenBoundary();
+b2Vec2 getLowerScreenBoundary();
+
+
+float32 getZoom () ;
+
+// int gluiWindowEdge;
+
 // extern Settings settings;
 
 }  // namespace TestMain

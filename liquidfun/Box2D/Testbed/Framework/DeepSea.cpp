@@ -478,9 +478,6 @@ void BonyFish::feed(float amount) {
 }
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
-	// printf("bonyfish constructor");
-
-
 
 	genes = driedFish;
 	reproductionEnergyCost = 0.0f; // the amount of energy required to make a clutch of viable offspring. to be calculated
@@ -490,9 +487,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 	int randomCollisionGroup = - (RNG() * 16.0f);
 
-	// if (TestMain::getNoClipStatus()) {
-		randomCollisionGroup = -1; // if this option box is checked, the fish never collide with each other.
-	// }
+	randomCollisionGroup = -1; // if this option box is checked, the fish never collide with each other.
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (i == 0) {
@@ -501,19 +496,9 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup, true);
 
-
-
-	// while(1){;}
-
 		reproductionEnergyCost += bones[i]->energy;
-
-
-
 	}
-
-
-
-
+	
 	energy = (reproductionEnergyCost * 0.5); // this was what was crashing it? lmao
 	energy = energy + (RNG() * 0.25 * energy);
 
@@ -2545,11 +2530,20 @@ void drawingTest() {
 
 	// draw the species window
 	if (TestMain::getSpeciesWindowStatus()) {
+
+
+		// b2Vec2 edgeOfGLUIWindow = ;
+		b2Vec2 offset = TestMain::getUpperScreenBoundary();
+		float32 zoom = TestMain::getZoom();
+
+		offset = b2Vec2(offset.x - (5 * zoom), offset.y);
+
+
 		b2Vec2 windowVertices[] = {
-			b2Vec2(+10.0f, -10.0f), 
-			b2Vec2(+10.0f, +10.0f), 
-			b2Vec2(-10.0f, +10.0f), 
-			b2Vec2(-10.0f, -10.0f)
+			b2Vec2( (+10.0f * zoom) + offset.x, (-100.0f * zoom) ), 
+			b2Vec2( (+10.0f * zoom) + offset.x, (+100.0f * zoom) ), 
+			b2Vec2( (-2.0f * zoom) + offset.x, (+100.0f * zoom) ), 
+			b2Vec2( (-2.0f * zoom) + offset.x, (-100.0f * zoom) )
 		};
 
 		local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
@@ -2558,10 +2552,10 @@ void drawingTest() {
 		unsigned int i = 0;
 		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{	
-			currentSpecies->windowVertices[0] = b2Vec2(+0.5f, -0.5f + (i * 3));
-			currentSpecies->windowVertices[1] = b2Vec2(+0.5f, +0.5f + (i * 3)) ;
-			currentSpecies->windowVertices[2] = b2Vec2(-0.5f, +0.5f + (i * 3)); 
-			currentSpecies->windowVertices[3] = b2Vec2(-0.5f, -0.5f + (i * 3));
+			currentSpecies->windowVertices[0] = b2Vec2((+0.5f * zoom) + offset.x, (-0.5f * zoom) + (i * 3));
+			currentSpecies->windowVertices[1] = b2Vec2((+0.5f * zoom) + offset.x, (+0.5f * zoom) + (i * 3)) ;
+			currentSpecies->windowVertices[2] = b2Vec2((-0.5f * zoom) + offset.x, (+0.5f * zoom) + (i * 3)); 
+			currentSpecies->windowVertices[3] = b2Vec2((-0.5f * zoom) + offset.x, (-0.5f * zoom) + (i * 3));
 			i++;
 		}
 
@@ -2578,13 +2572,13 @@ void drawingTest() {
 			// say the species name
 			std::string connectorLabel = std::string("");
 			connectorLabel +=   currentSpecies->name  ;
-			b2Vec2 mocesfef = b2Vec2(currentSpecies->windowVertices[0].x-0.25, currentSpecies->windowVertices[0].y+0.5);
+			b2Vec2 mocesfef = b2Vec2(currentSpecies->windowVertices[0].x-1.5, currentSpecies->windowVertices[0].y+0.5);
 			local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 
 			// say the current population
 			connectorLabel = std::string("population: ");
 			connectorLabel +=  std::to_string(currentSpecies->population.size());
-			mocesfef = b2Vec2(currentSpecies->windowVertices[0].x-0.25, currentSpecies->windowVertices[0].y+0.5 -0.5);
+			mocesfef = b2Vec2(currentSpecies->windowVertices[0].x-1.5, currentSpecies->windowVertices[0].y+0.5 -0.5);
 			local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 		}
 	}
@@ -3017,6 +3011,11 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
     std::ofstream file { nnfilename };
     saveFishToFile (fdescfilename, driedWorm);
     fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
+
+
+    // std::list<Species>::iterator startingSpecies = ecosystem.begin();
+    // startingSpecies->selected = true;
+
 }
 
 // completely nullifies the animals brain
@@ -3434,8 +3433,6 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 		    	else {
 		    		segmentColor.Set(abs(connection->connectionWeight),0.0f,0.0f);
 		    	}
-		    	
-		    	b2Color altSegmentColor = b2Color(1.0f, 1.0f, 1.);
 
 			    local_debugDraw_pointer->DrawSegment(neuron->position, (getNeuronByIndex(fish->brain, connection->connectedTo))->position,segmentColor ); 
 			}
@@ -3526,7 +3523,15 @@ void checkClickInSpeciesWindow( b2AABB mousePointer ) {
 			click.y < currentSpecies->windowVertices[1].y
 			) 
 		{
-			currentSpecies->selected = !(currentSpecies->selected);
+
+
+			std::list<Species>::iterator unclickedSpecies;
+			for (unclickedSpecies = ecosystem.begin(); unclickedSpecies !=  ecosystem.end(); ++unclickedSpecies) 	
+			{
+				unclickedSpecies->selected = false;;
+			}
+
+			currentSpecies->selected = true;
 
 		TestMain::getSpeciesNameBar() -> set_text(	currentSpecies->name );
 		TestMain::getSpeciesNominalPopulationSpinner() ->set_float_val(currentSpecies->nominalPopulation);
@@ -4643,5 +4648,6 @@ void deepSeaStart() {
 
 	m_deepSeaSettings.barrierRadius = 50.0f;
 	
+	defaultSpecies->selected = true;
 	ecosystem.push_back(*defaultSpecies);
 }

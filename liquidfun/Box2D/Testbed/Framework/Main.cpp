@@ -73,6 +73,9 @@ namespace
 
 	GLUI_Spinner* barrierRadiusSpinner;
 
+	b2Vec2 lower;
+	b2Vec2 upper;
+
 	int32 testIndex = 0;
 	int32 testSelection = 0;
 	int32 testCount = 0;
@@ -134,6 +137,13 @@ int getOriginStartStatus() {
 	return originStartStatus;
 }
 
+b2Vec2 getUpperScreenBoundary() {
+	return upper;
+}
+b2Vec2 getLowerScreenBoundary(){
+	return lower;
+}
+
 // int getPersistentFoodStatus() {
 // 	return persistentFoodStatus;
 // }
@@ -171,6 +181,9 @@ int getEntropyStatus() {
 	return entropyStatus;
 }
 
+float32 getZoom () {
+	return viewZoom;
+}
 
 
 // Set whether to restart the test on particle parameter changes.
@@ -232,11 +245,13 @@ static void Resize(int32 w, int32 h)
 	extents = ratio >= 1 ? b2Vec2(ratio * 25.0f, 25.0f) : b2Vec2(25.0f, 25.0f / ratio);
 	extents *= viewZoom;
 
-	b2Vec2 lower = settings.viewCenter - extents;
-	b2Vec2 upper = settings.viewCenter + extents;
+	lower = settings.viewCenter - extents;
+	upper = settings.viewCenter + extents;
 
 	// L/R/B/T
 	LoadOrtho2DMatrix(lower.x, upper.x, lower.y, upper.y);
+
+
 }
 
 static b2Vec2 ConvertScreenToWorld(int32 x, int32 y)
@@ -244,8 +259,8 @@ static b2Vec2 ConvertScreenToWorld(int32 x, int32 y)
 	float32 u = x / float32(tw);
 	float32 v = (th - y) / float32(th);
 
-	b2Vec2 lower = settings.viewCenter - extents;
-	b2Vec2 upper = settings.viewCenter + extents;
+	 lower = settings.viewCenter - extents;
+	 upper = settings.viewCenter + extents;
 
 	b2Vec2 p;
 	p.x = (1.0f - u) * lower.x + u * upper.x;
@@ -652,6 +667,8 @@ int main(int argc, char** argv)
 
 	glui->add_button_to_panel(laboratoryPanel, "Add random food", 0, addRandomFoodParticle);
 
+
+
 	
 	GLUI_Rollout* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
 	EcosystemPanel->close();
@@ -674,6 +691,11 @@ int main(int argc, char** argv)
 	barrierRadiusSpinner =
 		glui->add_spinner_to_panel(laboratoryPanel, "Barrier radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.barrierRadius);
 	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
+	glui->add_separator_to_panel(laboratoryPanel);
+
+	glui->add_button_to_panel(laboratoryPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
+	glui->add_button_to_panel(laboratoryPanel, "Closest to Food", 3, selectClosestToFood);
+	glui->add_button_to_panel(laboratoryPanel, "Lowest Energy", 3, selectLowestEnergyFish);
 
 
 
@@ -732,12 +754,10 @@ int main(int argc, char** argv)
 	GLUI_Rollout* selectionPanel =	glui->add_rollout("Cloning Controls");
 	selectionPanel->open();
 
-	glui->add_button_to_panel(selectionPanel, "Farthest Traveled", 1, selectFishWhoMovedTheFurthest);
-	glui->add_button_to_panel(selectionPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
-	glui->add_button_to_panel(selectionPanel, "Closest to Food", 3, selectClosestToFood);
-	glui->add_button_to_panel(selectionPanel, "Lowest Energy", 3, selectLowestEnergyFish);
+	// glui->add_button_to_panel(selectionPanel, "Farthest Traveled", 1, selectFishWhoMovedTheFurthest);
+	
 
-	glui->add_separator_to_panel(selectionPanel);
+	// glui->add_separator_to_panel(selectionPanel);
 
 	glui->add_button_to_panel(selectionPanel, "Deselect All", 4, deselectAll);
 	glui->add_button_to_panel(selectionPanel, "Select All", 5, selectAll);
@@ -749,7 +769,7 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(selectionPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
 	glui->add_separator_to_panel(selectionPanel);
 
-	glui->add_button_to_panel(selectionPanel, "Reproduce Selected", 3, handleReproduceSelectedButton);
+	glui->add_button_to_panel(selectionPanel, "Reproduce 1 Selected", 3, handleReproduceSelectedButton);
 	glui->add_button_to_panel(selectionPanel, "Mate 2 Selected", 3, mateSelectedFish);
 	glui->add_separator_to_panel(selectionPanel);
 
@@ -788,7 +808,7 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(bodyEditPanel, "Pin to Grid", 5, pinToGrid);
 	glui->add_button_to_panel(bodyEditPanel, "Release", 6, releaseFromGrid);
 
-	glui->add_button_to_panel(bodyEditPanel, "Add Limb", 7, placeLimbOnSelectedFish);
+	glui->add_button_to_panel(bodyEditPanel, "Attach Limb", 7, placeLimbOnSelectedFish);
 	glui->add_button_to_panel(bodyEditPanel, "Amputate Limb", 8, amputation);
 
 	glui->add_checkbox_to_panel(bodyEditPanel, "Show body edit window", &showBodyEditWindow);
