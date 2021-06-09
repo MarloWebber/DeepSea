@@ -186,7 +186,9 @@ boneAndJointDescriptor_t::boneAndJointDescriptor_t () {
 	tipThickness = 0.2f;
 	isRoot = false;
 	isMouth = false;
-	sensor_radar = true; 			// like an olfactory sensor . senses distance from food
+	sensor_radar = false; 			// like an olfactory sensor . senses distance from food
+	sensor_altradar= false;
+	sensor_eye = false;
 	sensor_touch = false; 			// like how you can feel when things touch your skin.
 	sensor_jointangle = true;
 	isWeapon  = false;
@@ -367,12 +369,17 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		return;
 	}
 
+	// update all joint angle sensors
 	if (!p_bone->isRoot) {
 		if (p_bone->joint->isUsed) {
-			p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle();
+			if (p_bone->sensor_jointangle) {
+				p_bone->sensation_jointangle= p_bone->joint->p_joint->GetJointAngle();
+			}
 		}
 	}
 	
+	// update scalar food radars
+	// they react more strongly the closer they get to food
 	if (p_bone->sensor_radar) {
 		p_bone->sensation_radar = 0.0f;
 		for  (int i = 0; i < N_FOODPARTICLES; i++) {
@@ -388,7 +395,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		}
 
 
-		// this part is heinously computationally inefficient: iterating through the whole global list of bones, once per bone, every step.
+		// this part is heinously computationally inefficient: iterating through the whole global list of bones, once per sensor, every step.
 		// you can do better, but i don't know how right now
 		std::list<Species>::iterator currentSpecies;
 		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
@@ -413,6 +420,57 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 			}
 		}
 	}
+
+	// alt radars measure the angle to the closest piece of food. They don't get weaker with distance. it's supposed to be easier to interpret than the scalar one.
+	if (p_bone->sensor_altradar) {
+		p_bone->sensation_altradar = 0.0f;
+
+		// find the closest food
+		float closestFoodDistance = 1000000000.0f;
+		int closestFoodIndex = 0;
+
+		b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
+
+		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+
+			if (food[i]->isUsed) {
+				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
+				float distance = magnitude (positionalDifference);
+				if (distance < closestFoodDistance) {
+					closestFoodIndex = i;
+				}
+			}
+		}
+
+		// find the angle between it and this bone
+		if (food[closestFoodIndex]->isUsed) {
+			p_bone->sensation_altradar = atan2(  (boneCenterWorldPosition.y - food[closestFoodIndex]->position.y )   ,  (boneCenterWorldPosition.x - food[closestFoodIndex]->position.x)   );
+		}
+	}
+
+
+	// the eye works by measuring the color of bodies within a narrow field of vision. it does get weaker with distance, but only slightly as it is very directional.
+	if (p_bone->sensor_eye) {
+
+
+		// go through the list of all the other bones.
+
+			// get the global angle to each one.
+
+			// get the current bone's angle.
+
+			// find the difference between the current bone's angle and the global angle to the other bone.
+
+			// if it is less than this eye's FOV, prepare to add it to the sum.
+
+			// it is reduced according to its distance from the eye.
+
+		// the sum for this turn is multiplied by the gain, which is the ratio of a whole circle to the eye's FOV.
+			
+		
+
+	}
+
 }
 
 void addFoodParticle(b2Vec2 position) {
@@ -518,57 +576,57 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 	previousOutputs = nullptr;
 
 
-	for (unsigned int i = 0; i < N_FINGERS; ++i) { // if the limb doesn't already have sense and motor connectors, add them in.
+	// for (unsigned int i = 0; i < N_FINGERS; ++i) { // if the limb doesn't already have sense and motor connectors, add them in.
 
-		if (driedFish.bones[i].used) {
+	// 	if (driedFish.bones[i].used) {
 
-			bool connected_radar = false;
-			bool connected_angle = false;
-			bool connected_motor = false;
+	// 		bool connected_radar = false;
+	// 		bool connected_angle = false;
+	// 		bool connected_motor = false;
 
-			if (driedFish.bones[i].sensor_radar) {
-				for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
-					if (driedFish.inputMatrix[j].connectedToLimb == i ) {
-						if (driedFish.inputMatrix[j].sensorType == SENSOR_FOODRADAR) {connected_radar = true;}
-						if (driedFish.inputMatrix[j].sensorType == SENSOR_JOINTANGLE) {connected_angle = true;}
-					}
-					if (driedFish.outputMatrix[j].connectedToLimb == i ) { 
-						if (driedFish.outputMatrix[j].sensorType == SENSECONNECTOR_MOTOR) {connected_motor = true;}
-					}
-				}
-			}
+	// 		if (driedFish.bones[i].sensor_radar) {
+	// 			for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
+	// 				if (driedFish.inputMatrix[j].connectedToLimb == i ) {
+	// 					if (driedFish.inputMatrix[j].sensorType == SENSOR_FOODRADAR) {connected_radar = true;}
+	// 					if (driedFish.inputMatrix[j].sensorType == SENSOR_JOINTANGLE) {connected_angle = true;}
+	// 				}
+	// 				if (driedFish.outputMatrix[j].connectedToLimb == i ) { 
+	// 					if (driedFish.outputMatrix[j].sensorType == SENSECONNECTOR_MOTOR) {connected_motor = true;}
+	// 				}
+	// 			}
+	// 		}
 
-			if (!connected_radar) {
-				for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
-					if (driedFish.inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
-						driedFish.inputMatrix[j].sensorType = SENSOR_FOODRADAR;
-						driedFish.inputMatrix[j].connectedToLimb = i;
-						break;
-					}
-				}
-			}
+	// 		if (!connected_radar) {
+	// 			for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
+	// 				if (driedFish.inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
+	// 					driedFish.inputMatrix[j].sensorType = SENSOR_FOODRADAR;
+	// 					driedFish.inputMatrix[j].connectedToLimb = i;
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
 
-			if (!connected_angle) {
-				for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
-					if (driedFish.inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
-						driedFish.inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
-						driedFish.inputMatrix[j].connectedToLimb = i;
-						break;
-					}
-				}
-			}
+	// 		if (!connected_angle) {
+	// 			for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
+	// 				if (driedFish.inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
+	// 					driedFish.inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
+	// 					driedFish.inputMatrix[j].connectedToLimb = i;
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
 
-			if (!connected_motor) {
-				for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
-					if (driedFish.outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
-						driedFish.outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
-						driedFish.outputMatrix[j].connectedToLimb = i;
-						break;
-					}
-				}
-			}
-		}
-	}
+	// 		if (!connected_motor) {
+	// 			for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
+	// 				if (driedFish.outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
+	// 					driedFish.outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
+	// 					driedFish.outputMatrix[j].connectedToLimb = i;
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	unsigned int senseInputsUsedSoFar = 0;
 	unsigned int motorOutputsUsed = 0;
@@ -781,15 +839,17 @@ senseConnector::senseConnector () {
 fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4 segment nematode creature.
 
 	unsigned int numberOfRecursorsToStartWith = 3;
-	unsigned int numberOfRecursorsPerTime = 2;
+	unsigned int numberOfEachRecursor = 2;
 
 	for (unsigned int i = 0; i < N_SENSECONNECTORS; ++i) {
-		senseConnector moshuns = senseConnector();
-		outputMatrix[i] = moshuns;
-		inputMatrix[i] = moshuns;
+		// senseConnector moshuns = senseConnector();
+		outputMatrix[i] = senseConnector();
+		inputMatrix[i] = senseConnector();
 	}
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
+
+		bones[i] = boneAndJointDescriptor_t();
 	
 		bones[i].color.r = 0.5f;
 		bones[i].color.g = 0.5f;
@@ -810,6 +870,9 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 		if (i < 4) {
 			bones[i].used = true;
 		}
+		else {
+			bones[i].used = false;
+		}
 	}
 
 	unsigned int j = 0;
@@ -823,7 +886,7 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 		unsigned int channel = 0;
 	for (unsigned int i = 0; i < numberOfRecursorsToStartWith; ++i)
 	{
-		for (unsigned int k = 0; k < numberOfRecursorsPerTime; ++k)
+		for (unsigned int k = 0; k < numberOfEachRecursor; ++k)
 		{
 			outputMatrix[j].sensorType = SENSECONNECTOR_RECURSORTRANSMITTER;
 
@@ -839,9 +902,9 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 	j = 0; // reset for next matrix.
 
 	for (unsigned int i = 0; i < 4; ++i) {
-		inputMatrix[j].connectedToLimb = i;
-		inputMatrix[j].sensorType = SENSOR_FOODRADAR;
-		j++;
+		// inputMatrix[j].connectedToLimb = i;
+		// inputMatrix[j].sensorType = SENSOR_FOODRADAR;
+		// j++;
 		inputMatrix[j].connectedToLimb = i;
 		inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
 		j++;
@@ -876,7 +939,7 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 	 channel = 0;
 	for (unsigned int i = 0; i < numberOfRecursorsToStartWith; ++i)
 	{
-		for (unsigned int k = 0; k < numberOfRecursorsPerTime; ++k)
+		for (unsigned int k = 0; k < numberOfEachRecursor; ++k)
 		{
 				inputMatrix[j].sensorType = SENSECONNECTOR_RECURSORRECEIVER;
 
@@ -887,6 +950,11 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 		j++;
 		}
 	
+	}
+
+	while (j < N_SENSECONNECTORS) {
+		inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+		j++;
 	}
 }
 
@@ -1213,6 +1281,94 @@ fann * createFANNbrainFromDescriptor (networkDescriptor * network) { //create an
 
 	fann_set_weight_array(ann, margles, num_connections);
 	return ann;
+}
+
+// if that neuron has a sense connector associated with it, undo the sense connector.
+void deleteSenseConnector(int arg) {
+
+std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			if (fish->selected ){
+
+				std::list<layerDescriptor>::iterator layer;
+
+				unsigned int layerIndex = 0;
+
+				for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+
+					std::list<neuronDescriptor>::iterator neuron;
+					unsigned int neuronIndexInThisLayer = 0;
+	 				for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+
+	 					if (neuron -> selected) {
+	 						// deleteNeuronByIndex(fish->brain, neuron->index);
+
+	 						// if the neuron is on the first or last layer, delete any associated sense connector.
+	 						if (layerIndex == 0 ) {	
+	 							// fish->inputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED;
+
+	 							//now you have to decrement the positions of all other sense connectors.
+		 						// for (unsigned int i = neuronIndexInThisLayer; i < N_SENSECONNECTORS; i++)
+		 						// {
+		 							// fish->inputMatrix[i] = fish->inputMatrix[i+1];
+		 							// if (i == N_SENSECONNECTORS-1) {
+		 							// 	
+		 							fish->inputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
+		 							// } 
+		 							// else {
+		 							// 	fish->inputMatrix[i] = fish->inputMatrix[i+1];
+		 							// }
+		 						// }
+
+
+	 						}
+
+	 						if ( layerIndex == fish->brain->layers.size() -1) {
+	 							// fish->outputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED;
+
+	 								//now you have to decrement the positions of all other sense connectors.
+	 							// printf("neuronIndexInThisLayer %u\n",neuronIndexInThisLayer);
+		 						// for (unsigned int i = neuronIndexInThisLayer; i < N_SENSECONNECTORS; i++)
+		 						// {
+		 							// if (i == N_SENSECONNECTORS-1) {
+		 								fish->outputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
+		 							// } 
+		 							// else {
+		 							// 	fish->outputMatrix[i] = fish->outputMatrix[i+1];
+		 							// }
+		 						// }
+
+	 						}
+
+	 						
+
+
+	 						// fish->ann = createFANNbrainFromDescriptor (fish->brain) ;
+
+	 							// the fish's input and output matrix configurations should be passed on to offspring
+							for (int i = 0; i < N_SENSECONNECTORS; ++i)
+							{
+								fish->genes.inputMatrix[i] = fish->inputMatrix[i];
+								fish->genes.outputMatrix[i] = fish->outputMatrix[i];
+							}
+
+
+	 						return;
+	 					}
+	 					neuronIndexInThisLayer++;
+	 				}
+	 				layerIndex++;
+				}
+			}
+		}
+	}
+
+
+
 }
 
 void deleteSelectedNeuron (int arg) {
@@ -3177,7 +3333,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 	std::advance(layer, num_layers-1);
 	sizeOfOutputLayer = layer->neurons.size();
 
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) {
 		if ((unsigned long)layer->neurons.size() > sizeOfBiggestLayer) {
 			sizeOfBiggestLayer = (unsigned long)layer->neurons.size();
 		}
@@ -3202,7 +3358,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 	// work out the neuron positions.
 	unsigned int layerIndex = 0;
 	unsigned int neuronIndex = 0;
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) {
 		neuronIndex = 0;
 		std::list<neuronDescriptor>::iterator neuron;
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
@@ -3215,7 +3371,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 	// while you're here, draw a dark grey box around selected layers. but not as light as the selected neuron.
 	b2Vec2 layerSelectionIndicator[4];
 
-	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) {
 
 		if (layer->selected) {
 
@@ -3826,6 +3982,10 @@ void runBiomechanicalFunctions () {
 				switch (fish->inputMatrix[j].sensorType) {
 					case SENSOR_FOODRADAR:
 						sensorium[j] = fish->bones[ fish->inputMatrix[j].connectedToLimb  ]->sensation_radar;
+					break;
+
+					case SENSOR_ALTRADAR:
+						sensorium[j] = fish->bones[ fish->inputMatrix[j].connectedToLimb  ]->sensation_altradar;
 					break;
 
 					case SENSOR_TOUCH:
@@ -4482,6 +4642,10 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 		else if (dataA.dataType == TYPE_MOUTH) {
 			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
+
+			if (fish->flagDelete || food->flagDelete) {
+				return;
+			}
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 				vote(fish);
 			}
@@ -4647,7 +4811,7 @@ void deepSeaStart() {
 	m_deepSeaSettings.originFoodRadius = 10.0f;
 
 	m_deepSeaSettings.barrierRadius = 50.0f;
-	
+
 	defaultSpecies->selected = true;
 	ecosystem.push_back(*defaultSpecies);
 }

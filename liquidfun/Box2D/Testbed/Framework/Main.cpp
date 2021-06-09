@@ -790,6 +790,7 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(brainEditPanel, "Randomize Brain", 10, scrambleSelectedFish);
 
 	glui->add_button_to_panel(brainEditPanel, "Delete Selected Neuron", 11, deleteSelectedNeuron);
+	glui->add_button_to_panel(brainEditPanel, "Delete Sense Connector", 11, deleteSenseConnector);
 
 	glui->add_button_to_panel(brainEditPanel, "Add Recursor Pair", 12, addRecursorPair);
 	glui->add_button_to_panel(brainEditPanel, "Add Neuron in selected layer", 13, addNeuronInSelectedLayer);

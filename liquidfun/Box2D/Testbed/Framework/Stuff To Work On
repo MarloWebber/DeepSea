@@ -1,0 +1,76 @@
+Epics ------------
+
+
+
+interacting ecosystem of several species
+
+fish can steer itself toward food
+	it's not entirely clear why we haven't been able to do this yet.
+	- maybe the shape and size of the brain does not permit this logic to occur.
+	- maybe the sensory data entering the brain is not sufficient to easily guide the creature.
+	- insufficient population and time, or too high mutation rate meaning that more complex solutions can't be resolved.
+
+
+	having to run the simulation for too long or with too many fish is bad gameplay, so better to improve the first 2.
+	it is hard to know what would have to change about the neural layout without a better understanding of how this problem is solved.
+
+	the middle point is the easiest to solve, adding better sensors that do not need as much processing to guide the creature.
+
+
+
+
+
+
+In Progress -------------------------
+
+
+
+To Do ---------------------------------------
+
+	mutation adds and removes limbs, neurons, layers, and other brain peripherals
+
+
+
+
+	- an enclosed boundary for the playable area (maps, terrain etc). loadable maps with a physical containment to keep the fish in. rigid polygonal terrain.
+
+
+	plants which are non-motile animals that photosynthesize and can be eaten
+
+
+
+	randomise timer phase on a per-animal basis
+
+
+
+
+Done -----------
+
+	buttons to add and remove neurons in middle layers - done!
+
+
+	ability to add and remove layers
+		- add: done
+		- remove:.. done
+
+	sexual reproduction
+		- bodies: done
+		- ability to combine minds:... done
+
+
+	- multiple independent species
+
+	- number of food particles maintained in the play area (make it always persistent in lab mode, automatically maintained at level in eco mode by adding new random ones when an old one is eaten)
+			- food is persistent always in lab mode, and 
+
+
+
+	ecosystem mode reproduction, where instead of replacing all animals in the species, just the 3 who ate the longest time ago are replaced
+
+
+	species view window
+	-> ability to populate a species from named file
+	-> ability to save individual to named file
+	-> select and deselect a species
+	-> select all members of the species
+	-> 

@@ -124,9 +124,11 @@ struct boneAndJointDescriptor_t {
 		bool isWeapon;
 		bool isLeaf;
 		bool isFood;
-		bool sensor_radar; // like an olfactory sensor . senses distance from food
-		bool sensor_touch; // like how you can feel when things touch your skin.
+		bool sensor_radar; 			// like an olfactory sensor . senses distance from food
+		bool sensor_altradar; 		// like an olfactory sensor . senses angle to food
+		bool sensor_touch; 			// like how you can feel when things touch your skin.
 		bool sensor_jointangle;
+		bool sensor_eye;
 
 		unsigned int attachedTo; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
 
@@ -153,6 +155,8 @@ struct boneAndJointDescriptor_t {
 #define SENSOR_TIMER 						5
 #define SENSECONNECTOR_RECURSORRECEIVER 	6
 #define SENSECONNECTOR_RECURSORTRANSMITTER 	7
+#define SENSOR_ALTRADAR 					8
+#define SENSOR_EYE 							9
 
 #define SENSECONNECTOR_BUFFERSIZE			64	// the maximum size of the buffer used for recursion delay.
 
@@ -172,6 +176,8 @@ struct senseConnector {
 	unsigned int recursorDelay;
 	float recursorBuffer[SENSECONNECTOR_BUFFERSIZE];
 	unsigned int recursorCursor;
+
+	float eyeFOV;
 
 	senseConnector();
 };
@@ -238,14 +244,18 @@ struct BoneUserData {
 	bool isFood;
 
 	bool sensor_radar ; // like an olfactory sensor . senses distance from food
+	bool sensor_altradar;
+	bool sensor_eye;
 	bool sensor_touch; // like how you can feel when things touch your skin.
 	bool sensor_jointangle;
 
 	b2Vec2 offsetOnBody;
 
 	float sensation_radar;
+	float sensation_altradar;
 	float sensation_touch;
 	float sensation_jointangle;
+	b2Color sensation_eye;
 
 	bool isWeapon ;					// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect such as an explosion.
 	float energy; 					// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
@@ -587,6 +597,7 @@ void flagSelectedFishForDeletion(int arg) ;
 
 void placeLimbOnSelectedFish(int arg);
 void amputation(int arg);
+void deleteSenseConnector(int arg) ;
 void deleteSelectedNeuron (int arg) ;
 void addLayerToSelectedFish(int arg) ;
 
