@@ -3411,6 +3411,8 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 		std::string connectorLabel = std::string("");
 
 		b2Vec2 mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+
+		int mint = 0;
 		switch (fish->inputMatrix[j].sensorType) {
 
 			case SENSECONNECTOR_UNUSED:	
@@ -3461,6 +3463,19 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 				connectorLabel =  "Timer";
 				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
 				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+				connectorLabel = std::string("Freq  ");
+
+
+				mint =  fish->inputMatrix[j].timerFreq;
+				connectorLabel += std::to_string(  mint );
+
+				// https://stackoverflow.com/questions/29200635/convert-float-to-string-with-precision-number-of-decimal-digits-specified
+				// connectorLabel = connectorLabel.substr(0, connectorLabel.find(".")+3);
+
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.3);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
 			break;
 
 			case SENSECONNECTOR_RECURSORRECEIVER:	
