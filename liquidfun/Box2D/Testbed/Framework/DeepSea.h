@@ -178,6 +178,7 @@ struct senseConnector {
 	unsigned int recursorCursor;
 
 	float eyeFOV;
+	b2Color eyeColor;
 
 	senseConnector();
 };
@@ -606,6 +607,11 @@ void addNeuronInSelectedLayer(int arg) ;
 void deleteSelectedLayer(int arg) ;
 
 void addRecursorPair(int arg) ;
+
+void selectedLimbEye(int arg) ;
+void selectedLimbFoodradar(int arg) ;
+void selectedLimbAltradar(int arg) ;
+// void selectedLimbMotor(int arg) ;
 
 void deselectAll(int arg) ;
 void selectAll(int arg) ;

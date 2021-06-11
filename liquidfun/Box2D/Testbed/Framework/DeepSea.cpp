@@ -829,6 +829,9 @@ senseConnector::senseConnector () {
 	recursorDelay = 8;
 	recursorCursor = 0;
 
+	eyeFOV = 0.5 * pi;
+	eyeColor = b2Color(0.0f, 1.0f, 0.0f); // default eye color is green for seeing food
+
 	for (int i = 0; i < SENSECONNECTOR_BUFFERSIZE; ++i)
 	{
 		recursorBuffer[i] = 0.0f;
@@ -1755,6 +1758,252 @@ void addRecursorPair(int arg) {
 		}
 	}
 }
+
+
+void selectedLimbEye(int arg) {
+
+	unused_variable((void *) &arg);
+
+	std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			if (fish->selected) 
+			{
+				// for (unsigned int i = 0; i < N_FINGERS; ++i) 
+				// {
+					if (fish->bones[currentlySelectedLimb]->isUsed) 
+					{
+						// if (fish->bones[i]->selected) 
+						// {
+							if (fish->bones[currentlySelectedLimb]->sensor_eye) 
+							{
+
+								// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
+								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+								{
+									if (fish->inputMatrix[j].sensorType == SENSOR_EYE) {
+										if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
+											fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+
+											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
+											deleteNeuronByIndex(fish->brain, j);
+
+											fish->bones[currentlySelectedLimb]->sensor_eye = false;
+											break;
+										}
+									}
+
+								}
+
+
+							}
+							else {
+
+								// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
+								addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+								{
+									if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+										fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
+										fish->inputMatrix[j].sensorType = SENSOR_EYE;
+
+										fish->bones[currentlySelectedLimb]->sensor_eye = true;
+										return;
+									}
+								}
+							}
+						// }
+					}
+				// }
+			}
+		}
+	}
+}
+
+void selectedLimbFoodradar(int arg) {
+		unused_variable((void *) &arg);
+
+
+								// printf("A\n");
+
+	std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			if (fish->selected) 
+			{
+
+								// printf("B\n");
+				// for (unsigned int i = 0; i < N_FINGERS; ++i) 
+				// {
+					if (fish->bones[currentlySelectedLimb]->isUsed) 
+					{
+
+								// printf("C\n");
+						// if (fish->bones[i]->selected) 
+						// {
+
+								// printf("D\n");
+
+							if (fish->bones[currentlySelectedLimb]->sensor_radar) 
+							{
+
+								// printf("toggle food radar on\n");
+
+								// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
+								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+								{
+									if (fish->inputMatrix[j].sensorType == SENSOR_FOODRADAR) {
+										if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
+											fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+
+											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
+											deleteNeuronByIndex(fish->brain, j);
+
+											fish->bones[currentlySelectedLimb]->sensor_radar = false;
+											break;
+										}
+									}
+								}
+							}
+							else {
+
+
+								// printf("toggle food radar off\n");
+
+								// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
+								addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+								{
+									if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+										fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
+										fish->inputMatrix[j].sensorType = SENSOR_FOODRADAR;
+										fish->bones[currentlySelectedLimb]->sensor_radar = true;
+										return;
+									}
+								}
+
+							}
+						// }
+					}
+				// }
+			}
+		}
+	}
+
+}
+
+void selectedLimbAltradar(int arg) {
+
+			unused_variable((void *) &arg);
+
+	std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			if (fish->selected) 
+			{
+				// for (unsigned int i = 0; i < N_FINGERS; ++i) 
+				// {
+					if (fish->bones[currentlySelectedLimb]->isUsed) 
+					{
+						// if (fish->bones[i]->selected) {
+
+							if (fish->bones[currentlySelectedLimb]->sensor_altradar) {
+
+								// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
+								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+								{
+									if (fish->inputMatrix[j].sensorType == SENSOR_ALTRADAR) {
+										if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
+											fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+
+											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
+											deleteNeuronByIndex(fish->brain, j);
+
+
+											fish->bones[currentlySelectedLimb]->sensor_altradar = false;
+											break;
+										}
+									}
+								}
+							}
+							else {
+
+								// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
+								addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+								{
+									if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+										fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
+										fish->inputMatrix[j].sensorType = SENSOR_ALTRADAR;
+
+										
+										fish->bones[currentlySelectedLimb]->sensor_altradar = true;
+										return;
+									}
+								}
+
+							}
+						// }
+					}
+				// }
+			}
+		}
+	}
+
+}
+
+// void selectedLimbMotor(int arg) {
+// 	unused_variable((void *) &arg);
+
+// 	std::list<Species>::iterator currentSpecies;
+// 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+// 	{
+// 		std::list<BonyFish>::iterator fish;
+// 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+// 		{
+// 			if (fish->selected) 
+// 			{
+// 				for (unsigned int i = 0; i < N_FINGERS; ++i) 
+// 				{
+// 					if (!fish->bones[i]->isUsed) 
+// 					{
+// 						if (fish->bones[i]->selected) {
+
+
+// 							if (fish->bones->sensor_altradar) {
+
+// 							// first delete the motor and joint angle sensor.
+
+
+
+
+
+
+
+
+
+
+
+// 						}
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+
+// }
 
 void verifyNetworkDescriptor (networkDescriptor * network) {
 

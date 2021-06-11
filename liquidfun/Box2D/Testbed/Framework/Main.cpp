@@ -793,7 +793,20 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(brainEditPanel, "Delete Sense Connector", 11, deleteSenseConnector);
 
 	glui->add_button_to_panel(brainEditPanel, "Add Recursor Pair", 12, addRecursorPair);
-	glui->add_button_to_panel(brainEditPanel, "Add Neuron in selected layer", 13, addNeuronInSelectedLayer);
+
+
+
+
+
+
+
+
+
+
+
+
+
+	glui->add_button_to_panel(brainEditPanel, "Add neuron in selected layer", 13, addNeuronInSelectedLayer);
 
 	glui->add_button_to_panel(brainEditPanel, "Add layer", 14, addLayerToSelectedFish);
 
@@ -811,6 +824,12 @@ int main(int argc, char** argv)
 
 	glui->add_button_to_panel(bodyEditPanel, "Attach Limb", 7, placeLimbOnSelectedFish);
 	glui->add_button_to_panel(bodyEditPanel, "Amputate Limb", 8, amputation);
+
+
+ 	glui->add_button_to_panel(bodyEditPanel, "Selected limb eye", 9, selectedLimbEye);
+ 	glui->add_button_to_panel(bodyEditPanel, "Selected limb foodradar", 10, selectedLimbFoodradar);
+ 	glui->add_button_to_panel(bodyEditPanel, "Selected limb altradar", 11, selectedLimbAltradar);
+ 	// glui->add_button_to_panel(bodyEditPanel, "Selected limb motor", 12, selectedLimbMotor);
 
 	glui->add_checkbox_to_panel(bodyEditPanel, "Show body edit window", &showBodyEditWindow);
 
