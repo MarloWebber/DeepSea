@@ -1791,6 +1791,19 @@ void selectedLimbEye(int arg) {
 											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
 											deleteNeuronByIndex(fish->brain, j);
 
+
+											//now you have to decrement the positions of all other sense connectors.
+						 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
+						 						{
+						 							// fish->inputMatrix[i] = fish->inputMatrix[i+1];
+						 							if (k == N_SENSECONNECTORS-1) {
+						 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
+						 							} 
+						 							else {
+						 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
+						 							}
+						 						}
+
 											fish->bones[currentlySelectedLimb]->sensor_eye = false;
 											break;
 										}
@@ -1801,6 +1814,8 @@ void selectedLimbEye(int arg) {
 
 							}
 							else {
+
+								// printf("moog bjood\n");
 
 								// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
 								addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
@@ -1866,6 +1881,19 @@ void selectedLimbFoodradar(int arg) {
 											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
 											deleteNeuronByIndex(fish->brain, j);
 
+											//now you have to decrement the positions of all other sense connectors.
+						 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
+						 						{
+						 							// fish->inputMatrix[i] = fish->inputMatrix[i+1];
+						 							if (k == N_SENSECONNECTORS-1) {
+						 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
+						 							} 
+						 							else {
+						 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
+						 							}
+						 						}
+
+
 											fish->bones[currentlySelectedLimb]->sensor_radar = false;
 											break;
 										}
@@ -1929,6 +1957,19 @@ void selectedLimbAltradar(int arg) {
 
 											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
 											deleteNeuronByIndex(fish->brain, j);
+
+											//now you have to decrement the positions of all other sense connectors.
+						 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
+						 						{
+						 							// fish->inputMatrix[i] = fish->inputMatrix[i+1];
+						 							if (k == N_SENSECONNECTORS-1) {
+						 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
+						 							} 
+						 							else {
+						 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
+						 							}
+						 						}
+
 
 
 											fish->bones[currentlySelectedLimb]->sensor_altradar = false;
@@ -3670,7 +3711,33 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 			case SENSOR_FOODRADAR:	
 				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.05f,0.5f,0.1f) );
-				connectorLabel =  "Food";
+				connectorLabel =  "Food Int";
+
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+				connectorLabel = std::string("Limb ");
+				connectorLabel += std::to_string(fish->inputMatrix[j].connectedToLimb);
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.3);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+			break;
+
+			case SENSOR_ALTRADAR:	
+				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,b2Color(0.05f,0.5f,0.5f) );
+				connectorLabel =  "Food Dir";
+
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+				connectorLabel = std::string("Limb ");
+				connectorLabel += std::to_string(fish->inputMatrix[j].connectedToLimb);
+				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.3);
+				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+			break;
+
+			case SENSOR_EYE:	
+				local_debugDraw_pointer->DrawFlatPolygon(gigggle, 4 ,fish->inputMatrix[j].eyeColor );
+				connectorLabel =  "Eye";
 
 				mocesfef = b2Vec2(neuron_position.x-0.05, neuron_position.y-0.2);
 				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
