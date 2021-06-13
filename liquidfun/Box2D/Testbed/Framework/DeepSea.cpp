@@ -1844,6 +1844,14 @@ void selectedLimbEye(int arg) {
 										fish->inputMatrix[j].sensorType = SENSOR_EYE;
 
 										fish->bones[currentlySelectedLimb]->sensor_eye = true;
+
+										// the fish's input and output matrix configurations should be passed on to offspring
+											for (int k = 0; k < N_SENSECONNECTORS; ++k)
+											{
+												fish->genes.inputMatrix[k] = fish->inputMatrix[k];
+												fish->genes.outputMatrix[k] = fish->outputMatrix[k];
+											}
+
 										return;
 									}
 								}
@@ -1931,6 +1939,14 @@ void selectedLimbFoodradar(int arg) {
 										fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
 										fish->inputMatrix[j].sensorType = SENSOR_FOODRADAR;
 										fish->bones[currentlySelectedLimb]->sensor_radar = true;
+
+										// the fish's input and output matrix configurations should be passed on to offspring
+											for (int k = 0; k < N_SENSECONNECTORS; ++k)
+											{
+												fish->genes.inputMatrix[k] = fish->inputMatrix[k];
+												fish->genes.outputMatrix[k] = fish->outputMatrix[k];
+											}
+
 										return;
 									}
 								}
@@ -2008,6 +2024,22 @@ void selectedLimbAltradar(int arg) {
 
 										
 										fish->bones[currentlySelectedLimb]->sensor_altradar = true;
+
+
+										// update the fish's genes to reflect its current state of being.
+
+											// the fish's input and output matrix configurations should be passed on to offspring
+											for (int k = 0; k < N_SENSECONNECTORS; ++k)
+											{
+												fish->genes.inputMatrix[k] = fish->inputMatrix[k];
+												fish->genes.outputMatrix[k] = fish->outputMatrix[k];
+											}
+
+											// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (fish->ann) ;
+											// fish->brain = muscleCars;
+											// 
+
+
 										return;
 									}
 								}
