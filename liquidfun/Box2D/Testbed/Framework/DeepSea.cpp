@@ -438,6 +438,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 				float distance = magnitude (positionalDifference);
 				if (distance < closestFoodDistance) {
 					closestFoodIndex = i;
+					closestFoodDistance = distance;
 				}
 			}
 		}
