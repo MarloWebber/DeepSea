@@ -1325,57 +1325,22 @@ std::list<Species>::iterator currentSpecies;
 	 				for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
 
 	 					if (neuron -> selected) {
-	 						// deleteNeuronByIndex(fish->brain, neuron->index);
 
 	 						// if the neuron is on the first or last layer, delete any associated sense connector.
 	 						if (layerIndex == 0 ) {	
-	 							// fish->inputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED;
-
-	 							//now you have to decrement the positions of all other sense connectors.
-		 						// for (unsigned int i = neuronIndexInThisLayer; i < N_SENSECONNECTORS; i++)
-		 						// {
-		 							// fish->inputMatrix[i] = fish->inputMatrix[i+1];
-		 							// if (i == N_SENSECONNECTORS-1) {
-		 							// 	
-		 							fish->inputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
-		 							// } 
-		 							// else {
-		 							// 	fish->inputMatrix[i] = fish->inputMatrix[i+1];
-		 							// }
-		 						// }
-
-
+	 							fish->inputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED; 
 	 						}
 
 	 						if ( layerIndex == fish->brain->layers.size() -1) {
-	 							// fish->outputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED;
-
-	 								//now you have to decrement the positions of all other sense connectors.
-	 							// printf("neuronIndexInThisLayer %u\n",neuronIndexInThisLayer);
-		 						// for (unsigned int i = neuronIndexInThisLayer; i < N_SENSECONNECTORS; i++)
-		 						// {
-		 							// if (i == N_SENSECONNECTORS-1) {
-		 								fish->outputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
-		 							// } 
-		 							// else {
-		 							// 	fish->outputMatrix[i] = fish->outputMatrix[i+1];
-		 							// }
-		 						// }
-
+ 								fish->outputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED; 
 	 						}
 
-	 						
-
-
-	 						// fish->ann = createFANNbrainFromDescriptor (fish->brain) ;
-
-	 							// the fish's input and output matrix configurations should be passed on to offspring
+	 						// the fish's input and output matrix configurations should be passed on to offspring
 							for (int i = 0; i < N_SENSECONNECTORS; ++i)
 							{
 								fish->genes.inputMatrix[i] = fish->inputMatrix[i];
 								fish->genes.outputMatrix[i] = fish->outputMatrix[i];
 							}
-
 
 	 						return;
 	 					}
@@ -1386,9 +1351,6 @@ std::list<Species>::iterator currentSpecies;
 			}
 		}
 	}
-
-
-
 }
 
 void deleteSelectedNeuron (int arg) {
@@ -1415,7 +1377,6 @@ void deleteSelectedNeuron (int arg) {
 
 	 						// if the neuron is on the first or last layer, delete any associated sense connector.
 	 						if (layerIndex == 0 ) {	
-	 							// fish->inputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED;
 
 	 							//now you have to decrement the positions of all other sense connectors.
 		 						for (unsigned int i = neuronIndexInThisLayer; i < N_SENSECONNECTORS; i++)
@@ -1428,15 +1389,11 @@ void deleteSelectedNeuron (int arg) {
 		 								fish->inputMatrix[i] = fish->inputMatrix[i+1];
 		 							}
 		 						}
-
-
 	 						}
 
 	 						if ( layerIndex == fish->brain->layers.size() -1) {
-	 							// fish->outputMatrix[neuronIndexInThisLayer].sensorType = SENSECONNECTOR_UNUSED;
 
-	 								//now you have to decrement the positions of all other sense connectors.
-	 							printf("neuronIndexInThisLayer %u\n",neuronIndexInThisLayer);
+ 								//now you have to decrement the positions of all other sense connectors.
 		 						for (unsigned int i = neuronIndexInThisLayer; i < N_SENSECONNECTORS; i++)
 		 						{
 		 							if (i == N_SENSECONNECTORS-1) {
@@ -1446,11 +1403,7 @@ void deleteSelectedNeuron (int arg) {
 		 								fish->outputMatrix[i] = fish->outputMatrix[i+1];
 		 							}
 		 						}
-
 	 						}
-
-	 						
-
 
 	 						fish->ann = createFANNbrainFromDescriptor (fish->brain) ;
 
@@ -1789,86 +1742,69 @@ void selectedLimbEye(int arg) {
 		{
 			if (fish->selected) 
 			{
-				// for (unsigned int i = 0; i < N_FINGERS; ++i) 
-				// {
-					if (fish->bones[currentlySelectedLimb]->isUsed) 
+				if (fish->bones[currentlySelectedLimb]->isUsed) 
+				{
+					if (fish->bones[currentlySelectedLimb]->sensor_eye) 
 					{
-						// if (fish->bones[i]->selected) 
-						// {
-							if (fish->bones[currentlySelectedLimb]->sensor_eye) 
-							{
+						// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
+						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+						{
+							if (fish->inputMatrix[j].sensorType == SENSOR_EYE) {
+								if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
+									fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
 
-								// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
-								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
-								{
-									if (fish->inputMatrix[j].sensorType == SENSOR_EYE) {
-										if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
-											fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+									// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
+									deleteNeuronByIndex(fish->brain, j);
 
-											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
-											deleteNeuronByIndex(fish->brain, j);
+									//now you have to decrement the positions of all other sense connectors.
+				 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
+				 						{
+				 							if (k == N_SENSECONNECTORS-1) {
+				 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; 
+				 							} 
+				 							else {
+				 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
+				 							}
+				 						}
 
-
-											//now you have to decrement the positions of all other sense connectors.
-						 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
-						 						{
-						 							// fish->inputMatrix[i] = fish->inputMatrix[i+1];
-						 							if (k == N_SENSECONNECTORS-1) {
-						 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
-						 							} 
-						 							else {
-						 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
-						 							}
-						 						}
-
-											fish->bones[currentlySelectedLimb]->sensor_eye = false;
-											break;
-										}
-									}
-
-								}
-
-
-							}
-							else {
-
-								// printf("moog bjood\n");
-
-								// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
-								addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
-
-								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
-								{
-									if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-										fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
-										fish->inputMatrix[j].sensorType = SENSOR_EYE;
-
-										fish->bones[currentlySelectedLimb]->sensor_eye = true;
-
-										// the fish's input and output matrix configurations should be passed on to offspring
-											for (int k = 0; k < N_SENSECONNECTORS; ++k)
-											{
-												fish->genes.inputMatrix[k] = fish->inputMatrix[k];
-												fish->genes.outputMatrix[k] = fish->outputMatrix[k];
-											}
-
-										return;
-									}
+									fish->bones[currentlySelectedLimb]->sensor_eye = false;
+									break;
 								}
 							}
-						// }
+						}
 					}
-				// }
+					else {
+
+						// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
+						addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+						{
+							if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+								fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
+								fish->inputMatrix[j].sensorType = SENSOR_EYE;
+
+								fish->bones[currentlySelectedLimb]->sensor_eye = true;
+
+								// the fish's input and output matrix configurations should be passed on to offspring
+									for (int k = 0; k < N_SENSECONNECTORS; ++k)
+									{
+										fish->genes.inputMatrix[k] = fish->inputMatrix[k];
+										fish->genes.outputMatrix[k] = fish->outputMatrix[k];
+									}
+
+								return;
+							}
+						}
+					}	
+				}
 			}
 		}
 	}
 }
 
 void selectedLimbFoodradar(int arg) {
-		unused_variable((void *) &arg);
-
-
-								// printf("A\n");
+	unused_variable((void *) &arg);
 
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
@@ -1878,92 +1814,71 @@ void selectedLimbFoodradar(int arg) {
 		{
 			if (fish->selected) 
 			{
-
-								// printf("B\n");
-				// for (unsigned int i = 0; i < N_FINGERS; ++i) 
-				// {
-					if (fish->bones[currentlySelectedLimb]->isUsed) 
+				if (fish->bones[currentlySelectedLimb]->isUsed) 
+				{
+					if (fish->bones[currentlySelectedLimb]->sensor_radar) 
 					{
 
-								// printf("C\n");
-						// if (fish->bones[i]->selected) 
-						// {
+						// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
+						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+						{
+							if (fish->inputMatrix[j].sensorType == SENSOR_FOODRADAR) {
+								if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
+									fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
 
-								// printf("D\n");
+									// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
+									deleteNeuronByIndex(fish->brain, j);
 
-							if (fish->bones[currentlySelectedLimb]->sensor_radar) 
-							{
-
-								// printf("toggle food radar on\n");
-
-								// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
-								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
-								{
-									if (fish->inputMatrix[j].sensorType == SENSOR_FOODRADAR) {
-										if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
-											fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
-
-											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
-											deleteNeuronByIndex(fish->brain, j);
-
-											//now you have to decrement the positions of all other sense connectors.
-						 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
-						 						{
-						 							// fish->inputMatrix[i] = fish->inputMatrix[i+1];
-						 							if (k == N_SENSECONNECTORS-1) {
-						 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
-						 							} 
-						 							else {
-						 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
-						 							}
-						 						}
+									//now you have to decrement the positions of all other sense connectors.
+			 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
+			 						{
+			 							if (k == N_SENSECONNECTORS-1) {
+			 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; 
+			 							} 
+			 							else {
+			 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
+			 							}
+			 						}
 
 
-											fish->bones[currentlySelectedLimb]->sensor_radar = false;
-											break;
-										}
-									}
+									fish->bones[currentlySelectedLimb]->sensor_radar = false;
+									break;
 								}
 							}
-							else {
-
-
-								// printf("toggle food radar off\n");
-
-								// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
-								addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
-
-								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
-								{
-									if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-										fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
-										fish->inputMatrix[j].sensorType = SENSOR_FOODRADAR;
-										fish->bones[currentlySelectedLimb]->sensor_radar = true;
-
-										// the fish's input and output matrix configurations should be passed on to offspring
-											for (int k = 0; k < N_SENSECONNECTORS; ++k)
-											{
-												fish->genes.inputMatrix[k] = fish->inputMatrix[k];
-												fish->genes.outputMatrix[k] = fish->outputMatrix[k];
-											}
-
-										return;
-									}
-								}
-
-							}
-						// }
+						}
 					}
-				// }
+					else {
+
+						// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
+						addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+						{
+							if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+								fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
+								fish->inputMatrix[j].sensorType = SENSOR_FOODRADAR;
+								fish->bones[currentlySelectedLimb]->sensor_radar = true;
+
+								// the fish's input and output matrix configurations should be passed on to offspring
+									for (int k = 0; k < N_SENSECONNECTORS; ++k)
+									{
+										fish->genes.inputMatrix[k] = fish->inputMatrix[k];
+										fish->genes.outputMatrix[k] = fish->outputMatrix[k];
+									}
+
+								return;
+							}
+						}
+					}
+				}
 			}
 		}
 	}
-
 }
 
 void selectedLimbAltradar(int arg) {
 
-			unused_variable((void *) &arg);
+	unused_variable((void *) &arg);
 
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
@@ -1973,127 +1888,70 @@ void selectedLimbAltradar(int arg) {
 		{
 			if (fish->selected) 
 			{
-				// for (unsigned int i = 0; i < N_FINGERS; ++i) 
-				// {
-					if (fish->bones[currentlySelectedLimb]->isUsed) 
-					{
-						// if (fish->bones[i]->selected) {
+				if (fish->bones[currentlySelectedLimb]->isUsed) 
+				{
+					if (fish->bones[currentlySelectedLimb]->sensor_altradar) {
 
-							if (fish->bones[currentlySelectedLimb]->sensor_altradar) {
+						// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
+						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+						{
+							if (fish->inputMatrix[j].sensorType == SENSOR_ALTRADAR) {
+								if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
+									fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
 
-								// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
-								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
-								{
-									if (fish->inputMatrix[j].sensorType == SENSOR_ALTRADAR) {
-										if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimb) {
-											fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+									// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
+									deleteNeuronByIndex(fish->brain, j);
 
-											// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
-											deleteNeuronByIndex(fish->brain, j);
+									//now you have to decrement the positions of all other sense connectors.
+			 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
+			 						{
+			 							if (k == N_SENSECONNECTORS-1) {
+			 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; 
+			 							} 
+			 							else {
+			 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
+			 							}
+			 						}
 
-											//now you have to decrement the positions of all other sense connectors.
-						 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
-						 						{
-						 							// fish->inputMatrix[i] = fish->inputMatrix[i+1];
-						 							if (k == N_SENSECONNECTORS-1) {
-						 								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED; //= fish->inputMatrix[i+1];
-						 							} 
-						 							else {
-						 								fish->inputMatrix[k] = fish->inputMatrix[k+1];
-						 							}
-						 						}
-
-
-
-											fish->bones[currentlySelectedLimb]->sensor_altradar = false;
-											break;
-										}
-									}
+									fish->bones[currentlySelectedLimb]->sensor_altradar = false;
+									break;
 								}
 							}
-							else {
-
-								// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
-								addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
-
-								for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
-								{
-									if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
-										fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
-										fish->inputMatrix[j].sensorType = SENSOR_ALTRADAR;
-
-										
-										fish->bones[currentlySelectedLimb]->sensor_altradar = true;
-
-
-										// update the fish's genes to reflect its current state of being.
-
-											// the fish's input and output matrix configurations should be passed on to offspring
-											for (int k = 0; k < N_SENSECONNECTORS; ++k)
-											{
-												fish->genes.inputMatrix[k] = fish->inputMatrix[k];
-												fish->genes.outputMatrix[k] = fish->outputMatrix[k];
-											}
-
-											// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (fish->ann) ;
-											// fish->brain = muscleCars;
-											// 
-
-
-										return;
-									}
-								}
-
-							}
-						// }
+						}
 					}
-				// }
+					else {
+
+						// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
+						addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
+						{
+							if (fish->inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED) {
+								fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
+								fish->inputMatrix[j].sensorType = SENSOR_ALTRADAR;
+
+								
+								fish->bones[currentlySelectedLimb]->sensor_altradar = true;
+
+
+								// update the fish's genes to reflect its current state of being.
+
+								// the fish's input and output matrix configurations should be passed on to offspring
+								for (int k = 0; k < N_SENSECONNECTORS; ++k)
+								{
+									fish->genes.inputMatrix[k] = fish->inputMatrix[k];
+									fish->genes.outputMatrix[k] = fish->outputMatrix[k];
+								}
+
+								return;
+							}
+						}
+					}
+				}
 			}
 		}
 	}
-
 }
-
-// void selectedLimbMotor(int arg) {
-// 	unused_variable((void *) &arg);
-
-// 	std::list<Species>::iterator currentSpecies;
-// 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-// 	{
-// 		std::list<BonyFish>::iterator fish;
-// 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-// 		{
-// 			if (fish->selected) 
-// 			{
-// 				for (unsigned int i = 0; i < N_FINGERS; ++i) 
-// 				{
-// 					if (!fish->bones[i]->isUsed) 
-// 					{
-// 						if (fish->bones[i]->selected) {
-
-
-// 							if (fish->bones->sensor_altradar) {
-
-// 							// first delete the motor and joint angle sensor.
-
-
-
-
-
-
-
-
-
-
-
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-
-// }
 
 void verifyNetworkDescriptor (networkDescriptor * network) {
 
