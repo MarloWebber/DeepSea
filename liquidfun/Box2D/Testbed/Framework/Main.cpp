@@ -668,6 +668,19 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(laboratoryPanel, "Add random food", 0, addRandomFoodParticle);
 
 
+	glui->add_separator_to_panel(laboratoryPanel);
+
+
+
+		glui->add_checkbox_to_panel(laboratoryPanel, "Barrier", &barrierRadiusStatus);
+	
+	// GLUI_Spinner* 
+	barrierRadiusSpinner =
+		glui->add_spinner_to_panel(laboratoryPanel, "Barrier radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.barrierRadius);
+	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
+	glui->add_separator_to_panel(laboratoryPanel);
+
+
 
 	
 	GLUI_Rollout* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
@@ -685,13 +698,7 @@ int main(int argc, char** argv)
 	glui->add_checkbox_to_panel(EcosystemPanel, "Movement costs energy", &entropyStatus);
 
 
-	glui->add_checkbox_to_panel(laboratoryPanel, "Barrier", &barrierRadiusStatus);
-	
-	// GLUI_Spinner* 
-	barrierRadiusSpinner =
-		glui->add_spinner_to_panel(laboratoryPanel, "Barrier radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.barrierRadius);
-	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
-	glui->add_separator_to_panel(laboratoryPanel);
+
 
 	glui->add_button_to_panel(laboratoryPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
 	glui->add_button_to_panel(laboratoryPanel, "Closest to Food", 3, selectClosestToFood);

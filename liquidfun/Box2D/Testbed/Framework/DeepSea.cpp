@@ -445,6 +445,22 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		// find the angle between it and this bone
 		if (food[closestFoodIndex]->isUsed) {
 			p_bone->sensation_altradar = atan2(  (boneCenterWorldPosition.y - food[closestFoodIndex]->position.y )   ,  (boneCenterWorldPosition.x - food[closestFoodIndex]->position.x)   );
+
+			// printf("original value: %f\n",p_bone->sensation_altradar );
+
+			// rotate it 90 degrees so the discontinuity at 180 degrees happens behind the sensor not in front of it
+			p_bone->sensation_altradar  += pi;
+
+
+			// printf("value + add: %f\n",p_bone->sensation_altradar );
+
+			// adding radians, wrap around 0 if the result is larger than a full circle
+			if (p_bone->sensation_altradar > (pi) ) {
+				p_bone->sensation_altradar -= (2 * pi);
+			}
+
+
+			// printf("wrapped: %f\n",p_bone->sensation_altradar );
 		}
 	}
 
