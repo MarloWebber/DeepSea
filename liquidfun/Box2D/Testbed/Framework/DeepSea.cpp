@@ -3207,7 +3207,7 @@ void selectNLowestEnergyFish (unsigned int n, std::list<Species>::iterator curre
 
 
 void selectLowestEnergyFish(int arg) {
-	unsigned int n = 3;
+	unsigned int n = TestMain::getNumberToSelect(); //3;
 
 	std::list<Species>::iterator currentSpecies;
 
@@ -4591,7 +4591,10 @@ void selectFishWhoMovedTheFurthest (int arg) {
 	currentSpecies= ecosystem.begin();
 	fish = currentSpecies->population.begin();
 
+
 	BonyFish * theFurthest = &(*fish);
+	// BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
+
 
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{
@@ -4603,25 +4606,44 @@ void selectFishWhoMovedTheFurthest (int arg) {
 			}
 		}
 		theFurthest->selected = true;
+		// theFurthest = referenceFish;
 	}
 }
 
 void selectFurthestFromOrigin (int arg) {
 	unused_variable((void *)&arg);
+
+	// TestMain::getNumberToSelect();
+
 	std::list<Species>::iterator currentSpecies;
 	std::list<BonyFish>::iterator fish;
 	currentSpecies= ecosystem.begin();
 	fish = currentSpecies->population.begin();
-	BonyFish * theFurthest = &(*fish);
-	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	BonyFish * theFurthest = &(*fish); 
+	BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
+
+	deselectAll(0);
+
+	// printf("smeseis: %i\n", TestMain::getNumberToSelect());
+
+	for (int i = 0; i < TestMain::getNumberToSelect(); ++i)
 	{
-		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{
-			if (magnitude(fish->bones[0]->p_body->GetWorldCenter() ) > magnitude(theFurthest->bones[0]->p_body->GetWorldCenter())) {
-				theFurthest = &(*fish);
+			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			{
+				if (fish->selected) { 
+					continue;
+				}
+				if (magnitude(fish->bones[0]->p_body->GetWorldCenter() ) > magnitude(theFurthest->bones[0]->p_body->GetWorldCenter())) {
+					theFurthest = &(*fish);
+				}
+				
 			}
+
+			theFurthest->selected = true;
+			theFurthest = referenceFish;
 		}
-		theFurthest->selected = true;
 	}
 }
 
@@ -4632,33 +4654,54 @@ void selectClosestToFood (int arg) {
 	currentSpecies= ecosystem.begin();
 	fish = currentSpecies->population.begin();
 	BonyFish * theClosest = &(*fish);
+	BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
+
 	float theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
 	bool chosen = false;
 
-	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+
+	deselectAll(0);
+
+	for (int j = 0; j < TestMain::getNumberToSelect(); ++j)
 	{
-		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		/* code */
+	
+		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{
-			for  (int i = 0; i < N_FOODPARTICLES; i++) {
+			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			{
 
-				if (food[i]->isUsed) {
+				if (fish->selected) {
+					continue;
+				}
 
-					b2Vec2 vectorToFood = b2Vec2(food[i]->position.x - fish->bones[0]->p_body->GetWorldCenter().x , food[i]->position.y - fish->bones[0]->p_body->GetWorldCenter().y);
+				for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-					float distanceToFood = magnitude(vectorToFood);
+					if (food[i]->isUsed) {
 
-					if (distanceToFood < theBestDistanceSoFar) {
-						theClosest = &(*fish);
-						theBestDistanceSoFar = distanceToFood;
-						chosen = true;
+						b2Vec2 vectorToFood = b2Vec2(food[i]->position.x - fish->bones[0]->p_body->GetWorldCenter().x , food[i]->position.y - fish->bones[0]->p_body->GetWorldCenter().y);
+
+						float distanceToFood = magnitude(vectorToFood);
+
+						if (distanceToFood < theBestDistanceSoFar) {
+							theClosest = &(*fish);
+							theBestDistanceSoFar = distanceToFood;
+							chosen = true;
+						}
 					}
 				}
 			}
 		}
-	}
 
-	if (chosen) {
-		theClosest->selected = true;
+		if (chosen) {
+			theClosest->selected = true;
+			theClosest = referenceFish;
+			theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
+		 	chosen = false;
+		}
+
+		
+
 	}
 }
 

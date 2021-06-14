@@ -62,6 +62,8 @@ namespace
 
 	int selectedSpeciesEnforcePopLimit = 0;
 	int selectedSpeciesSexuality = 0;
+	int autosaveSpeciesOnGeneration = 0;
+	int selectNinSpecies = 1;
 
 	GLUI_String speciesNameBarContent = "default";
 	GLUI_String mapNameBarContent = "default";
@@ -185,6 +187,9 @@ float32 getZoom () {
 	return viewZoom;
 }
 
+int getNumberToSelect() {
+	return selectNinSpecies;
+}
 
 // Set whether to restart the test on particle parameter changes.
 // This parameter is re-enabled when the test changes.
@@ -638,9 +643,6 @@ int main(int argc, char** argv)
 	// numberOfFishSpinner->set_int_limits(1, 256);
 
 
-	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce species to origin", &m_deepSeaSettings.gameMode );
-
-	glui->add_separator_to_panel(laboratoryPanel);
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Trigger generation at radius", &triggerRadiusStatus);
 	
@@ -682,6 +684,27 @@ int main(int argc, char** argv)
 
 
 
+
+	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce species to origin", &m_deepSeaSettings.gameMode );
+
+	glui->add_checkbox_to_panel(laboratoryPanel, "Autosave species on generation", &autosaveSpeciesOnGeneration);
+
+
+	glui->add_separator_to_panel(laboratoryPanel);
+
+	nominalPopulationSpinner =
+	glui->add_spinner_to_panel(laboratoryPanel,"Select n", GLUI_SPINNER_INT, &selectNinSpecies);
+	nominalPopulationSpinner->set_int_limits(1, 1000);
+
+
+
+
+	glui->add_button_to_panel(laboratoryPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
+	glui->add_button_to_panel(laboratoryPanel, "Closest to Food", 3, selectClosestToFood);
+	glui->add_button_to_panel(laboratoryPanel, "Lowest Energy", 3, selectLowestEnergyFish);
+
+
+
 	
 	GLUI_Rollout* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
 	EcosystemPanel->close();
@@ -696,13 +719,6 @@ int main(int argc, char** argv)
 	// glui->add_checkbox_to_panel(EcosystemPanel, "Persistent food", &persistentFoodStatus);
 
 	glui->add_checkbox_to_panel(EcosystemPanel, "Movement costs energy", &entropyStatus);
-
-
-
-
-	glui->add_button_to_panel(laboratoryPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
-	glui->add_button_to_panel(laboratoryPanel, "Closest to Food", 3, selectClosestToFood);
-	glui->add_button_to_panel(laboratoryPanel, "Lowest Energy", 3, selectLowestEnergyFish);
 
 
 

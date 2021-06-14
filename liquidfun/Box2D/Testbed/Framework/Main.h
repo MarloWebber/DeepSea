@@ -92,6 +92,8 @@ int getSpeciesWindowStatus() ;
 
 int getBarrierRadiusStatus() ;
 
+int getNumberToSelect();
+
 GLUI_Spinner* getSpeciesNominalPopulationSpinner() ;
 
 GLUI_EditText* getSpeciesNameBar() ;
