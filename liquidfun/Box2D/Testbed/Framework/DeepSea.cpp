@@ -3484,6 +3484,44 @@ void modifyAConnection (BonyFish * fish, float amount) {
 		}
 	}	
 
+
+
+
+	// if only one neuron is selected, and it is a layer 0 neuron, increment or decrement the primary property of its sense connector.
+	if (gotA && !gotB) {
+		if (selectedA < fish->brain->layers.begin()->neurons.size() ) {
+
+
+			if (fish->inputMatrix[selectedA].sensorType == SENSOR_TIMER) {
+
+				if (amount > 0) {
+					fish->inputMatrix[selectedA].timerFreq += 1;
+				}
+				else {
+					fish->inputMatrix[selectedA].timerFreq -= 1;
+				}
+
+				
+
+			}
+			else if (fish->inputMatrix[selectedA].sensorType == SENSECONNECTOR_RECURSORRECEIVER) {
+
+				if (amount > 0) {
+					fish->inputMatrix[selectedA].recursorDelay += 1;
+				}
+				else {
+					fish->inputMatrix[selectedA].recursorDelay -= 1;
+				}
+
+			}
+
+			
+		}
+
+	}
+
+
+
 	// refresh the water in the brain jar.
 	fish->ann = createFANNbrainFromDescriptor(fish->brain);
 }
@@ -4270,14 +4308,14 @@ void runBiomechanicalFunctions () {
 						// then they take a sample from [delay] samples ago and apply it
 						unsigned int adjustedCursor = fish->inputMatrix[j].recursorCursor;
 
-						unsigned int cursorPlusDelay = fish->inputMatrix[j].recursorCursor + fish->outputMatrix[j].recursorDelay ;
+						unsigned int cursorPlusDelay = fish->inputMatrix[j].recursorCursor + fish->inputMatrix[j].recursorDelay ;
 						if (cursorPlusDelay > SENSECONNECTOR_BUFFERSIZE-1) {
 							adjustedCursor = 0;
 							unsigned int bufferSize = SENSECONNECTOR_BUFFERSIZE;
 							adjustedCursor += (cursorPlusDelay - bufferSize);
 						}	
 						else {
-							adjustedCursor += fish->outputMatrix[j].recursorDelay ;
+							adjustedCursor += fish->inputMatrix[j].recursorDelay ;
 						}
 
 						sensorium[j] = fish->inputMatrix[j].recursorBuffer[adjustedCursor];

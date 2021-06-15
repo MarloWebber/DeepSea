@@ -62,7 +62,7 @@ namespace
 
 	int selectedSpeciesEnforcePopLimit = 0;
 	int selectedSpeciesSexuality = 0;
-	int autosaveSpeciesOnGeneration = 0;
+	// int autosaveSpeciesOnGeneration = 0;
 	int selectNinSpecies = 1;
 
 	GLUI_String speciesNameBarContent = "default";
@@ -687,7 +687,7 @@ int main(int argc, char** argv)
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce species to origin", &m_deepSeaSettings.gameMode );
 
-	glui->add_checkbox_to_panel(laboratoryPanel, "Autosave species on generation", &autosaveSpeciesOnGeneration);
+	// glui->add_checkbox_to_panel(laboratoryPanel, "Autosave species on generation", &autosaveSpeciesOnGeneration);
 
 
 	glui->add_separator_to_panel(laboratoryPanel);
@@ -735,7 +735,6 @@ int main(int argc, char** argv)
 
 	glui->add_button_to_panel(speciesPanel, "Select all in species", 1, selectAllInSpecies);
 
-	glui->add_checkbox_to_panel(speciesPanel, "Show species window", &showSpeciesWindow);
 
 	int NominalPopulation;
 	// GLUI_Spinner* n
@@ -749,6 +748,9 @@ int main(int argc, char** argv)
 
 	glui->add_button_to_panel(speciesPanel, "Add new species", 0, addNewSpecies);
 	glui->add_button_to_panel(speciesPanel, "Delete selected species", 0, deleteSelectedSpecies);
+
+	
+	glui->add_checkbox_to_panel(speciesPanel, "Show species window", &showSpeciesWindow);
 
 
 
