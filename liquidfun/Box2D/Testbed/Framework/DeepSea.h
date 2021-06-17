@@ -618,6 +618,10 @@ void selectedLimbFoodradar(int arg) ;
 void selectedLimbAltradar(int arg) ;
 // void selectedLimbMotor(int arg) ;
 
+void makeLimbALeaf (int arg);
+void makeLimbAWeapon (int arg);
+void makeLimbAMouth (int arg);
+
 void deselectAll(int arg) ;
 void selectAll(int arg) ;
 
@@ -627,7 +631,7 @@ void voteSelectedFish(int arg) ;
 
 void addRandomFoodParticle(int arg);
 
-
+void makeFishAPlant (int arg) ;
 void test_runAllUnitTests();
 
 void deepSeaStart();

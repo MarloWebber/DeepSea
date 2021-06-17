@@ -870,6 +870,19 @@ int main(int argc, char** argv)
  	glui->add_button_to_panel(bodyEditPanel, "Selected limb altradar", 11, selectedLimbAltradar);
  	// glui->add_button_to_panel(bodyEditPanel, "Selected limb motor", 12, selectedLimbMotor);
 
+
+
+
+ 	// glui->add_button_to_panel(bodyEditPanel, "Toggle plant/animal", 13, makeFishAPlant);
+
+
+ 	glui->add_button_to_panel(bodyEditPanel, "Make limb a weapon", 13, makeLimbAWeapon);
+ 	glui->add_button_to_panel(bodyEditPanel, "Make limb a leaf", 13, makeLimbALeaf);
+ 	glui->add_button_to_panel(bodyEditPanel, "Make limb a mouth", 13, makeLimbAMouth);
+
+
+
+
 	glui->add_checkbox_to_panel(bodyEditPanel, "Show body edit window", &showBodyEditWindow);
 
 
