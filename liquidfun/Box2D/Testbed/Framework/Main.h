@@ -94,6 +94,8 @@ int getBarrierRadiusStatus() ;
 
 int getNumberToSelect();
 
+int getLampStatus() ;
+
 GLUI_Spinner* getSpeciesNominalPopulationSpinner() ;
 
 GLUI_EditText* getSpeciesNameBar() ;

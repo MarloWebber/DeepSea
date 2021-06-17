@@ -122,7 +122,6 @@ struct boneAndJointDescriptor_t {
 		bool isRoot;
 		bool isMouth;
 		bool isWeapon;
-		bool isLeaf;
 		bool isFood;
 		bool sensor_radar; 			// like an olfactory sensor . senses distance from food
 		bool sensor_altradar; 		// like an olfactory sensor . senses angle to food
@@ -130,7 +129,10 @@ struct boneAndJointDescriptor_t {
 		bool sensor_jointangle;
 		bool sensor_eye;
 
-		unsigned int attachedTo; // the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
+
+		bool isLeaf;
+	
+		unsigned int attachedTo; 	// the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
 
 		float torque;
 		float speedLimit;
@@ -158,7 +160,7 @@ struct boneAndJointDescriptor_t {
 #define SENSOR_ALTRADAR 					8
 #define SENSOR_EYE 							9
 
-#define SENSECONNECTOR_BUFFERSIZE			64	// the maximum size of the buffer used for recursion delay.
+#define SENSECONNECTOR_BUFFERSIZE			512	// the maximum size of the buffer used for recursion delay.
 
 
 /*!
@@ -241,7 +243,10 @@ struct BoneUserData {
 	unsigned int attachedTo;	
 	bool isRoot ;
 	bool isMouth ;
+	
 	bool isLeaf;
+	bool hasGrown;
+
 	bool isFood;
 
 	bool sensor_radar ; // like an olfactory sensor . senses distance from food

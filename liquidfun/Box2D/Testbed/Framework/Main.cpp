@@ -58,7 +58,7 @@ namespace
 	int showFluidDynamicForces = 0;
 	int entropyStatus = 0;
 	int barrierRadiusStatus = 1;
-	// int 
+	int lampStatus = 0;
 
 	int selectedSpeciesEnforcePopLimit = 0;
 	int selectedSpeciesSexuality = 0;
@@ -189,6 +189,10 @@ float32 getZoom () {
 
 int getNumberToSelect() {
 	return selectNinSpecies;
+}
+
+int getLampStatus() {
+	return lampStatus;
 }
 
 // Set whether to restart the test on particle parameter changes.
@@ -716,7 +720,17 @@ int main(int argc, char** argv)
 
 
 
+
+	// glui->add_button_to_panel(laboratoryPanel, "Add Random Plant", 3, addRandomPlant);
+
+	// glui->add_button_to_panel(laboratoryPanel, "Add lamp", 3, );
+
+
 	// glui->add_checkbox_to_panel(EcosystemPanel, "Persistent food", &persistentFoodStatus);
+
+
+	glui->add_checkbox_to_panel(EcosystemPanel, "Toggle lamps", &lampStatus);
+
 
 	glui->add_checkbox_to_panel(EcosystemPanel, "Movement costs energy", &entropyStatus);
 

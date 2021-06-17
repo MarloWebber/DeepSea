@@ -328,8 +328,14 @@ BoneUserData::BoneUserData(
 
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
+	// if (!p_bone->isLeaf || p_bone->isRoot) {
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 
+	// 	if (p_bone->isLeaf) {
+	// 		p_bone->hasGrown = true; // so happy to write this
+	// 	}
+	// }
+	
 	if (p_bone->isMouth) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_MOUTH);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
@@ -801,7 +807,12 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (driedFish.bones[i].used) {
-			nonRecursiveBoneIncorporator( fish->bones[i]);
+
+			if ( !(driedFish.bones[i].isLeaf) || driedFish.bones[i].isRoot ) {
+				nonRecursiveBoneIncorporator( fish->bones[i]);
+			}
+
+			
 		}
 		fish->bones[i]->p_owner = fish; // you need to update the user data pointer, because when you pushed the fish onto the list you pushed a copy of it not the actual thing.
 	}
@@ -2277,6 +2288,67 @@ void amputation (int arg) {
 
 
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
+
+
+	/*
+
+	
+
+	how should mutation randomness be calculated?
+
+	for every copy operation on every parameter, this is the chance of messing it up.
+
+
+
+
+
+
+	*/
+
+
+	// int intMutationSeverity = mutationSeverity;
+
+	for (int i = 0; i < N_SENSECONNECTORS; ++i)
+	{
+		if (RNG() < mutationChance) {
+			if (fish->inputMatrix[i].sensorType == SENSECONNECTOR_RECURSORRECEIVER) {
+
+				if (RNG() > 0.5) {
+					fish->inputMatrix[i].recursorDelay += (mutationSeverity * 10 * RNG()) + 1 ;
+
+
+				}
+				else {
+					fish->inputMatrix[i].recursorDelay -= (mutationSeverity * 10 * RNG()) + 1;
+				}
+
+
+			}
+			if (fish->inputMatrix[i].sensorType == SENSOR_TIMER) {
+
+				// randomly decrement or increment.
+				if (RNG() > 0.5) {
+					fish->inputMatrix[i].timerFreq += (mutationSeverity * 10 * RNG()) + 1 ;
+				}
+				else {
+					fish->inputMatrix[i].timerFreq -= (mutationSeverity * 10 * RNG()) + 1;
+				}
+
+			}
+		}
+
+		if (fish->inputMatrix[i].recursorDelay > SENSECONNECTOR_BUFFERSIZE) {
+			fish->inputMatrix[i].recursorDelay = SENSECONNECTOR_BUFFERSIZE;
+				
+		}
+		if (fish->inputMatrix[i].recursorDelay < 0) {
+			fish->inputMatrix[i].recursorDelay = 0;
+		}
+
+	
+	}
+
+
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fish->bones[i].used) {
 
@@ -4402,7 +4474,26 @@ void runBiomechanicalFunctions () {
 					if (TestMain::getEntropyStatus()) {
 						fish->energy -= 0.1f;
 					}
-					
+
+					// if you have enough energy to grow a new branch, do it
+					if (fish->bones[i]->isLeaf && !fish->bones[i]->hasGrown) 
+					{
+						if (fish->bones[ fish->bones[i]->attachedTo ] ->hasGrown) 
+							{
+							if (fish->energy > fish->bones[i]->energy) 
+								{
+							
+								// if (  !   {
+									printf("added limb %i on fish\n", i);
+
+									// add the limb on
+									nonRecursiveBoneIncorporator( fish->bones[i]);
+
+									fish->bones[i]->hasGrown = true;
+								// }
+							}
+						}
+					}
 				}
 
 				// kill the fish if it is out of energy.
@@ -4862,10 +4953,12 @@ if (TestMain::gameIsPaused()) {
 
 		startNextGeneration = false;
 
-		std::list<Lamp>::iterator lomp;
-		for (lomp = lamps.begin(); lomp !=  lamps.end(); ++lomp) 	{
-			if (false) {
+		if (TestMain::getLampStatus()) {
+			std::list<Lamp>::iterator lomp;
+			for (lomp = lamps.begin(); lomp !=  lamps.end(); ++lomp) 	{
+				
 				shine(&(*lomp));
+			
 			}
 		}
 

@@ -47,6 +47,10 @@ To Do ---------------------------------------
 
 
 	plants which are non-motile animals that photosynthesize and can be eaten
+		- plants should grow bones in a radiating pattern. it is a unique and interesting way to show off our hierarchical fish structure that we're not doing right now.
+		- the plant is described just like the fish, but instead of being incorporated in one go, they start with just the root segment and spend energy to build the rest as they go.
+		- generally, if part of the hierarchy consists of 'leaf' segments, this part must be built from the top down.
+		- plants should not really have any sensors and will mostly assume unmoving configurations.
 
 
 
