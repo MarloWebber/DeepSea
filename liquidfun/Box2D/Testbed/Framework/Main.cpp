@@ -689,7 +689,7 @@ int main(int argc, char** argv)
 
 
 
-	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce species to origin", &m_deepSeaSettings.gameMode );
+	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce to origin, no clip", &m_deepSeaSettings.gameMode );
 
 	// glui->add_checkbox_to_panel(laboratoryPanel, "Autosave species on generation", &autosaveSpeciesOnGeneration);
 

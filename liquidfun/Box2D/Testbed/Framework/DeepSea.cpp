@@ -372,13 +372,14 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	p_bone->p_fixture->SetFilterData(tempFilter);
 
 	if (!p_bone->isRoot) {
-            // p_bone->joint->isUsed = true;
+		p_bone->joint->jointDef.collideConnected = false; // this means that limb segments dont collide with their children
 
-			p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
+		p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
+			
 	}
+
 	p_bone->isUsed = true;
 	p_bone->selected = false;
-
 	p_bone->hasGrown = true;
 }
 
@@ -584,9 +585,15 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 	flagDelete = false;
 	selected = false;
 
-	int randomCollisionGroup = - (RNG() * 16.0f);
+	int randomCollisionGroup;	//= - (RNG() * 16.0f);
 
-	randomCollisionGroup = -1; // if this option box is checked, the fish never collide with each other.
+	if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM)  {
+		randomCollisionGroup = 1; // set to -1 to disable all.
+	}
+	else {
+		randomCollisionGroup = -1; // set to -1 to disable all.
+	}
+
 	float lowestLimbEnergy = 1000000000;
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (i == 0) {
