@@ -10,6 +10,8 @@
 #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
 
+#define REPRODUCTIONCAP 3	// hard upper limit on reproductive opportunities, used to prevent individuals from being too successful.
+
 #define GAME_MODE_ECOSYSTEM 0
 #define GAME_MODE_LABORATORY 1
 
@@ -394,6 +396,9 @@ void LoadFishFromName (unsigned int fishIndex) ;
 struct BonyFish {
 
 	float reproductionEnergyCost;
+
+	unsigned int numberOfTimesReproduced; // putting a hard limit on this to prevent individuals from becoming t
+
 	float energy; 	// the animal spends energy to move and must replenish it by eating
 	// bool init; 		// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
 	bool isUsed;	// 
@@ -442,6 +447,7 @@ struct BonyFish {
 	float distanceMovedSoFar;
 	float filteredOutputWiggle;
 	float * previousOutputs;
+
 
 	BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition);
 

@@ -244,7 +244,7 @@ BoneUserData::BoneUserData(
 	flagPhotosynth = false;
 
 	// if (isLeaf && !isRoot){
-		hasGrown = false;
+	hasGrown = false;
 	// }
 	// else {
 	// 	hasGrown = true;
@@ -318,7 +318,10 @@ BoneUserData::BoneUserData(
 		rootCenter = b2Vec2(0.0f, 0.0f);
 
 		if (attached) {
-			BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];	
+			BoneUserData * attachesTo = fish->bones[boneDescription.attachedTo];
+
+			attachedTo = boneDescription.attachedTo;
+
 			offsetOnBody = (attachesTo->offsetOnBody + (attachesTo->length/2)) + length/2;	
 			rootCenter = attachesTo->tipCenter;
 		}
@@ -573,6 +576,8 @@ void BonyFish::feed(float amount) {
 
 BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition) {
 
+	numberOfTimesReproduced= 0;
+
 	genes = driedFish;
 	reproductionEnergyCost = 0.0f; // the amount of energy required to make a clutch of viable offspring. to be calculated
 
@@ -590,7 +595,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup, true);
 
-		// reproductionEnergyCost += bones[i]->energy;
+		reproductionEnergyCost += bones[i]->energy;
 		if ( bones[i]->energy < lowestLimbEnergy) {
 			lowestLimbEnergy = bones[i]->energy;
 		}
@@ -1147,6 +1152,11 @@ fishDescriptor_t  basicPlant() {
 
 	for (unsigned int i = 0; i < 4; ++i)
 	{
+
+		if (i > 0) {
+			newPlant.bones[i].attachedTo = i-1;
+		}
+
 		newPlant.bones[i].used = true;	
 	// 	newPlant.bones[i].used = true;
 		newPlant.bones[i].isLeaf = true;
@@ -2682,10 +2692,19 @@ void mutateFANNFileDirectly (std::string filename) {
 
 					    if (RNG() < m_deepSeaSettings.mentalMutationRate) {							// chance of a mutation occurring
 					    	if (val > 1 || val < -1) { 				// if it's a big number, apply the mutation as a fraction of htat number. else, apply a random amount in a small range. this is to prevent weights being stuck at very small numbers.
-					    		val += ( (RNG() -0.5f) * val * m_deepSeaSettings.mentalMutationSeverity);
+					    		
+
+					    		val += ( (RNG() -0.5f) * abs(val) * m_deepSeaSettings.mentalMutationSeverity);
+						    	// val += (  RNG() - 0.5f) * mentalMutationSeverity;	
+
+
 					    	}	
 					    	else {
-					    		val += ( (RNG() -0.5f) * 0.5f * m_deepSeaSettings.mentalMutationSeverity ); 	// how much mutation to apply
+
+
+					    		val += ( (RNG() -0.5f)  * m_deepSeaSettings.mentalMutationSeverity ); 	// part of the mutation is applied as a multiplication of the existing number
+					    		// val += (  RNG() - 0.5f) * mentalMutationSeverity;																	// part of the mutation is applied as a new addition
+
 					    	}
 						    
 					    }
@@ -3479,11 +3498,11 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 	#define N_OFFSPRING 3
 
-	deselectAll(0);
+	// deselectAll(0);
 
-	selectNLowestEnergyFish(N_OFFSPRING , currentSpecies);
+	// selectNLowestEnergyFish(N_OFFSPRING , currentSpecies);
 
-	flagSelectedFishForDeletion(0);
+	// flagSelectedFishForDeletion(0);
 
 	// then add the new ones
 	for (int i = 0; i < N_OFFSPRING; ++i) {
@@ -4274,9 +4293,15 @@ void drawBodyEditingWindow(BonyFish * fish) {
 		}
 	}
 
-	connectorLabel =  "Total energy ";
+	connectorLabel =  "Available energy ";
 	connectorLabel +=  std::to_string(fish->energy);
 	b2Vec2 mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
+	local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  "Reproduces at ";
+	connectorLabel +=  std::to_string(fish->reproductionEnergyCost);
+	 mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
 	local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 	labelsDrawnSoFar ++;
 
@@ -4753,6 +4778,9 @@ void runBiomechanicalFunctions () {
 				// printf("6.4\n");
 			// if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
 			if (true) {
+
+
+
 				for (unsigned int i = 0; i < N_FINGERS; ++i) {
 
 					if (fish->bones[i]->isUsed) {
@@ -4778,7 +4806,6 @@ void runBiomechanicalFunctions () {
 									continue;
 								}
 
-
 							if (fish->bones[ fish->bones[i]->attachedTo ] ->hasGrown) 
 								{
 
@@ -4786,6 +4813,9 @@ void runBiomechanicalFunctions () {
 									// printf("b");
 								if (fish->energy > fish->bones[i]->energy) 
 									{
+
+
+								printf(  "the limb %i is attached to the grown limb %i\n",  i, fish->bones[i]->attachedTo );
 										// printf("c");
 								
 									// if (  !   {
@@ -4845,11 +4875,16 @@ void runBiomechanicalFunctions () {
 
 				}
 
-				if (false) {
+				if (true) {
+
 					// give the fish some bebes if it has collected enough food. This always costs energy, even if entropy is turned off.
 					if (fish->energy > fish->reproductionEnergyCost) {
 						ecosystemModeBeginGeneration( &(*fish), currentSpecies );
 						fish->energy -= fish->reproductionEnergyCost;
+						fish->numberOfTimesReproduced ++;
+						if (fish->numberOfTimesReproduced > REPRODUCTIONCAP) {
+							fish->flagDelete = true;
+						}
 					}
 
 
