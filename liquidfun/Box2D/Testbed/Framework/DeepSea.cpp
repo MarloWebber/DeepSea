@@ -3434,21 +3434,67 @@ public:
 // a ray of light is cast from the star in a random direction. If it falls on the photosynthetic organ, the organ gains energy.
 void shine (Lamp * nancy) {
 	b2RayCastInput sunbeam;
-	sunbeam.p1 = nancy->position;
 
-	float randomDirection = (RNG() * 2 * pi);
-
-	sunbeam.p2 = b2Vec2(nancy->illuminationRadius * cos(randomDirection),nancy->illuminationRadius* sin(randomDirection));
 	sunbeam.maxFraction = 1.0f;
 
-	if (true) { // print the rays of light
+	// cast each ray, more for brighter lamps
+	for (unsigned int i = 0; i < nancy->brightness; ++i)
+	{
 
-	   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, b2Color(1.0f, 1.0f, 1.0f) );
+		if (nancy->lampType == LAMP_POINTSOURCE) {
+
+			sunbeam.p1 = nancy->position;
+
+			float randomDirection = (RNG() * 2 * pi);
+
+			sunbeam.p2 = b2Vec2(nancy->illuminationRadius * cos(randomDirection),nancy->illuminationRadius* sin(randomDirection));
+			
+
+			if (true) { // print the rays of light
+
+			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, b2Color(1.0f, 1.0f, 1.0f) );
+			}
+
+			RayCastClosestCallback stupidMotherFucker;
+
+			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
+		
+		}
+		else if (nancy->lampType == LAMP_DIRECTIONAL) {
+
+			// pick a random direction sideways across the beam width
+			float sidewaysRandomness = (RNG()-0.5) * nancy->beamWidth ;
+
+			// pick a point that is 'sidewaysRandomness' distance away at right angles to the beam.
+			// b2Vec2 photonStartingPosition
+			sunbeam.p1 = b2Vec2(  nancy->position.x +  (cos(nancy->direction + (pi*0.5) ) * sidewaysRandomness)  , nancy->position.x +  (sin(nancy->direction + (pi*0.5)) * sidewaysRandomness)    );
+
+			// photon starts from this direction and travels straight
+			// b2Vec2 photonEndPosition = 
+			sunbeam.p2 = b2Vec2( sunbeam.p1.x +  (cos(nancy->direction ) * nancy->illuminationRadius)  ,  sunbeam.p1.y +  (sin(nancy->direction ) * nancy->illuminationRadius)    );
+
+			if (true) { // print the rays of light
+
+			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, b2Color(1.0f, 1.0f, 1.0f) );
+			}
+
+			RayCastClosestCallback stupidMotherFucker;
+
+			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
+
+
+		}
+		else if (nancy->lampType == LAMP_ORTHOGONAL) {
+
+			
+
+		}
+
+
+	
 	}
 
-	RayCastClosestCallback stupidMotherFucker;
 
-	local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
 }
 
 void selectNLowestEnergyFish (unsigned int n, std::list<Species>::iterator currentSpecies) {
@@ -3598,10 +3644,15 @@ inline bool exists_test1 (const std::string& name) {
 }
 
 Lamp::Lamp() {
-		brightness = 100;
+		brightness = 2;
 		illuminationRadius = 10;
 		position = b2Vec2(0.0f, 2.0f);
 		illuminationColor = b2Color(0.0f, 0.0f, 0.0f);
+
+		 lampType = LAMP_DIRECTIONAL;
+
+	 direction =  0.3 * pi;
+	 beamWidth = 2;
 }
 
 // void saveDefaultPlant() {

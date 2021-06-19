@@ -107,11 +107,22 @@ const ParticleParameter::Definition k_paramDef[] =
 const uint32 k_paramDefCount =
 	B2_ARRAY_SIZE(k_paramDef);
 
+
+// lamp types
+#define LAMP_POINTSOURCE 1
+#define LAMP_DIRECTIONAL 2
+#define LAMP_ORTHOGONAL  3
+
 struct Lamp {
-	unsigned int brightness;
-	unsigned int illuminationRadius;
-	b2Vec2 position;
+	unsigned int brightness;			// number of rays cast per turn
+	unsigned int illuminationRadius;	// ray length
+	b2Vec2 position;					// for pointlike lamps
 	b2Color illuminationColor;
+
+	unsigned int lampType;
+
+	float direction;
+	float beamWidth;
 
 	Lamp();
 };
