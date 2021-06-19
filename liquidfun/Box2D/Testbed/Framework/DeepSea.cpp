@@ -3253,12 +3253,12 @@ void populateSpeciesFromFile(int arg) {
 					loadFish ( newFishBody, jann, position, currentSpecies) ;
 
 				}
-				else { 						// if there is no winner, its probably a reset or new install. make one up
-					fishDescriptor_t kargas =  basicPlant();// basicPlant(); //nematode(); // fishDescriptor_t();
-					b2Vec2 position = b2Vec2(0.0f,0.0f);
+				// else { 						// if there is no winner, its probably a reset or new install. make one up
+				// 	// fishDescriptor_t kargas = nematode();
+				// 	// b2Vec2 position = b2Vec2(0.0f,0.0f);
 					
-					loadFish ( kargas, NULL,  position, currentSpecies) ;
-				}
+				// 	// loadFish ( kargas, NULL,  position, currentSpecies) ;
+				// }
 			}
 				return;
 		}
@@ -3619,6 +3619,34 @@ Lamp::Lamp() {
 
 // }
 
+
+void saveDefaultPlant() {
+	// save the default nematode into the aquarium so that it is accessible
+	fishDescriptor_t driedWorm  = basicPlant(); //nematode();//  fishDescriptor_t();
+	BonyFish rehydratedWorm =  BonyFish(driedWorm, NULL, b2Vec2(0.0f, 0.0f));
+
+	// save the winner to file with a new name.
+	std::string nnfilename =  std::string("Aquarium/")  + std::string("defaultPlant")  + std::string(".net");
+    std::string fdescfilename =  std::string("Aquarium/") + std::string("defaultPlant")  + std::string(".fsh");
+    std::ofstream file { nnfilename };
+    saveFishToFile (fdescfilename, driedWorm);
+    fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
+}
+
+
+void saveDefaultFish() {
+	// save the default nematode into the aquarium so that it is accessible
+	fishDescriptor_t driedWorm  = nematode();//  fishDescriptor_t();
+	BonyFish rehydratedWorm =  BonyFish(driedWorm, NULL, b2Vec2(0.0f, 0.0f));
+
+	// save the winner to file with a new name.
+	std::string nnfilename =  std::string("Aquarium/")  + defaultFishName + std::string(".net");
+    std::string fdescfilename =  std::string("Aquarium/") + defaultFishName + std::string(".fsh");
+    std::ofstream file { nnfilename };
+    saveFishToFile (fdescfilename, driedWorm);
+    fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
+}
+
 void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, DebugDraw * p_debugDraw) { //, b2World * m_world_sci, b2ParticleSystem * m_particleSystem_sci) {
 
 	// store a single copy to the pointers so we don't have to give them as arguments 1 million times.
@@ -3645,18 +3673,11 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	Lamp monog = Lamp();
 	lamps.push_back(monog);
 
-	// save the default nematode into the aquarium so that it is accessible
-	fishDescriptor_t driedWorm  = nematode();//  fishDescriptor_t();
-	BonyFish rehydratedWorm =  BonyFish(driedWorm, NULL, b2Vec2(0.0f, 0.0f));
+	
 
-	// save the winner to file with a new name.
-	std::string nnfilename =  std::string("Aquarium/")  + defaultFishName + std::string(".net");
-    std::string fdescfilename =  std::string("Aquarium/") + defaultFishName + std::string(".fsh");
-    std::ofstream file { nnfilename };
-    saveFishToFile (fdescfilename, driedWorm);
-    fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
+	saveDefaultPlant();
 
-// saveDefaultPlant();
+	saveDefaultFish();
 
 
     // std::list<Species>::iterator startingSpecies = ecosystem.begin();
