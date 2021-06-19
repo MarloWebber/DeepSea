@@ -96,6 +96,8 @@ int getNumberToSelect();
 
 int getLampStatus() ;
 
+int getLampIntensity() ;
+
 GLUI_Spinner* getSpeciesNominalPopulationSpinner() ;
 
 GLUI_EditText* getSpeciesNameBar() ;

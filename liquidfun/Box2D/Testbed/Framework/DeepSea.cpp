@@ -22,22 +22,8 @@ float pi = 3.14159f;
 unsigned int currentNumberOfFish = 0;
 unsigned int generationsThisGame = 0;
 bool startNextGeneration = false;
-deepSeaSettings m_deepSeaSettings = {
-0,	// int gameMode;
-0,	//  	int laboratory_nFood;
-64,	//  	int laboratory_nFish;
-b2Vec2(0.0f,0.0f),	//  	b2Vec2 gravity;
-0.1,	//  	float mutationRate;
-	// std::list<BonyFish>::iterator fish;
-	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-0.2,	//  	float mutationSeverity;
-0.1,	//  	float mentalMutationRate;
-0.5,	//  	float mentalMutationSeverity;
-0,	//  	int terrainPaintType;
-10,
-0.1,
-0
-};
+deepSeaSettings m_deepSeaSettings;					// = {
+
 uint64 loopCounter = 0 ;
 uint32 loopSafetyLimit = 100;
 bool flagAddFood = false;	// true so it adds once on startup!
@@ -626,11 +612,11 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 	int randomCollisionGroup;	//= - (RNG() * 16.0f);
 
-	if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM)  {
-		randomCollisionGroup = 1; // set to -1 to disable all.
+	if ( TestMain::getNoClipStatus() )  {
+		randomCollisionGroup = -1; // set to -1 to disable all.
 	}
 	else {
-		randomCollisionGroup = -1; // set to -1 to disable all.
+		randomCollisionGroup = 1; // set to -1 to disable all.
 	}
 
 	float lowestLimbEnergy = 1000000000;
@@ -2625,14 +2611,34 @@ void removeDeletableFish() {
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{
+
+		// std::list<BonyFish> fishToDelete ;//= *(new std::list<BonyFish>() );
+
+		// first make a separate list of fish to remove, then take them out of the original list.
+
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
 			if (fish->flagDelete && fish->isUsed) {
-				deleteFish ( &(*fish)) ;
+			// 	deleteFish ( &(*fish)) ;
 				currentSpecies->population.erase(fish++);
+				// fishToDelete.push_back( (*fish) );
 			}
 		}
+
+
+		// for (fish = fishToDelete.begin(); fish !=  fishToDelete.end(); ++fish) 	
+		// {
+		// 	// if (fish->flagDelete && fish->isUsed) {
+		// 	// 	deleteFish ( &(*fish)) ;
+		// 		currentSpecies->population.remove( (*fish) );
+		// 		// fishToDelete.push_back( *(&fish) );
+		// 	// }
+		// }
+
+
+
+
 	}
 	for (int i = 0; i < N_FOODPARTICLES; ++i) {
 		if (food[i]->flagDelete) {
@@ -3453,8 +3459,9 @@ void loadExperimentalMap() {
 
 	monog.direction = -0.5 * pi;
 	monog.beamWidth = 40;
-	monog.brightness = 1;
+	monog.brightness = 2;
 	monog.position = b2Vec2(0.0f, 5.5f);
+	monog.illuminationColor = b2Color( 0.3f, 0.2f ,  0.1f);
 
 	lamps.push_back(monog);
 
@@ -3538,8 +3545,10 @@ void shine (Lamp * nancy) {
 
 	sunbeam.maxFraction = 1.0f;
 
+	unsigned int totalBrightness = TestMain::getLampIntensity() * nancy->brightness;
+
 	// cast each ray, more for brighter lamps
-	for (unsigned int i = 0; i < nancy->brightness; ++i)
+	for (unsigned int i = 0; i < totalBrightness; ++i)
 	{
 
 		if (nancy->lampType == LAMP_POINTSOURCE) {
@@ -3553,7 +3562,7 @@ void shine (Lamp * nancy) {
 
 			if (true) { // print the rays of light
 
-			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, b2Color(1.0f, 1.0f, 1.0f) );
+			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, nancy->illuminationColor);
 			}
 
 			RayCastClosestCallback stupidMotherFucker;
@@ -3576,7 +3585,7 @@ void shine (Lamp * nancy) {
 
 			if (true) { // print the rays of light
 
-			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, b2Color(1.0f, 1.0f, 1.0f) );
+			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2,  nancy->illuminationColor );
 			}
 
 			RayCastClosestCallback stupidMotherFucker;
@@ -3805,6 +3814,23 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	local_debugDraw_pointer = p_debugDraw;
 	local_m_world = m_world;
 	local_m_particleSystem = m_particleSystem;
+
+	m_deepSeaSettings.gameMode = GAME_MODE_ECOSYSTEM; 	// 0,	// int gameMode;
+	m_deepSeaSettings.laboratory_nFood = 0;													// 0,	//  	int laboratory_nFood;
+	m_deepSeaSettings.laboratory_nFish = 64;													// 64,	//  	int laboratory_nFish;
+	m_deepSeaSettings.gravity = b2Vec2(0.0f, 0.0f);													// b2Vec2(0.0f,0.0f),	//  	b2Vec2 gravity;
+	m_deepSeaSettings.mutationRate = 0.05f;													// 0.1,	//  	float mutationRate;
+	m_deepSeaSettings.mutationSeverity = 0.5f;													// 	// std::list<BonyFish>::iterator fish;
+	m_deepSeaSettings.mentalMutationRate = 0.05f;													// 	// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
+	m_deepSeaSettings.mentalMutationSeverity = 1.0f;													// 0.2,	//  	float mutationSeverity;
+	m_deepSeaSettings.terrainPaintType = 0;													// 0.1,	//  	float mentalMutationRate;
+	m_deepSeaSettings.originTriggerRadius = 15.0f;													// 0.5,	//  	float mentalMutationSeverity;
+	m_deepSeaSettings.originFoodRadius = 10.0f;													// 0,	//  	int terrainPaintType;
+	m_deepSeaSettings.foodRadiusAngleJitter = 0.2f;													// 10,
+	m_deepSeaSettings.currentlySelectedSpecies = 0;													// 0.1,
+	m_deepSeaSettings.barrierRadius = 50.0f;													// 0,
+	m_deepSeaSettings.barrierRadiusStatus = 0;													// 0.1f
+	m_deepSeaSettings.entropy = 0.1f;													// };
 
 	// initialize foodparticles so they don't crash the program. This step does not add any to the world, and is required even for unused foodparticles.
 	for (int i = 0; i < N_FOODPARTICLES; ++i)
@@ -5032,7 +5058,15 @@ void runBiomechanicalFunctions () {
 
 						// 1 energy is lost per bone per turn for homeostasis or whatever. this is also so that plants can't live forever without sunlight.
 						if (TestMain::getEntropyStatus()) {
-							fish->energy -= 0.1f;
+
+							for (int i = 0; i < N_FINGERS; ++i)
+							{
+								if (fish->bones[i]->isUsed) {
+									fish->energy -= fish->bones[i]->energy *  m_deepSeaSettings.entropy * 0.01f;	
+								}
+							}
+
+							
 						}
 					}
 

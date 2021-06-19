@@ -46,7 +46,7 @@ namespace
 {
 
 	int currentlyPainting = 0;
-	int  noClipStatus = 0;
+	// int  noClipStatus = 0;
 	int originStartStatus = 0;
 	// int persistentFoodStatus = 1;
 	int triggerRadiusStatus = 1;
@@ -59,6 +59,9 @@ namespace
 	int entropyStatus = 0;
 	int barrierRadiusStatus = 1;
 	int lampStatus = 0;
+	int lampIntensity = 1;
+
+	int noClipStatus = 0;
 
 	int selectedSpeciesEnforcePopLimit = 0;
 	int selectedSpeciesSexuality = 0;
@@ -74,6 +77,10 @@ namespace
 	GLUI_Spinner* nominalPopulationSpinner;
 
 	GLUI_Spinner* barrierRadiusSpinner;
+
+	GLUI_Spinner* entropySpinner;
+
+	GLUI_Spinner* lampIntensitySpinner;
 
 	b2Vec2 lower;
 	b2Vec2 upper;
@@ -131,9 +138,9 @@ int getPaintingStatus() {
 	return currentlyPainting;
 }
 
-int getNoClipStatus() {
-	return noClipStatus;
-}
+// int getNoClipStatus() {
+// 	return noClipStatus;
+// }
 
 int getOriginStartStatus() {
 	return originStartStatus;
@@ -193,6 +200,14 @@ int getNumberToSelect() {
 
 int getLampStatus() {
 	return lampStatus;
+}
+
+int getNoClipStatus() {
+	return noClipStatus;
+}
+
+int getLampIntensity() {
+	return lampIntensity;
 }
 
 // Set whether to restart the test on particle parameter changes.
@@ -689,7 +704,9 @@ int main(int argc, char** argv)
 
 
 
-	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce to origin, no clip", &m_deepSeaSettings.gameMode );
+	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce to origin", &m_deepSeaSettings.gameMode );
+
+	glui->add_checkbox_to_panel(laboratoryPanel, "No clip", &noClipStatus );
 
 	// glui->add_checkbox_to_panel(laboratoryPanel, "Autosave species on generation", &autosaveSpeciesOnGeneration);
 
@@ -729,11 +746,21 @@ int main(int argc, char** argv)
 	// glui->add_checkbox_to_panel(EcosystemPanel, "Persistent food", &persistentFoodStatus);
 
 
+	lampIntensitySpinner =
+	glui->add_spinner_to_panel(EcosystemPanel,"Lamp intensity", GLUI_SPINNER_INT, &lampIntensity);
+	lampIntensitySpinner->set_int_limits(1, 1000);
+
+
 	glui->add_checkbox_to_panel(EcosystemPanel, "Toggle lamps", &lampStatus);
 
 
 	glui->add_checkbox_to_panel(EcosystemPanel, "Movement costs energy", &entropyStatus);
 
+		// GLUI_Spinner* 
+	entropySpinner =
+		glui->add_spinner_to_panel(EcosystemPanel, "Entropy level", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.entropy);
+	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
+	// glui->add_separator_to_panel(laboratoryPanel);
 
 
 	

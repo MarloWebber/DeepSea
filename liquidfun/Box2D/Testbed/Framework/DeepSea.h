@@ -38,11 +38,14 @@ struct deepSeaSettings {
 	float originFoodRadius;
 	float foodRadiusAngleJitter;
 
-
+	// bool noclip;
+	
 	int currentlySelectedSpecies;
 
 	float barrierRadius;
-	float barrierRadiusStatus;
+	int barrierRadiusStatus;
+
+	float entropy;
 
 };
 
@@ -539,7 +542,7 @@ struct Terrain {
 	b2BodyDef bodyDef;
 	b2Body * p_body;
 	b2PolygonShape shape; 
-	
+
 	b2Fixture * p_fixture;
 
 	bool flagDelete;
