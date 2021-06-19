@@ -532,11 +532,15 @@ struct Species {
 
 struct Terrain {
 
+	bool isUsed;
+
 	b2Vec2 position; 			// starting position of the object in the game world
 
 	b2BodyDef bodyDef;
-	b2Body * u_body;
+	b2Body * p_body;
 	b2PolygonShape shape; 
+	
+	b2Fixture * p_fixture;
 
 	bool flagDelete;
 
@@ -545,7 +549,11 @@ struct Terrain {
 	b2Color color;
 	b2Color outlineColor;
 
-	Terrain(b2Vec2 position);
+	int collisionGroup;
+
+	float density;
+
+	Terrain(b2Vec2 startingPosition);
 };
 
 

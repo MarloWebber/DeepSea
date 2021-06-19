@@ -56,7 +56,7 @@ BoneUserData * food[N_FOODPARTICLES];
 std::list<Species> ecosystem = *(new std::list<Species>);
 Species * defaultSpecies = new Species; // a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
 
-std::list<Terrain> map = *(new std::list<Terrain>);
+std::list<Terrain> environment = *(new std::list<Terrain>);
 
 // local copies of pointers mean that the references to these objects only need to be given once at setup (they come from main).
 b2World * local_m_world = nullptr;
@@ -112,7 +112,7 @@ void rotatePolygon(b2Vec2 rotationCenter, b2Vec2 * vertices, int count, float an
 
 float RNG() { //
     static std::default_random_engine e;
-    static std::uniform_real_distribution<> dis(0, 1); // rage 0 - 1
+    static std::uniform_real_distribution<> dis(0, 1); 
     return dis(e);
 }
 
@@ -336,6 +336,23 @@ BoneUserData::BoneUserData(
 	isUsed=  boneDescription.used;
 };
 
+Terrain::Terrain(b2Vec2 startingPosition) {
+
+	density = 1.0f;
+
+	position = startingPosition;
+
+	isUsed = false;
+	flagDelete = false;
+
+	selected = false;
+
+	color = b2Color(0.5f, 0.5f, 0.5f);
+	outlineColor = b2Color(0.8f, 0.8f, 0.8f);
+
+	collisionGroup = 1;
+}
+
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 	// if (!p_bone->isLeaf || p_bone->isRoot) {
@@ -381,6 +398,26 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	p_bone->isUsed = true;
 	p_bone->selected = false;
 	p_bone->hasGrown = true;
+}
+
+
+void nonRecursiveTerrainIncorporator(Terrain * p_bone) {
+
+	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
+
+	p_bone->p_body->SetTransform(p_bone->position, p_bone->p_body->GetAngle());
+
+	uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_DEFAULT);
+	p_bone->p_body->SetUserData((void *)p_dataWrapper);
+
+	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
+	tempFilter.groupIndex = p_bone->collisionGroup;
+	p_bone->p_fixture->SetFilterData(tempFilter);
+
+	p_bone->isUsed = true;
+	p_bone->selected = false;
+
+	
 }
 
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
@@ -3065,6 +3102,28 @@ void drawingTest() {
 		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.barrierRadius, color);
 	}
 
+
+
+	// draw terrain
+	std::list<Terrain>::iterator rock;
+	for (rock = environment.begin(); rock !=  environment.end(); ++rock) 	
+	{
+					b2Vec2 vertices[4];
+					b2Vec2 boneCenterWorldPosition = rock->p_body->GetWorldCenter();
+					for (int j = 0; j < 4; ++j) {	
+						b2Vec2 adjustedVertex = rock->shape.GetVertex(j);
+						b2Vec2 boneLocalCenter =rock->p_body->GetLocalCenter();
+						b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, rock->p_body->GetAngle(), adjustedVertex);
+						rotatedVertex.x += boneCenterWorldPosition.x;
+						rotatedVertex.y +=boneCenterWorldPosition.y;
+						vertices[j] = rotatedVertex;
+					}
+
+					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , rock->color);	
+					local_debugDraw_pointer->DrawPolygon(vertices, 4 , rock->outlineColor);
+	}
+
+
 	// draw the particle system
 	if (false) {
 		int32 particleCount = local_m_particleSystem->GetParticleCount();
@@ -3362,6 +3421,34 @@ void loadSavedMapFromFile(int arg) {
 void saveCurrentMapToFile(int arg) {
 	unused_variable((void *)&arg);
 }
+
+
+void loadExperimentalMap() {
+
+	// populates the terrain list with some stuuuufff
+
+	Terrain * barrierA = new Terrain( b2Vec2(0.0f, -5.0f) );
+
+	b2Vec2 barrierAVertices[] = {
+		b2Vec2( + 10,  -1), //b2Vec2 rootVertexA = 
+		b2Vec2( - 10,  -1), // b2Vec2 rootVertexB =
+		b2Vec2( + 10,  +1), //b2Vec2 tipVertexA = 
+		b2Vec2( - 10,  +1) // b2Vec2 tipVertexB = 
+	};
+	
+	barrierA->bodyDef.type = b2_staticBody;
+	barrierA->p_body = local_m_world->CreateBody( &(barrierA->bodyDef) );
+	
+	barrierA->shape.Set(barrierAVertices, 4);
+
+	nonRecursiveTerrainIncorporator(barrierA);
+
+	// add to the terrain list also
+	environment.push_back( *barrierA );
+
+}
+
+
 
 void nominalPopulationCallback (int arg) {
 	std::list<Species>::iterator currentSpecies;
@@ -3729,6 +3816,9 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	saveDefaultPlant();
 
 	saveDefaultFish();
+
+
+	loadExperimentalMap();
 
 
     // std::list<Species>::iterator startingSpecies = ecosystem.begin();
@@ -5569,6 +5659,8 @@ if (TestMain::gameIsPaused()) {
 		}
 
 		drawingTest();
+
+		// drawTerrain();
 
 		runBiomechanicalFunctions();
 
