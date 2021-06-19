@@ -3430,10 +3430,10 @@ void loadExperimentalMap() {
 	Terrain * barrierA = new Terrain( b2Vec2(0.0f, -5.0f) );
 
 	b2Vec2 barrierAVertices[] = {
-		b2Vec2( + 10,  -1), //b2Vec2 rootVertexA = 
-		b2Vec2( - 10,  -1), // b2Vec2 rootVertexB =
-		b2Vec2( + 10,  +1), //b2Vec2 tipVertexA = 
-		b2Vec2( - 10,  +1) // b2Vec2 tipVertexB = 
+		b2Vec2( + 20,  -0.5), //b2Vec2 rootVertexA = 
+		b2Vec2( - 20,  -0.5), // b2Vec2 rootVertexB =
+		b2Vec2( + 20,  +0.5), //b2Vec2 tipVertexA = 
+		b2Vec2( - 20,  +0.5) // b2Vec2 tipVertexB = 
 	};
 	
 	barrierA->bodyDef.type = b2_staticBody;
@@ -3445,6 +3445,18 @@ void loadExperimentalMap() {
 
 	// add to the terrain list also
 	environment.push_back( *barrierA );
+
+		// add a lamp
+	Lamp monog = Lamp();
+
+	monog.direction = -0.5 * pi;
+	monog.beamWidth = 40;
+	monog.brightness = 1;
+	monog.position = b2Vec2(0.0f, 5.5f);
+
+	lamps.push_back(monog);
+
+	m_deepSeaSettings.gravity = b2Vec2( 0.0f, -1.0f);
 
 }
 
@@ -3554,7 +3566,7 @@ void shine (Lamp * nancy) {
 
 			// pick a point that is 'sidewaysRandomness' distance away at right angles to the beam.
 			// b2Vec2 photonStartingPosition
-			sunbeam.p1 = b2Vec2(  nancy->position.x +  (cos(nancy->direction + (pi*0.5) ) * sidewaysRandomness)  , nancy->position.x +  (sin(nancy->direction + (pi*0.5)) * sidewaysRandomness)    );
+			sunbeam.p1 = b2Vec2(  nancy->position.x +  (cos(nancy->direction + (pi*0.5) ) * sidewaysRandomness)  , nancy->position.y +  (sin(nancy->direction + (pi*0.5)) * sidewaysRandomness)    );
 
 			// photon starts from this direction and travels straight
 			// b2Vec2 photonEndPosition = 
@@ -3738,7 +3750,7 @@ Lamp::Lamp() {
 
 		 lampType = LAMP_DIRECTIONAL;
 
-	 direction =  0.3 * pi;
+	 direction =  0;//0.3 * pi;
 	 beamWidth = 2;
 }
 
@@ -3807,9 +3819,6 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	m_particleFlags = TestMain::GetParticleParameterValue();
 	m_groupFlags = 0;
 
-	// add a lamp
-	Lamp monog = Lamp();
-	lamps.push_back(monog);
 
 	
 
@@ -4757,6 +4766,12 @@ void flightModel(BoneUserData * bone) {
 
 // void incorporateLeaf();
 
+void gravitate (BoneUserData * p_bone) {
+
+	p_bone->p_body->ApplyForce(m_deepSeaSettings.gravity, p_bone->p_body->GetWorldCenter() , true);
+
+}
+
 void runBiomechanicalFunctions () {
 	unsigned int spacesUsedSoFar =0;
 
@@ -4774,20 +4789,15 @@ void runBiomechanicalFunctions () {
 			// update the fish's senses
 			for (int j = 0; j < N_FINGERS; ++j) {
 
-				// if (fish->bones[j]->) {
-
-				// }
-
-				// printf("6.1\n");
-	
+		
 				nonRecursiveSensorUpdater (fish->bones[j]);
-
-				// printf("6.2\n");
 
 				// perform the flight simulation on the fish
 				flightModel( fish->bones[j] );
 
-				// printf("6.3\n");
+				// add the force of gravity
+				gravitate ( fish->bones[j] );
+
 			}
 		
 			// sensorium size is based on the size of the ANN. Whether or not it is populated with numbers depends on the size of the input connector matrix.
