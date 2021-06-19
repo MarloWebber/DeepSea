@@ -392,6 +392,8 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		p_bone->joint->jointDef.collideConnected = false; // this means that limb segments dont collide with their children
 
 		p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
+
+
 			
 	}
 
@@ -4986,15 +4988,15 @@ void runBiomechanicalFunctions () {
 								}
 
 							if (fish->bones[ fish->bones[i]->attachedTo ] ->hasGrown) 
-								{
+							{
 
 									// continue;
 									// printf("b");
 								if (fish->energy > fish->bones[i]->energy) 
-									{
+								{
 
 
-								printf(  "the limb %i is attached to the grown limb %i\n",  i, fish->bones[i]->attachedTo );
+									printf(  "the limb %i is attached to the grown limb %i\n",  i, fish->bones[i]->attachedTo );
 										// printf("c");
 								
 									// if (  !   {
@@ -5002,28 +5004,25 @@ void runBiomechanicalFunctions () {
 										if (true) {
 												printf("added limb %i on fish\n", i);
 
+
+												fish->bones[i]->p_body->SetTransform(fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetWorldCenter() ,   fish->bones[i]->p_body->GetAngle() + pi  );
+
 												// add the limb on
 												nonRecursiveBoneIncorporator( fish->bones[i]);
+
 
 												fish->bones[i]->hasGrown = true;
 
 												fish->energy -= fish->bones[i]->energy;
 
 										}
-									
 									}
 								}
-							
 
 								// if you're here, the limb is a leaf but has not grown. you should skip the rest
 								continue;
 							}
 						}
-
-
-						// if () {
-
-						// }
 
 						// if sunlight fell on a leaf, give energy to it.
 						if (fish->bones[i]->isLeaf && fish->bones[i]->flagPhotosynth) {
