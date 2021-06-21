@@ -39,7 +39,7 @@ struct deepSeaSettings {
 	float foodRadiusAngleJitter;
 
 	// bool noclip;
-	
+
 	int currentlySelectedSpecies;
 
 	float barrierRadius;
@@ -115,6 +115,7 @@ const uint32 k_paramDefCount =
 #define LAMP_POINTSOURCE 1
 #define LAMP_DIRECTIONAL 2
 #define LAMP_ORTHOGONAL  3
+#define LAMP_SOLAR		 4
 
 struct Lamp {
 	unsigned int brightness;			// number of rays cast per turn

@@ -380,8 +380,15 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
 
 
+
+
 			
 	}
+
+	// if the body is root and is also a leaf, fix its rotation. This is because trees are 'planted in the ground'.
+	// if () {
+
+	// }
 
 	p_bone->isUsed = true;
 	p_bone->selected = false;
@@ -1186,7 +1193,7 @@ fishDescriptor_t  basicPlant() {
 	{
 
 		if (i > 0) {
-			newPlant.bones[i].attachedTo = i-1;
+			newPlant.bones[i].attachedTo = 0;//i-1;
 		}
 
 		newPlant.bones[i].used = true;	
@@ -2620,7 +2627,7 @@ void removeDeletableFish() {
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
 			if (fish->flagDelete && fish->isUsed) {
-			// 	deleteFish ( &(*fish)) ;
+				deleteFish ( &(*fish)) ;
 				currentSpecies->population.erase(fish++);
 				// fishToDelete.push_back( (*fish) );
 			}
@@ -3457,7 +3464,8 @@ void loadExperimentalMap() {
 		// add a lamp
 	Lamp monog = Lamp();
 
-	monog.direction = -0.5 * pi;
+	monog.lampType = LAMP_SOLAR;
+	monog.direction = pi; // 0 is actually straight up not straight down
 	monog.beamWidth = 40;
 	monog.brightness = 2;
 	monog.position = b2Vec2(0.0f, 5.5f);
@@ -3597,6 +3605,30 @@ void shine (Lamp * nancy) {
 		else if (nancy->lampType == LAMP_ORTHOGONAL) {
 
 			
+
+		}
+		else if (nancy->lampType == LAMP_SOLAR) {
+
+			// pick a random point on the upper hemisphere.
+
+			float randomAngle =  ( (RNG()-0.5) * 2 * pi );
+			float incidentDirection = nancy->direction + randomAngle ;
+			float mirrorDirection = nancy->direction - randomAngle ;
+
+
+			sunbeam.p1 = b2Vec2( nancy->illuminationRadius * cos(incidentDirection)   ,  nancy->illuminationRadius * sin(incidentDirection)  );
+			
+			sunbeam.p2 = b2Vec2( nancy->illuminationRadius * cos(mirrorDirection)   ,  nancy->illuminationRadius * sin(mirrorDirection)  );
+
+
+			if (true) { // print the rays of light
+
+			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2,  nancy->illuminationColor );
+			}
+
+			RayCastClosestCallback stupidMotherFucker;
+
+			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
 
 		}
 
