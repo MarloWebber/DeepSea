@@ -343,7 +343,7 @@ Terrain::Terrain(b2Vec2 startingPosition) {
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 	// if (!p_bone->isLeaf || p_bone->isRoot) {
-	printf("_b");
+	// printf("_b\n");
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 
 	// 	if (p_bone->isLeaf) {
@@ -351,7 +351,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	// 	}
 	// }
 
-	printf("_c");
+	// printf("_c\n");
 	
 	if (p_bone->isMouth) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_MOUTH);
@@ -374,7 +374,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 	}
 
-	printf("_d");
+	// printf("_d\n");
 
 	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
 	tempFilter.groupIndex = p_bone->collisionGroup;
@@ -390,7 +390,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 			
 	}
-	printf("_e");
+	// printf("_e\n");
 	// if the body is root and is also a leaf, fix its rotation. This is because trees are 'planted in the ground'.
 	// if () {
 
@@ -802,6 +802,7 @@ void deleteJoint(BoneUserData * bone) {
 	}
 }
 
+// doesn't really delete. more like disable bone.
 void deleteBone (BoneUserData * bone) {
 	if (bone->isUsed && bone->flagDelete) {	
 
@@ -809,10 +810,13 @@ void deleteBone (BoneUserData * bone) {
 			return;
 		}
 
-		local_m_world->DestroyBody(bone->p_body);
+		bone->p_body->DestroyFixture(bone->p_fixture); // you can still grow it back after this.
+		// local_m_world->DestroyBody(bone->p_body);
+
 		// bone->isUsed = false;
-		// bone->init = false;
+		// bone->init = false; // the bone is still used in the fish's design, it's just missing at the moment.
 		bone->hasGrown = false;
+		bone->flagDelete = false;
 	}
 }
 
@@ -829,8 +833,10 @@ void deleteFish (BonyFish * fish) {
 		}
 		for (unsigned int i = 0; i < N_FINGERS ; ++i) {
 			deleteBone(fish->bones[i]);
+			local_m_world->DestroyBody(fish->bones[i]->p_body); // this action is for real, you can't grow it back.
 		}
 		fish->isUsed = false;
+		fish->flagDelete = false;
 	}
 }
 
@@ -5294,19 +5300,33 @@ void runBiomechanicalFunctions () {
 								{
 
 
-									printf(  "the limb %i is attached to the grown limb %i\n",  i, fish->bones[i]->attachedTo );
+									// printf(  "the limb %i is attached to the grown limb %i\n",  i, fish->bones[i]->attachedTo );
 										// printf("c");
 								
 									// if (  !   {
 
 										if (true) {
-												printf("added limb %i on fish\n", i);
+												// printf("added limb %i on fish\n", i);
+
+												// add the limb on
+												nonRecursiveBoneIncorporator( fish->bones[i]);
+
+												// printf("malamar");
+
+												// turn collisions off, move the limb, and then turn them back on again
+												b2Filter tempFilterOn = fish->bones[i]->p_fixture->GetFilterData();
+												tempFilterOn.groupIndex = fish->bones[i]->collisionGroup;
+
+												b2Filter tempFilterOff = fish->bones[i]->p_fixture->GetFilterData();
+												tempFilterOff.groupIndex = -1;
+
+												fish->bones[i]->p_fixture->SetFilterData(tempFilterOff);
 
 
 												fish->bones[i]->p_body->SetTransform(fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetWorldCenter() ,  fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetAngle() + pi  );
 
-												// add the limb on
-												nonRecursiveBoneIncorporator( fish->bones[i]);
+
+												fish->bones[i]->p_fixture->SetFilterData(tempFilterOn);
 
 
 												fish->bones[i]->hasGrown = true;
@@ -5841,16 +5861,16 @@ if (TestMain::gameIsPaused()) {
 		return;
 	}
 
-	printf("1\n");
+	// printf("1\n");
 	
 	TestMain::PreStep();
 
-	printf("2\n");
+	// printf("2\n");
 	
 
 	TestMain::Step();
 
-	printf("3\n");
+	// printf("3\n");
 	
 
 	if (!local_m_world->IsLocked() ) {
@@ -5918,14 +5938,14 @@ if (TestMain::gameIsPaused()) {
 
 		loopCounter ++;
 
-		printf("4\n");
+		// printf("4\n");
 	
 
 		removeDeletableFish();
 
 		deleteFlaggedSpecies() ;
 
-		printf("5\n");
+		// printf("5\n");
 	
 
 		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) 
@@ -5964,7 +5984,7 @@ if (TestMain::gameIsPaused()) {
 			}
 		}
 
-		printf("6\n");
+		// printf("6\n");
 	
 
 		startNextGeneration = false;
@@ -5984,7 +6004,7 @@ if (TestMain::gameIsPaused()) {
 
 		runBiomechanicalFunctions();
 
-		printf("7\n");
+		// printf("7\n");
 	
 
 		// if (flagAddFood) {
@@ -6003,12 +6023,12 @@ if (TestMain::gameIsPaused()) {
 		// }
 	}
 
-	printf("8\n");
+	// printf("8\n");
 	
 
 	TestMain::PostStep();
 
-	printf("9\n");
+	// printf("9\n");
 	
 }
 
