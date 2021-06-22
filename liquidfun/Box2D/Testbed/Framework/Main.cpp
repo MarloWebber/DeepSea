@@ -648,14 +648,14 @@ int main(int argc, char** argv)
 	GLUI_Rollout* selectionPanel =	glui->add_rollout("Selection Tools");
 	selectionPanel->open();
 
+	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");
+	speciesPanel->close();
+
 	GLUI_Rollout* brainEditPanel =	glui->add_rollout("Neuroscience");
 	brainEditPanel->close();
 
 	GLUI_Rollout* bodyEditPanel =	glui->add_rollout("Surgery");
 	bodyEditPanel->close();
-
-	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");
-	speciesPanel->close();
 
 	GLUI_Rollout* laboratoryPanel =	glui->add_rollout("Laboratory");
 	laboratoryPanel->close();

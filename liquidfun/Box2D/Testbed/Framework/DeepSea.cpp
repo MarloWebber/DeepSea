@@ -6010,17 +6010,21 @@ void selectFurthestFromOrigin (int arg) {
 
 void selectClosestToFood (int arg) {
 
-	return; // i am in the process of removing the list of 'food particles', which was like a weird secondary list of creatures that had to be separately handled. If regular fish can be eaten, a 'fish food flakes' should just be a regular species with 1 segment. This function should be rewritten to work that way.
+	// return; // i am in the process of removing the list of 'food particles', which was like a weird secondary list of creatures that had to be separately handled. If regular fish can be eaten, a 'fish food flakes' should just be a regular species with 1 segment. This function should be rewritten to work that way.
 
 	unused_variable((void *)&arg);
 	std::list<Species>::iterator currentSpecies;
-	std::list<BonyFish>::iterator fish;
-	currentSpecies= ecosystem.begin();
-	fish = currentSpecies->population.begin();
-	BonyFish * theClosest = &(*fish);
-	BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
+	std::list<Species>::iterator currentSpeciesB;
+	std::list<BonyFish>::iterator fishA;
+	std::list<BonyFish>::iterator fishB;
 
-	// float theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
+
+	currentSpecies= ecosystem.begin();
+	fishA = currentSpecies->population.begin();
+	BonyFish * theClosest;// = &(*fishA);
+	// BonyFish * referenceFish;// = &(*fishA); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
+
+	float theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
 	bool chosen = false;
 
 
@@ -6035,12 +6039,50 @@ void selectClosestToFood (int arg) {
 			if (!currentSpecies->selected) {
 				continue;
 			}
-			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			for (fishA = currentSpecies->population.begin(); fishA !=  currentSpecies->population.end(); ++fishA) 	
 			{
 
-				if (fish->selected) {
+				if (fishA->selected) {
 					continue;
 				}
+				for (currentSpeciesB = ecosystem.begin(); currentSpeciesB !=  ecosystem.end(); ++currentSpeciesB) 	
+		{
+
+				for (fishB = currentSpeciesB->population.begin(); fishB !=  currentSpeciesB->population.end(); ++fishB) 	
+				{
+
+					for (int i = 0; i < N_FINGERS; ++i)
+					{
+						if (fishB->bones[i]->isUsed && fishB->bones[i]->hasGrown) {
+
+							if (fishB->bones[i]->isFood || fishB->bones[i]->isLeaf) {
+
+
+
+
+									b2Vec2 vectorToFood = b2Vec2(fishB->bones[i]->p_body->GetWorldCenter().x - fishA->bones[0]->p_body->GetWorldCenter().x , fishB->bones[i]->p_body->GetWorldCenter().y - fishA->bones[0]->p_body->GetWorldCenter().y);
+
+							float distanceToFood = magnitude(vectorToFood);
+
+
+							if (distanceToFood < theBestDistanceSoFar) {
+								theClosest = &(*fishA);
+								theBestDistanceSoFar = distanceToFood;
+								chosen = true;
+				// 		}	
+
+
+							// printf("new best: %f\n", distanceToFood);
+
+
+
+							}
+
+						}
+					}
+				}
+				}
+
 
 				// for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
@@ -6056,17 +6098,22 @@ void selectClosestToFood (int arg) {
 				// 			chosen = true;
 				// 		}
 				// 	}
-				// }
+			
+				}
 			}
 		}
 
+		
 		if (chosen) {
+			// printf("chosen\n");
+
+
+
 			theClosest->selected = true;
-			theClosest = referenceFish;
-			// theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
+			// theClosest = referenceFish;
+			theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
 		 	chosen = false;
 		}
-
 		
 
 	}
