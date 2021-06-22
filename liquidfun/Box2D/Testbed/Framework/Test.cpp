@@ -468,14 +468,14 @@ void Test::drawSegment(b2Vec2 p1, b2Vec2 p2, b2Color color) {
 }
 
 
-void Test::jointMotorSetpoint()
-{
+// void Test::jointMotorSetpoint()
+// {
 
 
 
-	startNextGeneration = true;
+// 	startNextGeneration = true;
 
-}
+// }
 
 // void Test::controlA()
 // {

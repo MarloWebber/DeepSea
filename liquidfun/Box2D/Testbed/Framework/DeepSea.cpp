@@ -21,11 +21,11 @@ float pi = 3.14159f;
 // global settings to keep track of the game parameters.
 unsigned int currentNumberOfFish = 0;
 unsigned int generationsThisGame = 0;
-bool startNextGeneration = false;
+// bool startNextGeneration = false;
 deepSeaSettings m_deepSeaSettings;					// = {
 
-uint64 loopCounter = 0 ;
-uint32 loopSafetyLimit = 100;
+// uint64 loopCounter = 0 ;
+// uint32 loopSafetyLimit = 100;
 bool flagAddFood = false;	// true so it adds once on startup!
 bool flagAddPlant= false;
 
@@ -885,10 +885,11 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 
 	BonyFish newFish = *(new BonyFish(driedFish, nann, startingPosition));
 
-
+	newFish.species = &(*currentSpecies);
 	// printf("sonos\n");
 
 	currentSpecies->population.push_back(  newFish );
+
 
 	// printf("mout loadde\n");
 
@@ -1506,6 +1507,9 @@ Species::Species () {
 	population = *(new std::list<BonyFish>);
 	name = std::string("unnamed_species");
 	nominalPopulation = 1;
+	startNextGeneration = false;
+	selected = false;
+	flagDelete = false;
 }
 
 
@@ -2880,15 +2884,16 @@ void removeDeletableFish() {
 // this function just sets the flags and labels. it is done inside the step.
 void reloadTheSim  (int arg) {
 	unused_variable((void *) &arg);
-	std::list<Species>::iterator currentSpecies;
-	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-	{
-		std::list<BonyFish>::iterator fish;
-		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-		{
-			fish->flagDelete = true;
-		}
-	}		
+	// std::list<Species>::iterator currentSpecies;
+	// for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	// {	
+	// 	currentSpecies->startNextGeneration = true;
+	// 	std::list<BonyFish>::iterator fish;
+	// 	for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+	// 	{
+	// 		fish->flagDelete = true;
+	// 	}
+	// }		
 
 	// if (!TestMain::getPersistentFoodStatus()) {
 	// 	for (int i = 0; i < N_FOODPARTICLES; ++i) {
@@ -2896,12 +2901,12 @@ void reloadTheSim  (int arg) {
 	// 	}
 	// }
 	
-	startNextGeneration = true;
+	
 }
 
 //  prints the winner to file immediately.
 void  vote (BonyFish * winner) {
-	if ( loopCounter > loopSafetyLimit) {
+	// if ( loopCounter > loopSafetyLimit) {
 
 		// the fish's input and output matrix configurations should be passed on to offspring
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
@@ -2919,8 +2924,28 @@ void  vote (BonyFish * winner) {
 	    saveFishToFile (fdescfilename, winner->genes);
 	    fann_save(  wann , nnfilename.c_str()); 
 
-		reloadTheSim(0);	
-	}
+
+	    winner->species->startNextGeneration = true;
+
+	    // printf("voted for fishe\n");
+
+		// std::list<Species>::iterator currentSpecies;
+		// for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+		// {	
+		// 	// currentSpecies->startNextGeneration = true;
+		// 	std::list<BonyFish>::iterator fish;
+		// 	for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		// 	{
+		// 		// fish->flagDelete = true;
+
+		// 		if () {
+
+		// 		}
+
+		// 	}
+		// }	
+
+	// }
 }
 
 void mutateFANNFileDirectly (std::string filename) {
@@ -3665,38 +3690,35 @@ void loadExperimentalMap() {
 
 	// populates the terrain list with some stuuuufff
 
-	Terrain * barrierA = new Terrain( b2Vec2(0.0f, -5.0f) );
-
-	b2Vec2 barrierAVertices[] = {
-		b2Vec2( + 20,  -0.5), //b2Vec2 rootVertexA = 
-		b2Vec2( - 20,  -0.5), // b2Vec2 rootVertexB =
-		b2Vec2( + 20,  +0.5), //b2Vec2 tipVertexA = 
-		b2Vec2( - 20,  +0.5) // b2Vec2 tipVertexB = 
-	};
-	
-	barrierA->bodyDef.type = b2_staticBody;
-	barrierA->p_body = local_m_world->CreateBody( &(barrierA->bodyDef) );
-	
-	barrierA->shape.Set(barrierAVertices, 4);
-
-	nonRecursiveTerrainIncorporator(barrierA);
-
-	// add to the terrain list also
-	environment.push_back( *barrierA );
+	// Terrain * barrierA = new Terrain( b2Vec2(0.0f, -5.0f) );
+	// b2Vec2 barrierAVertices[] = {
+	// 	b2Vec2( + 20,  -0.5), //b2Vec2 rootVertexA = 
+	// 	b2Vec2( - 20,  -0.5), // b2Vec2 rootVertexB =
+	// 	b2Vec2( + 20,  +0.5), //b2Vec2 tipVertexA = 
+	// 	b2Vec2( - 20,  +0.5) // b2Vec2 tipVertexB = 
+	// };
+	// barrierA->bodyDef.type = b2_staticBody;
+	// barrierA->p_body = local_m_world->CreateBody( &(barrierA->bodyDef) );
+	// barrierA->shape.Set(barrierAVertices, 4);
+	// nonRecursiveTerrainIncorporator(barrierA);
+	// environment.push_back( *barrierA );
 
 		// add a lamp
-	Lamp monog = Lamp();
+	Lamp sun = Lamp();
+	sun.lampType = LAMP_SOLAR;
+	sun.direction = pi; // 0 is actually straight up not straight down
+	sun.beamWidth = 40;
+	sun.brightness = 1;
+	sun.position = b2Vec2(0.0f, 5.5f);
+	sun.illuminationColor = b2Color( 0.3f, 0.2f ,  0.1f);
+	lamps.push_back(sun);
 
-	monog.lampType = LAMP_SOLAR;
-	monog.direction = pi; // 0 is actually straight up not straight down
-	monog.beamWidth = 40;
-	monog.brightness = 2;
-	monog.position = b2Vec2(0.0f, 5.5f);
-	monog.illuminationColor = b2Color( 0.3f, 0.2f ,  0.1f);
+	m_deepSeaSettings.gravity = b2Vec2( 0.0f, -0.0f);
 
-	lamps.push_back(monog);
+}
 
-	m_deepSeaSettings.gravity = b2Vec2( 0.0f, -1.0f);
+
+void loadFishTankMap() {
 
 }
 
@@ -3953,6 +3975,28 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
+	// printf("lab mode beginge\n");
+
+
+	// delete the existing fishe
+		// BonyFish * lowestFishThisTurn = &(*currentSpecies->population.begin());
+
+	// float lowestEnergyThisTurn = 1000000000.0f;
+
+	// for (unsigned int i = 0; i < n; ++i)
+	// {
+	// 	lowestEnergyThisTurn = 1000000000.0f;
+	// 	lowestFishThisTurn = &(*currentSpecies->population.begin());
+
+
+	std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			fish->flagDelete = true;
+		}
+
+
+
 	for (unsigned int i = 0; i < currentSpecies->nominalPopulation; ++i) {
 
 		bool thereIsAFile = false;
@@ -3993,10 +4037,11 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 		
 		// 	loadFish ( nematode, NULL,  position, currentSpecies) ;
 		}
+		currentSpecies->startNextGeneration = false;
 	}
 
 
-	startNextGeneration = false;
+	// startNextGeneration = false;
 }
 
 inline bool exists_test1 (const std::string& name) {
@@ -5333,7 +5378,7 @@ void runBiomechanicalFunctions () {
 
 												fish->energy -= fish->bones[i]->energy;
 
-												printf("a\n");
+												// printf("a\n");
 
 										}
 									}
@@ -5461,16 +5506,18 @@ void flagSelectedFishForDeletion(int arg) {
 
 void voteSelectedFish(int arg) {
 
+	// printf("vote selected\n");
+
 	unused_variable((void *)&arg);
 
 	std::list<Species>::iterator currentSpecies;
-		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{
+		std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-			std::list<BonyFish>::iterator fish;
-			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-			{
-		if (fish->selected) {
-			vote( &(*fish) );
+			if (fish->selected) {
+				vote( &(*fish) );
 			}
 		}
 	}
@@ -5614,6 +5661,7 @@ void makeLimbALeaf (int arg) {
 void handleReproduceSelectedButton (int arg) {
 	if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 		voteSelectedFish(arg);
+		// printf("pushe butone\n");
 	}
 	else  
 	{
@@ -5932,11 +5980,11 @@ if (TestMain::gameIsPaused()) {
 			} 
 		}
 
-		if (loopCounter < loopSafetyLimit) {
-			// startNextGeneration = false;
-		}		
+		// if (loopCounter < loopSafetyLimit) {
+		// 	// startNextGeneration = false;
+		// }		
 
-		loopCounter ++;
+		// loopCounter ++;
 
 		// printf("4\n");
 	
@@ -5948,10 +5996,10 @@ if (TestMain::gameIsPaused()) {
 		// printf("5\n");
 	
 
-		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) 
+		if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) 
 		{
-			if (loopCounter > loopSafetyLimit) 
-			{
+			// if (loopCounter > loopSafetyLimit) 
+			// {
 				if (TestMain::getFoodRadiusStatus() ) 
 				{
 
@@ -5978,16 +6026,20 @@ if (TestMain::gameIsPaused()) {
 
 				for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 				{
-					laboratoryModeBeginGeneration (currentSpecies );
+					if (currentSpecies->startNextGeneration) {
+
+						laboratoryModeBeginGeneration (currentSpecies );
+
+					}
 				}
-				loopCounter = 0;
-			}
+				// loopCounter = 0;
+			// }
 		}
 
 		// printf("6\n");
 	
 
-		startNextGeneration = false;
+		// startNextGeneration = false;
 
 		if (TestMain::getLampStatus()) {
 			std::list<Lamp>::iterator lomp;
@@ -6040,9 +6092,9 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 	// printf("1\n");
 
 	if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
-		if (startNextGeneration || loopCounter < loopSafetyLimit) {
-			return;
-		}
+		// if (loopCounter < loopSafetyLimit) {
+		// 	return;
+		// }
 	}
 
 	if (userDataA == nullptr  ) {

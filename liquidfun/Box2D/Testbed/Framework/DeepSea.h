@@ -23,6 +23,8 @@
 
 extern float pi;
 
+struct Species; // prototype
+
 struct deepSeaSettings {
 	int gameMode;
 	int laboratory_nFood;
@@ -459,7 +461,7 @@ struct BonyFish {
 	senseConnector outputMatrix[N_SENSECONNECTORS];
 
 	// char species[32]; // a textual string describing what species the fish is.
-
+	Species * species; // which species the fish belongs to.
 
 	b2Vec2 previousRootPosition;
 	float distanceMovedSoFar;
@@ -520,7 +522,6 @@ struct Species {
 
 	std::string name;
 
-
 	unsigned int nominalPopulation; // how many animals the ecosystem should be set to, if enforced
 
 	bool enforcePopulationLimit;	// whether or not the animals should obey the population limit
@@ -532,6 +533,8 @@ struct Species {
 	b2Vec2 windowVertices[4];
 
 	bool flagDelete;
+
+	bool startNextGeneration;
 
 	Species();
 
@@ -614,7 +617,7 @@ void drawingTest() ;
 BonyFish * checkNeuroWindow (b2AABB mousePointer) ;
 
 int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) ;
-extern bool startNextGeneration;
+// extern bool startNextGeneration;
 void incrementSelectedConnection();
 void decrementSelectedConnection();
 void meltSelectedFish(int arg);
