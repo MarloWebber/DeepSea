@@ -53,13 +53,16 @@ namespace
 	int foodRadiusStatus = 1;
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
-	int showSpeciesWindow = 0;
+	int showSpeciesWindow = 1;
 	int voting_mode = 0;
 	int showFluidDynamicForces = 0;
 	int entropyStatus = 0;
 	int barrierRadiusStatus = 1;
 	int lampStatus = 0;
 	int lampIntensity = 1;
+
+
+	int NominalPopulation;
 
 	int noClipStatus = 0;
 
@@ -81,6 +84,8 @@ namespace
 	GLUI_Spinner* entropySpinner;
 
 	GLUI_Spinner* lampIntensitySpinner;
+
+	GLUI_Spinner* selectNSpinner;
 
 	b2Vec2 lower;
 	b2Vec2 upper;
@@ -640,8 +645,36 @@ int main(int argc, char** argv)
 		GLUI_SUBWINDOW_RIGHT );
 
 
+	GLUI_Rollout* selectionPanel =	glui->add_rollout("Selection Tools");
+	selectionPanel->open();
+
+	GLUI_Rollout* brainEditPanel =	glui->add_rollout("Neuroscience");
+	brainEditPanel->close();
+
+	GLUI_Rollout* bodyEditPanel =	glui->add_rollout("Surgery");
+	bodyEditPanel->close();
+
+	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");
+	speciesPanel->close();
+
+	GLUI_Rollout* laboratoryPanel =	glui->add_rollout("Laboratory");
+	laboratoryPanel->close();
+
+	GLUI_Rollout* EcosystemPanel =	glui->add_rollout("Ecosystem");
+	EcosystemPanel->close();
+
+	GLUI_Rollout* terrainPanel =	glui->add_rollout("Habitat");
+	terrainPanel->close();
+
 	GLUI_Rollout* gamePanel =	glui->add_rollout("Game");
 	gamePanel->close();
+	
+	
+	
+
+
+	// GAME ROLLOUT
+
 
 	// GLUI_Listbox* modeList =
 		// glui->add_listbox_to_panel(gamePanel, "Mode", &(m_deepSeaSettings.gameMode ));
@@ -654,8 +687,44 @@ int main(int argc, char** argv)
 
 
 
-	GLUI_Rollout* laboratoryPanel =	glui->add_rollout("Laboratory");
-	// laboratoryPanel->close();
+	// HABITAT ROLLOUT
+
+
+
+	mapNameBar = glui->add_edittext_to_panel(terrainPanel, "Map name: ", GLUI_EDITTEXT_TEXT, &mapNameBarContent, 1, mapNameBarCallback);
+	mapNameBar->set_text(mapNameBarContent);
+	
+	glui->add_button_to_panel(terrainPanel, "Load saved map from file", 0, loadSavedMapFromFile);
+	glui->add_button_to_panel(terrainPanel, "Save current map to file", 1, saveCurrentMapToFile);
+	
+	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
+
+
+	GLUI_Listbox* terrainTypesList =
+		glui->add_listbox_to_panel(terrainPanel, "Terrain Type ", &(m_deepSeaSettings.terrainPaintType ) ,-1, updateParticleDrawingKeyboard);
+
+		terrainTypesList->add_item(0, "Elastic | SolidGroup" );
+		terrainTypesList->add_item(1, "Powder" );
+		terrainTypesList->add_item(2, "Rigid | SolidGroup" );
+		terrainTypesList->add_item(3, "Spring | SolidGroup" );
+		terrainTypesList->add_item(4, "Tensile" );
+		terrainTypesList->add_item(5, "Viscous" );
+		terrainTypesList->add_item(6, "Wall | SolidGroup" );
+		terrainTypesList->add_item(7, "Barrier | WallParticle" );
+		terrainTypesList->add_item(8, "Barrier | RigidGroup" );
+		terrainTypesList->add_item(9, "Barrier | ElasticParticle | SolidGroup" );
+		terrainTypesList->add_item(10, "Barrier | SpringParticle | SolidGroup" );
+		terrainTypesList->add_item(11, "Wall | RepulsiveParticle" );
+		terrainTypesList->add_item(12, "ColorMixing" );
+		terrainTypesList->add_item(12, "Zombie" );
+		ParticleDrawingKeyboard(0);
+
+
+
+
+
+
+	// LABORATORY ROLLOUT
 
 	// GLUI_Spinner* numberOfFishSpinner =
 		// glui->add_spinner_to_panel(laboratoryPanel,"Number of fish", GLUI_SPINNER_INT, &m_deepSeaSettings.laboratory_nFish);
@@ -671,8 +740,6 @@ int main(int argc, char** argv)
 	triggerRadiusSpinner->set_float_val(m_deepSeaSettings.originTriggerRadius);
 
 	glui->add_separator_to_panel(laboratoryPanel);
-
-
 	
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Food walks around radius", &foodRadiusStatus);
@@ -693,7 +760,7 @@ int main(int argc, char** argv)
 
 
 
-		glui->add_checkbox_to_panel(laboratoryPanel, "Barrier", &barrierRadiusStatus);
+	glui->add_checkbox_to_panel(laboratoryPanel, "Barrier", &barrierRadiusStatus);
 	
 	// GLUI_Spinner* 
 	barrierRadiusSpinner =
@@ -710,25 +777,12 @@ int main(int argc, char** argv)
 
 	// glui->add_checkbox_to_panel(laboratoryPanel, "Autosave species on generation", &autosaveSpeciesOnGeneration);
 
-
-	glui->add_separator_to_panel(laboratoryPanel);
-
-	nominalPopulationSpinner =
-	glui->add_spinner_to_panel(laboratoryPanel,"Select n", GLUI_SPINNER_INT, &selectNinSpecies);
-	nominalPopulationSpinner->set_int_limits(1, 1000);
-
-
-
-
-	glui->add_button_to_panel(laboratoryPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
-	glui->add_button_to_panel(laboratoryPanel, "Closest to Food", 3, selectClosestToFood);
-	glui->add_button_to_panel(laboratoryPanel, "Lowest Energy", 3, selectLowestEnergyFish);
+;
 
 
 
 	
-	GLUI_Rollout* EcosystemPanel =	glui->add_rollout("Ecosystem Mode");
-	EcosystemPanel->close();
+	// ECOSYSTEM ROLLOUT
 
 	// int fakeNumberOfFood;
 	// 	GLUI_Spinner* numberOfFoodSpinner =
@@ -764,9 +818,7 @@ int main(int argc, char** argv)
 
 
 	
-
-	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");
-	speciesPanel->close();
+	// TAXONOMY ROLLOUT
 
 	speciesNameBar = glui->add_edittext_to_panel(speciesPanel, "Species name: ", GLUI_EDITTEXT_TEXT, &speciesNameBarContent, 1, speciesNameBarCallback);
 	speciesNameBar->set_text(speciesNameBarContent);
@@ -774,10 +826,8 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(speciesPanel, "Populate selected species from file", 0, populateSpeciesFromFile);
 	glui->add_button_to_panel(speciesPanel, "Save selected individual to file", 1, saveIndividualToFile);
 
-	glui->add_button_to_panel(speciesPanel, "Select all in species", 1, selectAllInSpecies);
 
 
-	int NominalPopulation;
 	// GLUI_Spinner* n
 	nominalPopulationSpinner =
 	glui->add_spinner_to_panel(speciesPanel,"Nominal Population", GLUI_SPINNER_INT, &NominalPopulation, 1, nominalPopulationCallback);
@@ -795,35 +845,53 @@ int main(int argc, char** argv)
 
 
 
-	GLUI_Rollout* bioPanel =	glui->add_rollout("Biology");
-	bioPanel->close();
+	// GLUI_Rollout* bioPanel =	glui->add_rollout("Mutation");
+	// bioPanel->close();
+
+	
+
+	// SELECTION TOOLS ROLLOUT
 
 	GLUI_Spinner* mutationRateSpinner =
-		glui->add_spinner_to_panel(bioPanel, "Body Mutation Rate", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationRate);
+		glui->add_spinner_to_panel(selectionPanel, "Body Mutation Rate", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationRate);
 	mutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
 	GLUI_Spinner* mutationSeveritySpinner =
-		glui->add_spinner_to_panel(bioPanel, "Body Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationSeverity);
+		glui->add_spinner_to_panel(selectionPanel, "Body Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationSeverity);
 	mutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
 	GLUI_Spinner* mentalMutationRateSpinner =
-		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Rate", GLUI_SPINNER_FLOAT,&m_deepSeaSettings.mentalMutationRate);
+		glui->add_spinner_to_panel(selectionPanel, "Mind Mutation Rate", GLUI_SPINNER_FLOAT,&m_deepSeaSettings.mentalMutationRate);
 	mentalMutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
 	GLUI_Spinner* mentalMutationSeveritySpinner =
-		glui->add_spinner_to_panel(bioPanel, "Mind Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
+		glui->add_spinner_to_panel(selectionPanel, "Mind Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
 	mentalMutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
 
-
-
-	GLUI_Rollout* selectionPanel =	glui->add_rollout("Cloning Controls");
-	selectionPanel->open();
 
 	// glui->add_button_to_panel(selectionPanel, "Farthest Traveled", 1, selectFishWhoMovedTheFurthest);
 	
 
 	// glui->add_separator_to_panel(selectionPanel);
+
+
+
+	// glui->add_separator_to_panel(selectionPanel);
+
+	selectNSpinner =
+	glui->add_spinner_to_panel(selectionPanel,"Select n", GLUI_SPINNER_INT, &selectNinSpecies);
+	selectNSpinner->set_int_limits(1, 1000);
+
+
+
+
+	glui->add_button_to_panel(selectionPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
+	glui->add_button_to_panel(selectionPanel, "Closest to Food", 3, selectClosestToFood);
+	// glui->add_button_to_panel(selectionPanel, "Lowest Energy", 3, selectLowestEnergyFish);
+
+
+	glui->add_button_to_panel(selectionPanel, "Select all in species", 1, selectAllInSpecies);
 
 	glui->add_button_to_panel(selectionPanel, "Deselect All", 4, deselectAll);
 	glui->add_button_to_panel(selectionPanel, "Select All", 5, selectAll);
@@ -848,9 +916,7 @@ int main(int argc, char** argv)
 	
 
 
-
-	GLUI_Rollout* brainEditPanel =	glui->add_rollout("Neuroscience");
-	brainEditPanel->close();
+	// NEUROSCIENCE ROLLOUT
 
 	glui->add_button_to_panel(brainEditPanel, "Neutralize Brain", 9, meltSelectedFish);
 	glui->add_button_to_panel(brainEditPanel, "Randomize Brain", 10, scrambleSelectedFish);
@@ -882,8 +948,8 @@ int main(int argc, char** argv)
 
 
 
-	GLUI_Rollout* bodyEditPanel =	glui->add_rollout("Surgery");
-	bodyEditPanel->close();
+	// SURGERY ROLLOUT
+	
 
 	glui->add_button_to_panel(bodyEditPanel, "Pin to Grid", 5, pinToGrid);
 	glui->add_button_to_panel(bodyEditPanel, "Release", 6, releaseFromGrid);
@@ -913,41 +979,6 @@ int main(int argc, char** argv)
 	glui->add_checkbox_to_panel(bodyEditPanel, "Show body edit window", &showBodyEditWindow);
 
 
-
-
-	GLUI_Rollout* terrainPanel =	glui->add_rollout("Habitat");
-	terrainPanel->close();
-
-
-
-
-	mapNameBar = glui->add_edittext_to_panel(terrainPanel, "Map name: ", GLUI_EDITTEXT_TEXT, &mapNameBarContent, 1, mapNameBarCallback);
-	mapNameBar->set_text(mapNameBarContent);
-	
-	glui->add_button_to_panel(terrainPanel, "Load saved map from file", 0, loadSavedMapFromFile);
-	glui->add_button_to_panel(terrainPanel, "Save current map to file", 1, saveCurrentMapToFile);
-	
-	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
-
-
-	GLUI_Listbox* terrainTypesList =
-		glui->add_listbox_to_panel(terrainPanel, "Terrain Type ", &(m_deepSeaSettings.terrainPaintType ) ,-1, updateParticleDrawingKeyboard);
-
-		terrainTypesList->add_item(0, "Elastic | SolidGroup" );
-		terrainTypesList->add_item(1, "Powder" );
-		terrainTypesList->add_item(2, "Rigid | SolidGroup" );
-		terrainTypesList->add_item(3, "Spring | SolidGroup" );
-		terrainTypesList->add_item(4, "Tensile" );
-		terrainTypesList->add_item(5, "Viscous" );
-		terrainTypesList->add_item(6, "Wall | SolidGroup" );
-		terrainTypesList->add_item(7, "Barrier | WallParticle" );
-		terrainTypesList->add_item(8, "Barrier | RigidGroup" );
-		terrainTypesList->add_item(9, "Barrier | ElasticParticle | SolidGroup" );
-		terrainTypesList->add_item(10, "Barrier | SpringParticle | SolidGroup" );
-		terrainTypesList->add_item(11, "Wall | RepulsiveParticle" );
-		terrainTypesList->add_item(12, "ColorMixing" );
-		terrainTypesList->add_item(12, "Zombie" );
-		ParticleDrawingKeyboard(0);
 
 
 

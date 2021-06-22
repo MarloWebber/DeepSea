@@ -930,6 +930,8 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 	// printf("mesines\n");
 
 	flagBiasNeurons(fish->brain);
+
+	// return newFish;
 }
 
 fann * loadFishBrainFromFile (std::string fileName) {
@@ -2881,6 +2883,8 @@ void removeDeletableFish() {
 	// }
 }
 
+
+
 // this function just sets the flags and labels. it is done inside the step.
 void reloadTheSim  (int arg) {
 	unused_variable((void *) &arg);
@@ -2918,8 +2922,8 @@ void  vote (BonyFish * winner) {
 		fann * wann = winner->ann;
 
 		// save the winner to file with a new name.
-		std::string nnfilename =  std::string("child.net");
-	    std::string fdescfilename =  std::string("child.fsh");
+		std::string nnfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_tmp.net");
+	    std::string fdescfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_tmp.fsh");
 	    std::ofstream file { nnfilename };
 	    saveFishToFile (fdescfilename, winner->genes);
 	    fann_save(  wann , nnfilename.c_str()); 
@@ -2948,12 +2952,12 @@ void  vote (BonyFish * winner) {
 	// }
 }
 
-void mutateFANNFileDirectly (std::string filename) {
+void mutateFANNFileDirectly (std::string inputfilename, std::string outputfilename) {
 
-	std::ofstream outFile("mutant.net");
+	std::ofstream outFile(outputfilename);
 	std::string line;
 
-	std::ifstream inFile(filename);
+	std::ifstream inFile(inputfilename);
 	int count = 0;
 
 	while(getline(inFile, line)){
@@ -3308,8 +3312,20 @@ void sex (BonyFish * partnerA, BonyFish * partnerB, std::list<Species>::iterator
 
 	b2Vec2 startingPosition = partnerA->bones[0]->p_body->GetWorldCenter();
 
+	// BonyFish * newFish =	
 	loadFish (*childDescriptor, createFANNbrainFromDescriptor(childBrain), startingPosition, currentSpecies) ;
 
+	// return newFish;
+
+}
+
+void wipeSpecies ( std::list<Species>::iterator currentSpecies) {
+
+	std::list<BonyFish>::iterator fish;
+		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		{
+			fish->flagDelete = true;
+		}
 
 
 }
@@ -3330,8 +3346,29 @@ void mateSelectedFish (int arg) {
 				if (foundPartnerA) {
 					partnerB = &(*fish);
 
-					sex(partnerA, partnerB, currentSpecies);
+					if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 
+						// delete everything in species
+						 wipeSpecies (currentSpecies) ;
+
+						// fuck a million times
+						for (unsigned int i = 0; i < currentSpecies->nominalPopulation; ++i)
+						{
+							sex(partnerA, partnerB, currentSpecies);
+						}
+
+					}
+					else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
+
+						// for (int i = 0; i < currentSpecies.nominalPopulation; ++i)
+						// {
+							sex(partnerA, partnerB, currentSpecies);
+						// }
+
+
+					}
+
+					
 
 						
 
@@ -3544,6 +3581,8 @@ void populateSpeciesFromFile(int arg) {
 			{
 				bool thereIsAFile = false;
 				std::string nnfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string(".net");
+				std::string mutantnnfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net");
+				
 			    std::string fdescfilename =  std::string("Aquarium/") + currentSpecies->name + std::string(".fsh");
 
 				if (FILE *file = fopen(nnfilename.c_str(), "r")) {
@@ -3561,10 +3600,10 @@ void populateSpeciesFromFile(int arg) {
 
 					mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 
-				    mutateFANNFileDirectly(std::string(nnfilename));
+				    mutateFANNFileDirectly(nnfilename, mutantnnfilename);
 
 					// now you can load the mutant ANN.
-					fann *mann = loadFishBrainFromFile (std::string("mutant")) ;
+					fann *mann = loadFishBrainFromFile (mutantnnfilename) ;
 
 					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
 
@@ -3660,6 +3699,7 @@ void deleteSelectedSpecies (int arg) {
 			// first go through and delete all the fish
 			flagSelectedFishForDeletion(0) ;
 
+			// then the species is deleted afterwards. otherwise ghost fish get left in the sim.
 			currentSpecies->flagDelete = true;
 		}
 	}
@@ -3954,13 +3994,13 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 		fann * wann = createFANNbrainFromDescriptor(&ickyBrain);
 
-		std::string nnfilename =  std::string("child.net");
+		std::string nnfilename = std::string("Aquarium/")  + currentSpecies->name + std::string("_win.net");
 	    fann_save(  wann , nnfilename.c_str()); 
 
-	    mutateFANNFileDirectly(std::string("child.net"));
+	    mutateFANNFileDirectly(std::string("Aquarium/")  + currentSpecies->name + std::string("_win.net") ,std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net"));
 
 		// now you can load the mutant ANN.
-		fann *jann = loadFishBrainFromFile (std::string("mutant")) ;
+		fann *jann = loadFishBrainFromFile ( std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net")  ) ;
 
 		b2Vec2 desiredPosition = fish->bones[0]->p_body->GetWorldCenter();
 
@@ -3972,6 +4012,10 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 		moveAWholeFish ( &(currentSpecies->population.back() ),  desiredPosition);
 	}
 }
+
+
+
+
 
 void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
@@ -3988,22 +4032,21 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 	// 	lowestEnergyThisTurn = 1000000000.0f;
 	// 	lowestFishThisTurn = &(*currentSpecies->population.begin());
 
+	
+	 	wipeSpecies (  currentSpecies) ;
 
-	std::list<BonyFish>::iterator fish;
-		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-		{
-			fish->flagDelete = true;
-		}
-
-
-
-	for (unsigned int i = 0; i < currentSpecies->nominalPopulation; ++i) {
 
 		bool thereIsAFile = false;
 
-		if (FILE *file = fopen("child.net", "r")) {
+		std::string nnfilename = std::string("Aquarium/")  +currentSpecies->name + std::string("_win.net");
+		std::string fdescfilename =std::string("Aquarium/")  + currentSpecies->name +std::string("_win.fsh");
+
+		std::string mutantnnfilename = std::string("Aquarium/")  +currentSpecies->name + std::string("_mut.net");
+		std::string mutantfdescfilename = std::string("Aquarium/")  +currentSpecies->name +std::string("_mut.fsh");
+
+		if (FILE *file = fopen(  nnfilename.c_str()   , "r")) {
 	        fclose(file);
-	        if (FILE *file = fopen("child.fsh", "r")) {
+	        if (FILE *file = fopen(fdescfilename.c_str(), "r")) {
 		        thereIsAFile = true;
 		        fclose(file);
 		    }
@@ -4011,24 +4054,27 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 
 		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
 
-			fishDescriptor_t newFishBody;
-			loadFishFromFile(std::string("child.fsh"), newFishBody);
+			for (unsigned int i = 0; i < currentSpecies->nominalPopulation; ++i) {
 
-			mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
+				fishDescriptor_t newFishBody;
+				loadFishFromFile(fdescfilename, newFishBody);
 
-		    mutateFANNFileDirectly(std::string("child.net"));
+				mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 
-			// now you can load the mutant ANN.
-			fann *mann = loadFishBrainFromFile (std::string("mutant")) ;
+			    mutateFANNFileDirectly(nnfilename, mutantnnfilename);
 
-			// create a neurodescriptor.
-			networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+				// now you can load the mutant ANN.
+				fann *mann = loadFishBrainFromFile ( mutantnnfilename ) ;
 
-			fann * jann = createFANNbrainFromDescriptor(muscleCars);
+				// create a neurodescriptor.
+				networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
 
-			b2Vec2 position = b2Vec2(0.0f,0.0f);
+				fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
-			loadFish ( newFishBody, jann, position, currentSpecies) ;
+				b2Vec2 position = b2Vec2(0.0f,0.0f);
+
+				loadFish ( newFishBody, jann, position, currentSpecies) ;
+			}
 		}
 		else { 						// if there is no winner, its probably a reset or new install. make one up
 			 printf("No genetic material found in game folder\n");
@@ -4037,8 +4083,9 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 		
 		// 	loadFish ( nematode, NULL,  position, currentSpecies) ;
 		}
-		currentSpecies->startNextGeneration = false;
-	}
+		
+	
+	currentSpecies->startNextGeneration = false;
 
 
 	// startNextGeneration = false;
@@ -5806,8 +5853,6 @@ void selectFishWhoMovedTheFurthest (int arg) {
 void selectFurthestFromOrigin (int arg) {
 	unused_variable((void *)&arg);
 
-	// TestMain::getNumberToSelect();
-
 	std::list<Species>::iterator currentSpecies;
 	std::list<BonyFish>::iterator fish;
 	currentSpecies= ecosystem.begin();
@@ -5817,26 +5862,29 @@ void selectFurthestFromOrigin (int arg) {
 
 	deselectAll(0);
 
-	// printf("smeseis: %i\n", TestMain::getNumberToSelect());
-
 	for (int i = 0; i < TestMain::getNumberToSelect(); ++i)
 	{
 		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{
-			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			if (currentSpecies->selected) 
 			{
-				if (fish->selected) { 
-					continue;
+			
+				for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+				{
+					if (!fish->selected) { 
+						
+					
+						if (magnitude(fish->bones[0]->p_body->GetWorldCenter() ) > magnitude(theFurthest->bones[0]->p_body->GetWorldCenter())) {
+							theFurthest = &(*fish);
+						}
+					}	
 				}
-				if (magnitude(fish->bones[0]->p_body->GetWorldCenter() ) > magnitude(theFurthest->bones[0]->p_body->GetWorldCenter())) {
-					theFurthest = &(*fish);
-				}
-				
 			}
-
-			theFurthest->selected = true;
-			theFurthest = referenceFish;
+			
 		}
+
+		theFurthest->selected = true;
+		theFurthest = referenceFish;
 	}
 }
 
@@ -5864,6 +5912,9 @@ void selectClosestToFood (int arg) {
 	
 		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{
+			if (!currentSpecies->selected) {
+				continue;
+			}
 			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 			{
 
@@ -5959,25 +6010,32 @@ if (TestMain::gameIsPaused()) {
 			currentSpecies= ecosystem.begin();
 			fish = currentSpecies->population.begin();
 
-			float avgDistance = 0.0f;
-
-			unsigned int tally = 0;
+			
 
 			for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 			{
+
+				float avgDistance = 0.0f;
+				unsigned int tally = 0;
+				// bool exceeded = false;
+
 				for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 				{
 					avgDistance += magnitude(fish->bones[0]->p_body->GetWorldCenter() );
 					tally += 1;
 				}
+			
+
+				float floatTally = tally;
+				avgDistance = avgDistance	/ floatTally;
+
+				if (avgDistance > m_deepSeaSettings.originTriggerRadius) {
+					// reloadTheSim(0);
+					// exceeded = true;
+
+					laboratoryModeBeginGeneration(currentSpecies);
+				} 
 			}
-
-			float floatTally = tally;
-			avgDistance = avgDistance	/ floatTally;
-
-			if (avgDistance > m_deepSeaSettings.originTriggerRadius) {
-				reloadTheSim(0);
-			} 
 		}
 
 		// if (loopCounter < loopSafetyLimit) {
