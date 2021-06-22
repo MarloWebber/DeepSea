@@ -83,6 +83,8 @@ namespace
 
 	GLUI_Spinner* selectNSpinner;
 
+	GLUI_Spinner* noiseSpinner;
+
 	b2Vec2 lower;
 	b2Vec2 upper;
 
@@ -728,7 +730,12 @@ int main(int argc, char** argv)
 
 	entropySpinner =
 		glui->add_spinner_to_panel(EcosystemPanel, "Entropy level", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.entropy);
-	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
+	entropySpinner->set_float_limits(0.0f, 1000.0f);
+
+	noiseSpinner =
+		glui->add_spinner_to_panel(EcosystemPanel, "Noise level", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.noise);
+	noiseSpinner->set_float_limits(0.0f, 1000.0f);
+	
 	
 	// TAXONOMY ROLLOUT
 

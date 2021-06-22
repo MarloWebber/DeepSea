@@ -3349,6 +3349,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	m_deepSeaSettings.barrierRadius = 50.0f;													// 0,
 	m_deepSeaSettings.barrierRadiusStatus = 0;													// 0.1f
 	m_deepSeaSettings.entropy = 0.1f;													// };
+	m_deepSeaSettings.noise = 0.1f;	
 
 	// from particle drawing
 	b2Assert((k_paramDef[0].CalculateValueMask() & e_parameterBegin) == 0);
@@ -3488,7 +3489,9 @@ void modifyAConnection (BonyFish * fish, float amount) {
 					fish->inputMatrix[selectedA].timerFreq += 1;
 				}
 				else {
-					fish->inputMatrix[selectedA].timerFreq -= 1;
+					if (fish->inputMatrix[selectedA].timerFreq > 0) { // prevent buffer overflow error
+						fish->inputMatrix[selectedA].timerFreq -= 1;
+					}
 				}
 			}
 			else if (fish->inputMatrix[selectedA].sensorType == SENSECONNECTOR_RECURSORRECEIVER) {
@@ -3497,7 +3500,9 @@ void modifyAConnection (BonyFish * fish, float amount) {
 					fish->inputMatrix[selectedA].recursorDelay += 1;
 				}
 				else {
-					fish->inputMatrix[selectedA].recursorDelay -= 1;
+					if (fish->inputMatrix[selectedA].recursorDelay > 0) { // prevent buffer overflow error
+						fish->inputMatrix[selectedA].recursorDelay -= 1;
+					}
 				}
 			}
 		}
@@ -4408,6 +4413,10 @@ void runBiomechanicalFunctions () {
 
 					break;
 				}		
+
+				// add noise to every input neuron regardless of what it's connected to.
+				sensorium[j] += (RNG() - 0.5 ) * m_deepSeaSettings.noise;
+
 			}
 
 			// feed information into brain

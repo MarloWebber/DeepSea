@@ -41,6 +41,7 @@ struct deepSeaSettings {
 	float barrierRadius;
 	int barrierRadiusStatus;
 	float entropy;
+	float noise;
 };
 
 extern deepSeaSettings m_deepSeaSettings;
