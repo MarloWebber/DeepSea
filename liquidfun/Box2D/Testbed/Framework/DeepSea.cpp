@@ -934,9 +934,9 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 	// return newFish;
 }
 
-fann * loadFishBrainFromFile (std::string fileName) {
-	return fann_create_from_file( (fileName + std::string(".net")).c_str() );
-}
+// fann * loadFishBrainFromFile (std::string fileName) {
+// 	return fann_create_from_file( (fileName );
+// }
 
 connectionDescriptor::connectionDescriptor (unsigned int toNeuron) {
 	isUsed = false;
@@ -2922,8 +2922,8 @@ void  vote (BonyFish * winner) {
 		fann * wann = winner->ann;
 
 		// save the winner to file with a new name.
-		std::string nnfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_tmp.net");
-	    std::string fdescfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_tmp.fsh");
+		std::string nnfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_win.net");
+	    std::string fdescfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_win.fsh");
 	    std::ofstream file { nnfilename };
 	    saveFishToFile (fdescfilename, winner->genes);
 	    fann_save(  wann , nnfilename.c_str()); 
@@ -3310,12 +3310,40 @@ void sex (BonyFish * partnerA, BonyFish * partnerB, std::list<Species>::iterator
 
 	networkDescriptor * childBrain = combineTwoNetworks2 (partnerA->brain, partnerB->brain) ;
 
-	b2Vec2 startingPosition = partnerA->bones[0]->p_body->GetWorldCenter();
+	// b2Vec2 startingPosition = partnerA->bones[0]->p_body->GetWorldCenter();
 
-	// BonyFish * newFish =	
-	loadFish (*childDescriptor, createFANNbrainFromDescriptor(childBrain), startingPosition, currentSpecies) ;
+	// loadFish (*childDescriptor, createFANNbrainFromDescriptor(childBrain), startingPosition, currentSpecies) ;
 
 	// return newFish;
+
+
+	// also mutate the offspring slightly
+	// fishDescriptor_t newFishBody;
+	// loadFishFromFile(std::string(fdescfilename), newFishBody);
+
+
+	
+	
+	std::string tempfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string("_win.net");
+
+	std::string mutantnnfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net");
+
+	mutateFishDescriptor (childDescriptor, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
+
+
+	// save the network as a FANN file, mutate it, and reload it
+	fann * jann = createFANNbrainFromDescriptor(childBrain);
+	fann_save(  jann , tempfilename.c_str()); 
+    mutateFANNFileDirectly(tempfilename, mutantnnfilename);
+	fann *mann = fann_create_from_file( mutantnnfilename.c_str() ); //loadFishBrainFromFile (mutantnnfilename) ;
+
+	// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+
+	// fann * jann = createFANNbrainFromDescriptor(muscleCars);
+
+	b2Vec2 position = partnerA->bones[0]->p_body->GetWorldCenter();
+
+	loadFish ( *childDescriptor, mann, position, currentSpecies) ;
 
 }
 
@@ -3603,7 +3631,7 @@ void populateSpeciesFromFile(int arg) {
 				    mutateFANNFileDirectly(nnfilename, mutantnnfilename);
 
 					// now you can load the mutant ANN.
-					fann *mann = loadFishBrainFromFile (mutantnnfilename) ;
+					fann *mann = fann_create_from_file( mutantnnfilename.c_str() ); //loadFishBrainFromFile (mutantnnfilename) ;
 
 					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
 
@@ -3999,8 +4027,11 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 	    mutateFANNFileDirectly(std::string("Aquarium/")  + currentSpecies->name + std::string("_win.net") ,std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net"));
 
+
+	    std::string mutantnnfilename = std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net");
+
 		// now you can load the mutant ANN.
-		fann *jann = loadFishBrainFromFile ( std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net")  ) ;
+		fann *jann = fann_create_from_file( mutantnnfilename.c_str() ); ; // loadFishBrainFromFile ( std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net")  ) ;
 
 		b2Vec2 desiredPosition = fish->bones[0]->p_body->GetWorldCenter();
 
@@ -4064,7 +4095,7 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 			    mutateFANNFileDirectly(nnfilename, mutantnnfilename);
 
 				// now you can load the mutant ANN.
-				fann *mann = loadFishBrainFromFile ( mutantnnfilename ) ;
+				fann *mann =  fann_create_from_file( mutantnnfilename.c_str() ); //loadFishBrainFromFile ( mutantnnfilename ) ;
 
 				// create a neurodescriptor.
 				networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
@@ -5858,33 +5889,38 @@ void selectFurthestFromOrigin (int arg) {
 	currentSpecies= ecosystem.begin();
 	fish = currentSpecies->population.begin();
 	BonyFish * theFurthest = &(*fish); 
-	BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
+	// BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
 
 	deselectAll(0);
 
+	// printf("selecting n: %i\n", TestMain::getNumberToSelect());
+
 	for (int i = 0; i < TestMain::getNumberToSelect(); ++i)
 	{
+		bool chosenAnythingYet = false;
 		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{
 			if (currentSpecies->selected) 
 			{
-			
 				for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 				{
 					if (!fish->selected) { 
-						
-					
+
+						if (!chosenAnythingYet) {
+							theFurthest = &(*fish);
+							chosenAnythingYet = true;
+						}
+
 						if (magnitude(fish->bones[0]->p_body->GetWorldCenter() ) > magnitude(theFurthest->bones[0]->p_body->GetWorldCenter())) {
 							theFurthest = &(*fish);
 						}
 					}	
 				}
 			}
-			
 		}
 
 		theFurthest->selected = true;
-		theFurthest = referenceFish;
+		// theFurthest = referenceFish;
 	}
 }
 
