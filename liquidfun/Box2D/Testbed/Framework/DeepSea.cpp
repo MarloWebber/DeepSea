@@ -352,7 +352,9 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 		p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
 
-		p_bone->joint->hasGrown = true;	
+		p_bone->joint->hasGrown = true;
+
+		p_bone->joint->isUsed = true; // every non-root bone has a joint.	
 	}
 
 	p_bone->selected = false;
@@ -4332,6 +4334,9 @@ void runBiomechanicalFunctions () {
 			std::advance(layer, num_layers-1);
 			sizeOfOutputLayer = layer->neurons.size();
 
+			// printf("sizeOfInputLayer %lu\n", sizeOfInputLayer);
+			// printf("sizeOfOutputLayer %lu\n", sizeOfOutputLayer);
+
 			float sensorium[ sizeOfInputLayer ];
 
 			for (unsigned int j = 0; j < sizeOfInputLayer; ++j)
@@ -4435,6 +4440,7 @@ void runBiomechanicalFunctions () {
 					break;
 
 					case SENSECONNECTOR_MOTOR:
+
 	
 						// first just check to make sure the bone and joint is good.
 						// this paragraph could be condensed very easily
@@ -4442,12 +4448,15 @@ void runBiomechanicalFunctions () {
 							continue;
 						}
 						else {
+							// printf("1\n");
 							if (fish->bones[fish->outputMatrix[j].connectedToLimb]->isRoot) {
 								continue;
 							}
+							// printf("2\n");
 							if (fish->bones[fish->outputMatrix[j].connectedToLimb]->joint->isUsed) {
+								// printf("3\n");
 								if (fish->bones[fish->outputMatrix[j].connectedToLimb]->joint->p_joint != nullptr) {
-
+									// printf("4\n");
 									float motorSpeed = motorSignals[j] * 10;
 
 									energyUsedThisTurn += abs(motorSignals[j]);
@@ -4470,6 +4479,7 @@ void runBiomechanicalFunctions () {
 											motorSpeed =-speedLimit;
 										}
 									}
+									// printf("a\n");
 									fish->bones[fish->outputMatrix[j].connectedToLimb]->joint->p_joint->SetMotorSpeed(motorSpeed);
 								}
 							}
