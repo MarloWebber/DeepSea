@@ -466,7 +466,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 			{
 				for (int i = 0; i < N_FINGERS; ++i)
 				{
-					if ( fish->bones[i]->isLeaf ) {
+					if ( fish->bones[i]->isLeaf || fish->bones[i]->isFood ) {
 
 						if (fish->bones[i]->isUsed) {
 							b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
@@ -484,7 +484,88 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 	// alt radars measure the angle to the closest piece of food. They don't get weaker with distance. it's supposed to be easier to interpret than the scalar one.
 	if (p_bone->sensor_altradar) {
-		// p_bone->sensation_altradar = 0.0f;
+
+
+		p_bone->sensation_altradar = 0.0f;
+
+		// // find the closest food
+		float closestFoodDistance = 1000000000.0f;
+		// float closestFoodAngle = 0.0f;
+		// int closestFoodIndex = 0;
+
+		std::list<Species>::iterator currentSpecies;
+		std::list<BonyFish>::iterator fish;
+
+		BoneUserData * closestBone;
+
+		// this part is heinously computationally inefficient: iterating through the whole global list of bones, once per sensor, every step.
+		// you can do better, but i don't know how right now
+		
+		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+		{
+			
+			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			{
+				for (int i = 0; i < N_FINGERS; ++i)
+				{
+
+					if (fish->bones[i]->isUsed) 
+						{
+
+						if ( fish->bones[i]->isLeaf || fish->bones[i]->isFood ) 
+						{
+
+						
+							b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
+							b2Vec2 positionalDifference  = b2Vec2(  (boneCenterWorldPosition.x - fish->bones[i]->position.x)  ,  (boneCenterWorldPosition.y - fish->bones[i]->position.y)   );
+							float distance = magnitude (positionalDifference);
+							if (distance < closestFoodDistance) {
+								// p_bone->sensation_radar += 1/distance;
+								closestFoodDistance = distance;
+								
+								closestBone = fish->bones[i];
+
+							}
+						}
+					}
+				}
+			}
+		}
+  
+
+
+		b2Vec2 targetPosition = closestBone->p_body->GetWorldCenter();
+		b2Vec2 sensorPosition = p_bone->p_body->GetWorldCenter();
+
+		p_bone->sensation_altradar = atan2(  (sensorPosition.y - targetPosition.y)  ,  (sensorPosition.x - targetPosition.x)   );
+
+
+			// printf("original value: %f\n",p_bone->sensation_altradar );
+
+		// rotate it 90 degrees so the discontinuity at 180 degrees happens behind the sensor not in front of it
+		// p_bone->sensation_altradar  += pi;
+
+
+		// printf("value + add: %f\n",p_bone->sensation_altradar );
+
+		// adding radians, wrap around 0 if the result is larger than a full circle
+		if (p_bone->sensation_altradar > (pi) ) {
+			p_bone->sensation_altradar -= (2 * pi);
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// sensation_altradar = closestFoodAngle;
 
 		// // find the closest food
 		// float closestFoodDistance = 1000000000.0f;
@@ -3633,13 +3714,13 @@ void populateSpeciesFromFile(int arg) {
 					// now you can load the mutant ANN.
 					fann *mann = fann_create_from_file( mutantnnfilename.c_str() ); //loadFishBrainFromFile (mutantnnfilename) ;
 
-					networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+					// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
 
-					fann * jann = createFANNbrainFromDescriptor(muscleCars);
+					// fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
 					b2Vec2 position = b2Vec2(0.0f,0.0f);
 
-					loadFish ( newFishBody, jann, position, currentSpecies) ;
+					loadFish ( newFishBody, mann, position, currentSpecies) ;
 
 				}
 				// else { 						// if there is no winner, its probably a reset or new install. make one up
