@@ -46,9 +46,7 @@ namespace
 {
 
 	int currentlyPainting = 0;
-	// int  noClipStatus = 0;
 	int originStartStatus = 0;
-	// int persistentFoodStatus = 1;
 	int triggerRadiusStatus = 1;
 	int foodRadiusStatus = 1;
 	int showBrainEditWindow = 0;
@@ -61,14 +59,12 @@ namespace
 	int lampStatus = 0;
 	int lampIntensity = 1;
 
-
 	int NominalPopulation;
 
 	int noClipStatus = 0;
 
 	int selectedSpeciesEnforcePopLimit = 0;
 	int selectedSpeciesSexuality = 0;
-	// int autosaveSpeciesOnGeneration = 0;
 	int selectNinSpecies = 1;
 
 	GLUI_String speciesNameBarContent = "default";
@@ -143,10 +139,6 @@ int getPaintingStatus() {
 	return currentlyPainting;
 }
 
-// int getNoClipStatus() {
-// 	return noClipStatus;
-// }
-
 int getOriginStartStatus() {
 	return originStartStatus;
 }
@@ -157,10 +149,6 @@ b2Vec2 getUpperScreenBoundary() {
 b2Vec2 getLowerScreenBoundary(){
 	return lower;
 }
-
-// int getPersistentFoodStatus() {
-// 	return persistentFoodStatus;
-// }
 
 int getBrainWindowStatus() {
 	return showBrainEditWindow;
@@ -189,7 +177,6 @@ int getFoodRadiusStatus() {
 int getSpeciesWindowStatus() {
 	return showSpeciesWindow;
 }
-
 
 int getEntropyStatus() {
 	return entropyStatus;
@@ -279,8 +266,6 @@ static void Resize(int32 w, int32 h)
 
 	// L/R/B/T
 	LoadOrtho2DMatrix(lower.x, upper.x, lower.y, upper.y);
-
-
 }
 
 static b2Vec2 ConvertScreenToWorld(int32 x, int32 y)
@@ -288,8 +273,8 @@ static b2Vec2 ConvertScreenToWorld(int32 x, int32 y)
 	float32 u = x / float32(tw);
 	float32 v = (th - y) / float32(th);
 
-	 lower = settings.viewCenter - extents;
-	 upper = settings.viewCenter + extents;
+	lower = settings.viewCenter - extents;
+	upper = settings.viewCenter + extents;
 
 	b2Vec2 p;
 	p.x = (1.0f - u) * lower.x + u * upper.x;
@@ -307,7 +292,6 @@ static void Timer(int)
 
  void PreStep()
 {
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -324,11 +308,7 @@ void Step () {
 	test->Step(&settings);
 }
 
-
 void PostStep() {
-	
-	// test->DrawTitle(entry->name);
-
 	glutSwapBuffers();
 }
 
@@ -570,9 +550,8 @@ static void Pause(int)
 
 }  // namespace TestMain
 
-
 void menuHandler(int bobi) {
-	// printf("feet %i\n", bobi);
+	;
 }
 
 void updateParticleDrawingKeyboard(int bobi) {
@@ -580,9 +559,8 @@ void updateParticleDrawingKeyboard(int bobi) {
 }
 
 void updateSpeciesList(int bobi) {
-
+	;
 }
-
 
 int main(int argc, char** argv)
 {
@@ -614,10 +592,7 @@ int main(int argc, char** argv)
 
 	glutDisplayFunc(deepSeaLoop);
 
-
 	deepSeaStart();
-
-
 
 #if ENABLE_GLUI
 	GLUI_Master.set_glutReshapeFunc(Resize);
@@ -644,7 +619,6 @@ int main(int argc, char** argv)
 	glui = GLUI_Master.create_glui_subwindow( mainWindow,
 		GLUI_SUBWINDOW_RIGHT );
 
-
 	GLUI_Rollout* selectionPanel =	glui->add_rollout("Selection Tools");
 	selectionPanel->open();
 
@@ -669,27 +643,13 @@ int main(int argc, char** argv)
 	GLUI_Rollout* gamePanel =	glui->add_rollout("Game");
 	gamePanel->close();
 	
-	
-	
-
-
 	// GAME ROLLOUT
-
-
-	// GLUI_Listbox* modeList =
-		// glui->add_listbox_to_panel(gamePanel, "Mode", &(m_deepSeaSettings.gameMode ));
-		// modeList->add_item(GAME_MODE_LABORATORY, "Laboratory Mode" );
-		// modeList->add_item(GAME_MODE_ECOSYSTEM, "Ecosystem Mode" );
 
 	glui->add_button_to_panel(gamePanel, "Pause", 0, Pause);
 
 	glui->add_checkbox_to_panel(gamePanel, "Show fluid dynamic forces", &showFluidDynamicForces);
 
-
-
 	// HABITAT ROLLOUT
-
-
 
 	mapNameBar = glui->add_edittext_to_panel(terrainPanel, "Map name: ", GLUI_EDITTEXT_TEXT, &mapNameBarContent, 1, mapNameBarCallback);
 	mapNameBar->set_text(mapNameBarContent);
@@ -719,18 +679,7 @@ int main(int argc, char** argv)
 		terrainTypesList->add_item(12, "Zombie" );
 		ParticleDrawingKeyboard(0);
 
-
-
-
-
-
 	// LABORATORY ROLLOUT
-
-	// GLUI_Spinner* numberOfFishSpinner =
-		// glui->add_spinner_to_panel(laboratoryPanel,"Number of fish", GLUI_SPINNER_INT, &m_deepSeaSettings.laboratory_nFish);
-	// numberOfFishSpinner->set_int_limits(1, 256);
-
-
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Trigger generation at radius", &triggerRadiusStatus);
 	
@@ -741,7 +690,6 @@ int main(int argc, char** argv)
 
 	glui->add_separator_to_panel(laboratoryPanel);
 	
-
 	glui->add_checkbox_to_panel(laboratoryPanel, "Food walks around radius", &foodRadiusStatus);
 	GLUI_Spinner* foodRadiusSpinner =
 		glui->add_spinner_to_panel(laboratoryPanel, "Food walk radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.originFoodRadius);
@@ -755,68 +703,32 @@ int main(int argc, char** argv)
 
 	glui->add_button_to_panel(laboratoryPanel, "Add random food", 0, addRandomFoodParticle);
 
-
 	glui->add_separator_to_panel(laboratoryPanel);
 
-
-
 	glui->add_checkbox_to_panel(laboratoryPanel, "Barrier", &barrierRadiusStatus);
-	
-	// GLUI_Spinner* 
+
 	barrierRadiusSpinner =
 		glui->add_spinner_to_panel(laboratoryPanel, "Barrier radius", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.barrierRadius);
 	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
 	glui->add_separator_to_panel(laboratoryPanel);
 
-
-
-
 	glui->add_checkbox_to_panel(laboratoryPanel, "Reproduce to origin", &m_deepSeaSettings.gameMode );
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "No clip", &noClipStatus );
-
-	// glui->add_checkbox_to_panel(laboratoryPanel, "Autosave species on generation", &autosaveSpeciesOnGeneration);
-
-;
-
-
-
 	
 	// ECOSYSTEM ROLLOUT
-
-	// int fakeNumberOfFood;
-	// 	GLUI_Spinner* numberOfFoodSpinner =
-	// 	glui->add_spinner_to_panel(EcosystemPanel, "Food particles", GLUI_SPINNER_INT, &fakeNumberOfFood);
-	// numberOfFoodSpinner->set_int_limits(1, 8);
-
-
-
-
-	// glui->add_button_to_panel(laboratoryPanel, "Add Random Plant", 3, addRandomPlant);
-
-	// glui->add_button_to_panel(laboratoryPanel, "Add lamp", 3, );
-
-
-	// glui->add_checkbox_to_panel(EcosystemPanel, "Persistent food", &persistentFoodStatus);
-
 
 	lampIntensitySpinner =
 	glui->add_spinner_to_panel(EcosystemPanel,"Lamp intensity", GLUI_SPINNER_INT, &lampIntensity);
 	lampIntensitySpinner->set_int_limits(1, 1000);
 
-
 	glui->add_checkbox_to_panel(EcosystemPanel, "Toggle lamps", &lampStatus);
-
 
 	glui->add_checkbox_to_panel(EcosystemPanel, "Movement costs energy", &entropyStatus);
 
-		// GLUI_Spinner* 
 	entropySpinner =
 		glui->add_spinner_to_panel(EcosystemPanel, "Entropy level", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.entropy);
 	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
-	// glui->add_separator_to_panel(laboratoryPanel);
-
-
 	
 	// TAXONOMY ROLLOUT
 
@@ -826,9 +738,6 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(speciesPanel, "Populate selected species from file", 0, populateSpeciesFromFile);
 	glui->add_button_to_panel(speciesPanel, "Save selected individual to file", 1, saveIndividualToFile);
 
-
-
-	// GLUI_Spinner* n
 	nominalPopulationSpinner =
 	glui->add_spinner_to_panel(speciesPanel,"Nominal Population", GLUI_SPINNER_INT, &NominalPopulation, 1, nominalPopulationCallback);
 	nominalPopulationSpinner->set_int_limits(1, 1000);
@@ -840,15 +749,7 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(speciesPanel, "Add new species", 0, addNewSpecies);
 	glui->add_button_to_panel(speciesPanel, "Delete selected species", 0, deleteSelectedSpecies);
 
-	
 	glui->add_checkbox_to_panel(speciesPanel, "Show species window", &showSpeciesWindow);
-
-
-
-	// GLUI_Rollout* bioPanel =	glui->add_rollout("Mutation");
-	// bioPanel->close();
-
-	
 
 	// SELECTION TOOLS ROLLOUT
 
@@ -868,28 +769,12 @@ int main(int argc, char** argv)
 		glui->add_spinner_to_panel(selectionPanel, "Mind Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
 	mentalMutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
-
-
-	// glui->add_button_to_panel(selectionPanel, "Farthest Traveled", 1, selectFishWhoMovedTheFurthest);
-	
-
-	// glui->add_separator_to_panel(selectionPanel);
-
-
-
-	// glui->add_separator_to_panel(selectionPanel);
-
 	selectNSpinner =
 	glui->add_spinner_to_panel(selectionPanel,"Select n", GLUI_SPINNER_INT, &selectNinSpecies);
 	selectNSpinner->set_int_limits(1, 1000);
 
-
-
-
 	glui->add_button_to_panel(selectionPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
 	glui->add_button_to_panel(selectionPanel, "Closest to Food", 3, selectClosestToFood);
-	// glui->add_button_to_panel(selectionPanel, "Lowest Energy", 3, selectLowestEnergyFish);
-
 
 	glui->add_button_to_panel(selectionPanel, "Select all in species", 1, selectAllInSpecies);
 
@@ -907,14 +792,7 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(selectionPanel, "Mate 2 Selected", 3, mateSelectedFish);
 	glui->add_separator_to_panel(selectionPanel);
 
-	// glui->add_button_to_panel(bioPanel, "Re-run generation", 4, reloadTheSim);
-
-	// glui->add_separator_to_panel(bioPanel);
-
 	glui->add_checkbox_to_panel(selectionPanel, "Select with LMB", &voting_mode);
-
-	
-
 
 	// NEUROSCIENCE ROLLOUT
 
@@ -926,18 +804,6 @@ int main(int argc, char** argv)
 
 	glui->add_button_to_panel(brainEditPanel, "Add Recursor Pair", 12, addRecursorPair);
 
-
-
-
-
-
-
-
-
-
-
-
-
 	glui->add_button_to_panel(brainEditPanel, "Add neuron in selected layer", 13, addNeuronInSelectedLayer);
 
 	glui->add_button_to_panel(brainEditPanel, "Add layer", 14, addLayerToSelectedFish);
@@ -945,7 +811,6 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(brainEditPanel, "Delete selected layer", 15, deleteSelectedLayer);
 
 	glui->add_checkbox_to_panel(brainEditPanel, "Show brain edit window", &showBrainEditWindow);
-
 
 
 	// SURGERY ROLLOUT
@@ -961,26 +826,12 @@ int main(int argc, char** argv)
  	glui->add_button_to_panel(bodyEditPanel, "Selected limb eye", 9, selectedLimbEye);
  	glui->add_button_to_panel(bodyEditPanel, "Selected limb foodradar", 10, selectedLimbFoodradar);
  	glui->add_button_to_panel(bodyEditPanel, "Selected limb altradar", 11, selectedLimbAltradar);
- 	// glui->add_button_to_panel(bodyEditPanel, "Selected limb motor", 12, selectedLimbMotor);
-
-
-
-
- 	// glui->add_button_to_panel(bodyEditPanel, "Toggle plant/animal", 13, makeFishAPlant);
-
-
+ 
  	glui->add_button_to_panel(bodyEditPanel, "Make limb a weapon", 13, makeLimbAWeapon);
  	glui->add_button_to_panel(bodyEditPanel, "Make limb a leaf", 13, makeLimbALeaf);
  	glui->add_button_to_panel(bodyEditPanel, "Make limb a mouth", 13, makeLimbAMouth);
 
-
-
-
 	glui->add_checkbox_to_panel(bodyEditPanel, "Show body edit window", &showBodyEditWindow);
-
-
-
-
 
 	glutCreateMenu(menuHandler);
 
@@ -988,15 +839,10 @@ int main(int argc, char** argv)
 
 #endif  // ENABLE_GLUI
 
-	// Configure the fullscreen UI's viewport parameters.
-	// fullscreenUI.SetViewParameters(&settings.viewCenter, &extents);
-
-
 	// Use a timer to control the frame rate.
 	glutTimerFunc(framePeriod, Timer, 0);
 
 	test_runAllUnitTests();
-
 
 	glutMainLoop();
 

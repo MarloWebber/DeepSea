@@ -20,11 +20,7 @@
 #include "Test.h"
 #include "Main.h"
 #include <stdio.h>
-// #include "../Tests/DamBreak.h"
-
 #include "DeepSea.h"
-// bool voting_mode;
-// float pi = 3.141f;
 
 void DestructionListener::SayGoodbye(b2Joint* joint)
 {
@@ -62,11 +58,7 @@ Test::Test()
 	b2Vec2 gravity;
 	gravity.Set(0.0f, -10.0f);
 	m_world = new b2World(gravity);
-	// m_world_sci = new b2World(gravity);
-
-	// water?
 	m_particleSystem = m_world->CreateParticleSystem(&particleSystemDef);
-	// m_particleSystem_sci = m_world->CreateParticleSystem(&particleSystemDef);
 
 	m_bomb = NULL;
 	m_textLine = 30;
@@ -80,11 +72,6 @@ Test::Test()
 
 	m_particleSystem->SetGravityScale(0.4f);
 	m_particleSystem->SetDensity(1.2f);
-	// m_particleSystem_sci->SetGravityScale(0.4f);
-	// m_particleSystem_sci->SetDensity(1.2f);
-
-	// m_particleSystemGravel->SetGravityScale(0.4f);
-	// m_particleSystemGravel->SetDensity(2.4f);
 
 	m_bombSpawning = false;
 
@@ -103,7 +90,7 @@ Test::Test()
 
 	m_particleParameters = NULL;
 
-	deepSeaSetup(  m_world, m_particleSystem, &m_debugDraw);//, m_world_sci, m_particleSystem_sci);
+	deepSeaSetup(  m_world, m_particleSystem, &m_debugDraw);
 }
 
 Test::~Test()
@@ -114,16 +101,6 @@ Test::~Test()
 	RestoreParticleParameters();
 }
 
-// void Test::PostSolve(b2Contact* contact, const b2ContactImpulse* impulse){
-// 	// if (test->IsWorldLocked() == false && !settings.pause) {
-// 			deepSeaLoop();
-// 		// }
-
-// 				B2_NOT_USED(contact);
-// 		B2_NOT_USED(impulse);
-// }
-
-// i think this is the collision handler? 
 void Test::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 {
 	const b2Manifold* manifold = contact->GetManifold();
@@ -163,11 +140,6 @@ void Test::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 		++m_pointCount;
 	}
 }
-
-// void Test::EnableVotingMode()
-// {
-// 	voting_mode = true;
-// }
 
 void Test::DrawTitle(const char *string)
 {
@@ -280,36 +252,21 @@ void Test::MouseDown(const b2Vec2& p)
 		}
 	}
 
-
 	if  (TestMain::getSpeciesWindowStatus()) {
 		checkClickInSpeciesWindow(aabb);
 	}
 
-
 	if (callback.m_fixture)
 	{
-
 		b2Body* body = callback.m_fixture->GetBody();
-
-
-		if (TestMain::getVotingMode()) {
-		// find fish struct from user data and save its genetic material.
-		// uDataWrap * myUserDataStruct = (uDataWrap *)body->GetUserData();
-		// BoneUserData * wishBone = (BoneUserData *)myUserDataStruct->uData;
-		// BonyFish * winner = wishBone->p_owner;
-		// printf("");
-
-
-		// std::list<BonyFish>::iterator fish;
-		// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-
+		if (TestMain::getVotingMode()) 
+		{
 			std::list<Species>::iterator currentSpecies;
 			for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 			{
 				std::list<BonyFish>::iterator fish;
 				for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 				{
-
 					for (int i = 0; i < N_FINGERS; ++i) {
 						if (fish->bones[i]->isUsed) {
 							
@@ -329,19 +286,9 @@ void Test::MouseDown(const b2Vec2& p)
 					}
 				}
 			}
-
-			// for (int i = 0; i < N_FOODPARTICLES; ++i)
-			// {
-			// 	if (food[i]->isUsed) {
-			// 		if (body == food[i]->p_body) {
-			// 			food[i]->selected = !food[i]->selected;
-			// 		}
-			// 	}
-			// }
 		}
-		else {
-			// printf("SEYDA NEEEEN\n");
-
+		else 
+		{
 			b2MouseJointDef md;
 			md.bodyA = m_groundBody;
 			md.bodyB = body;
@@ -353,26 +300,6 @@ void Test::MouseDown(const b2Vec2& p)
 	}
 }
 
-// void Test::SpawnBomb(const b2Vec2& worldPt)
-// {
-// 	m_bombSpawnPoint = worldPt;
-// 	m_bombSpawning = true;
-// }
-
-// void Test::CompleteBombSpawn(const b2Vec2& p)
-// {
-// 	if (m_bombSpawning == false)
-// 	{
-// 		return;
-// 	}
-
-// 	const float multiplier = 30.0f;
-// 	b2Vec2 vel = m_bombSpawnPoint - p;
-// 	vel *= multiplier;
-// 	// LaunchBomb(m_bombSpawnPoint,vel);
-// 	m_bombSpawning = false;
-// }
-
 void Test::ShiftMouseDown(const b2Vec2& p)
 {
 	m_mouseWorld = p;
@@ -381,8 +308,6 @@ void Test::ShiftMouseDown(const b2Vec2& p)
 	{
 		return;
 	}
-
-	// SpawnBomb(p);
 }
 
 void Test::MouseUp(const b2Vec2& p)
@@ -393,23 +318,8 @@ void Test::MouseUp(const b2Vec2& p)
 	{
 		m_world->DestroyJoint(m_mouseJoint);
 		m_mouseJoint = NULL;
-
-		// printf("SEYDA NEEEEN\n");
-
 	}
-
-	// if (m_bombSpawning)
-	// {
-	// 	CompleteBombSpawn(p);
-	// }
-
-
-	// void MouseUp(const b2Vec2& p)
-	// {
-	// 	Test::MouseUp(p);
-		m_lastGroup = NULL;
-	// }
-
+	m_lastGroup = NULL;
 }
 
 void Test::MouseMove(const b2Vec2& p)
@@ -453,91 +363,16 @@ void Test::MouseMove(const b2Vec2& p)
 	}
 }
 
-
 void Test::drawPoint (b2Vec2 position) {
 	m_debugDraw.DrawPoint(position, 10.0f, b2Color(0.3f, 0.95f, 0.3f));
-
-	// draw a point for each neuron
-
-	// draw lines for the connections
 }
 
 void Test::drawSegment(b2Vec2 p1, b2Vec2 p2, b2Color color) {
 	m_debugDraw.DrawSegment( p1, p2, color);
-
 }
-
-
-// void Test::jointMotorSetpoint()
-// {
-
-
-
-// 	startNextGeneration = true;
-
-// }
-
-// void Test::controlA()
-// {
-
-// 	// mutateFANNFileDirectly();
-// 	// deepSeaControlA();
-// 	// setUserControlInputA();
-// }
-// void Test::controlB()
-// {
-// 	// deepSeaControlB();
-// 	// userControlInputB = true;
-// 	// setUserControlInputB();
-// }
-
-
-// void Test::LaunchBomb()
-// {
-// 	// b2Vec2 p(RandomFloat(-15.0f, 15.0f), 30.0f);
-// 	// b2Vec2 v = -5.0f * p;
-// 	// LaunchBomb(p, v);
-// }
-
-// void Test::LaunchBomb(const b2Vec2& position, const b2Vec2& velocity)
-// {
-// 	// if (m_bomb)
-// 	// {
-// 	// 	m_world->DestroyBody(m_bomb);
-// 	// 	m_bomb = NULL;
-// 	// }
-
-// 	// b2BodyDef bd;
-// 	// bd.type = b2_dynamicBody;
-// 	// bd.position = position;
-// 	// bd.bullet = true;
-// 	// m_bomb = m_world->CreateBody(&bd);
-// 	// m_bomb->SetLinearVelocity(velocity);
-
-// 	// b2CircleShape circle;
-// 	// circle.m_radius = 0.3f;
-
-// 	// b2FixtureDef fd;
-// 	// fd.shape = &circle;
-// 	// fd.density = 20.0f;
-// 	// fd.restitution = 0.0f;
-
-// 	// b2Vec2 minV = position - b2Vec2(0.3f,0.3f);
-// 	// b2Vec2 maxV = position + b2Vec2(0.3f,0.3f);
-
-// 	// b2AABB aabb;
-// 	// aabb.lowerBound = minV;
-// 	// aabb.upperBound = maxV;
-
-// 	// m_bomb->CreateFixture(&fd);
-// }
-
-// void Test::Pause()
 
 void Test::Step(Settings* settings)
 {
-
-	// voting_mode = false;
 	float32 timeStep = settings->hz > 0.0f ? 1.0f / settings->hz : float32(0.0f);
 
 	if (settings->pause)
@@ -577,9 +412,6 @@ void Test::Step(Settings* settings)
 		settings->positionIterations,
 		settings->particleIterations);
 	settings->stepTimeOut = timer.GetMilliseconds();
-
-	// m_world->DrawDebugData(); // this the one
-
 
 	if (timeStep > 0.0f)
 	{

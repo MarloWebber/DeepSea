@@ -33,8 +33,6 @@ struct Settings;
 
 typedef Test* TestCreateFcn();
 
-
-
 #define	RAND_LIMIT	32767
 #define DRAW_STRING_NEW_LINE 25
 
@@ -169,13 +167,8 @@ public:
 	virtual void MouseDown(const b2Vec2& p);
 	virtual void MouseUp(const b2Vec2& p);
 	virtual void MouseMove(const b2Vec2& p);
-	// void LaunchBomb();
-	// void LaunchBomb(const b2Vec2& position, const b2Vec2& velocity);
 	void EnableVotingMode();
-	// void addFoodParticle();
 	void jointMotorSetpoint();
-	// void controlA();
-	// void controlB();
 	void drawPoint (b2Vec2 position) ;
 	void drawSegment(b2Vec2 p1, b2Vec2 p2, b2Color color);
 	bool IsWorldLocked() ;
@@ -197,7 +190,6 @@ public:
 	{
 		B2_NOT_USED(contact);
 		B2_NOT_USED(impulse);
-		// deepSeaLoop();
 	}
 
 	void ShiftOrigin(const b2Vec2& newOrigin);
@@ -235,7 +227,6 @@ protected:
 	b2ParticleSystem* m_particleSystem;
 	b2ParticleSystem* m_particleSystem_sci;
 
-	// b2ParticleSystem* m_particleSystemGravel;
 	b2Body* m_bomb;
 	b2MouseJoint* m_mouseJoint;
 	b2Vec2 m_bombSpawnPoint;

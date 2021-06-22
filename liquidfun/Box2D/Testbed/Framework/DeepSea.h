@@ -7,10 +7,9 @@
 #include "fann.h"
 
 #define N_FINGERS 8 													// the amount of bones a fish can have. you know, fish fingers.
-// #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
 
-#define REPRODUCTIONCAP 5	// hard upper limit on reproductive opportunities, used to prevent individuals from being too successful.
+#define REPRODUCTIONCAP 5												// hard upper limit on reproductive opportunities, used to prevent individuals from being too successful.
 
 #define GAME_MODE_ECOSYSTEM 0
 #define GAME_MODE_LABORATORY 1
@@ -23,7 +22,7 @@
 
 extern float pi;
 
-struct Species; // prototype
+struct Species; 														// prototype
 
 struct deepSeaSettings {
 	int gameMode;
@@ -35,20 +34,13 @@ struct deepSeaSettings {
 	float mentalMutationRate;
 	float mentalMutationSeverity;
 	int terrainPaintType;
-
 	float originTriggerRadius;
 	float originFoodRadius;
 	float foodRadiusAngleJitter;
-
-	// bool noclip;
-
 	int currentlySelectedSpecies;
-
 	float barrierRadius;
 	int barrierRadiusStatus;
-
 	float entropy;
-
 };
 
 extern deepSeaSettings m_deepSeaSettings;
@@ -147,8 +139,6 @@ struct boneAndJointDescriptor_t {
 		bool sensor_touch; 			// like how you can feel when things touch your skin.
 		bool sensor_jointangle;
 		bool sensor_eye;
-
-
 		bool isLeaf;
 	
 		unsigned int attachedTo; 	// the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
@@ -181,7 +171,6 @@ struct boneAndJointDescriptor_t {
 
 #define SENSECONNECTOR_BUFFERSIZE			512	// the maximum size of the buffer used for recursion delay.
 
-
 /*!
 * @brief associates a brain input to a particular sensor.
 *
@@ -209,17 +198,12 @@ struct senseConnector {
 * 
 */
 struct fishDescriptor_t {
-
 	boneAndJointDescriptor_t bones[N_FINGERS];
-
-	// unsigned int heartSpeed;
-
 	senseConnector inputMatrix[N_SENSECONNECTORS]; // these need to get serialized too. so this is a workable place for them.
 	senseConnector outputMatrix[N_SENSECONNECTORS];
 
 	fishDescriptor_t();
 };
-
 
 /*!
 * @brief a controllable joint between bodies.
@@ -238,7 +222,6 @@ struct JointUserData {
 	b2RevoluteJointDef jointDef;
 	b2RevoluteJoint * p_joint; // the joint that this user data struct gets pinned to
 
-	// bool init;
 	bool isUsed;
 	bool hasGrown;
 
@@ -259,7 +242,7 @@ struct BoneUserData {
 	float density;
 	b2Vec2 tipCenter; 				// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	b2Vec2 rootCenter; 
-	JointUserData * joint; 		// the joint that attaches it into its socket		
+	JointUserData * joint; 			// the joint that attaches it into its socket		
 	unsigned int attachedTo;	
 	bool isRoot ;
 	bool isMouth ;
@@ -269,10 +252,10 @@ struct BoneUserData {
 
 	bool isFood;
 
-	bool sensor_radar ; // like an olfactory sensor . senses distance from food
+	bool sensor_radar ; 			// like an olfactory sensor . senses distance from food
 	bool sensor_altradar;
 	bool sensor_eye;
-	bool sensor_touch; // like how you can feel when things touch your skin.
+	bool sensor_touch; 				// like how you can feel when things touch your skin.
 	bool sensor_jointangle;
 
 	b2Vec2 offsetOnBody;
@@ -295,20 +278,17 @@ struct BoneUserData {
 	int collisionGroup;
 
 	b2Vec2 position;
-	// bool init;		// if the struct has been created properly
-	bool isUsed;	// if the bone is actually used in the game, presumably not all animals will use all 8
+	bool isUsed;					// if the bone is actually used in the game, presumably not all animals will use all 8
 
 	b2Color color;
 	b2Color outlineColor;
 
-	bool flagDelete; // flag this whole animal for deletion at the next convenient time.
+	bool flagDelete; 				// flag this whole animal for deletion at the next convenient time.
 	bool flagPhotosynth;
-	
 
 	bool selected;
 
 	unsigned int index;
-
 
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
 		BonyFish * fish,
@@ -329,37 +309,28 @@ struct connectionDescriptor {
 	connectionDescriptor(unsigned int toNeuron);
 };
 
-
-
-
 /*!
 * @brief a single living brain cell.
 *
 */
 struct neuronDescriptor {
 	bool isUsed;
-	// unsigned int n_inputs;
 	unsigned int activation_function;
 	float activation_steepness;
-
-	// unsigned int n_connections;
 	std::list<connectionDescriptor> connections;
 
 	b2Vec2 position;
 	b2AABB aabb;
 
-	unsigned int index; // the fann file index of this neuron. handy to refer to
+	unsigned int index; 			// the fann file index of this neuron. handy to refer to
 
 	bool biasNeuron;
 
 	bool selected;
 	bool locked;
 
-
-
 	neuronDescriptor();
 };
-
 
 /*!
 * @brief a layer of neurons inside the brain, the primary method of organisation for brain cells.
@@ -367,7 +338,6 @@ struct neuronDescriptor {
 */
 struct layerDescriptor {
 	bool isUsed;
-	// unsigned int n_neurons;
 	std::list<neuronDescriptor> neurons; // an array is a pointer to the start of the array, and this is actually an array of pointers to objects, so neurons[] is a double pointer.
 
 	bool selected;
@@ -386,26 +356,12 @@ struct networkDescriptor {
 	3. i might as well make an easily modifiable descriptor file, and methods to turn it back into the text file.
 	*/
 
-	// unsigned int n_layers;
 	std::list<layerDescriptor> layers;
 
 	b2AABB networkWindow;
 
-
-
-	// std::list<senseConnector> inputRouter; // keeps track of what sense input goes to what input neuron; necessary that each animal keeps track of its own routing, to allow animals with different routing to coexist.
-
-	// std::list<senseConnector> inputMatrix;
-	// std::list<senseConnector> outputMatrix;
-
-
-
-
 	networkDescriptor(fann* pann);
-
-	// neuronDescriptor * getNeuronByIndex(unsigned int windex);
 };
-
 
 void LoadFishFromName (unsigned int fishIndex) ;
 
@@ -426,29 +382,9 @@ struct BonyFish {
 	BoneUserData * bones[N_FINGERS]; // for now, let's just gnetworkDet fish working with a small, hard-linked, flat level set of bones.
 	unsigned int n_bones_used;
 
-	// unsigned int heartCountA; 	// the heart is a neuro input used for timing and frequency control. 
-	// unsigned int heartSpeed; 	//  
-	// float heartOutputA;	// every heartSpeed timesteps, the output changes state between 1 and 0.
-
-	// unsigned int heartCountB; 	// the heart is a neuro input used for timing and frequency control. 
-	// // unsigned int heartSpeedB; 	//  
-	// float heartOutputB;	// every heartSpeed timesteps, the output changes state between 1 and 0.
-
-	// unsigned int heartCountC; 	// the heart is a neuro input used for timing and frequency control. 
-	// // unsigned int heartSpeedC; 	//  
-	// float heartOutputC;	// every heartSpeed timesteps, the output changes state between 1 and 0.
-
-	// unsigned int heartCountD; 	// the heart is a neuro input used for timing and frequency control. 
-	// // unsigned int heartSpeedD; 	//  
-	// float heartOutputD;	// every heartSpeed timesteps, the output changes state between 1 and 0.
-
 	bool flagDelete;
-	// bool flagExtraBoneDeleter;
-
-	// bool flagWinner; // flag the animal as winner for this turn.
 
 	struct fann *ann;
-
 
 	unsigned int slot; // for reference, the slot the fish is loaded into
 
@@ -460,7 +396,6 @@ struct BonyFish {
 	senseConnector inputMatrix[N_SENSECONNECTORS]; // these need to get serialized too. so this is a workable place for them.
 	senseConnector outputMatrix[N_SENSECONNECTORS];
 
-	// char species[32]; // a textual string describing what species the fish is.
 	Species * species; // which species the fish belongs to.
 
 	b2Vec2 previousRootPosition;
@@ -468,31 +403,10 @@ struct BonyFish {
 	float filteredOutputWiggle;
 	float * previousOutputs;
 
-
 	BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition);
 
 	void feed(float amount);
-
 };
-
-// struct foodParticle_t {
-// 	b2Vec2 position; 			// starting position of the food in the game world
-// 	float energy; 				// the nutritive value of the food
-
-// 	b2BodyDef bodyDef;
-// 	b2Body * u_body;
-// 	b2PolygonShape shape; 
-
-// 	// bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
-// 	bool isUsed;
-
-// 	bool flagDelete;
-
-// 	bool selected;
-
-// 	foodParticle_t(b2Vec2 position);
-// };
-
 
 // these type codes are used with uDataWrappers to do stuff when physical bodies touch and collide, or with raycasts
 #define TYPE_DEFAULT 0
@@ -501,20 +415,12 @@ struct BonyFish {
 #define TYPE_TOUCHSENSOR 3
 #define TYPE_LEAF 4
 
-// bit masks can potentially be used instead so we can have more than one udata type.
-// #define MASK_DEFAULT 		1<<0
-// #define MASK_MOUTH 			1<<1
-// #define MASK_FOOD 			1<<2
-// #define MASK_TOUCHSENSOR 	1<<3
-// #define MASK_LEAF 			1<<4
-
 struct uDataWrap {
 	void * uData;
 	unsigned int dataType;
 
 	uDataWrap(void * dat, unsigned int type);
 };
-
 
 struct Species {
 
@@ -537,7 +443,6 @@ struct Species {
 	bool startNextGeneration;
 
 	Species();
-
 };
 
 struct Terrain {
@@ -566,14 +471,6 @@ struct Terrain {
 	Terrain(b2Vec2 startingPosition);
 };
 
-
-// extern std::string speciesNameBar;
-
-
-// void deepSeaControlA () ;
-// void deepSeaControlB () ;
-// void deepSeaControlP () ;
-
 void addFoodParticle ( b2Vec2 position) ;
 void fishIncorporator (BonyFish * p_fish) ;
 
@@ -582,19 +479,11 @@ void deepSeaLoop () ;
 
 void makeAJellyfish (BonyFish * p_fish) ;
 
-
-
-// extern BoneUserData * food[N_FOODPARTICLES];
-// extern std::list<foodParticle_t*> food;
-// extern BonyFish * fishes[N_FISHES];
-// extern std::list<BonyFish> fishes;
-
 extern std::list<Species> ecosystem;
 
 extern std::list<Terrain> map;
 
-extern Species * defaultSpecies;// = new Species; // a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
-
+extern Species * defaultSpecies;
 
 extern unsigned int currentNumberOfFood;
 extern unsigned int currentNumberOfFish;
@@ -604,10 +493,6 @@ extern unsigned int currentlySelectedLimb ;
 void collisionHandler (void * boneA, void * boneB, b2Contact * p_contact) ;
 
 void reloadTheSim(int arg);
-// bool queryScienceMode () ;
-// void enterScienceMode();
-// void exitScienceMode ();
-// void enterScienceModeInterruptableEntry();
 void vote(BonyFish * winner);
 void handleReproduceSelectedButton (int arg);
 
@@ -617,14 +502,11 @@ void drawingTest() ;
 BonyFish * checkNeuroWindow (b2AABB mousePointer) ;
 
 int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) ;
-// extern bool startNextGeneration;
 void incrementSelectedConnection();
 void decrementSelectedConnection();
 void meltSelectedFish(int arg);
 void scrambleSelectedFish (int arg) ;
-// if (startNextGeneration ) {
-void		beginGeneration ();
-
+void beginGeneration ();
 
 void pinToGrid(int arg);
 void releaseFromGrid(int arg);
@@ -651,7 +533,6 @@ void addRecursorPair(int arg) ;
 void selectedLimbEye(int arg) ;
 void selectedLimbFoodradar(int arg) ;
 void selectedLimbAltradar(int arg) ;
-// void selectedLimbMotor(int arg) ;
 
 void makeLimbALeaf (int arg);
 void makeLimbAWeapon (int arg);
@@ -689,7 +570,6 @@ void selectLowestEnergyFish(int arg) ;
 void speciesNameBarCallback(int arg) ;
 
 void mapNameBarCallback(int arg) ;
-
 
 void nominalPopulationCallback (int arg) ;
 

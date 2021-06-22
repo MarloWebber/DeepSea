@@ -19,18 +19,10 @@
 #define MAIN_H
 #include <Box2D/Box2D.h>
 #include "ParticleParameter.h"
-
 #include "glui/glui.h"
-// int deepSeaGameMode;
-
-
 #include "Render.h"
 #include "Test.h"
-// #include "Arrow.h"
-// #include "FullscreenUI.h"
-// #include "ParticleParameter.h"
 #if ENABLE_GLUI
-// #include "glui/glui.h"
 #else
 #include "GL/freeglut.h"
 #endif  // ENABLE_GLUI
@@ -45,83 +37,65 @@
 namespace TestMain
 {
 
+	// Set whether to restart the test on particle parameter changes.
+	// This parameter is re-enabled when the test changes.
+	void SetRestartOnParticleParameterChange(bool enable);
 
-// Set whether to restart the test on particle parameter changes.
-// This parameter is re-enabled when the test changes.
-void SetRestartOnParticleParameterChange(bool enable);
+	// Set the currently selected particle parameter value.  This value must
+	// match one of the values in TestMain::k_particleTypes or one of the values
+	// referenced by particleParameterDef passed to SetParticleParameters().
+	uint32 SetParticleParameterValue(uint32 value);
 
-// Set the currently selected particle parameter value.  This value must
-// match one of the values in TestMain::k_particleTypes or one of the values
-// referenced by particleParameterDef passed to SetParticleParameters().
-uint32 SetParticleParameterValue(uint32 value);
+	// Get the currently selected particle parameter value and enable particle
+	// parameter selection arrows on Android.
+	uint32 GetParticleParameterValue();
 
-// Get the currently selected particle parameter value and enable particle
-// parameter selection arrows on Android.
-uint32 GetParticleParameterValue();
+	// Override the default particle parameters for the test.
+	void SetParticleParameters(
+		const ParticleParameter::Definition * const particleParameterDef,
+		const uint32 particleParameterDefCount);
 
-// Override the default particle parameters for the test.
-void SetParticleParameters(
-	const ParticleParameter::Definition * const particleParameterDef,
-	const uint32 particleParameterDefCount);
+	void Pause2();
+	void Resume2();
 
+	void PreStep();
+	void Step();
+	void PostStep();
 
- void Pause2();
- void Resume2();
+	int getPaintingStatus() ;
+	int getNoClipStatus() ;
+	int getOriginStartStatus();
 
- void PreStep();
- void Step();
- void PostStep();
+	int getBrainWindowStatus() ;
+	int getBodyWindowStatus() ;
+	int getFluidDynamicForcesViewStatus() ;
 
- int getPaintingStatus() ;
- int getNoClipStatus() ;
- int getOriginStartStatus();
- // int getPersistentFoodStatus();
-// int getGridPinStatus() ;
+	int getVotingMode();
 
- int getBrainWindowStatus() ;
-int getBodyWindowStatus() ;
-int getFluidDynamicForcesViewStatus() ;
+	int getTriggerRadiusStatus() ;
+	int getFoodRadiusStatus() ;
 
-int getVotingMode();
+	int getEntropyStatus() ;
+	int getSpeciesWindowStatus() ;
 
-int getTriggerRadiusStatus() ;
-int getFoodRadiusStatus() ;
+	int getBarrierRadiusStatus() ;
 
-int getEntropyStatus() ;
-int getSpeciesWindowStatus() ;
+	int getNumberToSelect();
 
-int getBarrierRadiusStatus() ;
+	int getLampStatus() ;
 
-int getNumberToSelect();
+	int getLampIntensity() ;
 
-int getLampStatus() ;
+	GLUI_Spinner* getSpeciesNominalPopulationSpinner() ;
 
-int getLampIntensity() ;
+	GLUI_EditText* getSpeciesNameBar() ;
+	GLUI_EditText* getMapNameBar() ;
+	bool gameIsPaused() ;
 
-GLUI_Spinner* getSpeciesNominalPopulationSpinner() ;
+	b2Vec2 getUpperScreenBoundary();
+	b2Vec2 getLowerScreenBoundary();
 
-GLUI_EditText* getSpeciesNameBar() ;
-GLUI_EditText* getMapNameBar() ;
-bool gameIsPaused() ;
-
-b2Vec2 getUpperScreenBoundary();
-b2Vec2 getLowerScreenBoundary();
-
-
-float32 getZoom () ;
-
-// int gluiWindowEdge;
-
-// extern Settings settings;
-
-}  // namespace TestMain
-
-// void SimulationLoop();
-
-
-// #if ENABLE_GLUI
-
-// #endif  // ENABLE_GLUI
-
+	float32 getZoom () ;
+}
 
 #endif  // MAIN_H

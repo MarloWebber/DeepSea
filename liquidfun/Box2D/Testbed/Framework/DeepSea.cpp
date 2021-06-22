@@ -21,12 +21,10 @@ float pi = 3.14159f;
 // global settings to keep track of the game parameters.
 unsigned int currentNumberOfFish = 0;
 unsigned int generationsThisGame = 0;
-// bool startNextGeneration = false;
-deepSeaSettings m_deepSeaSettings;					// = {
 
-// uint64 loopCounter = 0 ;
-// uint32 loopSafetyLimit = 100;
-bool flagAddFood = false;	// true so it adds once on startup!
+deepSeaSettings m_deepSeaSettings;	
+
+bool flagAddFood = false;	
 bool flagAddPlant= false;
 
 bool userControlInputA;
@@ -37,10 +35,9 @@ unsigned int currentlySelectedLimb =0;
 const std::string defaultFishName = std::string("default") ;
 
 std::list<Lamp> lamps;
-// BoneUserData * food[N_FOODPARTICLES];
 
 std::list<Species> ecosystem = *(new std::list<Species>);
-Species * defaultSpecies = new Species; // a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
+Species * defaultSpecies = new Species; 						// a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
 
 std::list<Terrain> environment = *(new std::list<Terrain>);
 
@@ -215,7 +212,7 @@ BoneUserData::BoneUserData(
 	length = boneDescription.length;
 	rootThickness = boneDescription.rootThickness;
 	tipThickness = boneDescription.tipThickness;
-	density = 1.2f; 														// the original density of the water is 1.2f
+	density = 1.2f; 																// the original density of the water is 1.2f
 	isRoot = boneDescription.isRoot;
 	isMouth = boneDescription.isMouth;
 	isLeaf = boneDescription.isLeaf;
@@ -231,32 +228,17 @@ BoneUserData::BoneUserData(
 
 	flagPhotosynth = false;
 	flagDelete = false;
-
-	// if (isLeaf && !isRoot){
 	hasGrown = false;
-	// }
-	// else {
-	// 	hasGrown = true;
-	// }
 
 	isFood =  boneDescription.isFood;
 
-	isWeapon  = boneDescription.isWeapon;									// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
+	isWeapon  = boneDescription.isWeapon;											// weapons destroy joints to snip off a limb for consumption. optionally, they can produce a physical effect.
 	energy = ((rootThickness + tipThickness)/2) * length * density * 10000; 		// the nutritive energy stored in the tissue of this limb; used by predators and scavengers
-
-	// accessory features cost more so you can't just go ham on them. And the effect stacks so it's better to specialize.
-	// touch and jointangle are considered necessary for any moving limb, so they come free.
-	// if (isMouth				&& !isRoot) 	{ energy = energy * 1.5; };
-	// if (sensor_radar 		&& !isRoot) 	{ energy = energy * 1.5; };
-	// if (isWeapon 			&& !isRoot) 	{ energy = energy * 1.5; };
-	// if (isLeaf 				&& !isRoot) 	{ energy = energy * 1.5; };
-
-	// energy = energy * 10000; // this is a constant that is used to help the value of energy in food roughly match the effort required to get food.
 
 	color = boneDescription.color;
 	outlineColor = boneDescription.outlineColor;
 
-	tipCenter = b2Vec2(0.0f,0.1f); 											// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
+	tipCenter = b2Vec2(0.0f,0.1f); 													// these are used so the skeleton master can remember his place as he traverses the heirarchy of souls.
 	rootCenter = b2Vec2(0.0f,0.0f); 	
 
 	unsigned int count = 4;
@@ -327,13 +309,12 @@ BoneUserData::BoneUserData(
 
 Terrain::Terrain(b2Vec2 startingPosition) {
 
-	density = 1.0f;
-
 	position = startingPosition;
+
+	density = 1.0f;
 
 	isUsed = false;
 	flagDelete = false;
-
 	selected = false;
 
 	color = b2Color(0.5f, 0.5f, 0.5f);
@@ -343,17 +324,7 @@ Terrain::Terrain(b2Vec2 startingPosition) {
 }
 
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
-
-	// if (!p_bone->isLeaf || p_bone->isRoot) {
-	// printf("_b\n");
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
-
-	// 	if (p_bone->isLeaf) {
-	// 		p_bone->hasGrown = true; // so happy to write this
-	// 	}
-	// }
-
-	// printf("_c\n");
 	
 	if (p_bone->isMouth) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_MOUTH);
@@ -367,16 +338,10 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_LEAF);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 	}
-	// else if (p_bone->isFood) {
-	// 	uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_FOOD);
-	// 	p_bone->p_body->SetUserData((void *)p_dataWrapper);
-	// }
 	else {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_DEFAULT);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 	}
-
-	// printf("_d\n");
 
 	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
 	tempFilter.groupIndex = p_bone->collisionGroup;
@@ -387,22 +352,12 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 		p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
 
-		p_bone->joint->hasGrown = true;
-
-
-			
+		p_bone->joint->hasGrown = true;	
 	}
-	// printf("_e\n");
-	// if the body is root and is also a leaf, fix its rotation. This is because trees are 'planted in the ground'.
-	// if () {
 
-	// }
-
-	// p_bone->isUsed = true;
 	p_bone->selected = false;
 	p_bone->hasGrown = true;
 }
-
 
 void nonRecursiveTerrainIncorporator(Terrain * p_bone) {
 
@@ -418,9 +373,7 @@ void nonRecursiveTerrainIncorporator(Terrain * p_bone) {
 	p_bone->p_fixture->SetFilterData(tempFilter);
 
 	p_bone->isUsed = true;
-	p_bone->selected = false;
-
-	
+	p_bone->selected = false;	
 }
 
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
@@ -445,19 +398,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	// they react more strongly the closer they get to food
 	if (p_bone->sensor_radar) {
 		p_bone->sensation_radar = 0.0f;
-		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
-
-		// 	if (food[i]->isUsed) {
-		// 		b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
-		// 		b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
-		// 		float distance = magnitude (positionalDifference);
-		// 		if (distance > 0) {
-		// 			p_bone->sensation_radar += 1/distance;
-		// 		}
-		// 	}
-		// }
-
-
+		
 		// this part is heinously computationally inefficient: iterating through the whole global list of bones, once per sensor, every step.
 		// you can do better, but i don't know how right now
 		std::list<Species>::iterator currentSpecies;
@@ -492,8 +433,6 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 		// // find the closest food
 		float closestFoodDistance = 1000000000.0f;
-		// float closestFoodAngle = 0.0f;
-		// int closestFoodIndex = 0;
 
 		std::list<Species>::iterator currentSpecies;
 		std::list<BonyFish>::iterator fish;
@@ -502,31 +441,22 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 		// this part is heinously computationally inefficient: iterating through the whole global list of bones, once per sensor, every step.
 		// you can do better, but i don't know how right now
-		
 		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{
-			
 			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 			{
 				for (int i = 0; i < N_FINGERS; ++i)
 				{
-
 					if (fish->bones[i]->isUsed) 
-						{
-
+					{
 						if ( fish->bones[i]->isLeaf || fish->bones[i]->isFood ) 
 						{
-
-						
 							b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
 							b2Vec2 positionalDifference  = b2Vec2(  (boneCenterWorldPosition.x - fish->bones[i]->position.x)  ,  (boneCenterWorldPosition.y - fish->bones[i]->position.y)   );
 							float distance = magnitude (positionalDifference);
 							if (distance < closestFoodDistance) {
-								// p_bone->sensation_radar += 1/distance;
 								closestFoodDistance = distance;
-								
 								closestBone = fish->bones[i];
-
 							}
 						}
 					}
@@ -534,86 +464,19 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 			}
 		}
   
-
-
 		b2Vec2 targetPosition = closestBone->p_body->GetWorldCenter();
 		b2Vec2 sensorPosition = p_bone->p_body->GetWorldCenter();
 
 		p_bone->sensation_altradar = atan2(  (sensorPosition.y - targetPosition.y)  ,  (sensorPosition.x - targetPosition.x)   );
 
-
-			// printf("original value: %f\n",p_bone->sensation_altradar );
-
-		// rotate it 90 degrees so the discontinuity at 180 degrees happens behind the sensor not in front of it
-		// p_bone->sensation_altradar  += pi;
-
-
-		// printf("value + add: %f\n",p_bone->sensation_altradar );
-
 		// adding radians, wrap around 0 if the result is larger than a full circle
 		if (p_bone->sensation_altradar > (pi) ) {
 			p_bone->sensation_altradar -= (2 * pi);
 		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-		// sensation_altradar = closestFoodAngle;
-
-		// // find the closest food
-		// float closestFoodDistance = 1000000000.0f;
-		// int closestFoodIndex = 0;
-
-		// b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
-
-		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
-
-		// 	if (food[i]->isUsed) {
-		// 		b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
-		// 		float distance = magnitude (positionalDifference);
-		// 		if (distance < closestFoodDistance) {
-		// 			closestFoodIndex = i;
-		// 			closestFoodDistance = distance;
-		// 		}
-		// 	}
-		// }
-
-		// // find the angle between it and this bone
-		// if (food[closestFoodIndex]->isUsed) {
-		// 	p_bone->sensation_altradar = atan2(  (boneCenterWorldPosition.y - food[closestFoodIndex]->position.y )   ,  (boneCenterWorldPosition.x - food[closestFoodIndex]->position.x)   );
-
-		// 	// printf("original value: %f\n",p_bone->sensation_altradar );
-
-		// 	// rotate it 90 degrees so the discontinuity at 180 degrees happens behind the sensor not in front of it
-		// 	p_bone->sensation_altradar  += pi;
-
-
-		// 	// printf("value + add: %f\n",p_bone->sensation_altradar );
-
-		// 	// adding radians, wrap around 0 if the result is larger than a full circle
-		// 	if (p_bone->sensation_altradar > (pi) ) {
-		// 		p_bone->sensation_altradar -= (2 * pi);
-		// 	}
-
-
-		// 	// printf("wrapped: %f\n",p_bone->sensation_altradar );
-		// }
 	}
-
 
 	// the eye works by measuring the color of bodies within a narrow field of vision. it does get weaker with distance, but only slightly as it is very directional.
 	if (p_bone->sensor_eye) {
-
-
 		// go through the list of all the other bones.
 
 			// get the global angle to each one.
@@ -627,44 +490,10 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 			// it is reduced according to its distance from the eye.
 
 		// the sum for this turn is multiplied by the gain, which is the ratio of a whole circle to the eye's FOV.
-			
-		
-
 	}
-
 }
 
-// void addFoodParticle(b2Vec2 position) {
-// 	unsigned int emptyFoodIndex = 0;
-// 	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i)
-// 	{
-// 		if (food[i]->isUsed) {
-// 			emptyFoodIndex ++;
-// 		}
-// 		else {
-// 			break;
-// 		}
-// 	}
-
-// 	boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
-// 	foodDescriptor.used = true;
-// 	foodDescriptor.isRoot = true;
-// 	foodDescriptor.isFood = true;
-// 	foodDescriptor.isMouth = false;
-// 	foodDescriptor.sensor_touch = false;
-// 	foodDescriptor.isLeaf = false;
-// 	food[emptyFoodIndex] = new BoneUserData(foodDescriptor, nullptr, position, 0, false);
-// 	food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
-// 	food[emptyFoodIndex]->isFood = true;
-// 	nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
-// 	food[emptyFoodIndex]->energy = 10000 + (RNG() * 5000);
-// 	food[emptyFoodIndex]->p_body->SetTransform(position, (RNG() * 2 * pi) );
-// }
-
 void addRandomFoodParticle(int arg) {
-	// float randomFoodAngle = 2 * pi * RNG();
-	// b2Vec2 position = b2Vec2( cos( randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
-	// addFoodParticle(position);
 }
 
 void saveFishToFile(const std::string& file_name, fishDescriptor_t& data) {
@@ -701,18 +530,18 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 	numberOfTimesReproduced= 0;
 
 	genes = driedFish;
-	reproductionEnergyCost = 0.0f; // the amount of energy required to make a clutch of viable offspring. to be calculated
+	reproductionEnergyCost = 0.0f; 								// the amount of energy required to make a clutch of viable offspring. to be calculated
 
 	flagDelete = false;
 	selected = false;
 
-	int randomCollisionGroup;	//= - (RNG() * 16.0f);
+	int randomCollisionGroup;
 
 	if ( TestMain::getNoClipStatus() )  {
-		randomCollisionGroup = -1; // set to -1 to disable all.
+		randomCollisionGroup = -1; 								// set to -1 to disable all.
 	}
 	else {
-		randomCollisionGroup = 1; // set to -1 to disable all.
+		randomCollisionGroup = 1; 								// set to -1 to disable all.
 	}
 
 	float lowestLimbEnergy = 1000000000;
@@ -730,8 +559,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		}
 	}
 	
-	energy = lowestLimbEnergy - 200; //(reproductionEnergyCost * 0.5); // this was what was crashing it? lmao
-	// energy = energy + (RNG() * 0.25 * energy);
+	energy = lowestLimbEnergy - 200; 
 
 	n_bones_used = 0;
 	for (int i = 0; i < N_FINGERS; ++i) {
@@ -740,66 +568,11 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 		}
 	}
-
-	// init = false; 										// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
-	isUsed = false; 									// only true when the part is added to the world
+	isUsed = false; 											// only true when the part is added to the world
 
 	distanceMovedSoFar = 0.0f;
 	filteredOutputWiggle = 0.0f;
 	previousOutputs = nullptr;
-
-
-	// for (unsigned int i = 0; i < N_FINGERS; ++i) { // if the limb doesn't already have sense and motor connectors, add them in.
-
-	// 	if (driedFish.bones[i].used) {
-
-	// 		bool connected_radar = false;
-	// 		bool connected_angle = false;
-	// 		bool connected_motor = false;
-
-	// 		if (driedFish.bones[i].sensor_radar) {
-	// 			for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
-	// 				if (driedFish.inputMatrix[j].connectedToLimb == i ) {
-	// 					if (driedFish.inputMatrix[j].sensorType == SENSOR_FOODRADAR) {connected_radar = true;}
-	// 					if (driedFish.inputMatrix[j].sensorType == SENSOR_JOINTANGLE) {connected_angle = true;}
-	// 				}
-	// 				if (driedFish.outputMatrix[j].connectedToLimb == i ) { 
-	// 					if (driedFish.outputMatrix[j].sensorType == SENSECONNECTOR_MOTOR) {connected_motor = true;}
-	// 				}
-	// 			}
-	// 		}
-
-	// 		if (!connected_radar) {
-	// 			for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
-	// 				if (driedFish.inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
-	// 					driedFish.inputMatrix[j].sensorType = SENSOR_FOODRADAR;
-	// 					driedFish.inputMatrix[j].connectedToLimb = i;
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-
-	// 		if (!connected_angle) {
-	// 			for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
-	// 				if (driedFish.inputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
-	// 					driedFish.inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
-	// 					driedFish.inputMatrix[j].connectedToLimb = i;
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-
-	// 		if (!connected_motor) {
-	// 			for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j) {
-	// 				if (driedFish.outputMatrix[j].sensorType == SENSECONNECTOR_UNUSED ) {
-	// 					driedFish.outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
-	// 					driedFish.outputMatrix[j].connectedToLimb = i;
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	unsigned int senseInputsUsedSoFar = 0;
 	unsigned int motorOutputsUsed = 0;
@@ -816,7 +589,6 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 			motorOutputsUsed ++;
 		}
 	}
-
 
     if (nann == NULL) {
     		for (int i = 0; i < N_FINGERS; ++i) {
@@ -844,10 +616,6 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
     	brain = createEmptyNetworkOfCorrectSize (nann) ;
     }
-
-    // printf("Bony fish created, reproduces at %f energy\n", reproductionEnergyCost);
-
-    // printf("bonyfish ready");
 };
 
 void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
@@ -876,8 +644,6 @@ void deleteJoint(BoneUserData * bone) {
 			if (bone->joint->isUsed ) {
 				if (bone->joint->p_joint != NULL && bone->joint->p_joint != nullptr) {
 					local_m_world->DestroyJoint(bone->joint->p_joint);	
-					// bone->joint->isUsed = false;
-					// bone->joint->init = false;
 					bone->joint->hasGrown = false;
 				}
 			}
@@ -893,11 +659,7 @@ void deleteBone (BoneUserData * bone) {
 			return;
 		}
 
-		bone->p_body->DestroyFixture(bone->p_fixture); // you can still grow it back after this.
-		// local_m_world->DestroyBody(bone->p_body);
-
-		// bone->isUsed = false;
-		// bone->init = false; // the bone is still used in the fish's design, it's just missing at the moment.
+		bone->p_body->DestroyFixture(bone->p_fixture); 				// you can still grow it back after this.
 		bone->hasGrown = false;
 		bone->flagDelete = false;
 	}
@@ -916,7 +678,7 @@ void deleteFish (BonyFish * fish) {
 		}
 		for (unsigned int i = 0; i < N_FINGERS ; ++i) {
 			deleteBone(fish->bones[i]);
-			local_m_world->DestroyBody(fish->bones[i]->p_body); // this action is for real, you can't grow it back.
+			local_m_world->DestroyBody(fish->bones[i]->p_body); 	// this action is for real, you can't grow it back.
 		}
 		fish->isUsed = false;
 		fish->flagDelete = false;
@@ -927,7 +689,6 @@ void deleteFish (BonyFish * fish) {
 void flagBiasNeurons( networkDescriptor * network) {
 
 	std::list<layerDescriptor>::iterator layer;
-
 	unsigned int layerIndex = 0;
 
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
@@ -946,35 +707,17 @@ void flagBiasNeurons( networkDescriptor * network) {
 			neuron--;
 			neuron->biasNeuron = true;
 		}
-
 		layerIndex++;
 	}
 }
 
-
-
 void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition, std::list<Species>::iterator currentSpecies ) {
-
-
-// std::list<Species>::iterator currentSpecies = ecosystem.begin(); 
-				// currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-		// {
-			// std::list<BonyFish>::iterator fish;
-			// for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-			// {
-
-	// printf("gingethrine %lu\n", currentSpecies->population.size() );
-
 
 	BonyFish newFish = *(new BonyFish(driedFish, nann, startingPosition));
 
 	newFish.species = &(*currentSpecies);
-	// printf("sonos\n");
 
 	currentSpecies->population.push_back(  newFish );
-
-
-	// printf("mout loadde\n");
 
 	BonyFish * fish = &(currentSpecies->population.back());
 	fish->isUsed = true;
@@ -984,42 +727,17 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 
 			if( driedFish.bones[i].isRoot ) {
 				nonRecursiveBoneIncorporator( fish->bones[i]);
-				// fish->bones[i]->hasGrown = true;
-				
 			}
 			else {
 				if ( !(driedFish.bones[i].isLeaf) ){
-
-			
-				nonRecursiveBoneIncorporator( fish->bones[i]);
+					nonRecursiveBoneIncorporator( fish->bones[i]);
 				}
-				// if ( (driedFish.bones[i].isLeaf) ){
-
-			
-				// // nonRecursiveBoneIncorporator( fish->bones[i]);
-				// 	fish->bones[i]->hasGrown = false;
-				// }
-
 			}
-
-		
-
-			
 		}
-		fish->bones[i]->p_owner = fish; // you need to update the user data pointer, because when you pushed the fish onto the list you pushed a copy of it not the actual thing.
+		fish->bones[i]->p_owner = fish; 					// you need to update the user data pointer, because when you pushed the fish onto the list you pushed a copy of it not the actual thing.
 	}
-
-
-	// printf("mesines\n");
-
 	flagBiasNeurons(fish->brain);
-
-	// return newFish;
 }
-
-// fann * loadFishBrainFromFile (std::string fileName) {
-// 	return fann_create_from_file( (fileName );
-// }
 
 connectionDescriptor::connectionDescriptor (unsigned int toNeuron) {
 	isUsed = false;
@@ -1028,8 +746,6 @@ connectionDescriptor::connectionDescriptor (unsigned int toNeuron) {
 }
 
 neuronDescriptor::neuronDescriptor() {
-	// n_connections = 0;
-	// n_inputs = 0;
 	isUsed = false;
 	aabb.upperBound = b2Vec2(0.0f,0.0f);
 	aabb.lowerBound = b2Vec2(0.0f,0.0f);
@@ -1037,7 +753,6 @@ neuronDescriptor::neuronDescriptor() {
 }
 
 layerDescriptor::layerDescriptor () {
-	// n_neurons = 0;
 	isUsed = false;
 	selected = false;
 }
@@ -1058,20 +773,16 @@ senseConnector::senseConnector () {
 	{
 		recursorBuffer[i] = 0.0f;
 	}
-
 }
-
 
 fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4 segment nematode creature.
 
 	for (unsigned int i = 0; i < N_SENSECONNECTORS; ++i) {
-		// senseConnector moshuns = senseConnector();
 		outputMatrix[i] = senseConnector();
 		inputMatrix[i] = senseConnector();
 	}
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-
 		bones[i] = boneAndJointDescriptor_t();
 	
 		bones[i].color.r = 0.5f;
@@ -1084,106 +795,14 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 
 		if (i == 0) {
 			bones[i].isRoot = true;
-			// bones[i].isMouth = true;
 			bones[i].attachedTo = 0;
 		}
 		else {
 			bones[i].attachedTo = i-1;
 		}
-
-		// if (i < 4) {
-		// 	bones[i].used = true;
-		// }
-		// else {
 			bones[i].used = false;
-		// }
 	}
-
-	// flagDelete = false;
-
-	// unsigned int j = 0;
-
-	// for (unsigned int i = 0; i < N_SENSECONNECTORS; ++i) {
-	// // 	outputMatrix[j].connectedToLimb = i;
-	// // 	outputMatrix[j].sensorType = SENSECONNECTOR_MOTOR;
-	// // 	j++;
-	// }
-
-	// 	unsigned int channel = 0;
-	// for (unsigned int i = 0; i < numberOfRecursorsToStartWith; ++i)
-	// {
-	// 	for (unsigned int k = 0; k < numberOfEachRecursor; ++k)
-	// 	{
-	// 		outputMatrix[j].sensorType = SENSECONNECTOR_RECURSORTRANSMITTER;
-
-	// 	outputMatrix[j].recursorChannel = channel;
-	// 	outputMatrix[j].recursorDelay = (i*i )* 8;
-
-	// 	channel++;
-	// 	j++;
-	// 	}
-		
-	// }
-
-	// j = 0; // reset for next matrix.
-
-	// for (unsigned int i = 0; i < 4; ++i) {
-	// 	// inputMatrix[j].connectedToLimb = i;
-	// 	// inputMatrix[j].sensorType = SENSOR_FOODRADAR;
-	// 	// j++;
-	// 	inputMatrix[j].connectedToLimb = i;
-	// 	inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
-	// 	j++;
-	// }
-
-	// // a wide range of timing options is most helpful to the creature.
-
-	// // float wholeFishTimerPhase = RNG();
-
-	// for (unsigned int i = 0; i < 4; ++i) {
-	// 	inputMatrix[j].connectedToLimb = 0;
-	// 	inputMatrix[j].sensorType = SENSOR_TIMER;
-	// 	switch (i){
-	// 		case 0:
-	// 		inputMatrix[j].timerFreq = 4;
-	// 		break;
-	// 		case 1:
-	// 		inputMatrix[j].timerFreq = 12;
-	// 		break;
-	// 		case 2:
-	// 		inputMatrix[j].timerFreq = 36;
-	// 		break;
-	// 		case 3:
-	// 		inputMatrix[j].timerFreq = 64;
-	// 		break;
-	// 	}
-
-	// 	inputMatrix[j].timerPhase = 0.0f;//wholeFishTimerPhase;//RNG();
-	// 	j++;
-	// }
-
-	//  channel = 0;
-	// for (unsigned int i = 0; i < numberOfRecursorsToStartWith; ++i)
-	// {
-	// 	for (unsigned int k = 0; k < numberOfEachRecursor; ++k)
-	// 	{
-	// 			inputMatrix[j].sensorType = SENSECONNECTOR_RECURSORRECEIVER;
-
-	// 	inputMatrix[j].recursorChannel = channel;
-	// 	inputMatrix[j].recursorDelay = (i*i )* 8;
-
-	// 	channel++;
-	// 	j++;
-	// 	}
-	
-	// }
-
-	// while (j < N_SENSECONNECTORS) {
-	// 	inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
-	// 	j++;
-	// }
 }
-
 
 fishDescriptor_t nematode () {
 	fishDescriptor_t driedFish  =  fishDescriptor_t();
@@ -1192,9 +811,7 @@ fishDescriptor_t nematode () {
 	unsigned int numberOfEachRecursor = 2;
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
-
-
-	if (i < 4) {
+		if (i < 4) {
 			driedFish.bones[i].used = true;
 		}
 	}
@@ -1228,61 +845,53 @@ fishDescriptor_t nematode () {
 	j = 0; // reset for next matrix.
 
 	for (unsigned int i = 0; i < 4; ++i) {
-		// inputMatrix[j].connectedToLimb = i;
-		// inputMatrix[j].sensorType = SENSOR_FOODRADAR;
-		// j++;
 		driedFish.inputMatrix[j].connectedToLimb = i;
 		driedFish.inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
 		j++;
 	}
 
 	// a wide range of timing options is most helpful to the creature.
+	// for (unsigned int i = 0; i < 4; ++i) {
+	// 	driedFish.inputMatrix[j].connectedToLimb = 0;
+	// 	driedFish.inputMatrix[j].sensorType = SENSOR_TIMER;
+	// 	switch (i){
+	// 		case 0:
+	// 		driedFish.inputMatrix[j].timerFreq = 4;
+	// 		break;
+	// 		case 1:
+	// 		driedFish.inputMatrix[j].timerFreq = 12;
+	// 		break;
+	// 		case 2:
+	// 		driedFish.inputMatrix[j].timerFreq = 36;
+	// 		break;
+	// 		case 3:
+	// 		driedFish.inputMatrix[j].timerFreq = 64;
+	// 		break;
+	// 	}
 
-	// float wholeFishTimerPhase = RNG();
+	// 	driedFish.inputMatrix[j].timerPhase = 0.0f;	//wholeFishTimerPhase;//RNG();
+	// 	j++;
+	// }
 
-	for (unsigned int i = 0; i < 4; ++i) {
-		driedFish.inputMatrix[j].connectedToLimb = 0;
-		driedFish.inputMatrix[j].sensorType = SENSOR_TIMER;
-		switch (i){
-			case 0:
-			driedFish.inputMatrix[j].timerFreq = 4;
-			break;
-			case 1:
-			driedFish.inputMatrix[j].timerFreq = 12;
-			break;
-			case 2:
-			driedFish.inputMatrix[j].timerFreq = 36;
-			break;
-			case 3:
-			driedFish.inputMatrix[j].timerFreq = 64;
-			break;
-		}
-
-		driedFish.inputMatrix[j].timerPhase = 0.0f;//wholeFishTimerPhase;//RNG();
-		j++;
-	}
-
-	 channel = 0;
+	channel = 0;
 	for (unsigned int i = 0; i < numberOfRecursorsToStartWith; ++i)
 	{
 		for (unsigned int k = 0; k < numberOfEachRecursor; ++k)
 		{
-				driedFish.inputMatrix[j].sensorType = SENSECONNECTOR_RECURSORRECEIVER;
+			driedFish.inputMatrix[j].sensorType = SENSECONNECTOR_RECURSORRECEIVER;
 
-		driedFish.inputMatrix[j].recursorChannel = channel;
-		driedFish.inputMatrix[j].recursorDelay = (i*i )* 8;
+			driedFish.inputMatrix[j].recursorChannel = channel;
+			driedFish.inputMatrix[j].recursorDelay = (i*i )* 8;
 
-		channel++;
-		j++;
+			channel++;
+			j++;
 		}
-	
 	}
 
 	while (j < N_SENSECONNECTORS) {
 		driedFish.inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
 		j++;
 	}
-
 
 	return driedFish;
 }
@@ -1291,23 +900,16 @@ fishDescriptor_t  basicPlant() {
 
 	fishDescriptor_t newPlant = fishDescriptor_t();
 
-
 	for (unsigned int i = 0; i < 4; ++i)
 	{
-
 		if (i > 0) {
 			newPlant.bones[i].attachedTo = i-1;
 		}
 
 		newPlant.bones[i].used = true;	
-	// 	newPlant.bones[i].used = true;
 		newPlant.bones[i].isLeaf = true;
-	// 	// newPlant->bones[i].sensor_touch = false;
-	// 	// newPlant->bones[i].isMouth = false;
 		newPlant.bones[i].color = b2Color(0.1f, 1.0f, 0.3f);
-
 		newPlant.bones[i].isFood = true;
-
 	}
 
 	unsigned int j = 0;
@@ -1321,16 +923,10 @@ fishDescriptor_t  basicPlant() {
 	j = 0; // reset for next matrix.
 
 	for (unsigned int i = 0; i < 4; ++i) {
-		// inputMatrix[j].connectedToLimb = i;
-		// inputMatrix[j].sensorType = SENSOR_FOODRADAR;
-		// j++;
 		newPlant.inputMatrix[j].connectedToLimb = i;
 		newPlant.inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
 		j++;
 	}
-
-	
-		// newPlant.bones[0].isLeaf = false;
 
 	return newPlant;
 }
@@ -1339,47 +935,16 @@ fishDescriptor_t  fishFoodFlake() {
 
 	fishDescriptor_t newPlant = fishDescriptor_t();
 
-
-	// for (unsigned int i = 0; i < 4; ++i)
-	// {
-
-		// if (i > 0) {
-			// newPlant.bones[i].attachedTo = i-1;
-		// }
-
-		newPlant.bones[0].used = true;	
-	// 	newPlant.bones[i].used = true;
+		newPlant.bones[0].used = true;
 		newPlant.bones[0].isLeaf = false;
-	// 	// newPlant->bones[i].sensor_touch = false;
-	// 	// newPlant->bones[i].isMouth = false;
 		newPlant.bones[0].color = b2Color(0.5f, 0.4f, 0.3f);
-
 		newPlant.bones[0].isFood = true;
 
-	// }
-
-	// unsigned int j = 0;
-
-	// for (unsigned int i = 0; i < 4; ++i) {
 		newPlant.outputMatrix[0].connectedToLimb = 0;
 		newPlant.outputMatrix[0].sensorType = SENSECONNECTOR_MOTOR;
-	// 	j++;
-	// }
-
-	// j = 0; // reset for next matrix.
-
-	// for (unsigned int i = 0; i < 4; ++i) {
-		newPlant.inputMatrix[0].connectedToLimb = 0;
-		// inputMatrix[j].sensorType = SENSOR_FOODRADAR;
-	// 	// j++;
-	// 	newPlant.inputMatrix[j].connectedToLimb = i;
-		newPlant.inputMatrix[0].sensorType = SENSOR_JOINTANGLE;
-	// 	j++;
-	// }
-
 	
-		// newPlant.bones[0].isLeaf = false;
-
+		newPlant.inputMatrix[0].connectedToLimb = 0;
+		newPlant.inputMatrix[0].sensorType = SENSOR_JOINTANGLE;
 	return newPlant;
 }
 
@@ -1414,7 +979,6 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 
  				if (connection->connectedTo == windex ) {
  					connection = neuron->connections.erase(connection);
- 					// neuron->n_connections --;
  				}
  				else {
  					connection++;
@@ -1431,7 +995,6 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
  		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ;) {
  			if (neuron->index == windex) {
  				neuron = layer->neurons.erase(neuron);
- 				// layer->n_neurons--;
  				allDone = true;
  				break;
  			}
@@ -1473,8 +1036,6 @@ void deleteNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 	}
 }
 
-
-
 // method to create a network descriptor in memory
 networkDescriptor::networkDescriptor (fann * pann) {
 
@@ -1509,22 +1070,13 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
 		for (unsigned int j = 0; j <nNeuronsIncludingBias; ++j) {
 			neuronDescriptor neuron = neuronDescriptor();
-			
-
-			// if (j == layerCake[i]-1) {
-			// 	neuron.biasNeuron = true;
-			// }
-			// else {
-			// 	neuron.biasNeuron = false;
-			// }
 
 			neuron.index = rollingIndexCounter;
 			rollingIndexCounter ++;
 
 			neuron.activation_function = activation_function_hidden;
   			neuron.activation_steepness = activation_steepness_hidden;
-  			// neuron.n_connections = 0; 	// so not used uninitialized
-  			// neuron.n_inputs = 0; 
+   
   			neuron.isUsed = true;
 
   			// output neurons have a different function than the others. this applies to all in the last row.
@@ -1551,15 +1103,13 @@ networkDescriptor::networkDescriptor (fann * pann) {
 	unsigned int num_connections = fann_get_total_connections(pann);
 
   	for (layer = this->layers.begin(); layer != this->layers.end(); ++layer)  {
-  		// layer->n_neurons = layerCake[i];
   		layer->isUsed = true;
 
   		std::list<neuronDescriptor>::iterator neuron;
 		for (neuron = layer->neurons.begin(); neuron != layer->neurons.end(); ++neuron) {
   			neuron->activation_function = activation_function_hidden;
   			neuron->activation_steepness = activation_steepness_hidden;
-  			// neuron->n_connections = 0; 	// so not used uninitialized
-  			// neuron->n_inputs = 0; 
+  
   			neuron->isUsed = true;
 
   			// output neurons have a different function than the others. this applies to all in the last row.
@@ -1582,11 +1132,8 @@ networkDescriptor::networkDescriptor (fann * pann) {
 		connection.connectionWeight = con[c].weight;
 	
 		getNeuronByIndex(this, con[c].from_neuron)->connections.push_back(connection);
-  			
-		// getNeuronByIndex(this, con[c].to_neuron)->n_inputs++;
 	}				
 }
-
 
 Species::Species () {
 	population = *(new std::list<BonyFish>);
@@ -1596,7 +1143,6 @@ Species::Species () {
 	selected = false;
 	flagDelete = false;
 }
-
 
 void advanceCursor(FILE * cursor, int charToMoveAhead) {
 	int c;
@@ -1905,11 +1451,9 @@ void addNeuronIntoLivingBrain (networkDescriptor * network, unsigned int targetL
 void deleteLayer(networkDescriptor * network, unsigned int layerToDelete) {
 
 	// connections from this layer to the next will be automatically destroyed when the neurons are deleted
-
 	std::list<layerDescriptor>::iterator layer;
 	std::list<layerDescriptor>::iterator targetLayerIterator;
 	std::list<neuronDescriptor>::iterator neuron;
-
 
 	unsigned int layerIndex = 0;
 	unsigned int numberOfNeuronsInLayer = 0;
@@ -1979,7 +1523,6 @@ void deleteLayer(networkDescriptor * network, unsigned int layerToDelete) {
 		layerIndex++;
 	}
 
-	
 	layerIndex = 0;
 
 	std::list<neuronDescriptor>::iterator neuronB;
@@ -2230,7 +1773,6 @@ void selectedLimbFoodradar(int arg) {
 			 							}
 			 						}
 
-
 									fish->bones[currentlySelectedLimb]->sensor_radar = false;
 									break;
 								}
@@ -2323,7 +1865,6 @@ void selectedLimbAltradar(int arg) {
 								
 								fish->bones[currentlySelectedLimb]->sensor_altradar = true;
 
-
 								// update the fish's genes to reflect its current state of being.
 
 								// the fish's input and output matrix configurations should be passed on to offspring
@@ -2393,15 +1934,10 @@ void addLayerIntoLivingBrain(networkDescriptor * network) {
 
 	// add a bias neuron to the layer that used to be last. and connect it to all the new neurons.
 	addNeuronIntoLivingBrain( network, (network->layers.size() -2), true);
-
-	// fish->ann = createFANNbrainFromDescriptor(network);
 }
-
-
 
 // add neuron to a selected INTERNAL layer.
 void addNeuronInSelectedLayer(int arg) {
-
 	unused_variable((void *) &arg);
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
@@ -2416,10 +1952,7 @@ void addNeuronInSelectedLayer(int arg) {
 				for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
 
 					if (	layer->selected	) {
-
-					
 						addNeuronIntoLivingBrain ( fish->brain, layerIndex, false) ;
-
 						return;
 					}
 
@@ -2472,7 +2005,6 @@ void polydactyly2 (BonyFish * fish) {
 	fish->bones[targetFinger] = new BoneUserData(boneAlone, fish, b2Vec2(0.0f, 0.0f), 0, true);
 
 	fish->bones[targetFinger]->joint = new JointUserData(boneAlone, fish->bones[targetFinger], fish);
-	// fish->bones[targetFinger]->joint->init = true;
 	fish->bones[targetFinger]->joint->isUsed = true;
 
 	nonRecursiveBoneIncorporator(fish->bones[targetFinger]);
@@ -2531,13 +2063,10 @@ void placeLimbOnSelectedFish(int arg) {
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-			// for (fish = fishes.begin(); fish !=  fishes.end(); ++fish) 	{
-
-				if (fish->selected && TestMain::getBodyWindowStatus()) {
-					polydactyly2( &(*fish));
-					break;
-				}
-			// }
+			if (fish->selected && TestMain::getBodyWindowStatus()) {
+				polydactyly2( &(*fish));
+				break;
+			}
 		}
 	}
 }
@@ -2545,150 +2074,18 @@ void placeLimbOnSelectedFish(int arg) {
 // this function is intended for when a fish eats a limb off of another fish. it should not remove brain material associated with the limb
 void amputate (BonyFish * fish, unsigned int i) {
 
+	if (fish->bones[i]->isRoot) { 			// you can't amputate someone's head... well you can... but..
+		fish->flagDelete = true;
+	}
 
-		// std::list<Species>::iterator currentSpecies;
-	// for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-	// {
-	// 	std::list<BonyFish>::iterator fish;
-	// 	for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-		// {
-
-			// if (fish->selected && TestMain::getBodyWindowStatus()) {
-			// for (int i = 0; i < N_FINGERS; ++i)
-			// {
-				/* code */
-
-
-
-
-			// }
-				if (fish->bones[i]->isRoot) { // you can't amputate someone's head... well you can... but..
-						// return;
-						// continue;
-						fish->flagDelete = true;
-				}
-
-
-				// if (fish->bones[i]->flagDelete) {
-
-				
-
-
-
-				// for ( int i = 0; i < N_FINGERS; ++i) {
-				// 	if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
-				// 		fish->bones[i]->flagDelete = true;
-				// 		deleteJoint(fish->bones[i]);
-				// 		deleteBone(fish->bones[i]);
-				// 		fish->genes.bones[i].used = false;
-				// 	}
-				// }
-
-			 	// fish->bones[i]->flagDelete = true;
-				deleteJoint(fish->bones[i]);
-				deleteBone(fish->bones[i]);
-				// fish->bones[i]->isUsed = true;
-				fish->bones[i]->hasGrown = false;
-
-				// list of neuron indexes to remove
-				// std::list<unsigned int> neuronsToRemove;    
-
-				// unsigned int retractInputConnectorsThisManyPlaces = 0;
-				// unsigned int retractInputConnectorsStartingAt = 0;
-				// bool chosenPlaceForInputConnectorRetraction = false;
-
-				// unsigned int retractOutputConnectorsThisManyPlaces = 0;
-				// unsigned int retractOutputConnectorsStartingAt = 0;
-				// bool chosenPlaceForOutputConnectorRetraction = false;
-
-				// // delete output and input connectors, noting which neurons will be removed.
-				// unsigned int currentlySelectedLimbUnsigned = i;
-				// for (int j = 0; j < N_SENSECONNECTORS; ++j)
-				// {
-				// 	if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) {
-				// 		fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
-
-				// 		// turns out the 'connectedToNeuron' parameter isnt even used. So for the input layer can can just use the index
-				// 		neuronsToRemove.push_back(j);
-
-				// 		retractInputConnectorsThisManyPlaces++;
-				// 		if (!chosenPlaceForInputConnectorRetraction) {
-				// 			chosenPlaceForInputConnectorRetraction = true;
-				// 			retractInputConnectorsStartingAt = j;
-				// 		}
-				// 	}
-
-				// 	if (fish->outputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) {
-				// 		fish->outputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
-
-				// 		retractOutputConnectorsThisManyPlaces++;
-				// 		if (!chosenPlaceForOutputConnectorRetraction) {
-				// 			chosenPlaceForOutputConnectorRetraction = true;
-				// 			retractOutputConnectorsStartingAt = j;
-				// 		}
-
-				// 		std::list<neuronDescriptor>::iterator neuron = fish->brain->layers.back().neurons.begin();
-				// 		unsigned int outputLayerStartIndex = neuron->index;
-				// 		neuronsToRemove.push_back(outputLayerStartIndex + j);
-				// 	}
-				// }
-
-				// // push back the input and output connectors by the number of neurons that were removed.
-				// for (unsigned int j = 0; j < retractInputConnectorsThisManyPlaces; ++j) {
-				// 	for (unsigned int k = retractInputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
-				// 	{
-				// 		if (k == N_SENSECONNECTORS-1) {
-				// 			fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
-				// 		}
-				// 		else {
-				// 			fish->inputMatrix[k] = fish->inputMatrix[k+1];
-				// 		}
-				// 	}
-				// }
-
-				// for (unsigned int j = 0; j < retractOutputConnectorsThisManyPlaces; ++j) {
-				// 	for (unsigned int k = retractOutputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
-				// 	{
-				// 		if (k == N_SENSECONNECTORS-1) {
-				// 			fish->outputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
-				// 		}
-				// 		else {
-				// 			fish->outputMatrix[k] = fish->outputMatrix[k+1];
-				// 		}
-				// 	}
-				// }
-
-				// // re-fry the brain without those connectors.
-				// std::list<unsigned int>::iterator neuronsToRemoveIterator;
-
-				// for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
-
-				// 	deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
-
-				// 	// if the neuron to be removed is in the output layer, shuffle all the output connectors along by one.
-				// 	std::list<unsigned int>::iterator decrementIndexesInListIterator;
-				// 	for (decrementIndexesInListIterator = neuronsToRemove.begin(); decrementIndexesInListIterator !=  neuronsToRemove.end(); ++decrementIndexesInListIterator) 	{
-				// 	  	if (*decrementIndexesInListIterator > *neuronsToRemoveIterator) {
-				// 	  		(*decrementIndexesInListIterator)--;
-				// 	  	}
-				// 	}
-				// }
-
-				// fish->ann = createFANNbrainFromDescriptor(fish->brain);
-
-				// return;
-			// }
-		// }
-	// 	}
-	// }
-
-
-
+	deleteJoint(fish->bones[i]);
+	deleteBone(fish->bones[i]);
+	fish->bones[i]->hasGrown = false;
 }
 
 // this function is intended for when the user wishes to remove a limb. it removes brain material associated with the limb.
 void amputation (int arg) {
-	// printf("amputation\n");
+
 	unused_variable((void *) &arg);
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
@@ -2696,152 +2093,112 @@ void amputation (int arg) {
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-
-			// if (fish->selected && TestMain::getBodyWindowStatus()) {
 			for (int i = 0; i < N_FINGERS; ++i)
 			{
-				/* code */
-			// }
-				if (fish->bones[i]->isRoot) { // you can't amputate someone's head... well you can... but..
-						// return;
+				if (fish->bones[i]->isRoot) { 
 						continue;
 				}
 
-
 				if (fish->bones[i]->flagDelete) {
+					
+					deleteJoint(fish->bones[i]);
+					deleteBone(fish->bones[i]);
+					fish->genes.bones[i].used = false;
 
-				
+					// list of neuron indexes to remove
+					std::list<unsigned int> neuronsToRemove;    
 
+					unsigned int retractInputConnectorsThisManyPlaces = 0;
+					unsigned int retractInputConnectorsStartingAt = 0;
+					bool chosenPlaceForInputConnectorRetraction = false;
 
+					unsigned int retractOutputConnectorsThisManyPlaces = 0;
+					unsigned int retractOutputConnectorsStartingAt = 0;
+					bool chosenPlaceForOutputConnectorRetraction = false;
 
-				// for ( int i = 0; i < N_FINGERS; ++i) {
-				// 	if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
-				// 		fish->bones[i]->flagDelete = true;
-				// 		deleteJoint(fish->bones[i]);
-				// 		deleteBone(fish->bones[i]);
-				// 		fish->genes.bones[i].used = false;
-				// 	}
-				// }
-
-			 	// fish->bones[i]->flagDelete = true;
-				deleteJoint(fish->bones[i]);
-				deleteBone(fish->bones[i]);
-				fish->genes.bones[i].used = false;
-
-				// list of neuron indexes to remove
-				std::list<unsigned int> neuronsToRemove;    
-
-				unsigned int retractInputConnectorsThisManyPlaces = 0;
-				unsigned int retractInputConnectorsStartingAt = 0;
-				bool chosenPlaceForInputConnectorRetraction = false;
-
-				unsigned int retractOutputConnectorsThisManyPlaces = 0;
-				unsigned int retractOutputConnectorsStartingAt = 0;
-				bool chosenPlaceForOutputConnectorRetraction = false;
-
-				// delete output and input connectors, noting which neurons will be removed.
-				unsigned int currentlySelectedLimbUnsigned = i;
-				for (int j = 0; j < N_SENSECONNECTORS; ++j)
-				{
-					if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) {
-						fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
-
-						// turns out the 'connectedToNeuron' parameter isnt even used. So for the input layer can can just use the index
-						neuronsToRemove.push_back(j);
-
-						retractInputConnectorsThisManyPlaces++;
-						if (!chosenPlaceForInputConnectorRetraction) {
-							chosenPlaceForInputConnectorRetraction = true;
-							retractInputConnectorsStartingAt = j;
-						}
-					}
-
-					if (fish->outputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) {
-						fish->outputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
-
-						retractOutputConnectorsThisManyPlaces++;
-						if (!chosenPlaceForOutputConnectorRetraction) {
-							chosenPlaceForOutputConnectorRetraction = true;
-							retractOutputConnectorsStartingAt = j;
-						}
-
-						std::list<neuronDescriptor>::iterator neuron = fish->brain->layers.back().neurons.begin();
-						unsigned int outputLayerStartIndex = neuron->index;
-						neuronsToRemove.push_back(outputLayerStartIndex + j);
-					}
-				}
-
-				// push back the input and output connectors by the number of neurons that were removed.
-				for (unsigned int j = 0; j < retractInputConnectorsThisManyPlaces; ++j) {
-					for (unsigned int k = retractInputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
+					// delete output and input connectors, noting which neurons will be removed.
+					unsigned int currentlySelectedLimbUnsigned = i;
+					for (int j = 0; j < N_SENSECONNECTORS; ++j)
 					{
-						if (k == N_SENSECONNECTORS-1) {
-							fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
+						if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned)
+						{
+							fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+
+							// turns out the 'connectedToNeuron' parameter isnt even used. So for the input layer can can just use the index
+							neuronsToRemove.push_back(j);
+
+							retractInputConnectorsThisManyPlaces++;
+							if (!chosenPlaceForInputConnectorRetraction) {
+								chosenPlaceForInputConnectorRetraction = true;
+								retractInputConnectorsStartingAt = j;
+							}
 						}
-						else {
-							fish->inputMatrix[k] = fish->inputMatrix[k+1];
+
+						if (fish->outputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) 
+						{
+							fish->outputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+
+							retractOutputConnectorsThisManyPlaces++;
+							if (!chosenPlaceForOutputConnectorRetraction) {
+								chosenPlaceForOutputConnectorRetraction = true;
+								retractOutputConnectorsStartingAt = j;
+							}
+
+							std::list<neuronDescriptor>::iterator neuron = fish->brain->layers.back().neurons.begin();
+							unsigned int outputLayerStartIndex = neuron->index;
+							neuronsToRemove.push_back(outputLayerStartIndex + j);
 						}
 					}
-				}
 
-				for (unsigned int j = 0; j < retractOutputConnectorsThisManyPlaces; ++j) {
-					for (unsigned int k = retractOutputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
-					{
-						if (k == N_SENSECONNECTORS-1) {
-							fish->outputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
-						}
-						else {
-							fish->outputMatrix[k] = fish->outputMatrix[k+1];
+					// push back the input and output connectors by the number of neurons that were removed.
+					for (unsigned int j = 0; j < retractInputConnectorsThisManyPlaces; ++j) {
+						for (unsigned int k = retractInputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
+						{
+							if (k == N_SENSECONNECTORS-1) {
+								fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
+							}
+							else {
+								fish->inputMatrix[k] = fish->inputMatrix[k+1];
+							}
 						}
 					}
-				}
 
-				// re-fry the brain without those connectors.
-				std::list<unsigned int>::iterator neuronsToRemoveIterator;
-
-				for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
-
-					deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
-
-					// if the neuron to be removed is in the output layer, shuffle all the output connectors along by one.
-					std::list<unsigned int>::iterator decrementIndexesInListIterator;
-					for (decrementIndexesInListIterator = neuronsToRemove.begin(); decrementIndexesInListIterator !=  neuronsToRemove.end(); ++decrementIndexesInListIterator) 	{
-					  	if (*decrementIndexesInListIterator > *neuronsToRemoveIterator) {
-					  		(*decrementIndexesInListIterator)--;
-					  	}
+					for (unsigned int j = 0; j < retractOutputConnectorsThisManyPlaces; ++j) {
+						for (unsigned int k = retractOutputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
+						{
+							if (k == N_SENSECONNECTORS-1) {
+								fish->outputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
+							}
+							else {
+								fish->outputMatrix[k] = fish->outputMatrix[k+1];
+							}
+						}
 					}
+
+					// re-fry the brain without those connectors.
+					std::list<unsigned int>::iterator neuronsToRemoveIterator;
+
+					for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
+
+						deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
+
+						// if the neuron to be removed is in the output layer, shuffle all the output connectors along by one.
+						std::list<unsigned int>::iterator decrementIndexesInListIterator;
+						for (decrementIndexesInListIterator = neuronsToRemove.begin(); decrementIndexesInListIterator !=  neuronsToRemove.end(); ++decrementIndexesInListIterator) 	{
+						  	if (*decrementIndexesInListIterator > *neuronsToRemoveIterator) {
+						  		(*decrementIndexesInListIterator)--;
+						  	}
+						}
+					}
+
+					fish->ann = createFANNbrainFromDescriptor(fish->brain);
 				}
-
-				fish->ann = createFANNbrainFromDescriptor(fish->brain);
-
-				// return;
 			}
-		}
 		}
 	}
 }
 
-
 void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float mutationSeverity) {
-
-
-	/*
-
-	
-
-	how should mutation randomness be calculated?
-
-	for every copy operation on every parameter, this is the chance of messing it up.
-
-
-
-
-
-
-	*/
-
-
-	// int intMutationSeverity = mutationSeverity;
 
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
 	{
@@ -2850,14 +2207,10 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 
 				if (RNG() > 0.5) {
 					fish->inputMatrix[i].recursorDelay += (mutationSeverity * 10 * RNG()) + 1 ;
-
-
 				}
 				else {
 					fish->inputMatrix[i].recursorDelay -= (mutationSeverity * 10 * RNG()) + 1;
 				}
-
-
 			}
 			if (fish->inputMatrix[i].sensorType == SENSOR_TIMER) {
 
@@ -2868,7 +2221,6 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 				else {
 					fish->inputMatrix[i].timerFreq -= (mutationSeverity * 10 * RNG()) + 1;
 				}
-
 			}
 		}
 
@@ -2879,10 +2231,7 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 		if (fish->inputMatrix[i].recursorDelay < 0) {
 			fish->inputMatrix[i].recursorDelay = 0;
 		}
-
-	
 	}
-
 
 	for (int i = 0; i < N_FINGERS; ++i) {
 		if (fish->bones[i].used) {
@@ -2906,21 +2255,6 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			if (RNG() < mutationChance) {	fish->bones[i].speedLimit += fish->bones[i].speedLimit 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() < mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() < mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
-
-			// if (RNG() < (mutationChance / 50)) {	
-			// 	polydactyly(fish);
-			// }
-
-			// if (RNG() < mutationChance) {	
-			// 	amputation(fish);
-			// }
-
-			// mutate attachment points
-			// if (RNG() > mutationChance) {	fish->bones[i].attachedTo = (RNG() * fish->n_bones_used ) }
-
-			// mutate bools
-			// if (RNG() < mutationChance) {	fish->bones[i].isMouth = !fish->bones[i].isMouth; }
-			// if (RNG() < mutationChance) {	fish->bones[i].sensor_touch = !fish->bones[i].sensor_touch; }
 		}
 	}
 }
@@ -2930,109 +2264,42 @@ void removeDeletableFish() {
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{
-
-		// std::list<BonyFish> fishToDelete ;//= *(new std::list<BonyFish>() );
-
-		// first make a separate list of fish to remove, then take them out of the original list.
-
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
 			if (fish->flagDelete && fish->isUsed) {
 				deleteFish ( &(*fish)) ;
 				currentSpecies->population.erase(fish++);
-				// fishToDelete.push_back( (*fish) );
 			}
 		}
-
-
-		// for (fish = fishToDelete.begin(); fish !=  fishToDelete.end(); ++fish) 	
-		// {
-		// 	// if (fish->flagDelete && fish->isUsed) {
-		// 	// 	deleteFish ( &(*fish)) ;
-		// 		currentSpecies->population.remove( (*fish) );
-		// 		// fishToDelete.push_back( *(&fish) );
-		// 	// }
-		// }
-
-
-
-
 	}
-	// for (int i = 0; i < N_FOODPARTICLES; ++i) {
-	// 	if (food[i]->flagDelete) {
-	// 		deleteBone(food[i]);
-	// 	}
-	// }
 }
-
-
 
 // this function just sets the flags and labels. it is done inside the step.
 void reloadTheSim  (int arg) {
 	unused_variable((void *) &arg);
-	// std::list<Species>::iterator currentSpecies;
-	// for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-	// {	
-	// 	currentSpecies->startNextGeneration = true;
-	// 	std::list<BonyFish>::iterator fish;
-	// 	for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-	// 	{
-	// 		fish->flagDelete = true;
-	// 	}
-	// }		
-
-	// if (!TestMain::getPersistentFoodStatus()) {
-	// 	for (int i = 0; i < N_FOODPARTICLES; ++i) {
-	// 		food[i]->flagDelete = true;
-	// 	}
-	// }
-	
-	
 }
 
 //  prints the winner to file immediately.
 void  vote (BonyFish * winner) {
-	// if ( loopCounter > loopSafetyLimit) {
-
-		// the fish's input and output matrix configurations should be passed on to offspring
+	
+	// the fish's input and output matrix configurations should be passed on to offspring
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
 	{
 		winner->genes.inputMatrix[i] = winner->inputMatrix[i];
 		winner->genes.outputMatrix[i] = winner->outputMatrix[i];
 	}
 
-		fann * wann = winner->ann;
+	fann * wann = winner->ann;
 
-		// save the winner to file with a new name.
-		std::string nnfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_win.net");
-	    std::string fdescfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_win.fsh");
-	    std::ofstream file { nnfilename };
-	    saveFishToFile (fdescfilename, winner->genes);
-	    fann_save(  wann , nnfilename.c_str()); 
+	// save the winner to file with a new name.
+	std::string nnfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_win.net");
+    std::string fdescfilename =  std::string("Aquarium/")  + winner->species->name + std::string("_win.fsh");
+    std::ofstream file { nnfilename };
+    saveFishToFile (fdescfilename, winner->genes);
+    fann_save(  wann , nnfilename.c_str()); 
 
-
-	    winner->species->startNextGeneration = true;
-
-	    // printf("voted for fishe\n");
-
-		// std::list<Species>::iterator currentSpecies;
-		// for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-		// {	
-		// 	// currentSpecies->startNextGeneration = true;
-		// 	std::list<BonyFish>::iterator fish;
-		// 	for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-		// 	{
-		// 		// fish->flagDelete = true;
-
-		// 		if () {
-
-		// 		}
-
-		// 	}
-		// }	
-
-	// }
+    winner->species->startNextGeneration = true;
 }
 
 void mutateFANNFileDirectly (std::string inputfilename, std::string outputfilename) {
@@ -3081,29 +2348,16 @@ void mutateFANNFileDirectly (std::string inputfilename, std::string outputfilena
 						memcpy(sciNumber, &c, sciNumberLength);
 					    float val = std::stof(sciNumber); 
 
-					    // float brainMutationChance = 0.2;
-					    // float brainMutationAmount = 2;
-
-					    if (RNG() < m_deepSeaSettings.mentalMutationRate) {							// chance of a mutation occurring
-					    	if (val > 1 || val < -1) { 				// if it's a big number, apply the mutation as a fraction of htat number. else, apply a random amount in a small range. this is to prevent weights being stuck at very small numbers.
-					    		
-
+					    if (RNG() < m_deepSeaSettings.mentalMutationRate) {										// chance of a mutation occurring
+					    	if (val > 1 || val < -1) { 															// if it's a big number, apply the mutation as a fraction of htat number. else, apply a random amount in a small range. this is to prevent weights being stuck at very small numbers.
 					    		val += ( (RNG() -0.5f) * abs(val) * m_deepSeaSettings.mentalMutationSeverity);
-						    	// val += (  RNG() - 0.5f) * mentalMutationSeverity;	
-
-
 					    	}	
 					    	else {
-
-
-					    		val += ( (RNG() -0.5f)  * m_deepSeaSettings.mentalMutationSeverity ); 	// part of the mutation is applied as a multiplication of the existing number
-					    		// val += (  RNG() - 0.5f) * mentalMutationSeverity;																	// part of the mutation is applied as a new addition
-
-					    	}
-						    
+					    		val += ( (RNG() -0.5f)  * m_deepSeaSettings.mentalMutationSeverity ); 			// part of the mutation is applied as a multiplication of the existing number. part of the mutation is applied as a new addition
+					    	}	
 					    }
 
-				    	char sciNotationBuffer[27];					// = "0.00000000000000000000e+00";
+				    	char sciNotationBuffer[27];																// = "0.00000000000000000000e+00";
 			 			my_print_scientific(sciNotationBuffer,val);
 			 			outFile << sciNotationBuffer;
 			 			outFile << ") ";
@@ -3127,7 +2381,6 @@ void mutateFANNFileDirectly (std::string inputfilename, std::string outputfilena
 	outFile.close();
 	inFile.close();
 }
-
 
 // you need to find out how long the number is. Some have - sign, some have 2 digits in front of the decimal place.
 int getSciNumberLength (char c) {
@@ -3161,10 +2414,8 @@ networkDescriptor * combineTwoNetworks2 (networkDescriptor * partnerA, networkDe
 	// copies are made of both parents.
 	// blank neurons are added to the copies to make them the same shape.
 	// then, connections can be chosen at random without having to compute anything special.
-
 	networkDescriptor copyParentA = *partnerA;
 	networkDescriptor copyParentB = *partnerB;
-	
 	
 	// first, find the tallest network.
 	unsigned int layersA = copyParentA.layers.size();
@@ -3196,11 +2447,7 @@ networkDescriptor * combineTwoNetworks2 (networkDescriptor * partnerA, networkDe
 
 	for (unsigned int i = 0; i < tallestPartner; ++i)
 	{
-
-
 		// find which is the widest.
-		// unsigned int widestPartner;
-
 		unsigned int widthA = layerA->neurons.size();
 		unsigned int widthB = layerB->neurons.size();
 
@@ -3247,25 +2494,18 @@ networkDescriptor * combineTwoNetworks2 (networkDescriptor * partnerA, networkDe
 
 	for (unsigned int i = 0; i < tallestPartner; ++i)
 	{
-		
 		neuronA = layerA->neurons.begin();
 		neuronB = layerB->neurons.begin();
 		neuronC = layerC->neurons.begin();
 
 		for (unsigned int j = 0; j < layerA->neurons.size(); ++j)
-		{
-						
+		{		
 			connectionA = neuronA->connections.begin();
 			connectionB = neuronB->connections.begin();
 			connectionC = neuronC->connections.begin();
 
 			for (unsigned int k = 0; k < neuronA->connections.size(); ++k)
 			{
-				
-
-				// printf("connection A, B. %u %u %f %f\n", connectionA->connectedTo, connectionB->connectedTo, connectionA->connectionWeight, connectionB->connectionWeight);
-
-
 				if (connectionA->connectionWeight != 0.0f && connectionB->connectionWeight !=  0.0f) {
 
 					if (RNG() > 0.5) { // if they are both nonzero, choose one at random
@@ -3286,46 +2526,29 @@ networkDescriptor * combineTwoNetworks2 (networkDescriptor * partnerA, networkDe
 				}
 				else {
 					// the weight will be 0
-
 				}
-
-
 				connectionA++;
 				connectionB++;
 				connectionC++;
 			}
-
-
 			neuronA++;
 			neuronB++;
 			neuronC++;
 		}
-
-
 		layerA++;
 		layerB++;
 		layerC++;
 	}
-
-
 	return child;
-
 }
-
 
 // combines two neuro descriptors to produce an offspring with a random mix of traits
 void sex (BonyFish * partnerA, BonyFish * partnerB, std::list<Species>::iterator currentSpecies) {
-	
-
-	// networkDescriptor child = new networkDescriptor;
-	// child = partnerA;
-
 
 	fishDescriptor_t * childDescriptor = new fishDescriptor_t;
 
 	for (int i = 0; i < N_SENSECONNECTORS; ++i)
 	{
-
 		// input connectors
 		bool connectorPresentA = true;
 		bool connectorPresentB = true;
@@ -3363,9 +2586,7 @@ void sex (BonyFish * partnerA, BonyFish * partnerB, std::list<Species>::iterator
 				childDescriptor->outputMatrix[i] = partnerB->outputMatrix[i];
 			}
 		} 
-
 	}
-
 
 	// bones
 	for (int i = 0; i < N_FINGERS; ++i)
@@ -3386,26 +2607,9 @@ void sex (BonyFish * partnerA, BonyFish * partnerB, std::list<Species>::iterator
 				childDescriptor->bones[i] = partnerB->genes.bones[i];
 			}
 		}
-		
 	}
 
-	// brain
-
 	networkDescriptor * childBrain = combineTwoNetworks2 (partnerA->brain, partnerB->brain) ;
-
-	// b2Vec2 startingPosition = partnerA->bones[0]->p_body->GetWorldCenter();
-
-	// loadFish (*childDescriptor, createFANNbrainFromDescriptor(childBrain), startingPosition, currentSpecies) ;
-
-	// return newFish;
-
-
-	// also mutate the offspring slightly
-	// fishDescriptor_t newFishBody;
-	// loadFishFromFile(std::string(fdescfilename), newFishBody);
-
-
-	
 	
 	std::string tempfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string("_win.net");
 
@@ -3413,32 +2617,23 @@ void sex (BonyFish * partnerA, BonyFish * partnerB, std::list<Species>::iterator
 
 	mutateFishDescriptor (childDescriptor, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 
-
 	// save the network as a FANN file, mutate it, and reload it
 	fann * jann = createFANNbrainFromDescriptor(childBrain);
 	fann_save(  jann , tempfilename.c_str()); 
     mutateFANNFileDirectly(tempfilename, mutantnnfilename);
 	fann *mann = fann_create_from_file( mutantnnfilename.c_str() ); //loadFishBrainFromFile (mutantnnfilename) ;
 
-	// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
-
-	// fann * jann = createFANNbrainFromDescriptor(muscleCars);
-
 	b2Vec2 position = partnerA->bones[0]->p_body->GetWorldCenter();
 
 	loadFish ( *childDescriptor, mann, position, currentSpecies) ;
-
 }
 
 void wipeSpecies ( std::list<Species>::iterator currentSpecies) {
-
 	std::list<BonyFish>::iterator fish;
-		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-		{
-			fish->flagDelete = true;
-		}
-
-
+	for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+	{
+		fish->flagDelete = true;
+	}
 }
 
 void mateSelectedFish (int arg) {
@@ -3470,19 +2665,8 @@ void mateSelectedFish (int arg) {
 
 					}
 					else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-
-						// for (int i = 0; i < currentSpecies.nominalPopulation; ++i)
-						// {
-							sex(partnerA, partnerB, currentSpecies);
-						// }
-
-
+						sex(partnerA, partnerB, currentSpecies);
 					}
-
-					
-
-						
-
 					return;
 				}
 				else {
@@ -3513,27 +2697,24 @@ void drawingTest() {
 		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.barrierRadius, color);
 	}
 
-
-
 	// draw terrain
 	std::list<Terrain>::iterator rock;
 	for (rock = environment.begin(); rock !=  environment.end(); ++rock) 	
 	{
-					b2Vec2 vertices[4];
-					b2Vec2 boneCenterWorldPosition = rock->p_body->GetWorldCenter();
-					for (int j = 0; j < 4; ++j) {	
-						b2Vec2 adjustedVertex = rock->shape.GetVertex(j);
-						b2Vec2 boneLocalCenter =rock->p_body->GetLocalCenter();
-						b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, rock->p_body->GetAngle(), adjustedVertex);
-						rotatedVertex.x += boneCenterWorldPosition.x;
-						rotatedVertex.y +=boneCenterWorldPosition.y;
-						vertices[j] = rotatedVertex;
-					}
+		b2Vec2 vertices[4];
+		b2Vec2 boneCenterWorldPosition = rock->p_body->GetWorldCenter();
+		for (int j = 0; j < 4; ++j) {	
+			b2Vec2 adjustedVertex = rock->shape.GetVertex(j);
+			b2Vec2 boneLocalCenter =rock->p_body->GetLocalCenter();
+			b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, rock->p_body->GetAngle(), adjustedVertex);
+			rotatedVertex.x += boneCenterWorldPosition.x;
+			rotatedVertex.y +=boneCenterWorldPosition.y;
+			vertices[j] = rotatedVertex;
+		}
 
-					local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , rock->color);	
-					local_debugDraw_pointer->DrawPolygon(vertices, 4 , rock->outlineColor);
+		local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , rock->color);	
+		local_debugDraw_pointer->DrawPolygon(vertices, 4 , rock->outlineColor);
 	}
-
 
 	// draw the particle system
 	if (false) {
@@ -3549,34 +2730,6 @@ void drawingTest() {
 	if (true) {
 		local_m_world->DrawParticleSystem(*local_m_particleSystem);
 	}
-
-	// draw the food particles
-	// b2Color fishFoodDye 		= b2Color(0.2f, 0.6f, 0.1f);
-	// b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
-	// b2Color fishFoodDyeOutlineWhite 	= b2Color(1.0f, 1.0f, 1.0f);
-
-	// for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
-	// 	if ( food[i]->isUsed) {
-	// 		b2Vec2 vertices[4];
-	// 		b2Vec2 boneCenterWorldPosition = food[i]->p_body->GetWorldCenter();
-	// 		for (int j = 0; j < 4; ++j) {	
-	// 			b2Vec2 adjustedVertex = food[i]->shape.GetVertex(j);
-	// 			b2Vec2 boneLocalCenter =food[i]->p_body->GetLocalCenter();
-	// 			b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i]->p_body->GetAngle(), adjustedVertex);
-	// 			rotatedVertex.x += boneCenterWorldPosition.x;
-	// 			rotatedVertex.y +=boneCenterWorldPosition.y;
-	// 			vertices[j] = rotatedVertex;
-	// 		}
-	// 		local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishFoodDye);
-
-	// 		if (food[i]->selected) {
-	// 			local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutlineWhite);
-	// 		}
-	// 		else {
-	// 			local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutline);
-	// 		}
-	// 	}
-	// }
 
 	// for each bone, get the vertices, then add the body's world location to them, and rotate by the body angle around the body world location.
 	// to do this you will need to extend the rotate point method to rotate a polygon.
@@ -3629,13 +2782,10 @@ void drawingTest() {
 	// draw the species window
 	if (TestMain::getSpeciesWindowStatus()) {
 
-
-		// b2Vec2 edgeOfGLUIWindow = ;
 		b2Vec2 offset = TestMain::getUpperScreenBoundary();
 		float32 zoom = TestMain::getZoom();
 
 		offset = b2Vec2(offset.x - (5 * zoom), offset.y);
-
 
 		b2Vec2 windowVertices[] = {
 			b2Vec2( (+10.0f * zoom) + offset.x, (-100.0f * zoom) ), 
@@ -3715,25 +2865,12 @@ void populateSpeciesFromFile(int arg) {
 					// now you can load the mutant ANN.
 					fann *mann = fann_create_from_file( mutantnnfilename.c_str() ); //loadFishBrainFromFile (mutantnnfilename) ;
 
-					// networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
-
-					// fann * jann = createFANNbrainFromDescriptor(muscleCars);
-
 					b2Vec2 position = b2Vec2(0.0f,0.0f);
 
 					loadFish ( newFishBody, mann, position, currentSpecies) ;
-
 				}
-				// else { 						// if there is no winner, its probably a reset or new install. make one up
-				// 	// fishDescriptor_t kargas = nematode();
-				// 	// b2Vec2 position = b2Vec2(0.0f,0.0f);
-					
-				// 	// loadFish ( kargas, NULL,  position, currentSpecies) ;
-				// }
 			}
-
-			// printf("beepboup\n");
-				return;
+			return;
 		}
 	}
 }
@@ -3745,13 +2882,11 @@ void saveIndividualToFile (int arg) {
 
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{	
-			
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-			
-			if (fish->selected ) {
-
+			if (fish->selected ) 
+			{
 				// the fish's input and output matrix configurations should be passed on to offspring
 				for (int i = 0; i < N_SENSECONNECTORS; ++i)
 				{
@@ -3775,19 +2910,16 @@ void saveIndividualToFile (int arg) {
 }
 
 void selectAllInSpecies (int arg ) {
-
 	std::list<Species>::iterator currentSpecies;
-
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{	
-		if (currentSpecies->selected) {
-
-			std::list<BonyFish>::iterator fish;
-		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		if (currentSpecies->selected) 
 		{
-			fish->selected = true;
-		}
-
+			std::list<BonyFish>::iterator fish;
+			for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+			{
+				fish->selected = true;
+			}
 		}
 	}
 }
@@ -3818,12 +2950,11 @@ void deleteSelectedSpecies (int arg) {
 }
 
 void deleteFlaggedSpecies() {
-
 	ecosystem.remove_if( [](Species currentSpecies)
- 				{
- 					return currentSpecies.flagDelete;
- 				} 
- 			);
+		{
+			return currentSpecies.flagDelete;
+		} 
+	);
 }
 
 void mapNameBarCallback(int arg) {
@@ -3866,15 +2997,11 @@ void loadExperimentalMap() {
 	lamps.push_back(sun);
 
 	m_deepSeaSettings.gravity = b2Vec2( 0.0f, -0.0f);
-
 }
-
 
 void loadFishTankMap() {
 
 }
-
-
 
 void nominalPopulationCallback (int arg) {
 	std::list<Species>::iterator currentSpecies;
@@ -3955,16 +3082,14 @@ void shine (Lamp * nancy) {
 	// cast each ray, more for brighter lamps
 	for (unsigned int i = 0; i < totalBrightness; ++i)
 	{
-
-		if (nancy->lampType == LAMP_POINTSOURCE) {
-
+		if (nancy->lampType == LAMP_POINTSOURCE) 
+		{
 			sunbeam.p1 = nancy->position;
 
 			float randomDirection = (RNG() * 2 * pi);
 
 			sunbeam.p2 = b2Vec2(nancy->illuminationRadius * cos(randomDirection),nancy->illuminationRadius* sin(randomDirection));
 			
-
 			if (true) { // print the rays of light
 
 			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, nancy->illuminationColor);
@@ -3981,11 +3106,9 @@ void shine (Lamp * nancy) {
 			float sidewaysRandomness = (RNG()-0.5) * nancy->beamWidth ;
 
 			// pick a point that is 'sidewaysRandomness' distance away at right angles to the beam.
-			// b2Vec2 photonStartingPosition
 			sunbeam.p1 = b2Vec2(  nancy->position.x +  (cos(nancy->direction + (pi*0.5) ) * sidewaysRandomness)  , nancy->position.y +  (sin(nancy->direction + (pi*0.5)) * sidewaysRandomness)    );
 
 			// photon starts from this direction and travels straight
-			// b2Vec2 photonEndPosition = 
 			sunbeam.p2 = b2Vec2( sunbeam.p1.x +  (cos(nancy->direction ) * nancy->illuminationRadius)  ,  sunbeam.p1.y +  (sin(nancy->direction ) * nancy->illuminationRadius)    );
 
 			if (true) { // print the rays of light
@@ -3994,10 +3117,7 @@ void shine (Lamp * nancy) {
 			}
 
 			RayCastClosestCallback stupidMotherFucker;
-
 			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
-
-
 		}
 		else if (nancy->lampType == LAMP_ORTHOGONAL) {
 
@@ -4007,16 +3127,13 @@ void shine (Lamp * nancy) {
 		else if (nancy->lampType == LAMP_SOLAR) {
 
 			// pick a random point on the upper hemisphere.
-
 			float randomAngle =  ( (RNG()-0.5) * 2 * pi );
 			float incidentDirection = nancy->direction + randomAngle ;
 			float mirrorDirection = nancy->direction - randomAngle ;
 
-
 			sunbeam.p1 = b2Vec2( nancy->illuminationRadius * cos(incidentDirection)   ,  nancy->illuminationRadius * sin(incidentDirection)  );
 			
 			sunbeam.p2 = b2Vec2( nancy->illuminationRadius * cos(mirrorDirection)   ,  nancy->illuminationRadius * sin(mirrorDirection)  );
-
 
 			if (true) { // print the rays of light
 
@@ -4026,14 +3143,8 @@ void shine (Lamp * nancy) {
 			RayCastClosestCallback stupidMotherFucker;
 
 			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
-
 		}
-
-
-	
 	}
-
-
 }
 
 void selectNLowestEnergyFish (unsigned int n, std::list<Species>::iterator currentSpecies) {
@@ -4060,14 +3171,12 @@ void selectNLowestEnergyFish (unsigned int n, std::list<Species>::iterator curre
 				}
 			}
 		}
-
 		lowestFishThisTurn->selected = true;
 	}
 }
 
-
 void selectLowestEnergyFish(int arg) {
-	unsigned int n = TestMain::getNumberToSelect(); //3;
+	unsigned int n = TestMain::getNumberToSelect();
 
 	std::list<Species>::iterator currentSpecies;
 
@@ -4087,14 +3196,7 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 	}
 
 	// go through the species list and find the members with the lowest energy and replace them
-
 	#define N_OFFSPRING 1
-
-	// deselectAll(0);
-
-	// selectNLowestEnergyFish(N_OFFSPRING , currentSpecies);
-
-	// flagSelectedFishForDeletion(0);
 
 	// then add the new ones
 	for (int i = 0; i < N_OFFSPRING; ++i) {
@@ -4110,7 +3212,6 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 	    fann_save(  wann , nnfilename.c_str()); 
 
 	    mutateFANNFileDirectly(std::string("Aquarium/")  + currentSpecies->name + std::string("_win.net") ,std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net"));
-
 
 	    std::string mutantnnfilename = std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net");
 
@@ -4128,82 +3229,54 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 	}
 }
 
-
-
-
-
 void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
-	// printf("lab mode beginge\n");
+ 	wipeSpecies (  currentSpecies) ;
 
+	bool thereIsAFile = false;
 
-	// delete the existing fishe
-		// BonyFish * lowestFishThisTurn = &(*currentSpecies->population.begin());
+	std::string nnfilename = std::string("Aquarium/")  +currentSpecies->name + std::string("_win.net");
+	std::string fdescfilename =std::string("Aquarium/")  + currentSpecies->name +std::string("_win.fsh");
+	std::string mutantnnfilename = std::string("Aquarium/")  +currentSpecies->name + std::string("_mut.net");
+	std::string mutantfdescfilename = std::string("Aquarium/")  +currentSpecies->name +std::string("_mut.fsh");
 
-	// float lowestEnergyThisTurn = 1000000000.0f;
-
-	// for (unsigned int i = 0; i < n; ++i)
-	// {
-	// 	lowestEnergyThisTurn = 1000000000.0f;
-	// 	lowestFishThisTurn = &(*currentSpecies->population.begin());
-
-	
-	 	wipeSpecies (  currentSpecies) ;
-
-
-		bool thereIsAFile = false;
-
-		std::string nnfilename = std::string("Aquarium/")  +currentSpecies->name + std::string("_win.net");
-		std::string fdescfilename =std::string("Aquarium/")  + currentSpecies->name +std::string("_win.fsh");
-
-		std::string mutantnnfilename = std::string("Aquarium/")  +currentSpecies->name + std::string("_mut.net");
-		std::string mutantfdescfilename = std::string("Aquarium/")  +currentSpecies->name +std::string("_mut.fsh");
-
-		if (FILE *file = fopen(  nnfilename.c_str()   , "r")) {
+	if (FILE *file = fopen(  nnfilename.c_str()   , "r")) {
+        fclose(file);
+        if (FILE *file = fopen(fdescfilename.c_str(), "r")) {
+	        thereIsAFile = true;
 	        fclose(file);
-	        if (FILE *file = fopen(fdescfilename.c_str(), "r")) {
-		        thereIsAFile = true;
-		        fclose(file);
-		    }
-	    } 
+	    }
+    } 
 
-		if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
+	if (thereIsAFile ) { // if there is a previous winner, load many of its mutant children
 
-			for (unsigned int i = 0; i < currentSpecies->nominalPopulation; ++i) {
+		for (unsigned int i = 0; i < currentSpecies->nominalPopulation; ++i) {
 
-				fishDescriptor_t newFishBody;
-				loadFishFromFile(fdescfilename, newFishBody);
+			fishDescriptor_t newFishBody;
+			loadFishFromFile(fdescfilename, newFishBody);
 
-				mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
+			mutateFishDescriptor (&newFishBody, m_deepSeaSettings.mutationRate, m_deepSeaSettings.mutationSeverity);
 
-			    mutateFANNFileDirectly(nnfilename, mutantnnfilename);
+		    mutateFANNFileDirectly(nnfilename, mutantnnfilename);
 
-				// now you can load the mutant ANN.
-				fann *mann =  fann_create_from_file( mutantnnfilename.c_str() ); //loadFishBrainFromFile ( mutantnnfilename ) ;
+			// now you can load the mutant ANN.
+			fann *mann =  fann_create_from_file( mutantnnfilename.c_str() ); 
 
-				// create a neurodescriptor.
-				networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
+			// create a neurodescriptor.
+			networkDescriptor * muscleCars=  createNeurodescriptorFromFANN (mann) ;
 
-				fann * jann = createFANNbrainFromDescriptor(muscleCars);
+			fann * jann = createFANNbrainFromDescriptor(muscleCars);
 
-				b2Vec2 position = b2Vec2(0.0f,0.0f);
+			b2Vec2 position = b2Vec2(0.0f,0.0f);
 
-				loadFish ( newFishBody, jann, position, currentSpecies) ;
-			}
+			loadFish ( newFishBody, jann, position, currentSpecies) ;
 		}
-		else { 						// if there is no winner, its probably a reset or new install. make one up
-			 printf("No genetic material found in game folder\n");
-			// fishDescriptor_t nematode = nematode(); //fishDescriptor_t();
-		// 	b2Vec2 position = b2Vec2(0.0f,0.0f);
+	}
+	else { 						// if there is no winner, its probably a reset or new install. make one up
+		 printf("No genetic material found in game folder\n");
+	}
 		
-		// 	loadFish ( nematode, NULL,  position, currentSpecies) ;
-		}
-		
-	
 	currentSpecies->startNextGeneration = false;
-
-
-	// startNextGeneration = false;
 }
 
 inline bool exists_test1 (const std::string& name) {
@@ -4227,22 +3300,6 @@ Lamp::Lamp() {
 	 beamWidth = 2;
 }
 
-// void saveDefaultPlant() {
-
-// 	// save the default nematode into the aquarium so that it is accesible
-// 	fishDescriptor_t driedWorm  = basicPlant();//  fishDescriptor_t();
-// 	BonyFish rehydratedWorm =  BonyFish(driedWorm, NULL, b2Vec2(0.0f, 0.0f));
-
-// 	  // and the default plant
-//     std::string nnfilename =  std::string("Aquarium/")  + std::string("defaultPlant") + std::string(".net");
-//     std::string fdescfilename =  std::string("Aquarium/") + std::string("defaultPlant") + std::string(".fsh");
-//     std::ofstream file { nnfilename };
-//     saveFishToFile (fdescfilename, driedWorm);
-//     fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
-
-// }
-
-
 void saveDefaultPlant() {
 	// save the default nematode into the aquarium so that it is accessible
 	fishDescriptor_t driedWorm  = basicPlant(); //nematode();//  fishDescriptor_t();
@@ -4255,7 +3312,6 @@ void saveDefaultPlant() {
     saveFishToFile (fdescfilename, driedWorm);
     fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
 }
-
 
 void saveDefaultFish() {
 	// save the default nematode into the aquarium so that it is accessible
@@ -4294,14 +3350,6 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	m_deepSeaSettings.barrierRadiusStatus = 0;													// 0.1f
 	m_deepSeaSettings.entropy = 0.1f;													// };
 
-	// initialize foodparticles so they don't crash the program. This step does not add any to the world, and is required even for unused foodparticles.
-	// for (int i = 0; i < N_FOODPARTICLES; ++i)
-	// {
-	// 	boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
-	// 	food[i] = new BoneUserData(foodDescriptor, NULL, b2Vec2(0.0f, 0.0f), 0, false);
-	// 	food[i]->isUsed = false;
-	// }
-
 	// from particle drawing
 	b2Assert((k_paramDef[0].CalculateValueMask() & e_parameterBegin) == 0);
 	TestMain::SetParticleParameters(k_paramDef, k_paramDefCount);
@@ -4309,20 +3357,11 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	m_particleFlags = TestMain::GetParticleParameterValue();
 	m_groupFlags = 0;
 
-
-	
-
 	saveDefaultPlant();
 
 	saveDefaultFish();
 
-
 	loadExperimentalMap();
-
-
-    // std::list<Species>::iterator startingSpecies = ecosystem.begin();
-    // startingSpecies->selected = true;
-
 }
 
 // completely nullifies the animals brain
@@ -4438,9 +3477,6 @@ void modifyAConnection (BonyFish * fish, float amount) {
 		}
 	}	
 
-
-
-
 	// if only one neuron is selected, and it is a layer 0 neuron, increment or decrement the primary property of its sense connector.
 	if (gotA && !gotB) {
 		if (selectedA < fish->brain->layers.begin()->neurons.size() ) {
@@ -4454,9 +3490,6 @@ void modifyAConnection (BonyFish * fish, float amount) {
 				else {
 					fish->inputMatrix[selectedA].timerFreq -= 1;
 				}
-
-				
-
 			}
 			else if (fish->inputMatrix[selectedA].sensorType == SENSECONNECTOR_RECURSORRECEIVER) {
 
@@ -4466,15 +3499,9 @@ void modifyAConnection (BonyFish * fish, float amount) {
 				else {
 					fish->inputMatrix[selectedA].recursorDelay -= 1;
 				}
-
 			}
-
-			
 		}
-
 	}
-
-
 
 	// refresh the water in the brain jar.
 	fish->ann = createFANNbrainFromDescriptor(fish->brain);
@@ -4909,8 +3936,6 @@ void checkClickInSpeciesWindow( b2AABB mousePointer ) {
 			click.y < currentSpecies->windowVertices[1].y
 			) 
 		{
-
-
 			std::list<Species>::iterator unclickedSpecies;
 			for (unclickedSpecies = ecosystem.begin(); unclickedSpecies !=  ecosystem.end(); ++unclickedSpecies) 	
 			{
@@ -5000,8 +4025,6 @@ void drawBodyEditingWindow(BonyFish * fish) {
 			if (i == currentlySelectedLimb) {
 				local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0.9,0.4,0.05));
 
-
-				
 				connectorLabel =  "Limb ";
 				connectorLabel +=  std::to_string(i);
 				b2Vec2 mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
@@ -5044,7 +4067,6 @@ void drawBodyEditingWindow(BonyFish * fish) {
 					labelsDrawnSoFar ++;
 				}
 
-
 				labelsDrawnSoFar ++; // a line break;
 
 				connectorLabel =  "   Energy ";
@@ -5065,15 +4087,6 @@ void drawBodyEditingWindow(BonyFish * fish) {
 					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 					labelsDrawnSoFar ++;
 				}
-
-
-
-
-
-
-
-
-				
 			}
 			else {
 				local_debugDraw_pointer->DrawPolygon(vertices, 4 , b2Color(0,0,0));
@@ -5182,16 +4195,14 @@ void flightModel(BoneUserData * bone) {
 
 		// you can calculate the face center velocity, by taking the radius and multiplying it by the angular velocity.
 		b2Vec2 localFaceCenter = b2Vec2( (p1.x + p2.x)/2, (p1.y + p2.y)/2 ) ;
-		float magLinearVelocityOfRotatingFace = (bone->p_body->GetAngularVelocity() * magnitude( localFaceCenter));  // https://courses.lumenlearning.com/boundless-physics/chapter/velocity-acceleration-and-force/
+		float magLinearVelocityOfRotatingFace = (bone->p_body->GetAngularVelocity() * magnitude( localFaceCenter));  		// https://courses.lumenlearning.com/boundless-physics/chapter/velocity-acceleration-and-force/
 		b2Vec2 faceAngularVelocity = b2Vec2( cos(faceAngle) * magLinearVelocityOfRotatingFace, sin(faceAngle) * magLinearVelocityOfRotatingFace);
 		b2Vec2 totalVelocity = b2Vec2(linearVelocity.x + faceAngularVelocity.x, (linearVelocity.y + faceAngularVelocity.y ) );
 		float magnitudeVelocity = magnitude(totalVelocity);
 
 		float angleOfForwardDirection = atan2(totalVelocity.x, totalVelocity.y * -1) - 0.5 * pi;
 
-		float incidentAngle = atan2(sin(angleOfForwardDirection-faceAngle), cos(angleOfForwardDirection-faceAngle)); // https://stackoverflow.com/questions/1878907/how-can-i-find-the-difference-between-two-angles
-
-		// float incidentAngle = angleOfForwardDirection - faceAngle;
+		float incidentAngle = atan2(sin(angleOfForwardDirection-faceAngle), cos(angleOfForwardDirection-faceAngle)); 		// https://stackoverflow.com/questions/1878907/how-can-i-find-the-difference-between-two-angles
 
 		b2Vec2 distanceBetweenPoints = b2Vec2(p2r.x - p1r.x, p2r.y - p1r.y);
 		float magnitudeArea = magnitude(distanceBetweenPoints);
@@ -5199,13 +4210,13 @@ void flightModel(BoneUserData * bone) {
 
 		// calculate the force of drag
 		float dragCoefficient = 0.5;
-		float dragForce = magnitudeVelocity * incidentArea * dragCoefficient * -1; 												// the -1 in this statement is what makes it an opposing force.
+		float dragForce = magnitudeVelocity * incidentArea * dragCoefficient * -1; 											// the -1 in this statement is what makes it an opposing force.
 		b2Vec2 dragVector = b2Vec2( cos(angleOfForwardDirection) * dragForce , sin(angleOfForwardDirection) * dragForce);	// the -1 here is used to correct for the physics engine's inverted y axis.
 
 		// There is another drag force which represents the fluid viscosity. It acts to slow spinning objects.
 		float viscosityDragCoeff = 0.5;
 		float viscDragForce = viscosityDragCoeff * magnitudeArea * magLinearVelocityOfRotatingFace * -1;
-		float viscDragAngle = atan2( faceCenter.y - worldCenter.y, faceCenter.x - worldCenter.x) + 0.5 * pi; //angle = atan2(y2 - y1, x2 - x1) /// the visc drag angle is orthogonal to the angle between the face center and the center of the spinning body.
+		float viscDragAngle = atan2( faceCenter.y - worldCenter.y, faceCenter.x - worldCenter.x) + 0.5 * pi; 				//angle = atan2(y2 - y1, x2 - x1) /// the visc drag angle is orthogonal to the angle between the face center and the center of the spinning body.
 		b2Vec2 viscDragVector = b2Vec2( cos(viscDragAngle) * viscDragForce , sin(viscDragAngle) * viscDragForce );
 
 		b2Vec2 totalDragVector = dragVector + viscDragVector;
@@ -5224,9 +4235,9 @@ void flightModel(BoneUserData * bone) {
 
 		// the lift angle can be calculated by. 
 		// basically find the trailing edge of the plane and check if it is in a left or right hand direction. Then rotate the lift angle left or right.
- 		bool isP2theDMost = chooseDMostVertex(angleOfForwardDirection,  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
+ 		bool isP2theDMost = chooseDMostVertex(angleOfForwardDirection,  p1r,  p2r) ; 										// given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
 		if (isP2theDMost) {
-			bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 * pi),  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
+			bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 * pi),  p1r,  p2r) ; 					// given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
 			if (isP1TheLeftMost) {
 				liftAngle -= (0.5 * pi);
 			}
@@ -5235,7 +4246,7 @@ void flightModel(BoneUserData * bone) {
 			}
 		}
 		else {
-			bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 * pi),  p1r,  p2r) ; // given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
+			bool isP1TheLeftMost = chooseDMostVertex(angleOfForwardDirection + (0.5 * pi),  p1r,  p2r) ; 					// given 2 vertices, identify which one lies most in a given direction. return false if it is p1 and true if it is p2.
 			if (isP1TheLeftMost) {
 				liftAngle += (0.5 * pi);
 			}
@@ -5267,13 +4278,8 @@ void flightModel(BoneUserData * bone) {
 	}
 }
 
-
-// void incorporateLeaf();
-
 void gravitate (BoneUserData * p_bone) {
-
 	p_bone->p_body->ApplyForce(m_deepSeaSettings.gravity, p_bone->p_body->GetWorldCenter() , true);
-
 }
 
 void runBiomechanicalFunctions () {
@@ -5287,12 +4293,10 @@ void runBiomechanicalFunctions () {
 		std::list<BonyFish>::iterator fish;
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
-
 			float energyUsedThisTurn = 0;
 
 			// update the fish's senses
 			for (int j = 0; j < N_FINGERS; ++j) {
-
 
 				if (!fish->bones[j]->isUsed) {
 					continue;
@@ -5301,7 +4305,6 @@ void runBiomechanicalFunctions () {
 				if (fish->bones[j]->flagDelete) {
 					amputate( &(*fish), j);
 				}
-
 		
 				nonRecursiveSensorUpdater (fish->bones[j]);
 
@@ -5466,143 +4469,89 @@ void runBiomechanicalFunctions () {
 				}
 			}
 
+			for (unsigned int i = 0; i < N_FINGERS; ++i) {
 
-				// printf("6.4\n");
-			// if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-			if (true) {
+				if (fish->bones[i]->isUsed) {
 
-
-
-				for (unsigned int i = 0; i < N_FINGERS; ++i) {
-
-					if (fish->bones[i]->isUsed) {
-
-						// printf("s");
-						// continue;
-
-						// if you have enough energy to grow a new branch, do it
-						if (fish->bones[i]->isLeaf) 
+					// if you have enough energy to grow a new branch, do it
+					if (fish->bones[i]->isLeaf) 
+					{
+						if (!fish->bones[i]->hasGrown) 
 						{
-							// continue;
-
-							// printf("e");
-							if (!fish->bones[i]->hasGrown) {
-
-							// printf("a");
-								// continue;
-
-								if (fish->bones[i]->attachedTo < 0 || fish->bones[i]->attachedTo > N_FINGERS) {
-									continue;
-								}
-								if (! (fish->bones[ fish->bones[i]->attachedTo ] ->isUsed) ) {
-									continue;
-								}
+							if (fish->bones[i]->attachedTo < 0 || fish->bones[i]->attachedTo > N_FINGERS) {
+								continue;
+							}
+							if (! (fish->bones[ fish->bones[i]->attachedTo ] ->isUsed) ) {
+								continue;
+							}
 
 							if (fish->bones[ fish->bones[i]->attachedTo ] ->hasGrown) 
 							{
-
-									// continue;
-									// printf("b");
 								if (fish->energy > fish->bones[i]->energy) 
 								{
+									if (true) {
 
+										// add the limb on
+										nonRecursiveBoneIncorporator( fish->bones[i]);
 
-									// printf(  "the limb %i is attached to the grown limb %i\n",  i, fish->bones[i]->attachedTo );
-										// printf("c");
-								
-									// if (  !   {
+										// turn collisions off, move the limb, and then turn them back on again
+										b2Filter tempFilterOn = fish->bones[i]->p_fixture->GetFilterData();
+										tempFilterOn.groupIndex = fish->bones[i]->collisionGroup;
 
-										if (true) {
-												// printf("added limb %i on fish\n", i);
+										b2Filter tempFilterOff = fish->bones[i]->p_fixture->GetFilterData();
+										tempFilterOff.groupIndex = -1;
 
-												// add the limb on
-												nonRecursiveBoneIncorporator( fish->bones[i]);
+										fish->bones[i]->p_fixture->SetFilterData(tempFilterOff);
+										fish->bones[i]->p_body->SetTransform(fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetWorldCenter() ,  fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetAngle() + pi  );
+										fish->bones[i]->p_fixture->SetFilterData(tempFilterOn);
 
-												// printf("malamar");
+										fish->bones[i]->hasGrown = true;
 
-												// turn collisions off, move the limb, and then turn them back on again
-												b2Filter tempFilterOn = fish->bones[i]->p_fixture->GetFilterData();
-												tempFilterOn.groupIndex = fish->bones[i]->collisionGroup;
+										fish->energy -= fish->bones[i]->energy;
 
-												b2Filter tempFilterOff = fish->bones[i]->p_fixture->GetFilterData();
-												tempFilterOff.groupIndex = -1;
-
-												fish->bones[i]->p_fixture->SetFilterData(tempFilterOff);
-
-
-												fish->bones[i]->p_body->SetTransform(fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetWorldCenter() ,  fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetAngle() + pi  );
-
-
-												fish->bones[i]->p_fixture->SetFilterData(tempFilterOn);
-
-
-												fish->bones[i]->hasGrown = true;
-
-												fish->energy -= fish->bones[i]->energy;
-
-												// printf("a\n");
-
-										}
 									}
 								}
-
-								// if you're here, the limb is a leaf but has not grown. you should skip the rest
-								continue;
-							}
-						}
-
-						// if sunlight fell on a leaf, give energy to it.
-						if (fish->bones[i]->isLeaf && fish->bones[i]->flagPhotosynth) {
-							fish->bones[i]->flagPhotosynth = false;
-							fish->energy += 100.0f;
-						}
-
-						// 1 energy is lost per bone per turn for homeostasis or whatever. this is also so that plants can't live forever without sunlight.
-						if (TestMain::getEntropyStatus()) {
-
-							for (int i = 0; i < N_FINGERS; ++i)
-							{
-								if (fish->bones[i]->isUsed) {
-									fish->energy -= fish->bones[i]->energy *  m_deepSeaSettings.entropy * 0.01f;	
-								}
 							}
 
-							
+							// if you're here, the limb is a leaf but has not grown. you should skip the rest
+							continue;
 						}
 					}
 
-					// printf("6.5\n");
-				}
-
-
-				// printf("6.6\n");
-
-				// kill the fish if it is out of energy.
-				if (TestMain::getEntropyStatus()) {
-					fish->energy -= energyUsedThisTurn;
-
-					// printf("charhe: %f\n", fish->energy);
-					if (fish->energy < 0) {
-						fish->flagDelete = true;
+					// if sunlight fell on a leaf, give energy to it.
+					if (fish->bones[i]->isLeaf && fish->bones[i]->flagPhotosynth) {
+						fish->bones[i]->flagPhotosynth = false;
+						fish->energy += 100.0f;
 					}
 
-				}
-
-				if (true) {
-
-					// give the fish some bebes if it has collected enough food. This always costs energy, even if entropy is turned off.
-					if (fish->energy > fish->reproductionEnergyCost) {
-						ecosystemModeBeginGeneration( &(*fish), currentSpecies );
-						fish->energy -= fish->reproductionEnergyCost;
-						fish->numberOfTimesReproduced ++;
-						if (fish->numberOfTimesReproduced > REPRODUCTIONCAP) {
-							fish->flagDelete = true;
+					// 1 energy is lost per bone per turn for homeostasis or whatever. this is also so that plants can't live forever without sunlight.
+					if (TestMain::getEntropyStatus()) {
+						for (int i = 0; i < N_FINGERS; ++i)
+						{
+							if (fish->bones[i]->isUsed) {
+								fish->energy -= fish->bones[i]->energy *  m_deepSeaSettings.entropy * 0.01f;	
+							}
 						}
 					}
-
-
 				}
-			
+			}
+
+			// kill the fish if it is out of energy.
+			if (TestMain::getEntropyStatus()) {
+				fish->energy -= energyUsedThisTurn;
+				if (fish->energy < 0) {
+					fish->flagDelete = true;
+				}
+			}
+
+			// give the fish some bebes if it has collected enough food. This always costs energy, even if entropy is turned off.
+			if (fish->energy > fish->reproductionEnergyCost) {
+				ecosystemModeBeginGeneration( &(*fish), currentSpecies );
+				fish->energy -= fish->reproductionEnergyCost;
+				fish->numberOfTimesReproduced ++;
+				if (fish->numberOfTimesReproduced > REPRODUCTIONCAP) {
+					fish->flagDelete = true;
+				}
 			}
 
 			if (TestMain::getBrainWindowStatus()) {
@@ -5637,7 +4586,6 @@ void runBiomechanicalFunctions () {
 			fish->distanceMovedSoFar += magnitude(distanceThisTurn);
 			fish->previousRootPosition = rootCenter;
 		}
-
 	}
 }
 
@@ -5655,21 +4603,9 @@ void flagSelectedFishForDeletion(int arg) {
 			}
 		}
 	}
-
-	// iterate through food particles
-	// for  (int i = 0; i < N_FOODPARTICLES; i++) {
-	// 	if (food[i]->selected) {
-	// 		food[i]->flagDelete = true;
-	// 		food[i]->selected = false;
-	// 	}
-	// }
 }
 
-
 void voteSelectedFish(int arg) {
-
-	// printf("vote selected\n");
-
 	unused_variable((void *)&arg);
 
 	std::list<Species>::iterator currentSpecies;
@@ -5685,48 +4621,7 @@ void voteSelectedFish(int arg) {
 	}
 }
 
-
-// toggles whether the fish is a tree or not.
-// void makeFishAPlant (int arg) {
-
-// 	unused_variable((void *)&arg);
-
-// 	std::list<Species>::iterator currentSpecies;
-// 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-// 	{
-// 		std::list<BonyFish>::iterator fish;
-// 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
-// 		{
-// 			if (fish->selected) {
-// 				if ( fish->bones[0]->isLeaf ) {
-// 					for (int i = 0; i < N_FINGERS; ++i)
-// 					{
-// 						if (fish->bones[i]->isUsed) {
-// 							fish->bones[i]->isLeaf = false;
-// 							fish->genes.bones[i].isLeaf = false;
-
-// 						}
-// 					}		
-// 				}
-// 				else {
-// 					for (int i = 0; i < N_FINGERS; ++i)
-// 					{
-// 						if (fish->bones[i]->isUsed) {
-// 							fish->bones[i]->isLeaf = true;
-// 							fish->genes.bones[i].isLeaf = true;
-
-// 							fish->bones[i]->isMouth = false;
-// 							fish->genes.bones[i].isMouth = false;
-// 						}
-// 					}	
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
 void makeLimbAWeapon (int arg) {
-
 	unused_variable((void *)&arg);
 
 	std::list<Species>::iterator currentSpecies;
@@ -5754,7 +4649,6 @@ void makeLimbAWeapon (int arg) {
 }
 
 void makeLimbAMouth (int arg) {
-
 	unused_variable((void *)&arg);
 
 	std::list<Species>::iterator currentSpecies;
@@ -5782,7 +4676,6 @@ void makeLimbAMouth (int arg) {
 }
 
 void makeLimbALeaf (int arg) {
-
 	unused_variable((void *)&arg);
 
 	std::list<Species>::iterator currentSpecies;
@@ -5803,13 +4696,8 @@ void makeLimbALeaf (int arg) {
 
 							fish->genes.bones[i].isLeaf = !fish->genes.bones[i].isLeaf;
 
-
-							// update udatawrapper
-							// else if (p_bone->isLeaf) {
 							uDataWrap * p_dataWrapper = new uDataWrap(fish->bones[i], TYPE_LEAF);
 							fish->bones[i]->p_body->SetUserData((void *)p_dataWrapper);
-	// }
-
 						}
 					}	
 				}
@@ -5823,7 +4711,6 @@ void makeLimbALeaf (int arg) {
 void handleReproduceSelectedButton (int arg) {
 	if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 		voteSelectedFish(arg);
-		// printf("pushe butone\n");
 	}
 	else  
 	{
@@ -5946,10 +4833,7 @@ void selectFishWhoMovedTheFurthest (int arg) {
 	currentSpecies= ecosystem.begin();
 	fish = currentSpecies->population.begin();
 
-
 	BonyFish * theFurthest = &(*fish);
-	// BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
-
 
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{
@@ -5961,7 +4845,6 @@ void selectFishWhoMovedTheFurthest (int arg) {
 			}
 		}
 		theFurthest->selected = true;
-		// theFurthest = referenceFish;
 	}
 }
 
@@ -5972,12 +4855,9 @@ void selectFurthestFromOrigin (int arg) {
 	std::list<BonyFish>::iterator fish;
 	currentSpecies= ecosystem.begin();
 	fish = currentSpecies->population.begin();
-	BonyFish * theFurthest = &(*fish); 
-	// BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
+	BonyFish * theFurthest = &(*fish);  
 
 	deselectAll(0);
-
-	// printf("selecting n: %i\n", TestMain::getNumberToSelect());
 
 	for (int i = 0; i < TestMain::getNumberToSelect(); ++i)
 	{
@@ -6004,36 +4884,27 @@ void selectFurthestFromOrigin (int arg) {
 		}
 
 		theFurthest->selected = true;
-		// theFurthest = referenceFish;
 	}
 }
 
 void selectClosestToFood (int arg) {
-
-	// return; // i am in the process of removing the list of 'food particles', which was like a weird secondary list of creatures that had to be separately handled. If regular fish can be eaten, a 'fish food flakes' should just be a regular species with 1 segment. This function should be rewritten to work that way.
-
 	unused_variable((void *)&arg);
 	std::list<Species>::iterator currentSpecies;
 	std::list<Species>::iterator currentSpeciesB;
 	std::list<BonyFish>::iterator fishA;
 	std::list<BonyFish>::iterator fishB;
 
-
 	currentSpecies= ecosystem.begin();
 	fishA = currentSpecies->population.begin();
-	BonyFish * theClosest;// = &(*fishA);
-	// BonyFish * referenceFish;// = &(*fishA); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
+	BonyFish * theClosest; 
 
 	float theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
 	bool chosen = false;
-
 
 	deselectAll(0);
 
 	for (int j = 0; j < TestMain::getNumberToSelect(); ++j)
 	{
-		/* code */
-	
 		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{
 			if (!currentSpecies->selected) {
@@ -6041,103 +4912,56 @@ void selectClosestToFood (int arg) {
 			}
 			for (fishA = currentSpecies->population.begin(); fishA !=  currentSpecies->population.end(); ++fishA) 	
 			{
-
 				if (fishA->selected) {
 					continue;
 				}
 				for (currentSpeciesB = ecosystem.begin(); currentSpeciesB !=  ecosystem.end(); ++currentSpeciesB) 	
-		{
-
-				for (fishB = currentSpeciesB->population.begin(); fishB !=  currentSpeciesB->population.end(); ++fishB) 	
 				{
-
-					for (int i = 0; i < N_FINGERS; ++i)
+					for (fishB = currentSpeciesB->population.begin(); fishB !=  currentSpeciesB->population.end(); ++fishB) 	
 					{
-						if (fishB->bones[i]->isUsed && fishB->bones[i]->hasGrown) {
+						for (int i = 0; i < N_FINGERS; ++i)
+						{
+							if (fishB->bones[i]->isUsed && fishB->bones[i]->hasGrown) 
+							{
 
-							if (fishB->bones[i]->isFood || fishB->bones[i]->isLeaf) {
-
-
-
+								if (fishB->bones[i]->isFood || fishB->bones[i]->isLeaf) 
+								{
 
 									b2Vec2 vectorToFood = b2Vec2(fishB->bones[i]->p_body->GetWorldCenter().x - fishA->bones[0]->p_body->GetWorldCenter().x , fishB->bones[i]->p_body->GetWorldCenter().y - fishA->bones[0]->p_body->GetWorldCenter().y);
 
-							float distanceToFood = magnitude(vectorToFood);
+									float distanceToFood = magnitude(vectorToFood);
 
-
-							if (distanceToFood < theBestDistanceSoFar) {
-								theClosest = &(*fishA);
-								theBestDistanceSoFar = distanceToFood;
-								chosen = true;
-				// 		}	
-
-
-							// printf("new best: %f\n", distanceToFood);
-
-
-
+									if (distanceToFood < theBestDistanceSoFar) {
+										theClosest = &(*fishA);
+										theBestDistanceSoFar = distanceToFood;
+										chosen = true;
+									}
+								}
 							}
-
 						}
 					}
 				}
-				}
-
-
-				// for  (int i = 0; i < N_FOODPARTICLES; i++) {
-
-				// 	if (food[i]->isUsed) {
-
-				// 		b2Vec2 vectorToFood = b2Vec2(food[i]->position.x - fish->bones[0]->p_body->GetWorldCenter().x , food[i]->position.y - fish->bones[0]->p_body->GetWorldCenter().y);
-
-				// 		float distanceToFood = magnitude(vectorToFood);
-
-				// 		if (distanceToFood < theBestDistanceSoFar) {
-				// 			theClosest = &(*fish);
-				// 			theBestDistanceSoFar = distanceToFood;
-				// 			chosen = true;
-				// 		}
-				// 	}
-			
-				}
 			}
 		}
-
 		
 		if (chosen) {
-			// printf("chosen\n");
-
-
-
 			theClosest->selected = true;
-			// theClosest = referenceFish;
 			theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
 		 	chosen = false;
 		}
-		
-
 	}
 }
 
 void deepSeaLoop () {
 
-
-if (TestMain::gameIsPaused()) {
-	local_debugDraw_pointer->DrawString(b2Vec2(100,100), std::string("Paused").c_str());
+	if (TestMain::gameIsPaused()) {
+		local_debugDraw_pointer->DrawString(b2Vec2(100,100), std::string("Paused").c_str());
 		return;
 	}
 
-	// printf("1\n");
-	
 	TestMain::PreStep();
 
-	// printf("2\n");
-	
-
 	TestMain::Step();
-
-	// printf("3\n");
-	
 
 	if (!local_m_world->IsLocked() ) {
 
@@ -6164,7 +4988,6 @@ if (TestMain::gameIsPaused()) {
 						b2Vec2 newPosition = b2Vec2(cos(fishAngle) * m_deepSeaSettings.barrierRadius, sin(fishAngle) * m_deepSeaSettings.barrierRadius);
 
 						moveAWholeFish(&(*fish), newPosition);
-
 					}
 				}
 			}
@@ -6177,150 +5000,64 @@ if (TestMain::gameIsPaused()) {
 			currentSpecies= ecosystem.begin();
 			fish = currentSpecies->population.begin();
 
-			
-
 			for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 			{
 
 				float avgDistance = 0.0f;
 				unsigned int tally = 0;
-				// bool exceeded = false;
-
 				for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 				{
 					avgDistance += magnitude(fish->bones[0]->p_body->GetWorldCenter() );
 					tally += 1;
 				}
 			
-
 				float floatTally = tally;
 				avgDistance = avgDistance	/ floatTally;
 
 				if (avgDistance > m_deepSeaSettings.originTriggerRadius) {
-					// reloadTheSim(0);
-					// exceeded = true;
-
 					laboratoryModeBeginGeneration(currentSpecies);
 				} 
 			}
 		}
 
-		// if (loopCounter < loopSafetyLimit) {
-		// 	// startNextGeneration = false;
-		// }		
-
-		// loopCounter ++;
-
-		// printf("4\n");
-	
-
 		removeDeletableFish();
 
 		deleteFlaggedSpecies() ;
 
-		// printf("5\n");
-	
-
 		if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) 
 		{
-			// if (loopCounter > loopSafetyLimit) 
-			// {
-				if (TestMain::getFoodRadiusStatus() ) 
+			if (TestMain::getFoodRadiusStatus() ) 
+			{
+
+			}
+
+			for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+			{
+				if (currentSpecies->startNextGeneration) 
 				{
-
-					// take the food, measure its angle from the origin, and then place it at the designated radius with some angle jitter
-					// iterate through food particles
-					// for  (int i = 0; i < N_FOODPARTICLES; i++) 
-					// {
-					// 	if  ( food[i]->isUsed)
-					// 	{
-
-					// 		b2Vec2 origin   = b2Vec2(0.0f, 0.0f);
-					// 		b2Vec2 foodPosition =  food[i]->p_body->GetWorldCenter();
-
-					// 		float angle = atan2( foodPosition.y - origin.y,  foodPosition.x - origin.x );
-
-					// 		angle += ( m_deepSeaSettings.foodRadiusAngleJitter * (RNG()-0.5) );
-
-					// 		b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originFoodRadius , sin(angle)* m_deepSeaSettings.originFoodRadius );
-					// 		food[i]->p_body->SetTransform(foodRadiusPosition, 0.0f);
-
-					// 	}
-					// }
+					laboratoryModeBeginGeneration (currentSpecies );
 				}
-
-				for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
-				{
-					if (currentSpecies->startNextGeneration) {
-
-						laboratoryModeBeginGeneration (currentSpecies );
-
-					}
-				}
-				// loopCounter = 0;
-			// }
+			}
 		}
-
-		// printf("6\n");
-	
-
-		// startNextGeneration = false;
 
 		if (TestMain::getLampStatus()) {
 			std::list<Lamp>::iterator lomp;
 			for (lomp = lamps.begin(); lomp !=  lamps.end(); ++lomp) 	{
-				
 				shine(&(*lomp));
-			
 			}
 		}
 
 		drawingTest();
 
-		// drawTerrain();
-
 		runBiomechanicalFunctions();
-
-		// printf("7\n");
-	
-
-		// if (flagAddFood) {
-		// 	flagAddFood = false;
-		// 	addRandomFoodParticle(0);
-		// }
-
-		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		// 	if ( food[i]->isUsed) {
-
-		// 		// perform the flight simulation on the fish
-		// 		flightModel( food[i] );
-
-		// 		food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
-		// 	}
-		// }
 	}
 
-	// printf("8\n");
-	
-
 	TestMain::PostStep();
-
-	// printf("9\n");
-	
 }
 
 void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) {
 	bool et = false;
-	bool fud = false;
-	// bool lef = false;
-
-	// printf("1\n");
-
-	if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
-		// if (loopCounter < loopSafetyLimit) {
-		// 	return;
-		// }
-	}
+	bool fud = false;;
 
 	if (userDataA == nullptr  ) {
 		return;
@@ -6346,33 +5083,23 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 	if( dataA.dataType == TYPE_MOUTH ) {
 		et = true;
 
-	// printf("2\n");
 		if( dataB.dataType == TYPE_FOOD || dataB.dataType == TYPE_LEAF )
 		{
 			fud = true;
-
-	// printf("3\n");
 		}
 	}
 
 	if( dataB.dataType == TYPE_MOUTH ) {
 		et = true;
 
-	// printf("2\n");
-		if( dataA.dataType == TYPE_FOOD )
+		if( dataA.dataType == TYPE_FOOD || dataA.dataType == TYPE_LEAF )
 		{
 			fud = true;
-
-	// printf("3\n");
 		}
-		// if (dataA.dataType == TYPE_LEAF ) {
-		// 	lef = true;
-		// }
 	}
 
-	if (et && fud  ) {
-
-	// printf("4\n");
+	if (et && fud  ) 
+	{
 		if( dataB.dataType == TYPE_MOUTH ) {
 			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
@@ -6382,8 +5109,6 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			}
 
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
-
-	// printf("5\n");
 			    vote(fish);
 			}
 
@@ -6400,7 +5125,6 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 						}
 					}
 				}
-				// unused_variable((void *)terminal);
 
 				if (terminal) {
 					food->flagDelete = true;
@@ -6409,34 +5133,23 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 						food->p_owner->flagDelete = true;
 					}
 
-
 					fish->feed(food->energy);
-					// else {
-					// 	food->flagDelete = true;
-					// 	// amputate(food->p_owner, food->index);
-					// }
 				}
-				
-
-
 			}
 		}
 		else if (dataA.dataType == TYPE_MOUTH) {
 			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
 
-			
 			if (fish->flagDelete || food->p_owner->flagDelete || food->flagDelete) {
 				return;
 			}
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
-
-	// printf("5\n");
 				vote(fish);
 			}
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
 
-	// if the part is not terminal, it is smashed off and becomes food
+				// if the part is not terminal, it is smashed off and becomes food
 				bool terminal = true;
 				for (int i = 0; i < N_FINGERS; ++i) {
 					if (food->p_owner->bones[i]->isUsed) {
@@ -6448,31 +5161,17 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 					}
 				}
 
-				// unused_variable((void *)terminal);
-
-
 				if (terminal) {
 					food->flagDelete = true;
 					if (food->isRoot) {
 						food->p_owner->flagDelete = true;
 					}
 
-
 					fish->feed(food->energy);
-					
-					// else {
-					// 	// amputate(food->p_owner, food->index);
-					// }
 				}
-				
-
 			}
 		}
 	}
-
-	// if (et && lef) {
-
-	// }
 }
 
 // ------------------------------------------------------------------
