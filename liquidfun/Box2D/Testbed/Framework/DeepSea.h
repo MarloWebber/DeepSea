@@ -7,10 +7,10 @@
 #include "fann.h"
 
 #define N_FINGERS 8 													// the amount of bones a fish can have. you know, fish fingers.
-#define N_FOODPARTICLES 8
+// #define N_FOODPARTICLES 8
 #define N_SENSECONNECTORS 32
 
-#define REPRODUCTIONCAP 3	// hard upper limit on reproductive opportunities, used to prevent individuals from being too successful.
+#define REPRODUCTIONCAP 5	// hard upper limit on reproductive opportunities, used to prevent individuals from being too successful.
 
 #define GAME_MODE_ECOSYSTEM 0
 #define GAME_MODE_LABORATORY 1
@@ -238,6 +238,7 @@ struct JointUserData {
 
 	// bool init;
 	bool isUsed;
+	bool hasGrown;
 
 	BoneUserData * attaches;
 	BoneUserData * attachedTo;
@@ -303,6 +304,8 @@ struct BoneUserData {
 	
 
 	bool selected;
+
+	unsigned int index;
 
 
 	BoneUserData(boneAndJointDescriptor_t boneDescription,
@@ -470,23 +473,23 @@ struct BonyFish {
 
 };
 
-struct foodParticle_t {
-	b2Vec2 position; 			// starting position of the food in the game world
-	float energy; 				// the nutritive value of the food
+// struct foodParticle_t {
+// 	b2Vec2 position; 			// starting position of the food in the game world
+// 	float energy; 				// the nutritive value of the food
 
-	b2BodyDef bodyDef;
-	b2Body * u_body;
-	b2PolygonShape shape; 
+// 	b2BodyDef bodyDef;
+// 	b2Body * u_body;
+// 	b2PolygonShape shape; 
 
-	// bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
-	bool isUsed;
+// 	// bool init; 					// true after the particle has been initialized. In most cases, uninitalized particles will be ignored.
+// 	bool isUsed;
 
-	bool flagDelete;
+// 	bool flagDelete;
 
-	bool selected;
+// 	bool selected;
 
-	foodParticle_t(b2Vec2 position);
-};
+// 	foodParticle_t(b2Vec2 position);
+// };
 
 
 // these type codes are used with uDataWrappers to do stuff when physical bodies touch and collide, or with raycasts
@@ -578,7 +581,7 @@ void makeAJellyfish (BonyFish * p_fish) ;
 
 
 
-extern BoneUserData * food[N_FOODPARTICLES];
+// extern BoneUserData * food[N_FOODPARTICLES];
 // extern std::list<foodParticle_t*> food;
 // extern BonyFish * fishes[N_FISHES];
 // extern std::list<BonyFish> fishes;

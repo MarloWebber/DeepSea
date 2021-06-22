@@ -37,7 +37,7 @@ unsigned int currentlySelectedLimb =0;
 const std::string defaultFishName = std::string("default") ;
 
 std::list<Lamp> lamps;
-BoneUserData * food[N_FOODPARTICLES];
+// BoneUserData * food[N_FOODPARTICLES];
 
 std::list<Species> ecosystem = *(new std::list<Species>);
 Species * defaultSpecies = new Species; // a default start because the list cant be used uninitialized. Also, used as the only active species in the laboratory mode.
@@ -228,6 +228,7 @@ BoneUserData::BoneUserData(
 	sensation_jointangle = 0.0f;
 
 	flagPhotosynth = false;
+	flagDelete = false;
 
 	// if (isLeaf && !isRoot){
 	hasGrown = false;
@@ -342,12 +343,15 @@ Terrain::Terrain(b2Vec2 startingPosition) {
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 	// if (!p_bone->isLeaf || p_bone->isRoot) {
+	printf("_b");
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 
 	// 	if (p_bone->isLeaf) {
 	// 		p_bone->hasGrown = true; // so happy to write this
 	// 	}
 	// }
+
+	printf("_c");
 	
 	if (p_bone->isMouth) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_MOUTH);
@@ -361,14 +365,16 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_LEAF);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 	}
-	else if (p_bone->isFood) {
-		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_FOOD);
-		p_bone->p_body->SetUserData((void *)p_dataWrapper);
-	}
+	// else if (p_bone->isFood) {
+	// 	uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_FOOD);
+	// 	p_bone->p_body->SetUserData((void *)p_dataWrapper);
+	// }
 	else {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_DEFAULT);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 	}
+
+	printf("_d");
 
 	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
 	tempFilter.groupIndex = p_bone->collisionGroup;
@@ -379,18 +385,18 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 		p_bone->joint->p_joint = (b2RevoluteJoint*)local_m_world->CreateJoint( &(p_bone->joint->jointDef) );
 
-
+		p_bone->joint->hasGrown = true;
 
 
 			
 	}
-
+	printf("_e");
 	// if the body is root and is also a leaf, fix its rotation. This is because trees are 'planted in the ground'.
 	// if () {
 
 	// }
 
-	p_bone->isUsed = true;
+	// p_bone->isUsed = true;
 	p_bone->selected = false;
 	p_bone->hasGrown = true;
 }
@@ -420,7 +426,7 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		return;
 	}
 
-	if (p_bone->isLeaf && !p_bone->hasGrown) {
+	if (!p_bone->hasGrown) {
 		return;
 	}
 
@@ -437,17 +443,17 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 	// they react more strongly the closer they get to food
 	if (p_bone->sensor_radar) {
 		p_bone->sensation_radar = 0.0f;
-		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-			if (food[i]->isUsed) {
-				b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
-				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
-				float distance = magnitude (positionalDifference);
-				if (distance > 0) {
-					p_bone->sensation_radar += 1/distance;
-				}
-			}
-		}
+		// 	if (food[i]->isUsed) {
+		// 		b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
+		// 		b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
+		// 		float distance = magnitude (positionalDifference);
+		// 		if (distance > 0) {
+		// 			p_bone->sensation_radar += 1/distance;
+		// 		}
+		// 	}
+		// }
 
 
 		// this part is heinously computationally inefficient: iterating through the whole global list of bones, once per sensor, every step.
@@ -478,46 +484,46 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 	// alt radars measure the angle to the closest piece of food. They don't get weaker with distance. it's supposed to be easier to interpret than the scalar one.
 	if (p_bone->sensor_altradar) {
-		p_bone->sensation_altradar = 0.0f;
+		// p_bone->sensation_altradar = 0.0f;
 
-		// find the closest food
-		float closestFoodDistance = 1000000000.0f;
-		int closestFoodIndex = 0;
+		// // find the closest food
+		// float closestFoodDistance = 1000000000.0f;
+		// int closestFoodIndex = 0;
 
-		b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
+		// b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
 
-		for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-			if (food[i]->isUsed) {
-				b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
-				float distance = magnitude (positionalDifference);
-				if (distance < closestFoodDistance) {
-					closestFoodIndex = i;
-					closestFoodDistance = distance;
-				}
-			}
-		}
+		// 	if (food[i]->isUsed) {
+		// 		b2Vec2 positionalDifference = b2Vec2((boneCenterWorldPosition.x - food[i]->position.x),(boneCenterWorldPosition.y - food[i]->position.y));
+		// 		float distance = magnitude (positionalDifference);
+		// 		if (distance < closestFoodDistance) {
+		// 			closestFoodIndex = i;
+		// 			closestFoodDistance = distance;
+		// 		}
+		// 	}
+		// }
 
-		// find the angle between it and this bone
-		if (food[closestFoodIndex]->isUsed) {
-			p_bone->sensation_altradar = atan2(  (boneCenterWorldPosition.y - food[closestFoodIndex]->position.y )   ,  (boneCenterWorldPosition.x - food[closestFoodIndex]->position.x)   );
+		// // find the angle between it and this bone
+		// if (food[closestFoodIndex]->isUsed) {
+		// 	p_bone->sensation_altradar = atan2(  (boneCenterWorldPosition.y - food[closestFoodIndex]->position.y )   ,  (boneCenterWorldPosition.x - food[closestFoodIndex]->position.x)   );
 
-			// printf("original value: %f\n",p_bone->sensation_altradar );
+		// 	// printf("original value: %f\n",p_bone->sensation_altradar );
 
-			// rotate it 90 degrees so the discontinuity at 180 degrees happens behind the sensor not in front of it
-			p_bone->sensation_altradar  += pi;
-
-
-			// printf("value + add: %f\n",p_bone->sensation_altradar );
-
-			// adding radians, wrap around 0 if the result is larger than a full circle
-			if (p_bone->sensation_altradar > (pi) ) {
-				p_bone->sensation_altradar -= (2 * pi);
-			}
+		// 	// rotate it 90 degrees so the discontinuity at 180 degrees happens behind the sensor not in front of it
+		// 	p_bone->sensation_altradar  += pi;
 
 
-			// printf("wrapped: %f\n",p_bone->sensation_altradar );
-		}
+		// 	// printf("value + add: %f\n",p_bone->sensation_altradar );
+
+		// 	// adding radians, wrap around 0 if the result is larger than a full circle
+		// 	if (p_bone->sensation_altradar > (pi) ) {
+		// 		p_bone->sensation_altradar -= (2 * pi);
+		// 	}
+
+
+		// 	// printf("wrapped: %f\n",p_bone->sensation_altradar );
+		// }
 	}
 
 
@@ -545,37 +551,37 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 }
 
-void addFoodParticle(b2Vec2 position) {
-	unsigned int emptyFoodIndex = 0;
-	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i)
-	{
-		if (food[i]->isUsed) {
-			emptyFoodIndex ++;
-		}
-		else {
-			break;
-		}
-	}
+// void addFoodParticle(b2Vec2 position) {
+// 	unsigned int emptyFoodIndex = 0;
+// 	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i)
+// 	{
+// 		if (food[i]->isUsed) {
+// 			emptyFoodIndex ++;
+// 		}
+// 		else {
+// 			break;
+// 		}
+// 	}
 
-	boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
-	foodDescriptor.used = true;
-	foodDescriptor.isRoot = true;
-	foodDescriptor.isFood = true;
-	foodDescriptor.isMouth = false;
-	foodDescriptor.sensor_touch = false;
-	foodDescriptor.isLeaf = false;
-	food[emptyFoodIndex] = new BoneUserData(foodDescriptor, nullptr, position, 0, false);
-	food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
-	food[emptyFoodIndex]->isFood = true;
-	nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
-	food[emptyFoodIndex]->energy = 10000 + (RNG() * 5000);
-	food[emptyFoodIndex]->p_body->SetTransform(position, (RNG() * 2 * pi) );
-}
+// 	boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
+// 	foodDescriptor.used = true;
+// 	foodDescriptor.isRoot = true;
+// 	foodDescriptor.isFood = true;
+// 	foodDescriptor.isMouth = false;
+// 	foodDescriptor.sensor_touch = false;
+// 	foodDescriptor.isLeaf = false;
+// 	food[emptyFoodIndex] = new BoneUserData(foodDescriptor, nullptr, position, 0, false);
+// 	food[emptyFoodIndex]->joint = new JointUserData(foodDescriptor, food[emptyFoodIndex], nullptr);
+// 	food[emptyFoodIndex]->isFood = true;
+// 	nonRecursiveBoneIncorporator(food[emptyFoodIndex]);
+// 	food[emptyFoodIndex]->energy = 10000 + (RNG() * 5000);
+// 	food[emptyFoodIndex]->p_body->SetTransform(position, (RNG() * 2 * pi) );
+// }
 
 void addRandomFoodParticle(int arg) {
-	float randomFoodAngle = 2 * pi * RNG();
-	b2Vec2 position = b2Vec2( cos( randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
-	addFoodParticle(position);
+	// float randomFoodAngle = 2 * pi * RNG();
+	// b2Vec2 position = b2Vec2( cos( randomFoodAngle)* m_deepSeaSettings.originFoodRadius , sin(randomFoodAngle)* m_deepSeaSettings.originFoodRadius );
+	// addFoodParticle(position);
 }
 
 void saveFishToFile(const std::string& file_name, fishDescriptor_t& data) {
@@ -633,6 +639,7 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 		}
 
 		bones[i] = new BoneUserData(driedFish.bones[i], this, startingPosition, randomCollisionGroup, true);
+		bones[i]->index = i;
 
 		reproductionEnergyCost += bones[i]->energy;
 		if ( bones[i]->energy < lowestLimbEnergy) {
@@ -767,7 +774,7 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 			continue;
 		}
 
-		if (fish->bones[i]->isLeaf && !fish->bones[i]->hasGrown) {
+		if (!fish->bones[i]->hasGrown) {
 			continue;
 		}
 
@@ -778,7 +785,7 @@ void moveAWholeFish (BonyFish * fish, b2Vec2 position) {
 void deleteJoint(BoneUserData * bone) {
 	if (!bone->isRoot) { // root bones dont have joints
 
-		if (bone->isLeaf && !bone->hasGrown) {
+		if ( !bone->hasGrown) {
 			return;
 		}
 
@@ -786,8 +793,9 @@ void deleteJoint(BoneUserData * bone) {
 			if (bone->joint->isUsed ) {
 				if (bone->joint->p_joint != NULL && bone->joint->p_joint != nullptr) {
 					local_m_world->DestroyJoint(bone->joint->p_joint);	
-					bone->joint->isUsed = false;
+					// bone->joint->isUsed = false;
 					// bone->joint->init = false;
+					bone->joint->hasGrown = false;
 				}
 			}
 		}
@@ -797,13 +805,14 @@ void deleteJoint(BoneUserData * bone) {
 void deleteBone (BoneUserData * bone) {
 	if (bone->isUsed && bone->flagDelete) {	
 
-	if (bone->isLeaf && !bone->hasGrown) {
+	if (!bone->hasGrown) {
 			return;
 		}
 
 		local_m_world->DestroyBody(bone->p_body);
-		bone->isUsed = false;
+		// bone->isUsed = false;
 		// bone->init = false;
+		bone->hasGrown = false;
 	}
 }
 
@@ -885,7 +894,7 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 
 			if( driedFish.bones[i].isRoot ) {
 				nonRecursiveBoneIncorporator( fish->bones[i]);
-				fish->bones[i]->hasGrown = true;
+				// fish->bones[i]->hasGrown = true;
 				
 			}
 			else {
@@ -894,12 +903,12 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 			
 				nonRecursiveBoneIncorporator( fish->bones[i]);
 				}
-				if ( (driedFish.bones[i].isLeaf) ){
+				// if ( (driedFish.bones[i].isLeaf) ){
 
 			
-				// nonRecursiveBoneIncorporator( fish->bones[i]);
-					fish->bones[i]->hasGrown = false;
-				}
+				// // nonRecursiveBoneIncorporator( fish->bones[i]);
+				// 	fish->bones[i]->hasGrown = false;
+				// }
 
 			}
 
@@ -997,6 +1006,8 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 			bones[i].used = false;
 		// }
 	}
+
+	// flagDelete = false;
 
 	// unsigned int j = 0;
 
@@ -1193,7 +1204,7 @@ fishDescriptor_t  basicPlant() {
 	{
 
 		if (i > 0) {
-			newPlant.bones[i].attachedTo = 0;//i-1;
+			newPlant.bones[i].attachedTo = i-1;
 		}
 
 		newPlant.bones[i].used = true;	
@@ -1201,7 +1212,9 @@ fishDescriptor_t  basicPlant() {
 		newPlant.bones[i].isLeaf = true;
 	// 	// newPlant->bones[i].sensor_touch = false;
 	// 	// newPlant->bones[i].isMouth = false;
-	// 	// newPlant.bones[i].color = b2Color(0.1f, 1.0f, 0.3f);
+		newPlant.bones[i].color = b2Color(0.1f, 1.0f, 0.3f);
+
+		newPlant.bones[i].isFood = true;
 
 	}
 
@@ -1223,6 +1236,54 @@ fishDescriptor_t  basicPlant() {
 		newPlant.inputMatrix[j].sensorType = SENSOR_JOINTANGLE;
 		j++;
 	}
+
+	
+		// newPlant.bones[0].isLeaf = false;
+
+	return newPlant;
+}
+
+fishDescriptor_t  fishFoodFlake() {
+
+	fishDescriptor_t newPlant = fishDescriptor_t();
+
+
+	// for (unsigned int i = 0; i < 4; ++i)
+	// {
+
+		// if (i > 0) {
+			// newPlant.bones[i].attachedTo = i-1;
+		// }
+
+		newPlant.bones[0].used = true;	
+	// 	newPlant.bones[i].used = true;
+		newPlant.bones[0].isLeaf = false;
+	// 	// newPlant->bones[i].sensor_touch = false;
+	// 	// newPlant->bones[i].isMouth = false;
+		newPlant.bones[0].color = b2Color(0.5f, 0.4f, 0.3f);
+
+		newPlant.bones[0].isFood = true;
+
+	// }
+
+	// unsigned int j = 0;
+
+	// for (unsigned int i = 0; i < 4; ++i) {
+		newPlant.outputMatrix[0].connectedToLimb = 0;
+		newPlant.outputMatrix[0].sensorType = SENSECONNECTOR_MOTOR;
+	// 	j++;
+	// }
+
+	// j = 0; // reset for next matrix.
+
+	// for (unsigned int i = 0; i < 4; ++i) {
+		newPlant.inputMatrix[0].connectedToLimb = 0;
+		// inputMatrix[j].sensorType = SENSOR_FOODRADAR;
+	// 	// j++;
+	// 	newPlant.inputMatrix[j].connectedToLimb = i;
+		newPlant.inputMatrix[0].sensorType = SENSOR_JOINTANGLE;
+	// 	j++;
+	// }
 
 	
 		// newPlant.bones[0].isLeaf = false;
@@ -2386,9 +2447,153 @@ void placeLimbOnSelectedFish(int arg) {
 	}
 }
 
+// this function is intended for when a fish eats a limb off of another fish. it should not remove brain material associated with the limb
+void amputate (BonyFish * fish, unsigned int i) {
 
 
+		// std::list<Species>::iterator currentSpecies;
+	// for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	// {
+	// 	std::list<BonyFish>::iterator fish;
+	// 	for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
+		// {
+
+			// if (fish->selected && TestMain::getBodyWindowStatus()) {
+			// for (int i = 0; i < N_FINGERS; ++i)
+			// {
+				/* code */
+
+
+
+
+			// }
+				if (fish->bones[i]->isRoot) { // you can't amputate someone's head... well you can... but..
+						// return;
+						// continue;
+						fish->flagDelete = true;
+				}
+
+
+				// if (fish->bones[i]->flagDelete) {
+
+				
+
+
+
+				// for ( int i = 0; i < N_FINGERS; ++i) {
+				// 	if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
+				// 		fish->bones[i]->flagDelete = true;
+				// 		deleteJoint(fish->bones[i]);
+				// 		deleteBone(fish->bones[i]);
+				// 		fish->genes.bones[i].used = false;
+				// 	}
+				// }
+
+			 	// fish->bones[i]->flagDelete = true;
+				deleteJoint(fish->bones[i]);
+				deleteBone(fish->bones[i]);
+				// fish->bones[i]->isUsed = true;
+				fish->bones[i]->hasGrown = false;
+
+				// list of neuron indexes to remove
+				// std::list<unsigned int> neuronsToRemove;    
+
+				// unsigned int retractInputConnectorsThisManyPlaces = 0;
+				// unsigned int retractInputConnectorsStartingAt = 0;
+				// bool chosenPlaceForInputConnectorRetraction = false;
+
+				// unsigned int retractOutputConnectorsThisManyPlaces = 0;
+				// unsigned int retractOutputConnectorsStartingAt = 0;
+				// bool chosenPlaceForOutputConnectorRetraction = false;
+
+				// // delete output and input connectors, noting which neurons will be removed.
+				// unsigned int currentlySelectedLimbUnsigned = i;
+				// for (int j = 0; j < N_SENSECONNECTORS; ++j)
+				// {
+				// 	if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) {
+				// 		fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+
+				// 		// turns out the 'connectedToNeuron' parameter isnt even used. So for the input layer can can just use the index
+				// 		neuronsToRemove.push_back(j);
+
+				// 		retractInputConnectorsThisManyPlaces++;
+				// 		if (!chosenPlaceForInputConnectorRetraction) {
+				// 			chosenPlaceForInputConnectorRetraction = true;
+				// 			retractInputConnectorsStartingAt = j;
+				// 		}
+				// 	}
+
+				// 	if (fish->outputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) {
+				// 		fish->outputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+
+				// 		retractOutputConnectorsThisManyPlaces++;
+				// 		if (!chosenPlaceForOutputConnectorRetraction) {
+				// 			chosenPlaceForOutputConnectorRetraction = true;
+				// 			retractOutputConnectorsStartingAt = j;
+				// 		}
+
+				// 		std::list<neuronDescriptor>::iterator neuron = fish->brain->layers.back().neurons.begin();
+				// 		unsigned int outputLayerStartIndex = neuron->index;
+				// 		neuronsToRemove.push_back(outputLayerStartIndex + j);
+				// 	}
+				// }
+
+				// // push back the input and output connectors by the number of neurons that were removed.
+				// for (unsigned int j = 0; j < retractInputConnectorsThisManyPlaces; ++j) {
+				// 	for (unsigned int k = retractInputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
+				// 	{
+				// 		if (k == N_SENSECONNECTORS-1) {
+				// 			fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
+				// 		}
+				// 		else {
+				// 			fish->inputMatrix[k] = fish->inputMatrix[k+1];
+				// 		}
+				// 	}
+				// }
+
+				// for (unsigned int j = 0; j < retractOutputConnectorsThisManyPlaces; ++j) {
+				// 	for (unsigned int k = retractOutputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
+				// 	{
+				// 		if (k == N_SENSECONNECTORS-1) {
+				// 			fish->outputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
+				// 		}
+				// 		else {
+				// 			fish->outputMatrix[k] = fish->outputMatrix[k+1];
+				// 		}
+				// 	}
+				// }
+
+				// // re-fry the brain without those connectors.
+				// std::list<unsigned int>::iterator neuronsToRemoveIterator;
+
+				// for (neuronsToRemoveIterator = neuronsToRemove.begin(); neuronsToRemoveIterator !=  neuronsToRemove.end(); ++neuronsToRemoveIterator) 	{
+
+				// 	deleteNeuronByIndex (fish->brain, *neuronsToRemoveIterator);
+
+				// 	// if the neuron to be removed is in the output layer, shuffle all the output connectors along by one.
+				// 	std::list<unsigned int>::iterator decrementIndexesInListIterator;
+				// 	for (decrementIndexesInListIterator = neuronsToRemove.begin(); decrementIndexesInListIterator !=  neuronsToRemove.end(); ++decrementIndexesInListIterator) 	{
+				// 	  	if (*decrementIndexesInListIterator > *neuronsToRemoveIterator) {
+				// 	  		(*decrementIndexesInListIterator)--;
+				// 	  	}
+				// 	}
+				// }
+
+				// fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
+				// return;
+			// }
+		// }
+	// 	}
+	// }
+
+
+
+}
+
+// this function is intended for when the user wishes to remove a limb. it removes brain material associated with the limb.
 void amputation (int arg) {
+	// printf("amputation\n");
 	unused_variable((void *) &arg);
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
@@ -2397,25 +2602,36 @@ void amputation (int arg) {
 		for (fish = currentSpecies->population.begin(); fish !=  currentSpecies->population.end(); ++fish) 	
 		{
 
-			if (fish->selected && TestMain::getBodyWindowStatus()) {
-
-				if (fish->bones[currentlySelectedLimb]->isRoot) { // you can't amputate someone's head... well you can... but..
-						return;
-					}
-
-				for ( int i = 0; i < N_FINGERS; ++i) {
-					if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
-						fish->bones[i]->flagDelete = true;
-						deleteJoint(fish->bones[i]);
-						deleteBone(fish->bones[i]);
-						fish->genes.bones[i].used = false;
-					}
+			// if (fish->selected && TestMain::getBodyWindowStatus()) {
+			for (int i = 0; i < N_FINGERS; ++i)
+			{
+				/* code */
+			// }
+				if (fish->bones[i]->isRoot) { // you can't amputate someone's head... well you can... but..
+						// return;
+						continue;
 				}
 
-			 	fish->bones[currentlySelectedLimb]->flagDelete = true;
-				deleteJoint(fish->bones[currentlySelectedLimb]);
-				deleteBone(fish->bones[currentlySelectedLimb]);
-				fish->genes.bones[currentlySelectedLimb].used = false;
+
+				if (fish->bones[i]->flagDelete) {
+
+				
+
+
+
+				// for ( int i = 0; i < N_FINGERS; ++i) {
+				// 	if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
+				// 		fish->bones[i]->flagDelete = true;
+				// 		deleteJoint(fish->bones[i]);
+				// 		deleteBone(fish->bones[i]);
+				// 		fish->genes.bones[i].used = false;
+				// 	}
+				// }
+
+			 	// fish->bones[i]->flagDelete = true;
+				deleteJoint(fish->bones[i]);
+				deleteBone(fish->bones[i]);
+				fish->genes.bones[i].used = false;
 
 				// list of neuron indexes to remove
 				std::list<unsigned int> neuronsToRemove;    
@@ -2429,58 +2645,58 @@ void amputation (int arg) {
 				bool chosenPlaceForOutputConnectorRetraction = false;
 
 				// delete output and input connectors, noting which neurons will be removed.
-				unsigned int currentlySelectedLimbUnsigned = currentlySelectedLimb;
-				for (int i = 0; i < N_SENSECONNECTORS; ++i)
+				unsigned int currentlySelectedLimbUnsigned = i;
+				for (int j = 0; j < N_SENSECONNECTORS; ++j)
 				{
-					if (fish->inputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
-						fish->inputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
+					if (fish->inputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) {
+						fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
 
 						// turns out the 'connectedToNeuron' parameter isnt even used. So for the input layer can can just use the index
-						neuronsToRemove.push_back(i);
+						neuronsToRemove.push_back(j);
 
 						retractInputConnectorsThisManyPlaces++;
 						if (!chosenPlaceForInputConnectorRetraction) {
 							chosenPlaceForInputConnectorRetraction = true;
-							retractInputConnectorsStartingAt = i;
+							retractInputConnectorsStartingAt = j;
 						}
 					}
 
-					if (fish->outputMatrix[i].connectedToLimb == currentlySelectedLimbUnsigned) {
-						fish->outputMatrix[i].sensorType = SENSECONNECTOR_UNUSED;
+					if (fish->outputMatrix[j].connectedToLimb == currentlySelectedLimbUnsigned) {
+						fish->outputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
 
 						retractOutputConnectorsThisManyPlaces++;
 						if (!chosenPlaceForOutputConnectorRetraction) {
 							chosenPlaceForOutputConnectorRetraction = true;
-							retractOutputConnectorsStartingAt = i;
+							retractOutputConnectorsStartingAt = j;
 						}
 
 						std::list<neuronDescriptor>::iterator neuron = fish->brain->layers.back().neurons.begin();
 						unsigned int outputLayerStartIndex = neuron->index;
-						neuronsToRemove.push_back(outputLayerStartIndex + i);
+						neuronsToRemove.push_back(outputLayerStartIndex + j);
 					}
 				}
 
 				// push back the input and output connectors by the number of neurons that were removed.
-				for (unsigned int i = 0; i < retractInputConnectorsThisManyPlaces; ++i) {
-					for (unsigned int j = retractInputConnectorsStartingAt; j < N_SENSECONNECTORS; ++j)
+				for (unsigned int j = 0; j < retractInputConnectorsThisManyPlaces; ++j) {
+					for (unsigned int k = retractInputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
 					{
-						if (j == N_SENSECONNECTORS-1) {
-							fish->inputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+						if (k == N_SENSECONNECTORS-1) {
+							fish->inputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
 						}
 						else {
-							fish->inputMatrix[j] = fish->inputMatrix[j+1];
+							fish->inputMatrix[k] = fish->inputMatrix[k+1];
 						}
 					}
 				}
 
-				for (unsigned int i = 0; i < retractOutputConnectorsThisManyPlaces; ++i) {
-					for (unsigned int j = retractOutputConnectorsStartingAt; j < N_SENSECONNECTORS; ++j)
+				for (unsigned int j = 0; j < retractOutputConnectorsThisManyPlaces; ++j) {
+					for (unsigned int k = retractOutputConnectorsStartingAt; k < N_SENSECONNECTORS; ++k)
 					{
-						if (j == N_SENSECONNECTORS-1) {
-							fish->outputMatrix[j].sensorType = SENSECONNECTOR_UNUSED;
+						if (k == N_SENSECONNECTORS-1) {
+							fish->outputMatrix[k].sensorType = SENSECONNECTOR_UNUSED;
 						}
 						else {
-							fish->outputMatrix[j] = fish->outputMatrix[j+1];
+							fish->outputMatrix[k] = fish->outputMatrix[k+1];
 						}
 					}
 				}
@@ -2503,8 +2719,9 @@ void amputation (int arg) {
 
 				fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
-				return;
+				// return;
 			}
+		}
 		}
 	}
 }
@@ -2647,11 +2864,11 @@ void removeDeletableFish() {
 
 
 	}
-	for (int i = 0; i < N_FOODPARTICLES; ++i) {
-		if (food[i]->flagDelete) {
-			deleteBone(food[i]);
-		}
-	}
+	// for (int i = 0; i < N_FOODPARTICLES; ++i) {
+	// 	if (food[i]->flagDelete) {
+	// 		deleteBone(food[i]);
+	// 	}
+	// }
 }
 
 // this function just sets the flags and labels. it is done inside the step.
@@ -3155,32 +3372,32 @@ void drawingTest() {
 	}
 
 	// draw the food particles
-	b2Color fishFoodDye 		= b2Color(0.2f, 0.6f, 0.1f);
-	b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
-	b2Color fishFoodDyeOutlineWhite 	= b2Color(1.0f, 1.0f, 1.0f);
+	// b2Color fishFoodDye 		= b2Color(0.2f, 0.6f, 0.1f);
+	// b2Color fishFoodDyeOutline 	= b2Color(0.5f, 0.9f, 0.4f);
+	// b2Color fishFoodDyeOutlineWhite 	= b2Color(1.0f, 1.0f, 1.0f);
 
-	for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
-		if ( food[i]->isUsed) {
-			b2Vec2 vertices[4];
-			b2Vec2 boneCenterWorldPosition = food[i]->p_body->GetWorldCenter();
-			for (int j = 0; j < 4; ++j) {	
-				b2Vec2 adjustedVertex = food[i]->shape.GetVertex(j);
-				b2Vec2 boneLocalCenter =food[i]->p_body->GetLocalCenter();
-				b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i]->p_body->GetAngle(), adjustedVertex);
-				rotatedVertex.x += boneCenterWorldPosition.x;
-				rotatedVertex.y +=boneCenterWorldPosition.y;
-				vertices[j] = rotatedVertex;
-			}
-			local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishFoodDye);
+	// for (unsigned int i = 0; i < N_FOODPARTICLES; ++i) {
+	// 	if ( food[i]->isUsed) {
+	// 		b2Vec2 vertices[4];
+	// 		b2Vec2 boneCenterWorldPosition = food[i]->p_body->GetWorldCenter();
+	// 		for (int j = 0; j < 4; ++j) {	
+	// 			b2Vec2 adjustedVertex = food[i]->shape.GetVertex(j);
+	// 			b2Vec2 boneLocalCenter =food[i]->p_body->GetLocalCenter();
+	// 			b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, food[i]->p_body->GetAngle(), adjustedVertex);
+	// 			rotatedVertex.x += boneCenterWorldPosition.x;
+	// 			rotatedVertex.y +=boneCenterWorldPosition.y;
+	// 			vertices[j] = rotatedVertex;
+	// 		}
+	// 		local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , fishFoodDye);
 
-			if (food[i]->selected) {
-				local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutlineWhite);
-			}
-			else {
-				local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutline);
-			}
-		}
-	}
+	// 		if (food[i]->selected) {
+	// 			local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutlineWhite);
+	// 		}
+	// 		else {
+	// 			local_debugDraw_pointer->DrawPolygon(vertices, 4 , fishFoodDyeOutline);
+	// 		}
+	// 	}
+	// }
 
 	// for each bone, get the vertices, then add the body's world location to them, and rotate by the body angle around the body world location.
 	// to do this you will need to extend the rotate point method to rotate a polygon.
@@ -3691,7 +3908,7 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 	// go through the species list and find the members with the lowest energy and replace them
 
-	#define N_OFFSPRING 3
+	#define N_OFFSPRING 1
 
 	// deselectAll(0);
 
@@ -3865,12 +4082,12 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	m_deepSeaSettings.entropy = 0.1f;													// };
 
 	// initialize foodparticles so they don't crash the program. This step does not add any to the world, and is required even for unused foodparticles.
-	for (int i = 0; i < N_FOODPARTICLES; ++i)
-	{
-		boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
-		food[i] = new BoneUserData(foodDescriptor, NULL, b2Vec2(0.0f, 0.0f), 0, false);
-		food[i]->isUsed = false;
-	}
+	// for (int i = 0; i < N_FOODPARTICLES; ++i)
+	// {
+	// 	boneAndJointDescriptor_t foodDescriptor = *(new boneAndJointDescriptor_t());
+	// 	food[i] = new BoneUserData(foodDescriptor, NULL, b2Vec2(0.0f, 0.0f), 0, false);
+	// 	food[i]->isUsed = false;
+	// }
 
 	// from particle drawing
 	b2Assert((k_paramDef[0].CalculateValueMask() & e_parameterBegin) == 0);
@@ -4623,6 +4840,20 @@ void drawBodyEditingWindow(BonyFish * fish) {
 				local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 				labelsDrawnSoFar ++;
 
+				if (fish->bones[i]->hasGrown) {
+					connectorLabel =  "   hasGrown";
+					mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
+					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+					labelsDrawnSoFar ++;
+				}
+				else {
+					connectorLabel =  "   not grown";
+					mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
+					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+					labelsDrawnSoFar ++;
+				}
+
+
 
 
 
@@ -4849,6 +5080,15 @@ void runBiomechanicalFunctions () {
 			// update the fish's senses
 			for (int j = 0; j < N_FINGERS; ++j) {
 
+
+				if (!fish->bones[j]->isUsed) {
+					continue;
+				}
+
+				if (fish->bones[j]->flagDelete) {
+					amputate( &(*fish), j);
+				}
+
 		
 				nonRecursiveSensorUpdater (fish->bones[j]);
 
@@ -5063,7 +5303,7 @@ void runBiomechanicalFunctions () {
 												printf("added limb %i on fish\n", i);
 
 
-												fish->bones[i]->p_body->SetTransform(fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetWorldCenter() ,   fish->bones[i]->p_body->GetAngle() + pi  );
+												fish->bones[i]->p_body->SetTransform(fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetWorldCenter() ,  fish->bones[  fish->bones[i]->attachedTo ]->p_body->GetAngle() + pi  );
 
 												// add the limb on
 												nonRecursiveBoneIncorporator( fish->bones[i]);
@@ -5072,6 +5312,8 @@ void runBiomechanicalFunctions () {
 												fish->bones[i]->hasGrown = true;
 
 												fish->energy -= fish->bones[i]->energy;
+
+												printf("a\n");
 
 										}
 									}
@@ -5188,12 +5430,12 @@ void flagSelectedFishForDeletion(int arg) {
 	}
 
 	// iterate through food particles
-	for  (int i = 0; i < N_FOODPARTICLES; i++) {
-		if (food[i]->selected) {
-			food[i]->flagDelete = true;
-			food[i]->selected = false;
-		}
-	}
+	// for  (int i = 0; i < N_FOODPARTICLES; i++) {
+	// 	if (food[i]->selected) {
+	// 		food[i]->flagDelete = true;
+	// 		food[i]->selected = false;
+	// 	}
+	// }
 }
 
 
@@ -5531,6 +5773,9 @@ void selectFurthestFromOrigin (int arg) {
 }
 
 void selectClosestToFood (int arg) {
+
+	return; // i am in the process of removing the list of 'food particles', which was like a weird secondary list of creatures that had to be separately handled. If regular fish can be eaten, a 'fish food flakes' should just be a regular species with 1 segment. This function should be rewritten to work that way.
+
 	unused_variable((void *)&arg);
 	std::list<Species>::iterator currentSpecies;
 	std::list<BonyFish>::iterator fish;
@@ -5539,7 +5784,7 @@ void selectClosestToFood (int arg) {
 	BonyFish * theClosest = &(*fish);
 	BonyFish * referenceFish = &(*fish); // used to reset the chosen fish for each selection cycle... otherwise it remains as the winner and next round is unsuccessful!
 
-	float theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
+	// float theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
 	bool chosen = false;
 
 
@@ -5558,28 +5803,28 @@ void selectClosestToFood (int arg) {
 					continue;
 				}
 
-				for  (int i = 0; i < N_FOODPARTICLES; i++) {
+				// for  (int i = 0; i < N_FOODPARTICLES; i++) {
 
-					if (food[i]->isUsed) {
+				// 	if (food[i]->isUsed) {
 
-						b2Vec2 vectorToFood = b2Vec2(food[i]->position.x - fish->bones[0]->p_body->GetWorldCenter().x , food[i]->position.y - fish->bones[0]->p_body->GetWorldCenter().y);
+				// 		b2Vec2 vectorToFood = b2Vec2(food[i]->position.x - fish->bones[0]->p_body->GetWorldCenter().x , food[i]->position.y - fish->bones[0]->p_body->GetWorldCenter().y);
 
-						float distanceToFood = magnitude(vectorToFood);
+				// 		float distanceToFood = magnitude(vectorToFood);
 
-						if (distanceToFood < theBestDistanceSoFar) {
-							theClosest = &(*fish);
-							theBestDistanceSoFar = distanceToFood;
-							chosen = true;
-						}
-					}
-				}
+				// 		if (distanceToFood < theBestDistanceSoFar) {
+				// 			theClosest = &(*fish);
+				// 			theBestDistanceSoFar = distanceToFood;
+				// 			chosen = true;
+				// 		}
+				// 	}
+				// }
 			}
 		}
 
 		if (chosen) {
 			theClosest->selected = true;
 			theClosest = referenceFish;
-			theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
+			// theBestDistanceSoFar = 1000000000.0f; // not going to work if all the fish are more than a billion units away.
 		 	chosen = false;
 		}
 
@@ -5596,16 +5841,16 @@ if (TestMain::gameIsPaused()) {
 		return;
 	}
 
-	// printf("1\n");
+	printf("1\n");
 	
 	TestMain::PreStep();
 
-	// printf("2\n");
+	printf("2\n");
 	
 
 	TestMain::Step();
 
-	// printf("3\n");
+	printf("3\n");
 	
 
 	if (!local_m_world->IsLocked() ) {
@@ -5673,14 +5918,14 @@ if (TestMain::gameIsPaused()) {
 
 		loopCounter ++;
 
-		// printf("4\n");
+		printf("4\n");
 	
 
 		removeDeletableFish();
 
 		deleteFlaggedSpecies() ;
 
-		// printf("5\n");
+		printf("5\n");
 	
 
 		if (startNextGeneration && m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) 
@@ -5692,23 +5937,23 @@ if (TestMain::gameIsPaused()) {
 
 					// take the food, measure its angle from the origin, and then place it at the designated radius with some angle jitter
 					// iterate through food particles
-					for  (int i = 0; i < N_FOODPARTICLES; i++) 
-					{
-						if  ( food[i]->isUsed)
-						{
+					// for  (int i = 0; i < N_FOODPARTICLES; i++) 
+					// {
+					// 	if  ( food[i]->isUsed)
+					// 	{
 
-							b2Vec2 origin   = b2Vec2(0.0f, 0.0f);
-							b2Vec2 foodPosition =  food[i]->p_body->GetWorldCenter();
+					// 		b2Vec2 origin   = b2Vec2(0.0f, 0.0f);
+					// 		b2Vec2 foodPosition =  food[i]->p_body->GetWorldCenter();
 
-							float angle = atan2( foodPosition.y - origin.y,  foodPosition.x - origin.x );
+					// 		float angle = atan2( foodPosition.y - origin.y,  foodPosition.x - origin.x );
 
-							angle += ( m_deepSeaSettings.foodRadiusAngleJitter * (RNG()-0.5) );
+					// 		angle += ( m_deepSeaSettings.foodRadiusAngleJitter * (RNG()-0.5) );
 
-							b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originFoodRadius , sin(angle)* m_deepSeaSettings.originFoodRadius );
-							food[i]->p_body->SetTransform(foodRadiusPosition, 0.0f);
+					// 		b2Vec2 foodRadiusPosition = b2Vec2( cos(angle)* m_deepSeaSettings.originFoodRadius , sin(angle)* m_deepSeaSettings.originFoodRadius );
+					// 		food[i]->p_body->SetTransform(foodRadiusPosition, 0.0f);
 
-						}
-					}
+					// 	}
+					// }
 				}
 
 				for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
@@ -5719,7 +5964,7 @@ if (TestMain::gameIsPaused()) {
 			}
 		}
 
-		// printf("6\n");
+		printf("6\n");
 	
 
 		startNextGeneration = false;
@@ -5739,37 +5984,40 @@ if (TestMain::gameIsPaused()) {
 
 		runBiomechanicalFunctions();
 
-		// printf("7\n");
+		printf("7\n");
 	
 
-		if (flagAddFood) {
-			flagAddFood = false;
-			addRandomFoodParticle(0);
-		}
+		// if (flagAddFood) {
+		// 	flagAddFood = false;
+		// 	addRandomFoodParticle(0);
+		// }
 
-		for  (int i = 0; i < N_FOODPARTICLES; i++) {
-			if ( food[i]->isUsed) {
+		// for  (int i = 0; i < N_FOODPARTICLES; i++) {
+		// 	if ( food[i]->isUsed) {
 
-				// perform the flight simulation on the fish
-				flightModel( food[i] );
+		// 		// perform the flight simulation on the fish
+		// 		flightModel( food[i] );
 
-				food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
-			}
-		}
+		// 		food[i]->position = food[i]->p_body->GetWorldCenter(); // update positions of all the food particles
+		// 	}
+		// }
 	}
 
-	// printf("8\n");
+	printf("8\n");
 	
 
 	TestMain::PostStep();
 
-	// printf("9\n");
+	printf("9\n");
 	
 }
 
 void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) {
 	bool et = false;
 	bool fud = false;
+	// bool lef = false;
+
+	// printf("1\n");
 
 	if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
 		if (startNextGeneration || loopCounter < loopSafetyLimit) {
@@ -5800,56 +6048,134 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 	if( dataA.dataType == TYPE_MOUTH ) {
 		et = true;
-		if( dataB.dataType == TYPE_FOOD )
+
+	// printf("2\n");
+		if( dataB.dataType == TYPE_FOOD || dataB.dataType == TYPE_LEAF )
 		{
 			fud = true;
+
+	// printf("3\n");
 		}
 	}
 
 	if( dataB.dataType == TYPE_MOUTH ) {
 		et = true;
-		if( dataA.dataType == TYPE_FOOD)
+
+	// printf("2\n");
+		if( dataA.dataType == TYPE_FOOD )
 		{
 			fud = true;
+
+	// printf("3\n");
 		}
+		// if (dataA.dataType == TYPE_LEAF ) {
+		// 	lef = true;
+		// }
 	}
 
-	if (et && fud) {
+	if (et && fud  ) {
+
+	// printf("4\n");
 		if( dataB.dataType == TYPE_MOUTH ) {
 			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
-			if (fish->flagDelete || food->flagDelete) {
+			if (fish->flagDelete || food->p_owner->flagDelete || food->flagDelete) {
 				return;
 			}
 
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
+
+	// printf("5\n");
 			    vote(fish);
 			}
 
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-				food->flagDelete = true;
-				flagAddFood = true;
-				fish->feed(food->energy);
+
+				// if the part is not terminal, it is smashed off and becomes food
+				bool terminal = true;
+				for (int i = 0; i < N_FINGERS; ++i) {
+					if (food->p_owner->bones[i]->isUsed) {
+					 	if ( food->p_owner->bones[i]->hasGrown ) {
+							if (food->p_owner->bones[i]->attachedTo == food->index) {
+								terminal = false;
+							}
+						}
+					}
+				}
+				// unused_variable((void *)terminal);
+
+				if (terminal) {
+					food->flagDelete = true;
+					
+					if (food->isRoot) {
+						food->p_owner->flagDelete = true;
+					}
+
+
+					fish->feed(food->energy);
+					// else {
+					// 	food->flagDelete = true;
+					// 	// amputate(food->p_owner, food->index);
+					// }
+				}
+				
+
+
 			}
 		}
 		else if (dataA.dataType == TYPE_MOUTH) {
 			BonyFish * fish = (((BoneUserData *)(dataA.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
 
-			if (fish->flagDelete || food->flagDelete) {
+			
+			if (fish->flagDelete || food->p_owner->flagDelete || food->flagDelete) {
 				return;
 			}
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
+
+	// printf("5\n");
 				vote(fish);
 			}
 			else if (m_deepSeaSettings.gameMode == GAME_MODE_ECOSYSTEM) {
-				food->flagDelete = true;
-				flagAddFood = true;
-				fish->feed(food->energy);
+
+	// if the part is not terminal, it is smashed off and becomes food
+				bool terminal = true;
+				for (int i = 0; i < N_FINGERS; ++i) {
+					if (food->p_owner->bones[i]->isUsed) {
+					 	if ( food->p_owner->bones[i]->hasGrown ) {
+							if (food->p_owner->bones[i]->attachedTo == food->index) {
+								terminal = false;
+							}
+						}
+					}
+				}
+
+				// unused_variable((void *)terminal);
+
+
+				if (terminal) {
+					food->flagDelete = true;
+					if (food->isRoot) {
+						food->p_owner->flagDelete = true;
+					}
+
+
+					fish->feed(food->energy);
+					
+					// else {
+					// 	// amputate(food->p_owner, food->index);
+					// }
+				}
+				
+
 			}
 		}
 	}
+
+	// if (et && lef) {
+
+	// }
 }
 
 // ------------------------------------------------------------------

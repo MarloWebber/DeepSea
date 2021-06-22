@@ -330,14 +330,14 @@ void Test::MouseDown(const b2Vec2& p)
 				}
 			}
 
-			for (int i = 0; i < N_FOODPARTICLES; ++i)
-			{
-				if (food[i]->isUsed) {
-					if (body == food[i]->p_body) {
-						food[i]->selected = !food[i]->selected;
-					}
-				}
-			}
+			// for (int i = 0; i < N_FOODPARTICLES; ++i)
+			// {
+			// 	if (food[i]->isUsed) {
+			// 		if (body == food[i]->p_body) {
+			// 			food[i]->selected = !food[i]->selected;
+			// 		}
+			// 	}
+			// }
 		}
 		else {
 			// printf("SEYDA NEEEEN\n");
