@@ -222,9 +222,11 @@ BoneUserData::BoneUserData(
 
 	sensor_touch = boneDescription.sensor_touch;
 	sensor_radar = boneDescription.sensor_radar;
+	sensor_altradar = boneDescription.sensor_altradar;
 	sensor_jointangle = boneDescription.sensor_jointangle;
 	sensation_radar = 0.0f;
 	sensation_touch = 0.0f;
+	sensation_altradar = 0.0f;
 	sensation_jointangle = 0.0f;
 
 	flagPhotosynth = false;
@@ -3691,7 +3693,6 @@ void populateSpeciesFromFile(int arg) {
 				bool thereIsAFile = false;
 				std::string nnfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string(".net");
 				std::string mutantnnfilename =  std::string("Aquarium/")  + currentSpecies->name + std::string("_mut.net");
-				
 			    std::string fdescfilename =  std::string("Aquarium/") + currentSpecies->name + std::string(".fsh");
 
 				if (FILE *file = fopen(nnfilename.c_str(), "r")) {
@@ -3730,6 +3731,8 @@ void populateSpeciesFromFile(int arg) {
 				// 	// loadFish ( kargas, NULL,  position, currentSpecies) ;
 				// }
 			}
+
+			// printf("beepboup\n");
 				return;
 		}
 	}
