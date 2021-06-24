@@ -32,6 +32,8 @@ bool userControlInputB;
 
 unsigned int currentlySelectedLimb =0;
 
+float spacingDistance = 0.5f; // for labels in the brain edit window
+
 const std::string defaultFishName = std::string("default") ;
 
 std::list<Lamp> lamps;
@@ -3564,7 +3566,7 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 
 	float fcompatiblespaces = *spacesUsedSoFar;
 	b2Vec2 drawingStartingPosition = b2Vec2(  fcompatiblespaces + 1 ,4.0f);
-	float spacingDistance = 0.5f;
+	// float spacingDistance = 0.5f;
 
 	b2Vec2 windowVertices[] = {
 		b2Vec2(drawingStartingPosition.x -spacingDistance , drawingStartingPosition.y- spacingDistance), 
@@ -3864,6 +3866,114 @@ void drawNeuralNetworkFromDescriptor (float * motorSignals, float * sensorium, u
 				b2Vec2 neuronIndexLabelPos = b2Vec2(neuron->position.x, neuron->position.y);
 			local_debugDraw_pointer->DrawString(neuronIndexLabelPos, neuronIndexLabel.c_str());
 		}
+	}
+
+
+	// draw the connection strength if one is selected
+	unsigned int selectedA;
+	unsigned int selectedB;
+
+	b2Vec2 posA;
+	b2Vec2 posB;
+
+	bool gotA = false;
+	bool gotB=  false;
+
+	unsigned int n_selected = 0;
+
+	// std::list<layerDescriptor>::iterator layer;
+	for (layer = fish->brain->layers.begin(); layer !=  fish->brain->layers.end(); ++layer) 	{
+		std::list<neuronDescriptor>::iterator neuron;
+ 		for ( neuron = layer->neurons.begin(); neuron != layer->neurons.end() ; neuron++) {
+ 			if (neuron->selected) {
+ 				n_selected++;
+ 				
+ 				if (gotA) {
+ 					selectedB = neuron->index;
+ 					posB = neuron->position;
+					gotB = true;
+					break;
+					// break;
+ 				}
+ 				else {
+ 					selectedA = neuron->index;
+ 					posA = neuron->position;
+					gotA = true;
+					// continue;
+				}
+
+				
+
+			}
+		
+		}
+			if (gotB) {
+				break;
+			}
+	}
+
+	if (gotA && gotB && (n_selected == 2) ) {
+
+		// printf("selected 2\n");
+
+		b2Vec2 center = b2Vec2(  (posA.x + posB.x)/2 ,  (posA.y + posB.y)/2 );
+
+
+		// get the connection strength. you don't know which of the two neurons it's on.
+		bool connectionWasOnA = false;
+		bool connectionWasOnB = false;
+		float connectionStrength = 0.0f;
+
+		std::list<connectionDescriptor>::iterator connection;
+		neuronDescriptor * selectedNeuronA = getNeuronByIndex(fish->brain, selectedA);
+		neuronDescriptor * selectedNeuronB = getNeuronByIndex(fish->brain, selectedB);
+
+		for ( connection = selectedNeuronA->connections.begin(); connection != selectedNeuronA->connections.end() ; connection++) {
+
+			if (connection->connectedTo == selectedB) {
+				connectionStrength = connection->connectionWeight;
+				connectionWasOnA = true;
+			}
+
+		}
+
+		if (!connectionWasOnA) {
+			for ( connection = selectedNeuronB->connections.begin(); connection != selectedNeuronB->connections.end() ; connection++) {
+
+				if (connection->connectedTo == selectedA) {
+					connectionStrength = connection->connectionWeight;
+					connectionWasOnB = true;
+				}
+
+			}
+		}
+
+
+		if (connectionWasOnB || connectionWasOnA) {
+
+
+		// printf("found connection\n");
+	
+			std::string connectorLabel = std::string("");
+			// if (connectionWasOnA) {
+
+			connectorLabel += std::to_string(connectionStrength);
+
+			// }
+			// else {
+
+			// }
+			b2Vec2 mocesfef = b2Vec2(center.x, center.y);
+			local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+			connectorLabel = std::string("- and = to edit");
+			// connectorLabel += std::to_string(fish->outputMatrix[j].connectedToLimb);
+			mocesfef = b2Vec2(center.x, center.y - 0.1);
+			local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+
+		}
+
+
 	}
 }
 
