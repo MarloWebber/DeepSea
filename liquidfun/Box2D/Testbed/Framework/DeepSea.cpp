@@ -247,7 +247,7 @@ BoneUserData::BoneUserData(
 	unsigned int count = 4;
 
 	// bones in a set can't collide with each other.
-	collisionGroup = newCollisionGroup;
+	collisionGroup = 0;//newCollisionGroup;
 
 	if (!attached) {
 		isRoot = true;
@@ -329,26 +329,62 @@ Terrain::Terrain(b2Vec2 startingPosition) {
 void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 	
+	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
+	tempFilter.groupIndex = 0;
+
+
+
+	// if (TestMain::getNoClipStatus()) {
+	// 	tempFilter.groupIndex = -1;
+	// }
+
 	if (p_bone->isMouth) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_MOUTH);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+
+		tempFilter.categoryBits = 1<<0; // i am a..
 	}
 	else if (p_bone->sensor_touch) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_TOUCHSENSOR);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+
+		tempFilter.categoryBits = 1<<1; // i am a..
 	}
 	else if (p_bone->isLeaf) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_LEAF);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+
+		tempFilter.categoryBits = 1<<2; // i am a..
+	}
+	else if (p_bone->isFood) {
+		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_FOOD);
+		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+
+		tempFilter.categoryBits = 1<<3; // i am a..
 	}
 	else {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_DEFAULT);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
+
+		tempFilter.categoryBits = 1<<4; // i am a..
 	}
 
-	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
-	tempFilter.groupIndex = p_bone->collisionGroup;
+
+
+	
+	if (TestMain::getNoClipStatus()) {
+
+		tempFilter.maskBits = 1<<0 | 1<<2 | 1<<3;	// and i collide with
+	}
+	else {
+		tempFilter.maskBits = (1<<5) -1;	// all 1's
+
+	}
+
+
 	p_bone->p_fixture->SetFilterData(tempFilter);
+
+
 
 	if (!p_bone->isRoot) {
 		p_bone->joint->jointDef.collideConnected = false; // this means that limb segments dont collide with their children
@@ -554,12 +590,16 @@ BonyFish::BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosit
 
 	int randomCollisionGroup;
 
-	if ( TestMain::getNoClipStatus() )  {
-		randomCollisionGroup = -1; 								// set to -1 to disable all.
-	}
-	else {
+
+	// unsigned int categoryBits;
+	// unsigned int maskBits;
+
+	// if ( TestMain::getNoClipStatus() )  {
+	// 	randomCollisionGroup = -1; 								// set to -1 to disable all.
+	// }
+	// else {
 		randomCollisionGroup = 1; 								// set to -1 to disable all.
-	}
+	// }
 
 	float lowestLimbEnergy = 1000000000;
 	for (int i = 0; i < N_FINGERS; ++i) {
@@ -4886,6 +4926,11 @@ void makeLimbAMouth (int arg) {
 						{
 							fish->bones[i]->isMouth = !fish->bones[i]->isMouth;
 							fish->genes.bones[i].isMouth = !fish->genes.bones[i].isMouth;
+
+							if (fish->bones[i]->isMouth) {
+								uDataWrap * p_dataWrapper = new uDataWrap(fish->bones[i], TYPE_MOUTH);
+								fish->bones[i]->p_body->SetUserData((void *)p_dataWrapper);
+							}
 						}
 					}	
 				}
@@ -4915,8 +4960,10 @@ void makeLimbALeaf (int arg) {
 
 							fish->genes.bones[i].isLeaf = !fish->genes.bones[i].isLeaf;
 
-							uDataWrap * p_dataWrapper = new uDataWrap(fish->bones[i], TYPE_LEAF);
-							fish->bones[i]->p_body->SetUserData((void *)p_dataWrapper);
+							if (fish->bones[i]->isLeaf) {
+								uDataWrap * p_dataWrapper = new uDataWrap(fish->bones[i], TYPE_LEAF);
+								fish->bones[i]->p_body->SetUserData((void *)p_dataWrapper);
+							}
 						}
 					}	
 				}
