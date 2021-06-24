@@ -332,59 +332,59 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
 	tempFilter.groupIndex = 0;
 
-
-
-	// if (TestMain::getNoClipStatus()) {
-	// 	tempFilter.groupIndex = -1;
-	// }
+	if ( ! TestMain::getNoClipStatus()) {
+		tempFilter.maskBits = (1<<5) -1;	// all 1's
+	}
 
 	if (p_bone->isMouth) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_MOUTH);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
-
-		tempFilter.categoryBits = 1<<0; // i am a..
+		tempFilter.categoryBits = 1; // i am a..
+		if (TestMain::getNoClipStatus()) {
+			tempFilter.maskBits = 1<<2 | 1<<3;	// and i collide with
+		}
 	}
 	else if (p_bone->sensor_touch) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_TOUCHSENSOR);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 
 		tempFilter.categoryBits = 1<<1; // i am a..
+		if (TestMain::getNoClipStatus()) {
+			tempFilter.maskBits = 0;	// and i collide with
+		}
 	}
 	else if (p_bone->isLeaf) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_LEAF);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 
 		tempFilter.categoryBits = 1<<2; // i am a..
+
+		if (TestMain::getNoClipStatus()) {
+			tempFilter.maskBits = 1 ;	// and i collide with
+		}
 	}
 	else if (p_bone->isFood) {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_FOOD);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 
 		tempFilter.categoryBits = 1<<3; // i am a..
+
+		if (TestMain::getNoClipStatus()) {
+			tempFilter.maskBits = 1 ;	// and i collide with
+		}
+
 	}
 	else {
 		uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_DEFAULT);
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 
 		tempFilter.categoryBits = 1<<4; // i am a..
+		if (TestMain::getNoClipStatus()) {
+			tempFilter.maskBits = 0 ;	// and i collide with
+		}
 	}
-
-
-
-	
-	if (TestMain::getNoClipStatus()) {
-
-		tempFilter.maskBits = 1<<0 | 1<<2 | 1<<3;	// and i collide with
-	}
-	else {
-		tempFilter.maskBits = (1<<5) -1;	// all 1's
-
-	}
-
 
 	p_bone->p_fixture->SetFilterData(tempFilter);
-
-
 
 	if (!p_bone->isRoot) {
 		p_bone->joint->jointDef.collideConnected = false; // this means that limb segments dont collide with their children
