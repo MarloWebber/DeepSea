@@ -35,6 +35,7 @@ unsigned int currentlySelectedLimb =0;
 float spacingDistance = 0.5f; // for labels in the brain edit window
 
 const std::string defaultFishName = std::string("Default") ;
+const std::string fishFoodName    = std::string("Fish food") ;
 
 std::list<Lamp> lamps;
 
@@ -776,7 +777,7 @@ void addRandomFoodParticle(int arg) {
 	std::list<Species>::iterator currentSpecies;
 	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 	{	
-		if (currentSpecies->name == std::string("Fish Food") ) {
+		if (currentSpecies->name == fishFoodName ) {
 			exists = true;
 			break;
 		}
@@ -786,14 +787,14 @@ void addRandomFoodParticle(int arg) {
 
 		Species * newSpecies = new Species();
 
-		newSpecies->name = std::string("Fish Food");
+		newSpecies->name = fishFoodName;
 
 		ecosystem.push_back(*newSpecies);
 
 		// advance iterator to the new species you created.
 		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 		{	
-			if (currentSpecies->name == std::string("Fish Food") ) {
+			if (currentSpecies->name == fishFoodName ) {
 				break;
 			}
 		}
@@ -3295,12 +3296,38 @@ void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies
 	// if the food radius is active, time to walk the food particles
 	if (TestMain::getFoodRadiusStatus() ) 
 	{
+		std::list<Species>::iterator foodSpecies;
+		for (foodSpecies = ecosystem.begin(); foodSpecies !=  ecosystem.end(); ++foodSpecies) 	
+		{	
+			if (foodSpecies->name == fishFoodName) 
+			{
+				std::list<BonyFish>::iterator fish;
+				for (fish = foodSpecies->population.begin(); fish !=  foodSpecies->population.end(); ++fish) 	
+				{	
+					if (! fish->isUsed ){
+						continue;
+					}
 
-		// m_deepSeaSettings.originFoodRadius
+					for (int i = 0; i < N_FINGERS; ++i)
+					{
+						// take position of the first bone you find.
+						if (fish->bones[i]->isUsed) {
 
+							// get angle
+							float fishAngle = atan2(  fish->bones[i]->p_body->GetWorldCenter().y  ,  fish->bones[i]->p_body->GetWorldCenter().x   );
+
+							// add randomness
+							fishAngle += (RNG() - 0.5) * m_deepSeaSettings.foodRadiusAngleJitter;
+
+							b2Vec2 randomPosition = b2Vec2(  cos(fishAngle) * m_deepSeaSettings.originFoodRadius  , sin(fishAngle) * m_deepSeaSettings.originFoodRadius  );
+
+							moveAWholeFish( &(*fish), randomPosition);
+						}
+					}
+				}
+			}	
+		}
 	}
-
-
 
  	wipeSpecies (  currentSpecies) ;
 
