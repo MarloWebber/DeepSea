@@ -4488,6 +4488,7 @@ void runBiomechanicalFunctions () {
 					case SENSECONNECTOR_RECURSORRECEIVER:
 						// how this works.
 						// the transmitters just set their buffer first place to the sample. that's it
+
 						// the receivers trawl the transmitter list and look for one on the same channel
 						float receivedSample = 0.0f;
 						for (unsigned int k = 0; k < sizeOfOutputLayer; ++k)
@@ -4506,19 +4507,12 @@ void runBiomechanicalFunctions () {
 						fish->inputMatrix[j].recursorBuffer[ fish->inputMatrix[j].recursorCursor ] = receivedSample;
 
 						// then they take a sample from [delay] samples ago and apply it
-						unsigned int adjustedCursor = fish->inputMatrix[j].recursorCursor;
-
-						unsigned int cursorPlusDelay = fish->inputMatrix[j].recursorCursor + fish->inputMatrix[j].recursorDelay ;
-						if (cursorPlusDelay > SENSECONNECTOR_BUFFERSIZE-1) {
-							adjustedCursor = 0;
-							unsigned int bufferSize = SENSECONNECTOR_BUFFERSIZE;
-							adjustedCursor += (cursorPlusDelay - bufferSize);
+						int cursorMinusDelay = fish->inputMatrix[j].recursorCursor - fish->inputMatrix[j].recursorDelay ; // this is signed because the operation can cause it to be negative. In this case it should be wrapped around the end of the buffer.
+						if (cursorMinusDelay < 0) {
+							cursorMinusDelay = SENSECONNECTOR_BUFFERSIZE + cursorMinusDelay; // cursorMinusDelay is always negative here, so this is a subtraction.
 						}	
-						else {
-							adjustedCursor += fish->inputMatrix[j].recursorDelay ;
-						}
-
-						sensorium[j] = fish->inputMatrix[j].recursorBuffer[adjustedCursor];
+				
+						sensorium[j] = fish->inputMatrix[j].recursorBuffer[cursorMinusDelay];
 						fish->inputMatrix[j].recursorCursor ++;
 
 						// the buffer loops around the max size, but there is no performance downside to doing this because you're not rolling the entire buffer
