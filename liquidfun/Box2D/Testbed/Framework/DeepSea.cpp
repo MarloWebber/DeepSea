@@ -34,7 +34,7 @@ unsigned int currentlySelectedLimb =0;
 
 float spacingDistance = 0.5f; // for labels in the brain edit window
 
-const std::string defaultFishName = std::string("default") ;
+const std::string defaultFishName = std::string("Default") ;
 
 std::list<Lamp> lamps;
 
@@ -441,7 +441,12 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 		std::list<Species>::iterator currentSpecies;
 		std::list<BonyFish>::iterator fish;
 
+		// create a pointer for the closest bone and initialize it to something.
 		BoneUserData * closestBone;
+		bool chosen  = false;
+		// closestBone = fish->bones[0];
+
+		// printf("p\n");
 
 		// this part is heinously computationally inefficient: iterating through the whole global list of bones, once per sensor, every step.
 		// you can do better, but i don't know how right now
@@ -455,6 +460,11 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 					{
 						if ( fish->bones[i]->isLeaf || fish->bones[i]->isFood ) 
 						{
+							if (!chosen) {
+								closestBone = fish->bones[i];
+								chosen = true;
+							}
+
 							b2Vec2 boneCenterWorldPosition = p_bone->p_body->GetWorldCenter();
 							b2Vec2 positionalDifference  = b2Vec2(  (boneCenterWorldPosition.x - fish->bones[i]->position.x)  ,  (boneCenterWorldPosition.y - fish->bones[i]->position.y)   );
 							float distance = magnitude (positionalDifference);
@@ -467,15 +477,17 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 				}
 			}
 		}
-  
-		b2Vec2 targetPosition = closestBone->p_body->GetWorldCenter();
-		b2Vec2 sensorPosition = p_bone->p_body->GetWorldCenter();
 
-		p_bone->sensation_altradar = atan2(  (sensorPosition.y - targetPosition.y)  ,  (sensorPosition.x - targetPosition.x)   );
+		if (chosen) {
+			b2Vec2 targetPosition = closestBone->p_body->GetWorldCenter();
+			b2Vec2 sensorPosition = p_bone->p_body->GetWorldCenter();
 
-		// adding radians, wrap around 0 if the result is larger than a full circle
-		if (p_bone->sensation_altradar > (pi) ) {
-			p_bone->sensation_altradar -= (2 * pi);
+			p_bone->sensation_altradar = atan2(  (sensorPosition.y - targetPosition.y)  ,  (sensorPosition.x - targetPosition.x)   );
+
+			// adding radians, wrap around 0 if the result is larger than a full circle
+			if (p_bone->sensation_altradar > (pi) ) {
+				p_bone->sensation_altradar -= (2 * pi);
+			}
 		}
 	}
 
@@ -495,10 +507,10 @@ void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
 
 		// the sum for this turn is multiplied by the gain, which is the ratio of a whole circle to the eye's FOV.
 	}
+
+	// printf("b\n");
 }
 
-void addRandomFoodParticle(int arg) {
-}
 
 void saveFishToFile(const std::string& file_name, fishDescriptor_t& data) {
   std::ofstream out(file_name.c_str());
@@ -743,6 +755,65 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 	flagBiasNeurons(fish->brain);
 }
 
+fishDescriptor_t  fishFoodFlake() {
+	fishDescriptor_t newPlant = fishDescriptor_t();
+		newPlant.bones[0].used = true;
+		newPlant.bones[0].isLeaf = false;
+		newPlant.bones[0].color = b2Color(0.5f, 0.3f, 0.2f);
+		newPlant.bones[0].isFood = true;
+		newPlant.outputMatrix[0].connectedToLimb = 0;
+		newPlant.outputMatrix[0].sensorType = SENSECONNECTOR_MOTOR;
+		newPlant.inputMatrix[0].connectedToLimb = 0;
+		newPlant.inputMatrix[0].sensorType = SENSOR_JOINTANGLE;
+	return newPlant;
+}
+
+void addRandomFoodParticle(int arg) {
+
+	// make a species called 'fish food', if it doesn't already exist.
+	bool exists = false;
+
+	std::list<Species>::iterator currentSpecies;
+	for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+	{	
+		if (currentSpecies->name == std::string("Fish Food") ) {
+			exists = true;
+			break;
+		}
+	}
+
+	if (!exists) {
+
+		Species * newSpecies = new Species();
+
+		newSpecies->name = std::string("Fish Food");
+
+		ecosystem.push_back(*newSpecies);
+
+		// advance iterator to the new species you created.
+		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+		{	
+			if (currentSpecies->name == std::string("Fish Food") ) {
+				break;
+			}
+		}
+	}
+
+	fishDescriptor_t newFishFood = fishFoodFlake();
+
+	float randomAngle = (RNG()-0.5) * 2 * pi;
+
+	b2Vec2 randomPosition =    b2Vec2(   cos(randomAngle) * m_deepSeaSettings.originFoodRadius   ,   sin(randomAngle) * m_deepSeaSettings.originFoodRadius   ); 
+
+	// add a fish food flake at the food radius.
+	loadFish ( newFishFood, NULL, randomPosition, currentSpecies) ;
+
+	BonyFish * fish = &(currentSpecies->population.back());
+
+	moveAWholeFish(fish, randomPosition);
+
+}
+
 connectionDescriptor::connectionDescriptor (unsigned int toNeuron) {
 	isUsed = false;
 	connectedTo = toNeuron;
@@ -935,23 +1006,6 @@ fishDescriptor_t  basicPlant() {
 	return newPlant;
 }
 
-fishDescriptor_t  fishFoodFlake() {
-
-	fishDescriptor_t newPlant = fishDescriptor_t();
-
-		newPlant.bones[0].used = true;
-		newPlant.bones[0].isLeaf = false;
-		newPlant.bones[0].color = b2Color(0.5f, 0.4f, 0.3f);
-		newPlant.bones[0].isFood = true;
-
-		newPlant.outputMatrix[0].connectedToLimb = 0;
-		newPlant.outputMatrix[0].sensorType = SENSECONNECTOR_MOTOR;
-	
-		newPlant.inputMatrix[0].connectedToLimb = 0;
-		newPlant.inputMatrix[0].sensorType = SENSOR_JOINTANGLE;
-	return newPlant;
-}
-
 neuronDescriptor * getNeuronByIndex (networkDescriptor * network, unsigned int windex) {
 	std::list<layerDescriptor>::iterator layer;
 	for (layer = network->layers.begin(); layer !=  network->layers.end(); ++layer) 	{
@@ -1141,7 +1195,7 @@ networkDescriptor::networkDescriptor (fann * pann) {
 
 Species::Species () {
 	population = *(new std::list<BonyFish>);
-	name = std::string("unnamed_species");
+	name = defaultFishName ;//std::string("default");
 	nominalPopulation = 1;
 	startNextGeneration = false;
 	selected = false;
@@ -2705,19 +2759,22 @@ void drawingTest() {
 	std::list<Terrain>::iterator rock;
 	for (rock = environment.begin(); rock !=  environment.end(); ++rock) 	
 	{
-		b2Vec2 vertices[4];
-		b2Vec2 boneCenterWorldPosition = rock->p_body->GetWorldCenter();
-		for (int j = 0; j < 4; ++j) {	
-			b2Vec2 adjustedVertex = rock->shape.GetVertex(j);
-			b2Vec2 boneLocalCenter =rock->p_body->GetLocalCenter();
-			b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, rock->p_body->GetAngle(), adjustedVertex);
-			rotatedVertex.x += boneCenterWorldPosition.x;
-			rotatedVertex.y +=boneCenterWorldPosition.y;
-			vertices[j] = rotatedVertex;
-		}
+		// if (rock->isUsed) {
 
-		local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , rock->color);	
-		local_debugDraw_pointer->DrawPolygon(vertices, 4 , rock->outlineColor);
+			b2Vec2 vertices[4];
+			b2Vec2 boneCenterWorldPosition = rock->p_body->GetWorldCenter();
+			for (int j = 0; j < 4; ++j) {	
+				b2Vec2 adjustedVertex = rock->shape.GetVertex(j);
+				b2Vec2 boneLocalCenter =rock->p_body->GetLocalCenter();
+				b2Vec2 rotatedVertex = rotatePoint( boneLocalCenter.x,boneLocalCenter.y, rock->p_body->GetAngle(), adjustedVertex);
+				rotatedVertex.x += boneCenterWorldPosition.x;
+				rotatedVertex.y +=boneCenterWorldPosition.y;
+				vertices[j] = rotatedVertex;
+			}
+
+			local_debugDraw_pointer->DrawFlatPolygon(vertices, 4 , rock->color);	
+			local_debugDraw_pointer->DrawPolygon(vertices, 4 , rock->outlineColor);
+		// }
 	}
 
 	// draw the particle system
@@ -3235,6 +3292,16 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 
 void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
+	// if the food radius is active, time to walk the food particles
+	if (TestMain::getFoodRadiusStatus() ) 
+	{
+
+		// m_deepSeaSettings.originFoodRadius
+
+	}
+
+
+
  	wipeSpecies (  currentSpecies) ;
 
 	bool thereIsAFile = false;
@@ -3310,8 +3377,8 @@ void saveDefaultPlant() {
 	BonyFish rehydratedWorm =  BonyFish(driedWorm, NULL, b2Vec2(0.0f, 0.0f));
 
 	// save the winner to file with a new name.
-	std::string nnfilename =  std::string("Aquarium/")  + std::string("defaultPlant")  + std::string(".net");
-    std::string fdescfilename =  std::string("Aquarium/") + std::string("defaultPlant")  + std::string(".fsh");
+	std::string nnfilename =  std::string("Aquarium/")  + std::string("DefaultPlant")  + std::string(".net");
+    std::string fdescfilename =  std::string("Aquarium/") + std::string("DefaultPlant")  + std::string(".fsh");
     std::ofstream file { nnfilename };
     saveFishToFile (fdescfilename, driedWorm);
     fann_save(  rehydratedWorm.ann , nnfilename.c_str()); 
@@ -3367,6 +3434,8 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	saveDefaultFish();
 
 	loadExperimentalMap();
+
+	speciesNameBarCallback(0);
 }
 
 // completely nullifies the animals brain
@@ -4523,7 +4592,7 @@ void runBiomechanicalFunctions () {
 					break;
 				}		
 
-				// add noise to every input neuron regardless of what it's connected to.
+				// add noise to every input neuron regardless of what it's connected to. Helps to 'start' from zero, as well as making everything more robust and natural-feeling.
 				sensorium[j] += (RNG() - 0.5 ) * m_deepSeaSettings.noise;
 
 			}
@@ -5149,16 +5218,13 @@ void deepSeaLoop () {
 
 		if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY ) 
 		{
-			if (TestMain::getFoodRadiusStatus() ) 
-			{
-
-			}
-
 			for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
 			{
 				if (currentSpecies->startNextGeneration) 
 				{
 					laboratoryModeBeginGeneration (currentSpecies );
+
+
 				}
 			}
 		}

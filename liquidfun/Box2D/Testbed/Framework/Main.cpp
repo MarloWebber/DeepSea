@@ -67,8 +67,8 @@ namespace
 	// int selectedSpeciesSexuality = 0;
 	int selectNinSpecies = 1;
 
-	GLUI_String speciesNameBarContent = "default";
-	GLUI_String mapNameBarContent = "default";
+	GLUI_String speciesNameBarContent = "Default";
+	GLUI_String mapNameBarContent = "Default";
 
 	GLUI_EditText* speciesNameBar;
 	GLUI_EditText* mapNameBar;
@@ -721,7 +721,7 @@ int main(int argc, char** argv)
 	barrierRadiusSpinner->set_float_limits(0.0f, 1000.0f);
 	glui->add_separator_to_panel(laboratoryPanel);
 
-	glui->add_checkbox_to_panel(laboratoryPanel, "Spawn at map center", &m_deepSeaSettings.gameMode );
+	glui->add_checkbox_to_panel(laboratoryPanel, "Lab mode (spawn at origin)", &m_deepSeaSettings.gameMode );
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "No collisions", &noClipStatus );
 	
@@ -766,7 +766,6 @@ int main(int argc, char** argv)
 
 	// glui->add_checkbox_to_panel(speciesPanel, "Sexual/Asexual", &selectedSpeciesSexuality);
 
-
 	glui->add_separator_to_panel(speciesPanel);
 
 
@@ -778,19 +777,19 @@ int main(int argc, char** argv)
 	// SELECTION TOOLS ROLLOUT
 
 	GLUI_Spinner* mutationRateSpinner =
-		glui->add_spinner_to_panel(selectionPanel, "Body Mutation Rate", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationRate);
+		glui->add_spinner_to_panel(selectionPanel, "Physical mutations", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationRate);
 	mutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
 	GLUI_Spinner* mutationSeveritySpinner =
-		glui->add_spinner_to_panel(selectionPanel, "Body Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationSeverity);
+		glui->add_spinner_to_panel(selectionPanel, "Body mutation severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationSeverity);
 	mutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
 	GLUI_Spinner* mentalMutationRateSpinner =
-		glui->add_spinner_to_panel(selectionPanel, "Mind Mutation Rate", GLUI_SPINNER_FLOAT,&m_deepSeaSettings.mentalMutationRate);
+		glui->add_spinner_to_panel(selectionPanel, "Mental mutations", GLUI_SPINNER_FLOAT,&m_deepSeaSettings.mentalMutationRate);
 	mentalMutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
 	GLUI_Spinner* mentalMutationSeveritySpinner =
-		glui->add_spinner_to_panel(selectionPanel, "Mind Mutation Severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
+		glui->add_spinner_to_panel(selectionPanel, "Mind mutation severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
 	mentalMutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
 
@@ -807,14 +806,14 @@ int main(int argc, char** argv)
 	glui->add_separator_to_panel(selectionPanel);
 
 	glui->add_button_to_panel(selectionPanel, "Select all in species", 1, selectAllInSpecies);
-	glui->add_button_to_panel(selectionPanel, "Select All", 5, selectAll);
-	glui->add_button_to_panel(selectionPanel, "Invert Selection", 6, invertSelection);
-	glui->add_button_to_panel(selectionPanel, "Deselect All", 4, deselectAll);
+	glui->add_button_to_panel(selectionPanel, "Select all", 5, selectAll);
+	glui->add_button_to_panel(selectionPanel, "Invert selection", 6, invertSelection);
+	glui->add_button_to_panel(selectionPanel, "Deselect all", 4, deselectAll);
 
 	glui->add_separator_to_panel(selectionPanel);
 
 	// cloning controls
-	glui->add_button_to_panel(selectionPanel, "Delete Selected", 2, flagSelectedFishForDeletion);
+	glui->add_button_to_panel(selectionPanel, "Delete selected", 2, flagSelectedFishForDeletion);
 	glui->add_separator_to_panel(selectionPanel);
 
 	glui->add_button_to_panel(selectionPanel, "Reproduce 1 Selected", 3, handleReproduceSelectedButton);
@@ -853,7 +852,6 @@ int main(int argc, char** argv)
 
 	// SURGERY ROLLOUT
 	
-
 
  	glui->add_button_to_panel(bodyEditPanel, "Limb is intensity radar", 10, selectedLimbFoodradar);
  	glui->add_button_to_panel(bodyEditPanel, "Limb is direction radar", 11, selectedLimbAltradar);

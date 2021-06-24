@@ -4,6 +4,7 @@ add_definitions( -DFREEGLUT_EXPORTS -DFREEGLUT_STATIC
 
 # https://bytefreaks.net/programming-2/cc-how-do-you-set-gdb-debug-flag-g-with-cmake
 # set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 # Define the framework files.
 set(Testbed_Framework_SRCS
