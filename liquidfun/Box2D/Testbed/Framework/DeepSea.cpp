@@ -224,6 +224,7 @@ BoneUserData::BoneUserData(
 	sensor_radar = boneDescription.sensor_radar;
 	sensor_altradar = boneDescription.sensor_altradar;
 	sensor_jointangle = boneDescription.sensor_jointangle;
+	sensor_eye = boneDescription.sensor_eye;
 	sensation_radar = 0.0f;
 	sensation_touch = 0.0f;
 	sensation_altradar = 0.0f;
@@ -1778,6 +1779,10 @@ void selectedLimbEye(int arg) {
 				{
 					if (fish->bones[currentlySelectedLimb]->sensor_eye) 
 					{
+
+						fish->bones[currentlySelectedLimb]->sensor_eye = false;
+						fish->genes.bones[currentlySelectedLimb].sensor_eye = false;
+
 						// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
 						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
 						{
@@ -1799,7 +1804,7 @@ void selectedLimbEye(int arg) {
 				 							}
 				 						}
 
-									fish->bones[currentlySelectedLimb]->sensor_eye = false;
+									
 									break;
 								}
 							}
@@ -1817,6 +1822,8 @@ void selectedLimbEye(int arg) {
 								fish->inputMatrix[j].sensorType = SENSOR_EYE;
 
 								fish->bones[currentlySelectedLimb]->sensor_eye = true;
+
+								fish->genes.bones[currentlySelectedLimb].sensor_eye = true;
 
 								// the fish's input and output matrix configurations should be passed on to offspring
 									for (int k = 0; k < N_SENSECONNECTORS; ++k)
@@ -1851,6 +1858,9 @@ void selectedLimbFoodradar(int arg) {
 					if (fish->bones[currentlySelectedLimb]->sensor_radar) 
 					{
 
+						fish->bones[currentlySelectedLimb]->sensor_radar = false;
+						fish->genes.bones[currentlySelectedLimb].sensor_radar = false;
+
 						// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
 						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
 						{
@@ -1872,7 +1882,7 @@ void selectedLimbFoodradar(int arg) {
 			 							}
 			 						}
 
-									fish->bones[currentlySelectedLimb]->sensor_radar = false;
+									
 									break;
 								}
 							}
@@ -1889,6 +1899,7 @@ void selectedLimbFoodradar(int arg) {
 								fish->inputMatrix[j].connectedToLimb = currentlySelectedLimb;
 								fish->inputMatrix[j].sensorType = SENSOR_FOODRADAR;
 								fish->bones[currentlySelectedLimb]->sensor_radar = true;
+								fish->genes.bones[currentlySelectedLimb].sensor_radar = true;
 
 								// the fish's input and output matrix configurations should be passed on to offspring
 									for (int k = 0; k < N_SENSECONNECTORS; ++k)
@@ -1923,6 +1934,9 @@ void selectedLimbAltradar(int arg) {
 				{
 					if (fish->bones[currentlySelectedLimb]->sensor_altradar) {
 
+						fish->bones[currentlySelectedLimb]->sensor_altradar = false;
+						fish->genes.bones[currentlySelectedLimb].sensor_altradar = false;
+
 						// if the limb is already an eye, go through the input matrix and snip out any eye connector associated with it.
 						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
 						{
@@ -1944,7 +1958,7 @@ void selectedLimbAltradar(int arg) {
 			 							}
 			 						}
 
-									fish->bones[currentlySelectedLimb]->sensor_altradar = false;
+									
 									break;
 								}
 							}
@@ -1963,6 +1977,7 @@ void selectedLimbAltradar(int arg) {
 
 								
 								fish->bones[currentlySelectedLimb]->sensor_altradar = true;
+								fish->genes.bones[currentlySelectedLimb].sensor_altradar = true;
 
 								// update the fish's genes to reflect its current state of being.
 
@@ -4315,6 +4330,41 @@ void drawBodyEditingWindow(BonyFish * fish) {
 
 				if (fish->bones[i]->isFood) {
 					connectorLabel =  "   isFood";
+					mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
+					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+					labelsDrawnSoFar ++;
+				}
+
+				if (fish->bones[i]->sensor_radar) {
+					connectorLabel =  "   sensor_radar";
+					mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
+					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+					labelsDrawnSoFar ++;
+				}
+
+				if (fish->bones[i]->sensor_altradar) {
+					connectorLabel =  "   sensor_altradar";
+					mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
+					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+					labelsDrawnSoFar ++;
+				}
+
+				if (fish->bones[i]->sensor_eye) {
+					connectorLabel =  "   sensor_eye";
+					mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
+					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+					labelsDrawnSoFar ++;
+				}
+
+				if (fish->bones[i]->sensor_touch) {
+					connectorLabel =  "   sensor_touch";
+					mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
+					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
+					labelsDrawnSoFar ++;
+				}
+
+				if (fish->bones[i]->sensor_jointangle) {
+					connectorLabel =  "   sensor_jointangle";
 					mocesfef = b2Vec2(limbLabelPosition.x-0.05, limbLabelPosition.y-0.2 + (labelsDrawnSoFar * limbLabelSpacingDistance) );
 					local_debugDraw_pointer->DrawString(mocesfef, connectorLabel.c_str());
 					labelsDrawnSoFar ++;
