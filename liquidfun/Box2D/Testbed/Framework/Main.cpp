@@ -651,6 +651,12 @@ int main(int argc, char** argv)
 
 	glui->add_checkbox_to_panel(gamePanel, "Show fluid dynamic forces", &showFluidDynamicForces);
 
+
+	glui->add_separator_to_panel(gamePanel);
+	
+
+	glui->add_button_to_panel(gamePanel, "Instructions", 0, showInstructions);
+
 	// HABITAT ROLLOUT
 
 	mapNameBar = glui->add_edittext_to_panel(terrainPanel, "Map name: ", GLUI_EDITTEXT_TEXT, &mapNameBarContent, 1, mapNameBarCallback);
@@ -686,6 +692,11 @@ int main(int argc, char** argv)
 
 
 	glui->add_checkbox_to_panel(terrainPanel, "Enable terrain paint", &currentlyPainting);
+
+
+glui->add_separator_to_panel(terrainPanel);
+	glui->add_button_to_panel(terrainPanel, "Instructions", 0, showInstructions_habitat);
+	
 
 
 	// LABORATORY ROLLOUT
@@ -724,6 +735,9 @@ int main(int argc, char** argv)
 	glui->add_checkbox_to_panel(laboratoryPanel, "Lab mode (spawn at origin)", &m_deepSeaSettings.gameMode );
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "No collisions", &noClipStatus );
+
+glui->add_separator_to_panel(laboratoryPanel);
+	glui->add_button_to_panel(laboratoryPanel, "Instructions", 0, showInstructions_laboratory);
 	
 	// ECOSYSTEM ROLLOUT
 
@@ -742,6 +756,9 @@ int main(int argc, char** argv)
 	entropySpinner->set_float_limits(0.0f, 1000.0f);
 
 	glui->add_checkbox_to_panel(EcosystemPanel, "Movement costs energy", &entropyStatus);
+
+	glui->add_separator_to_panel(EcosystemPanel);
+	glui->add_button_to_panel(EcosystemPanel, "Instructions", 0, showInstructions_ecosystem);
 
 	// glui->add_separator_to_panel(EcosystemPanel);
 
@@ -774,22 +791,27 @@ int main(int argc, char** argv)
 
 	glui->add_checkbox_to_panel(speciesPanel, "Show species window", &showSpeciesWindow);
 
+	glui->add_separator_to_panel(speciesPanel);
+
+
+	glui->add_button_to_panel(speciesPanel, "Instructions", 0, showInstructions_taxonomy);
+
 	// SELECTION TOOLS ROLLOUT
 
 	GLUI_Spinner* mutationRateSpinner =
-		glui->add_spinner_to_panel(selectionPanel, "Physical mutations", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationRate);
+		glui->add_spinner_to_panel(selectionPanel, "Body mutation rate", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationRate);
 	mutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
 	GLUI_Spinner* mutationSeveritySpinner =
-		glui->add_spinner_to_panel(selectionPanel, "Body mutation severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationSeverity);
+		glui->add_spinner_to_panel(selectionPanel, "Body mutation amount", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mutationSeverity);
 	mutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
 	GLUI_Spinner* mentalMutationRateSpinner =
-		glui->add_spinner_to_panel(selectionPanel, "Mental mutations", GLUI_SPINNER_FLOAT,&m_deepSeaSettings.mentalMutationRate);
+		glui->add_spinner_to_panel(selectionPanel, "Mind mutation rate", GLUI_SPINNER_FLOAT,&m_deepSeaSettings.mentalMutationRate);
 	mentalMutationRateSpinner->set_float_limits(0.0f, 1.0f);
 
 	GLUI_Spinner* mentalMutationSeveritySpinner =
-		glui->add_spinner_to_panel(selectionPanel, "Mind mutation severity", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
+		glui->add_spinner_to_panel(selectionPanel, "Mind mutation amount", GLUI_SPINNER_FLOAT, &m_deepSeaSettings.mentalMutationSeverity);
 	mentalMutationSeveritySpinner->set_float_limits(0.0f, 100.0f);
 
 
@@ -799,8 +821,8 @@ int main(int argc, char** argv)
 	glui->add_spinner_to_panel(selectionPanel,"Select n", GLUI_SPINNER_INT, &selectNinSpecies);
 	selectNSpinner->set_int_limits(1, 1000);
 
-	glui->add_button_to_panel(selectionPanel, "Farthest from Zero", 2, selectFurthestFromOrigin);
-	glui->add_button_to_panel(selectionPanel, "Closest to Food", 3, selectClosestToFood);
+	glui->add_button_to_panel(selectionPanel, "Farthest from zero", 2, selectFurthestFromOrigin);
+	glui->add_button_to_panel(selectionPanel, "Closest to food", 3, selectClosestToFood);
 
 
 	glui->add_separator_to_panel(selectionPanel);
@@ -816,11 +838,18 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(selectionPanel, "Delete selected", 2, flagSelectedFishForDeletion);
 	glui->add_separator_to_panel(selectionPanel);
 
-	glui->add_button_to_panel(selectionPanel, "Reproduce 1 Selected", 3, handleReproduceSelectedButton);
-	glui->add_button_to_panel(selectionPanel, "Mate 2 Selected", 3, mateSelectedFish);
+	glui->add_button_to_panel(selectionPanel, "Re-run generation", 3, rerunGeneration);
+	glui->add_button_to_panel(selectionPanel, "Reproduce 1 selected", 3, handleReproduceSelectedButton);
+	glui->add_button_to_panel(selectionPanel, "Mate 2 selected", 3, mateSelectedFish);
 	glui->add_separator_to_panel(selectionPanel);
 
 	glui->add_checkbox_to_panel(selectionPanel, "Select with LMB", &voting_mode);
+
+
+	glui->add_separator_to_panel(selectionPanel);
+
+	glui->add_button_to_panel(selectionPanel, "Instructions", 0, showInstructions_selection);
+
 
 	// NEUROSCIENCE ROLLOUT
 
@@ -837,8 +866,8 @@ int main(int argc, char** argv)
 	glui->add_button_to_panel(brainEditPanel, "Delete selected layer", 15, deleteSelectedLayer);
 	glui->add_separator_to_panel(brainEditPanel);
 
-	glui->add_button_to_panel(brainEditPanel, "Neutralize Brain", 9, meltSelectedFish);
-	glui->add_button_to_panel(brainEditPanel, "Randomize Brain", 10, scrambleSelectedFish);
+	glui->add_button_to_panel(brainEditPanel, "Neutralize brain", 9, meltSelectedFish);
+	glui->add_button_to_panel(brainEditPanel, "Randomize brain", 10, scrambleSelectedFish);
 	glui->add_separator_to_panel(brainEditPanel);
 
 
@@ -848,6 +877,10 @@ int main(int argc, char** argv)
 	
 
 	glui->add_checkbox_to_panel(brainEditPanel, "Show brain edit window", &showBrainEditWindow);
+
+glui->add_separator_to_panel(brainEditPanel);
+
+	glui->add_button_to_panel(brainEditPanel, "Instructions", 0, showInstructions_neuroscience);
 
 
 	// SURGERY ROLLOUT
@@ -861,17 +894,25 @@ int main(int argc, char** argv)
  	glui->add_button_to_panel(bodyEditPanel, "Limb is leaf", 13, makeLimbALeaf);
  	glui->add_separator_to_panel(bodyEditPanel);
 
- 	glui->add_button_to_panel(bodyEditPanel, "Attach Limb", 7, placeLimbOnSelectedFish);
-	glui->add_button_to_panel(bodyEditPanel, "Amputate Limb", 8, amputation);
+ 	glui->add_button_to_panel(bodyEditPanel, "Attach limb", 7, placeLimbOnSelectedFish);
+	glui->add_button_to_panel(bodyEditPanel, "Amputate limb", 8, amputation);
 	glui->add_separator_to_panel(bodyEditPanel);
 
- 	glui->add_button_to_panel(bodyEditPanel, "Pin to Grid", 5, pinToGrid);
+ 	glui->add_button_to_panel(bodyEditPanel, "Pin to grid", 5, pinToGrid);
 	glui->add_button_to_panel(bodyEditPanel, "Release", 6, releaseFromGrid);
 	glui->add_separator_to_panel(bodyEditPanel);
 
  	
 
 	glui->add_checkbox_to_panel(bodyEditPanel, "Show body edit window", &showBodyEditWindow);
+
+	glui->add_separator_to_panel(bodyEditPanel);
+
+ 	
+
+	glui->add_button_to_panel(bodyEditPanel, "Instructions", 0, showInstructions_surgery);
+
+
 
 	glutCreateMenu(menuHandler);
 

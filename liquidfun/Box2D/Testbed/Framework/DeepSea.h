@@ -42,6 +42,16 @@ struct deepSeaSettings {
 	int barrierRadiusStatus;
 	float entropy;
 	float noise;
+
+	bool showInstructions;
+	bool showInstructions_selection;
+	bool showInstructions_taxonomy;
+	bool showInstructions_neuroscience;
+	bool showInstructions_surgery;
+	bool showInstructions_laboratory;
+	bool showInstructions_ecosystem;
+	bool showInstructions_habitat;
+	bool showInstructions_game;
 };
 
 extern deepSeaSettings m_deepSeaSettings;
@@ -404,6 +414,8 @@ struct BonyFish {
 	float filteredOutputWiggle;
 	float * previousOutputs;
 
+	// unsigned int checkpoints
+
 	BonyFish(fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition);
 
 	void feed(float amount);
@@ -568,13 +580,29 @@ void deleteSelectedSpecies (int arg) ;
 
 void selectLowestEnergyFish(int arg) ;
 
+void rerunGeneration (int arg) ;
+
 void speciesNameBarCallback(int arg) ;
 
 void mapNameBarCallback(int arg) ;
 
 void nominalPopulationCallback (int arg) ;
 
+void showInstructions (int arg) ;
+
 void loadSavedMapFromFile(int arg);
 void saveCurrentMapToFile(int arg);
+
+
+void showInstructions_selection		(int arg);
+void showInstructions_taxonomy		(int arg);
+void showInstructions_neuroscience	(int arg);
+void showInstructions_surgery		(int arg); 
+void showInstructions_laboratory	(int arg);
+void showInstructions_ecosystem		(int arg); 
+void showInstructions_habitat		(int arg); 
+// void showInstructions_game 			(int arg); 
+
+
 	// }
 #endif

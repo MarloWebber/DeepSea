@@ -1793,6 +1793,8 @@ void selectedLimbEye(int arg) {
 									// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
 									deleteNeuronByIndex(fish->brain, j);
 
+						fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
 									//now you have to decrement the positions of all other sense connectors.
 				 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
 				 						{
@@ -1814,6 +1816,8 @@ void selectedLimbEye(int arg) {
 
 						// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
 						addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+						fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
 						{
@@ -1871,6 +1875,8 @@ void selectedLimbFoodradar(int arg) {
 									// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
 									deleteNeuronByIndex(fish->brain, j);
 
+						fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
 									//now you have to decrement the positions of all other sense connectors.
 			 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
 			 						{
@@ -1892,6 +1898,8 @@ void selectedLimbFoodradar(int arg) {
 
 						// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
 						addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+						fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
 						{
@@ -1947,6 +1955,9 @@ void selectedLimbAltradar(int arg) {
 									// because you are deleting layer 0 neurons only, the index in the layer is always the total index.
 									deleteNeuronByIndex(fish->brain, j);
 
+
+						fish->ann = createFANNbrainFromDescriptor(fish->brain);
+
 									//now you have to decrement the positions of all other sense connectors.
 			 						for (unsigned int k = j; k < N_SENSECONNECTORS; k++)
 			 						{
@@ -1968,6 +1979,8 @@ void selectedLimbAltradar(int arg) {
 
 						// if the limb is not already an eye, add an eye connector to it, and a new neuron if required.
 						addNeuronIntoLivingBrain ( fish->brain, 0, false) ;
+
+						fish->ann = createFANNbrainFromDescriptor(fish->brain);
 
 						for (unsigned int j = 0; j < N_SENSECONNECTORS; ++j)
 						{
@@ -2792,6 +2805,254 @@ void mateSelectedFish (int arg) {
 	}
 }
 
+
+void showInstructions(int arg) {
+
+	m_deepSeaSettings.showInstructions = !m_deepSeaSettings.showInstructions;
+
+}
+
+void showInstructions_selection		(int arg) { m_deepSeaSettings.showInstructions_selection = !m_deepSeaSettings.showInstructions_selection 	; }
+void showInstructions_taxonomy		(int arg) { m_deepSeaSettings.showInstructions_taxonomy = !m_deepSeaSettings.showInstructions_taxonomy 	; }
+void showInstructions_neuroscience	(int arg) { m_deepSeaSettings.showInstructions_neuroscience = !m_deepSeaSettings.showInstructions_neuroscience 	; }
+void showInstructions_surgery		(int arg) { m_deepSeaSettings.showInstructions_surgery = !m_deepSeaSettings.showInstructions_surgery 	; }
+void showInstructions_laboratory	(int arg) { m_deepSeaSettings.showInstructions_laboratory = !m_deepSeaSettings.showInstructions_laboratory 	; }
+void showInstructions_ecosystem		(int arg) { m_deepSeaSettings.showInstructions_ecosystem = !m_deepSeaSettings.showInstructions_ecosystem 	; }
+void showInstructions_habitat		(int arg) { m_deepSeaSettings.showInstructions_habitat = !m_deepSeaSettings.showInstructions_habitat 	; }
+// void showInstructions_game 			(int arg) { m_deepSeaSettings.showInstructions_game = !m_deepSeaSettings.showInstructions_game 	; }
+
+void drawInstructionsWindow() {
+	std::string connectorLabel;
+	b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+	int labelsDrawnSoFar = 0;
+	b2Vec2 labelPosition;
+
+	connectorLabel =  	"DeepSea by Marlo Webber\n";
+	
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"DeepSea is a game about seeing weird creatures. Like when you look into a microscope or turn over a log. \n";
+
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+}
+
+void drawInstructionsWindow_selection() {
+	std::string connectorLabel;
+	b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+	int labelsDrawnSoFar = 0;
+	b2Vec2 labelPosition;
+
+	connectorLabel =  	"Selection Tools";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	// labelsDrawnSoFar ++;
+
+
+	connectorLabel =  	"The purpose of these tools is to allow the player to manually direct evolution.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+
+	connectorLabel =  	"The selection tools can be used to statistically choose which creatures have been the most successful.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	// labelsDrawnSoFar ++;
+
+
+	// stack smashing :(
+
+	connectorLabel =  	"    Body mutation rate: The chance of mutations in the creature's body. Between 0 and 1. Rolled at birth for each physical aspect.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Body mutation amount: Severity of the mutation applied. Between 0 and 1. How much the mutated aspect will be multiplied or reduced.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Mind mutation rate: The chance of a mutation occurring in the creature's mind. Rolled per every connection in the brain.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Mind mutation amount: Up to this amount times the current weight is added or removed from the weight. Between 0 and 1.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	 labelsDrawnSoFar ++;
+
+	 connectorLabel =  	"    Select n: How many animals to select matching the criteria below.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	 connectorLabel =  	"    Farthest from Zero: Select the N animals farthest from the origin in the center of the screen (x:0, y:0).";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	 connectorLabel =  	"    Closest to food: Select the N animals whose root bone is closest to a piece of food or a leaf.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	 labelsDrawnSoFar ++;
+
+	 connectorLabel =  	"    Select all in species: Select all animals in the currently selected species.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	 connectorLabel =  	"    Select all: Select all animals in all species, including food particles.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	 connectorLabel =  	"    Invert selection: Deselect all selected animals and vice versa. Applies to all species.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	 connectorLabel =  	"    Deselect all: Deselect all animals in all species.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	 labelsDrawnSoFar ++;
+
+
+
+	connectorLabel =  	"Cloning tools can be used to reproduce or destroy selected creatures.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	  connectorLabel =  	"    Delete selected: Removed selected animals from the world and from the gene pool.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+ labelsDrawnSoFar ++;
+
+	  connectorLabel =  	"    Re-run generation: Delete the current existing fish and reproduce their progenitor again.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+  connectorLabel =  	"    Reproduce 1 selected: In lab mode, begins new generation with the selected animal as progenitor.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+ labelsDrawnSoFar ++;
+ connectorLabel =  	"    Select with LMB: Click on the fish to select them. If disabled, click and drag fish to move them.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+
+
+
+}
+
+// void drawInstructionsWindow_selection() {}
+void drawInstructionsWindow_habitat() {}
+void drawInstructionsWindow_ecosystem() {
+
+std::string connectorLabel;
+	b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+	int labelsDrawnSoFar = 0;
+	b2Vec2 labelPosition;
+
+	connectorLabel =  	"Ecosystem";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"Tools relating to the flow of energy into and through the food chain";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+}
+void drawInstructionsWindow_laboratory() {
+
+
+	std::string connectorLabel;
+	b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+	int labelsDrawnSoFar = 0;
+	b2Vec2 labelPosition;
+
+	connectorLabel =  	"Laboratory";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"Tools to automate the process of propagating the fittest creatures";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+}
+void drawInstructionsWindow_surgery() {
+
+		std::string connectorLabel;
+	b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+	int labelsDrawnSoFar = 0;
+	b2Vec2 labelPosition;
+
+	connectorLabel =  	"Surgery";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"Tools to directly modify the creature's body and sensors";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+}
+void drawInstructionsWindow_neuroscience() {
+
+
+
+		std::string connectorLabel;
+	b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+	int labelsDrawnSoFar = 0;
+	b2Vec2 labelPosition;
+
+	connectorLabel =  	"Neuroscience";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"Tools to view and modify the creature's neural network brain";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+}
+
+void drawInstructionsWindow_taxonomy() {
+
+
+
+		std::string connectorLabel;
+	b2Vec2 windowVertices[] = {
+			b2Vec2(+10.0f, -10.0f), 
+			b2Vec2(+10.0f, +10.0f), 
+			b2Vec2(-10.0f, +10.0f), 
+			b2Vec2(-10.0f, -10.0f)
+		};
+	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
+
+	int labelsDrawnSoFar = 0;
+	b2Vec2 labelPosition;
+
+	connectorLabel =  	"Taxonomy";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"A way to handle groups of creatures as well as saving and loading from file";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+}
+// void drawInstructionsWindow_selection() {}
+
 void drawingTest() {
 	if (TestMain::getTriggerRadiusStatus()  ) {
 		b2Vec2 position = b2Vec2(0.0f, 0.0f);
@@ -2832,6 +3093,19 @@ void drawingTest() {
 			local_debugDraw_pointer->DrawPolygon(vertices, 4 , rock->outlineColor);
 		// }
 	}
+
+	// draw the instructions
+	if (m_deepSeaSettings.showInstructions ) 		{ drawInstructionsWindow(); }
+	if (m_deepSeaSettings.showInstructions_selection ) 		{ drawInstructionsWindow_selection(); }
+	if (m_deepSeaSettings.showInstructions_taxonomy ) 		{ drawInstructionsWindow_taxonomy(); }
+	if (m_deepSeaSettings.showInstructions_neuroscience ) 	{ drawInstructionsWindow_neuroscience(); }
+	if (m_deepSeaSettings.showInstructions_surgery ) 		{ drawInstructionsWindow_surgery(); }
+	if (m_deepSeaSettings.showInstructions_laboratory ) 	{ drawInstructionsWindow_laboratory(); }
+	if (m_deepSeaSettings.showInstructions_ecosystem ) 		{ drawInstructionsWindow_ecosystem(); }
+	if (m_deepSeaSettings.showInstructions_habitat ) 		{ drawInstructionsWindow_habitat(); }
+
+	
+	
 
 	// draw the particle system
 	if (false) {
@@ -3086,7 +3360,7 @@ void saveCurrentMapToFile(int arg) {
 }
 
 
-void loadExperimentalMap() {
+void loadmap_blank() {
 
 	// populates the terrain list with some stuuuufff
 
@@ -3103,7 +3377,7 @@ void loadExperimentalMap() {
 	// nonRecursiveTerrainIncorporator(barrierA);
 	// environment.push_back( *barrierA );
 
-		// add a lamp
+	// add a lamp
 	Lamp sun = Lamp();
 	sun.lampType = LAMP_SOLAR;
 	sun.direction = pi; // 0 is actually straight up not straight down
@@ -3114,6 +3388,10 @@ void loadExperimentalMap() {
 	lamps.push_back(sun);
 
 	m_deepSeaSettings.gravity = b2Vec2( 0.0f, -0.0f);
+}
+
+void loadmap_fishtank() {
+
 }
 
 void loadFishTankMap() {
@@ -3346,6 +3624,8 @@ void ecosystemModeBeginGeneration (BonyFish * fish, std::list<Species>::iterator
 	}
 }
 
+
+
 void laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies) { // select an animal as an evolutionary winner, passing its genes on to the next generation
 
 	// if the food radius is active, time to walk the food particles
@@ -3441,6 +3721,23 @@ inline bool exists_test1 (const std::string& name) {
     }   
 }
 
+void rerunGeneration (int arg) {
+
+
+// laboratoryModeBeginGeneration ( std::list<Species>::iterator currentSpecies) 
+
+	std::list<Species>::iterator currentSpecies;
+		for (currentSpecies = ecosystem.begin(); currentSpecies !=  ecosystem.end(); ++currentSpecies) 	
+		{	
+
+			if (currentSpecies->selected) {
+				 laboratoryModeBeginGeneration (  currentSpecies) ;
+			}
+
+		}
+
+}
+
 Lamp::Lamp() {
 		brightness = 2;
 		illuminationRadius = 10;
@@ -3503,7 +3800,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 	m_deepSeaSettings.barrierRadiusStatus = 0;													// 0.1f
 	m_deepSeaSettings.entropy = 0.1f;													// };
 	m_deepSeaSettings.noise = 0.1f;	
-
+	m_deepSeaSettings.showInstructions = false;
 	// from particle drawing
 	b2Assert((k_paramDef[0].CalculateValueMask() & e_parameterBegin) == 0);
 	TestMain::SetParticleParameters(k_paramDef, k_paramDefCount);
@@ -3515,7 +3812,7 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	saveDefaultFish();
 
-	loadExperimentalMap();
+	loadmap_blank();
 
 	speciesNameBarCallback(0);
 }
@@ -4177,9 +4474,12 @@ int checkNeuronsInWindow (b2AABB mousePointer, BonyFish * fish) {
 				if (clickCenter.x < (neuron->position.x +0.2f)) {
 
 					// do not perform this operation on in or output layers. their arrangement is controlled by the set of body peripherals.
-					if (! (layerIndex == 0) && ! (layerIndex == (fish->brain->layers.size() -1 ) ) ) {
+					// if (! (layerIndex == 0) && ! (layerIndex == (fish->brain->layers.size() -1 ) ) ) {
+
+					// edit: it is good to be able to fix these layers if fuck ups occur. they should not occur, but still sometimes do.
+
 						layer->selected = !(layer->selected);
-					}
+					// }
 				}
 			}
 		}
@@ -4267,7 +4567,6 @@ void drawBodyEditingWindow(BonyFish * fish) {
 	labelsDrawnSoFar ++;
 
 	labelsDrawnSoFar ++; // line break
-	
 
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
 		if ( !fish->bones[i]->isUsed) {
