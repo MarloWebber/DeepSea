@@ -316,6 +316,7 @@ Terrain::Terrain(b2Vec2 startingPosition) {
 	position = startingPosition;
 
 	density = 1.0f;
+	isWaterVolume = false;
 
 	isUsed = false;
 	flagDelete = false;
@@ -403,6 +404,9 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 void nonRecursiveTerrainIncorporator(Terrain * p_bone) {
 
+
+	
+
 	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
 
 	p_bone->p_body->SetTransform(p_bone->position, p_bone->p_body->GetAngle());
@@ -410,9 +414,20 @@ void nonRecursiveTerrainIncorporator(Terrain * p_bone) {
 	uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_DEFAULT);
 	p_bone->p_body->SetUserData((void *)p_dataWrapper);
 
-	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
-	tempFilter.groupIndex = p_bone->collisionGroup;
+
+		b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
+
+	if (p_bone->isWaterVolume) {
+		tempFilter.groupIndex = -1; // water never collides with anything, but still needs a fixture so you can check if stuff is 'in' it.  //p_bone->collisionGroup;	
+	}
+	else {
+		tempFilter.groupIndex = p_bone->collisionGroup;	
+	}
+
 	p_bone->p_fixture->SetFilterData(tempFilter);
+
+
+
 
 	p_bone->isUsed = true;
 	p_bone->selected = false;	
@@ -3054,25 +3069,8 @@ void drawInstructionsWindow_taxonomy() {
 // void drawInstructionsWindow_selection() {}
 
 void drawingTest() {
-	if (TestMain::getTriggerRadiusStatus()  ) {
-		b2Vec2 position = b2Vec2(0.0f, 0.0f);
-		b2Color color = b2Color(0.5f, 0.1f, 0.05f);
-		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.originTriggerRadius, color);
-	}
 
-	if (TestMain::getFoodRadiusStatus()  ) {
-		b2Vec2 position = b2Vec2(0.0f, 0.0f);
-		b2Color color = b2Color(0.3f, 0.3f, 0.3f);
-		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.originFoodRadius, color);
-	}
-
-	if (TestMain::getBarrierRadiusStatus()  ) { // works in both lab and eco modes
-		b2Vec2 position = b2Vec2(0.0f, 0.0f);
-		b2Color color = b2Color(0.25f, 0.5f, 0.75f);
-		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.barrierRadius, color);
-	}
-
-	// draw terrain
+		// draw terrain
 	std::list<Terrain>::iterator rock;
 	for (rock = environment.begin(); rock !=  environment.end(); ++rock) 	
 	{
@@ -3093,6 +3091,26 @@ void drawingTest() {
 			local_debugDraw_pointer->DrawPolygon(vertices, 4 , rock->outlineColor);
 		// }
 	}
+
+	if (TestMain::getTriggerRadiusStatus()  ) {
+		b2Vec2 position = b2Vec2(0.0f, 0.0f);
+		b2Color color = b2Color(0.5f, 0.1f, 0.05f);
+		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.originTriggerRadius, color);
+	}
+
+	if (TestMain::getFoodRadiusStatus()  ) {
+		b2Vec2 position = b2Vec2(0.0f, 0.0f);
+		b2Color color = b2Color(0.3f, 0.3f, 0.3f);
+		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.originFoodRadius, color);
+	}
+
+	if (TestMain::getBarrierRadiusStatus()  ) { // works in both lab and eco modes
+		b2Vec2 position = b2Vec2(0.0f, 0.0f);
+		b2Color color = b2Color(0.25f, 0.5f, 0.75f);
+		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.barrierRadius, color);
+	}
+
+
 
 	// draw the instructions
 	if (m_deepSeaSettings.showInstructions ) 		{ drawInstructionsWindow(); }
@@ -3392,11 +3410,85 @@ void loadmap_blank() {
 
 void loadmap_fishtank() {
 
+
+	m_deepSeaSettings.gravity = b2Vec2( 0.0f, -1.0f);
+
+	// make a scale model of a fish tank
+
+
+		// water volume
+	Terrain * barrierD = new Terrain( b2Vec2(0.0f, -0.0f) );
+	b2Vec2 barrierDVertices[] = {
+		b2Vec2( + 50,  -25 ), //b2Vec2 rootVertexA = 
+		b2Vec2( - 50,  -25 ), // b2Vec2 rootVertexB =
+		b2Vec2( + 50,  +25 ), //b2Vec2 tipVertexA = 
+		b2Vec2( - 50,  +25 ) // b2Vec2 tipVertexB = 
+	};
+	barrierD->bodyDef.type = b2_staticBody;
+	barrierD->p_body = local_m_world->CreateBody( &(barrierD->bodyDef) );
+	barrierD->shape.Set(barrierDVertices, 4);
+
+	barrierD->isWaterVolume = true;
+	barrierD->color = b2Color(0.0f, 0.1f, 0.1f);
+	barrierD->outlineColor = b2Color(0.1f, 0.5f, 0.5f);
+
+	nonRecursiveTerrainIncorporator(barrierD);
+	environment.push_back( *barrierD );
+
+
+
+
+
+	Terrain * barrierA = new Terrain( b2Vec2(0.0f, -0.0f) );
+	b2Vec2 barrierAVertices[] = {
+		b2Vec2( + 50,  -0.5 -25), //b2Vec2 rootVertexA = 
+		b2Vec2( - 50,  -0.5 -25), // b2Vec2 rootVertexB =
+		b2Vec2( + 50,  +0.5 -25), //b2Vec2 tipVertexA = 
+		b2Vec2( - 50,  +0.5 -25) // b2Vec2 tipVertexB = 
+	};
+	barrierA->bodyDef.type = b2_staticBody;
+	barrierA->p_body = local_m_world->CreateBody( &(barrierA->bodyDef) );
+	barrierA->shape.Set(barrierAVertices, 4);
+	nonRecursiveTerrainIncorporator(barrierA);
+	environment.push_back( *barrierA );
+
+
+	Terrain * barrierB = new Terrain( b2Vec2(0.0f, -0.0f) );
+	b2Vec2 barrierBVertices[] = {
+		b2Vec2( + 0.5 -50,  -25 ), //b2Vec2 rootVertexA = 
+		b2Vec2( - 0.5 -50,  -25 ), // b2Vec2 rootVertexB =
+		b2Vec2( + 0.5 -50,  +25 ), //b2Vec2 tipVertexA = 
+		b2Vec2( - 0.5 -50,  +25 ) // b2Vec2 tipVertexB = 
+	};
+	barrierB->bodyDef.type = b2_staticBody;
+	barrierB->p_body = local_m_world->CreateBody( &(barrierB->bodyDef) );
+	barrierB->shape.Set(barrierBVertices, 4);
+	nonRecursiveTerrainIncorporator(barrierB);
+	environment.push_back( *barrierB );
+
+
+	Terrain * barrierC = new Terrain( b2Vec2(0.0f, -0.0f) );
+	b2Vec2 barrierCVertices[] = {
+		b2Vec2( + 0.5 +50,  -25 ), //b2Vec2 rootVertexA = 
+		b2Vec2( - 0.5 +50,  -25 ), // b2Vec2 rootVertexB =
+		b2Vec2( + 0.5 +50,  +25 ), //b2Vec2 tipVertexA = 
+		b2Vec2( - 0.5 +50,  +25 ) // b2Vec2 tipVertexB = 
+	};
+	barrierC->bodyDef.type = b2_staticBody;
+	barrierC->p_body = local_m_world->CreateBody( &(barrierC->bodyDef) );
+	barrierC->shape.Set(barrierCVertices, 4);
+	nonRecursiveTerrainIncorporator(barrierC);
+	environment.push_back( *barrierC );
+
+
+
+
+
 }
 
-void loadFishTankMap() {
+// void loadFishTankMap() {
 
-}
+// }
 
 void nominalPopulationCallback (int arg) {
 	std::list<Species>::iterator currentSpecies;
@@ -3812,7 +3904,8 @@ void deepSeaSetup (b2World * m_world, b2ParticleSystem * m_particleSystem, Debug
 
 	saveDefaultFish();
 
-	loadmap_blank();
+	// loadmap_blank();
+	loadmap_fishtank();
 
 	speciesNameBarCallback(0);
 }
@@ -4881,7 +4974,23 @@ void flightModel(BoneUserData * bone) {
 }
 
 void gravitate (BoneUserData * p_bone) {
-	p_bone->p_body->ApplyForce(m_deepSeaSettings.gravity, p_bone->p_body->GetWorldCenter() , true);
+
+	// go through the list of terrain objects and see if the bone is in the air or in the water.
+	// bool underWater = false;
+	// std::list<Terrain>::iterator roeck;
+	// for (rock = environment.begin(); rock !=  environment.end(); ++rock) 	
+	// {
+	// 	if (rock->isWaterVolume) 
+	// 	{
+	// 		if ( rock->p_fixture->TestPoint( p_bone->p_body->GetWorldCenter() ) ) {
+	// 			underWater = true;
+	// 		}
+	// 	}
+	// }
+
+	// if (!underWater) {
+		p_bone->p_body->ApplyForce(m_deepSeaSettings.gravity, p_bone->p_body->GetWorldCenter() , true);
+	// }	
 }
 
 void runBiomechanicalFunctions () {
@@ -4910,11 +5019,35 @@ void runBiomechanicalFunctions () {
 		
 				nonRecursiveSensorUpdater (fish->bones[j]);
 
-				// perform the flight simulation on the fish
-				flightModel( fish->bones[j] );
 
-				// add the force of gravity
-				gravitate ( fish->bones[j] );
+
+
+				// go through the list of terrain objects and see if the bone is in the air or in the water.
+				bool underWater = false;
+				std::list<Terrain>::iterator rock;
+				for (rock = environment.begin(); rock !=  environment.end(); ++rock) 	
+				{
+					if (rock->isWaterVolume) 
+					{
+						if ( rock->p_fixture->TestPoint( fish->bones[j]->p_body->GetWorldCenter() ) ) {
+							underWater = true;
+						}
+					}
+				}
+
+				if (underWater) {
+					// perform the flight simulation on the fish
+					flightModel( fish->bones[j] );
+				}	
+				else {
+					// add the force of gravity
+					gravitate ( fish->bones[j] );
+				}
+
+
+
+
+			
 
 			}
 		

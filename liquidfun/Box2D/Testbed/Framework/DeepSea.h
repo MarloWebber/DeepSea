@@ -461,6 +461,7 @@ struct Species {
 struct Terrain {
 
 	bool isUsed;
+	bool isWaterVolume;
 
 	b2Vec2 position; 			// starting position of the object in the game world
 
