@@ -96,6 +96,14 @@ namespace TestMain
 	b2Vec2 getLowerScreenBoundary();
 
 	float32 getZoom () ;
+
+
+	void setBarrierStatus (bool arg);
+void setTriggerRadiusStatus (bool arg);
+void setFoodRadiusStatus (bool arg) ;
+
+
+
 }
 
 #endif  // MAIN_H

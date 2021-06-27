@@ -102,7 +102,7 @@ namespace
 #if ENABLE_GLUI
 	GLUI *glui = NULL;
 #endif  // ENABLE_GLUI
-	float32 viewZoom = 1.0f;
+	float32 viewZoom = 2.0f;
 	int tx, ty, tw, th;
 	bool rMouseDown = false;
 
@@ -140,6 +140,18 @@ int getBarrierRadiusStatus() {
 int getPaintingStatus() {
 	return currentlyPainting;
 }
+
+
+void setBarrierStatus (bool arg) {
+	barrierRadiusStatus = arg;
+}
+void setTriggerRadiusStatus (bool arg) {
+	triggerRadiusStatus = arg;
+}
+void setFoodRadiusStatus (bool arg) {
+	foodRadiusStatus = arg;
+}
+
 
 int getOriginStartStatus() {
 	return originStartStatus;
@@ -364,6 +376,13 @@ static void Keyboard(unsigned char key, int x, int y)
 		}
 		break;
 
+
+	case ' ':
+
+		closeAllInstructions();
+		break;
+
+
 	default:
 		if (test)
 		{
@@ -543,12 +562,12 @@ static void MouseWheel(int wheel, int direction, int x, int y)
 }
 
 
-#if ENABLE_GLUI
-static void Pause(int)
-{
-	settings.pause = !settings.pause;
-}
-#endif  // ENABLE_GLUI
+// #if ENABLE_GLUI
+// static void Pause(int)
+// {
+// 	settings.pause = !settings.pause;
+// }
+// #endif  // ENABLE_GLUI
 
 }  // namespace TestMain
 
@@ -642,20 +661,20 @@ int main(int argc, char** argv)
 	GLUI_Rollout* terrainPanel =	glui->add_rollout("Habitat");
 	terrainPanel->close();
 
-	GLUI_Rollout* gamePanel =	glui->add_rollout("Game");
-	gamePanel->close();
+	// GLUI_Rollout* gamePanel =	glui->add_rollout("Game");
+	// gamePanel->close();
 	
 	// GAME ROLLOUT
 
-	glui->add_button_to_panel(gamePanel, "Pause", 0, Pause);
+	// glui->add_button_to_panel(gamePanel, "Pause", 0, Pause);
 
-	glui->add_checkbox_to_panel(gamePanel, "Show fluid dynamic forces", &showFluidDynamicForces);
+	// glui->add_checkbox_to_panel(gamePanel, "Show fluid dynamic forces", &showFluidDynamicForces);
 
 
-	glui->add_separator_to_panel(gamePanel);
+	// glui->add_separator_to_panel(gamePanel);
 	
 
-	glui->add_button_to_panel(gamePanel, "Instructions", 0, showInstructions);
+	glui->add_button( "About / How to play", 0, showInstructions);
 
 	// HABITAT ROLLOUT
 

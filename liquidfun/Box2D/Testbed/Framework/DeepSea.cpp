@@ -2827,6 +2827,24 @@ void showInstructions(int arg) {
 
 }
 
+void closeAllInstructions () {
+
+
+
+
+	m_deepSeaSettings.showInstructions_selection = false;
+	m_deepSeaSettings.showInstructions_taxonomy = false;
+	m_deepSeaSettings.showInstructions_neuroscience = false;
+	m_deepSeaSettings.showInstructions_surgery =false;
+	m_deepSeaSettings.showInstructions_laboratory = false;
+	m_deepSeaSettings.showInstructions_ecosystem = false;
+	m_deepSeaSettings.showInstructions_habitat = false;
+	m_deepSeaSettings.showInstructions_game = false;
+
+
+
+}
+
 void showInstructions_selection		(int arg) { m_deepSeaSettings.showInstructions_selection = !m_deepSeaSettings.showInstructions_selection 	; }
 void showInstructions_taxonomy		(int arg) { m_deepSeaSettings.showInstructions_taxonomy = !m_deepSeaSettings.showInstructions_taxonomy 	; }
 void showInstructions_neuroscience	(int arg) { m_deepSeaSettings.showInstructions_neuroscience = !m_deepSeaSettings.showInstructions_neuroscience 	; }
@@ -2849,6 +2867,15 @@ void drawInstructionsWindow() {
 	int labelsDrawnSoFar = 0;
 	b2Vec2 labelPosition;
 
+
+	 labelsDrawnSoFar ++;
+ connectorLabel =  	"Arrow keys to navigate. Z and X to zoom. Press space to close.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+	 labelsDrawnSoFar ++;
+
 	connectorLabel =  	"DeepSea by Marlo Webber\n";
 	
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
@@ -2856,20 +2883,36 @@ void drawInstructionsWindow() {
 	connectorLabel =  	"DeepSea is a game about seeing weird creatures. Like when you look into a microscope or turn over a log. \n";
 
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+
+
+
+
 }
 
 void drawInstructionsWindow_selection() {
 	std::string connectorLabel;
 	b2Vec2 windowVertices[] = {
-			b2Vec2(+10.0f, -10.0f), 
-			b2Vec2(+10.0f, +10.0f), 
-			b2Vec2(-10.0f, +10.0f), 
-			b2Vec2(-10.0f, -10.0f)
+			b2Vec2(+100.0f, -100.0f), 
+			b2Vec2(+100.0f, +100.0f), 
+			b2Vec2(-100.0f, +100.0f), 
+			b2Vec2(-100.0f, -100.0f)
 		};
 	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
 
 	int labelsDrawnSoFar = 0;
 	b2Vec2 labelPosition;
+
+
+	 labelsDrawnSoFar ++;
+ connectorLabel =  	"Arrow keys to navigate. Z and X to zoom. Press space to close.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+	 labelsDrawnSoFar ++;
 
 	connectorLabel =  	"Selection Tools";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
@@ -2882,7 +2925,7 @@ void drawInstructionsWindow_selection() {
 	labelsDrawnSoFar ++;
 
 
-	connectorLabel =  	"The selection tools can be used to statistically choose which creatures have been the most successful.";
+	connectorLabel =  	"The selection tools can be used to statistically choose creatures based on their accomplishments.";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
 	// labelsDrawnSoFar ++;
 
@@ -2905,7 +2948,7 @@ void drawInstructionsWindow_selection() {
 
 	 connectorLabel =  	"    Select n: How many animals to select matching the criteria below.";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
-	 connectorLabel =  	"    Farthest from Zero: Select the N animals farthest from the origin in the center of the screen (x:0, y:0).";
+	 connectorLabel =  	"    Farthest from zero: Select the N animals farthest from the origin in the center of the screen (x:0, y:0).";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
 	 connectorLabel =  	"    Closest to food: Select the N animals whose root bone is closest to a piece of food or a leaf.";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
@@ -2942,6 +2985,11 @@ void drawInstructionsWindow_selection() {
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
 
 
+ // labelsDrawnSoFar ++;
+ // connectorLabel =  	"Press space to close.";
+	// labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
 
 
 
@@ -2964,11 +3012,25 @@ std::string connectorLabel;
 	int labelsDrawnSoFar = 0;
 	b2Vec2 labelPosition;
 
+
+	 labelsDrawnSoFar ++;
+ connectorLabel =  	"Arrow keys to navigate. Z and X to zoom. Press space to close.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+	 labelsDrawnSoFar ++;
+
+
 	connectorLabel =  	"Ecosystem";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
 
 	connectorLabel =  	"Tools relating to the flow of energy into and through the food chain";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+ // labelsDrawnSoFar ++;
+ // connectorLabel =  	"Press space to close.";
+	// labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
 
 
 
@@ -2988,11 +3050,25 @@ void drawInstructionsWindow_laboratory() {
 	int labelsDrawnSoFar = 0;
 	b2Vec2 labelPosition;
 
+
+	 labelsDrawnSoFar ++;
+ connectorLabel =  	"Arrow keys to navigate. Z and X to zoom. Press space to close.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+	 labelsDrawnSoFar ++;
+
 	connectorLabel =  	"Laboratory";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
 
 	connectorLabel =  	"Tools to automate the process of propagating the fittest creatures";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+ // labelsDrawnSoFar ++;
+ // connectorLabel =  	"Press space to close.";
+	// labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
 
 
 }
@@ -3010,11 +3086,72 @@ void drawInstructionsWindow_surgery() {
 	int labelsDrawnSoFar = 0;
 	b2Vec2 labelPosition;
 
+
+	 labelsDrawnSoFar ++;
+ connectorLabel =  	"Arrow keys to navigate. Z and X to zoom. Press space to close.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+	 labelsDrawnSoFar ++;
+
+
 	connectorLabel =  	"Surgery";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
 
 	connectorLabel =  	"Tools to directly modify the creature's body and sensors";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+
+ labelsDrawnSoFar ++;
+
+
+ connectorLabel =  	"    Limb is intensity radar: Intensity radar gives a scalar representing how much food or leaf is nearby. Falls off 1/d^2. Toggle.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+ connectorLabel =  	"    Limb is direction radar: Intensity radar gives the angle to the nearest piece of food or leaf, regardless of direction.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+ connectorLabel =  	"    Limb is eye: Eye measures color in a narrow field of view.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+ connectorLabel =  	"    Limb is weapon: Weapons are used to break apart other creatures for hunting and defense.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+ connectorLabel =  	"    Limb is mouth: Mouths are used to consume food and leaves and to gain energy and confer reproductive success.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+ connectorLabel =  	"    Limb is leaf: Leaves give the creature energy when they are struck by a ray of light from a lamp.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+ labelsDrawnSoFar ++;
+ connectorLabel =  	"    Attach limb: Create a new limb joined onto the selected limb. Maximum of 8. Selected limb has orange outline. K and L to scroll.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+ connectorLabel =  	"    Amputate limb: Delete the selected limb from the creature, including associated sense connectors and neurons.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+ labelsDrawnSoFar ++;
+ connectorLabel =  	"    Pin to grid: Arranges all the animals in a square pattern so you can view them.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+ connectorLabel =  	"    Release from grid: Let the animals move free again.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+ labelsDrawnSoFar ++;
+ connectorLabel =  	"    Show body edit window: Open a window where the body segment information can be viewed and edited.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+ // connectorLabel =  	"Press space to close.";
+	// labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
 
 }
 void drawInstructionsWindow_neuroscience() {
@@ -3033,40 +3170,279 @@ void drawInstructionsWindow_neuroscience() {
 	int labelsDrawnSoFar = 0;
 	b2Vec2 labelPosition;
 
+	connectorLabel =  	"Arrow keys to navigate. Z and X to zoom. Press space to close.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
 	connectorLabel =  	"Neuroscience";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
-
 	connectorLabel =  	"Tools to view and modify the creature's neural network brain";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"Sense connectors are a way of mapping the creature's sensors and motors onto its brain.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"They say what kind of signal gets routed to and from the neurons in the outside layers.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Delete sense connector: Remove the connector from 1 selected neuron on an input or output layer.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Add recursor pair: Add a pair of connectors that loop signals around, to unoccupied input and output neurons.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        Channel indicates which transmitter will send to which receiver.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        Delay is how long the signal going back in to the network lags behind the signal coming out.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"Neurons are brain cells. They sum up their input signals and make an output if it is strong enough. Click on one to select it.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"You can make patterns out of them to do computation and logic to control the creatures.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"For example, connecting joint angle input to a motor can cause the motor to maintain angle";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"And, a recursor with a pattern of connections joining the input and the output can become an oscillator.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Add neuron in selected layer: Adds a new neuron on the end of the selected layer.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        The new neuron will have connections to all neurons on adjacent layers. This does not add a sensor connector.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Delete neuron: Delete 1 selected neuron, as well as all of its connections, and all connections to it." ;
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        This operation also deletes the sense connector, if it has one.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"Layers are a fundamental structure that allows the network to process information. Click on a layer to select it.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"They correspond to degrees of logical abstraction in the problem to be solved. No more than 2 are required for this.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Add layer: Adds a new layer on the output end of the 1 selected animal's brain. Fully connected, but with 0 weight.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Delete selected layer: Discard the selected layer. Connections to the discarded layer are kept, but not connections from it.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Neutralize brain: Set all connections in the brain to 0 immediately.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Randomize brain: Set all connections in the brain to random values.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+
+	connectorLabel =  	"    Noise level: The amplitude of white noise that is fed into all neural inputs constantly.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        This provides a massive increase in robustness of the networks training, as well as natural looking movement.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Show brain edit window: Display window for 1 selected fish, where neural circuits can be manipulated by the player.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+// connectorLabel =
 
 
 }
 
 void drawInstructionsWindow_taxonomy() {
-
-
-
-		std::string connectorLabel;
+	std::string connectorLabel;
 	b2Vec2 windowVertices[] = {
-			b2Vec2(+10.0f, -10.0f), 
-			b2Vec2(+10.0f, +10.0f), 
-			b2Vec2(-10.0f, +10.0f), 
-			b2Vec2(-10.0f, -10.0f)
+			b2Vec2(+100.0f, -100.0f), 
+			b2Vec2(+100.0f, +100.0f), 
+			b2Vec2(-100.0f, +100.0f), 
+			b2Vec2(-100.0f, -100.0f)
 		};
 	local_debugDraw_pointer->DrawFlatPolygon(windowVertices, 4 ,b2Color(0.1,0.1,0.1) );
 
 	int labelsDrawnSoFar = 0;
 	b2Vec2 labelPosition;
 
+	connectorLabel =  	"Arrow keys to navigate. Z and X to zoom. Press space to close.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
 	connectorLabel =  	"Taxonomy";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
-
-	connectorLabel =  	"A way to handle groups of creatures as well as saving and loading from file";
+	connectorLabel =  	"A way to handle groups of creatures as well as saving and loading from file.";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"The creatures in a 'species' do not have to be related to each other, but will be handled together by selection tools.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Files are kept in the 'Aquarium' folder, in your game folder. You can trade them with your friends, probably.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        '.fsh' extension used to store information about fish body. Both .fsh and .net are required.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        '.net' extension used to store information about fish brain. from FANN 'Fast Artificial Neural Network' library.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        '_win' suffix used to store last successful parent for species.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        '_mut' suffix used temporarily to make mutants.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Species name: The name used when loading and saving files.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Populate selected species from file: load the file with the species name and load n children from it.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"        Open 'Laboratory' panel and try the options 'start from origin', and 'no clip' to modify how the fish are loaded. ";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Save selected individual to file: Take the 1 selected fish and print it into new files in the Aquarium folder.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Nominal population: The amount of fish to load into the world.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	labelsDrawnSoFar ++;
+
+	connectorLabel =  	"    Add new species: create a new, empty species. Click on one to select it. One species is always selected.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Delete selected species: Discards the species from the current game and deletes its members. Does not delete files.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+	connectorLabel =  	"    Show species window: Print a window up the side of the screen showing all the species.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+	connectorLabel =  	"         Click on one to select it. One species is always selected.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+
+
+ // labelsDrawnSoFar ++;
+ // connectorLabel =  	"Press space to close.";
+	// labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
 
 
 }
 // void drawInstructionsWindow_selection() {}
+
+
+class RayCastClosestCallback : public b2RayCastCallback
+{
+public:
+	RayCastClosestCallback() {
+		m_hit = false;
+	}
+
+	float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) {
+		b2Body* body = fixture->GetBody();
+		void* userData = body->GetUserData();
+		uDataWrap* myUserData = (uDataWrap* )body->GetUserData();
+
+		if (myUserData->dataType == TYPE_LEAF) {
+			 ((BoneUserData *)(myUserData->uData))->flagPhotosynth = true;
+		}
+
+		if (userData)
+		{
+			int32 index = *(int32*)userData;
+			if (index == 0)
+			{
+				// By returning -1, we instruct the calling code to ignore this fixture and
+				// continue the ray-cast to the next fixture.
+				return -1.0f;
+			}
+		}
+
+		m_hit = true;
+		m_point = point;
+		m_normal = normal;
+
+		// By returning the current fraction, we instruct the calling code to clip the ray and
+		// continue the ray-cast to the next fixture. WARNING: do not assume that fixtures
+		// are reported in order. However, by clipping, we can always get the closest fixture.
+		// printf("fraction: %f\n", fraction);
+		return fraction;
+	}
+	
+	bool m_hit;
+	b2Vec2 m_point;
+	b2Vec2 m_normal;
+};
+
+	
+
+// a ray of light is cast from the star in a random direction. If it falls on the photosynthetic organ, the organ gains energy.
+void shine (Lamp * nancy) {
+	b2RayCastInput sunbeam;
+
+	sunbeam.maxFraction = 1.0f;
+
+	unsigned int totalBrightness = TestMain::getLampIntensity() * nancy->brightness;
+
+	// cast each ray, more for brighter lamps
+	for (unsigned int i = 0; i < totalBrightness; ++i)
+	{
+		if (nancy->lampType == LAMP_POINTSOURCE) 
+		{
+			sunbeam.p1 = nancy->position;
+
+			float randomDirection = nancy->lowerAngle; //(RNG() * 2 * pi);
+
+			randomDirection += RNG() * (nancy->upperAngle - nancy->lowerAngle);
+
+			sunbeam.p2 = b2Vec2( (nancy->illuminationRadius * cos(randomDirection)) + nancy->position.x , (nancy->illuminationRadius* sin(randomDirection)) + nancy->position.y);
+			
+			if (true) { // print the rays of light
+
+			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, nancy->illuminationColor);
+			}
+
+			RayCastClosestCallback stupidMotherFucker;
+
+			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
+		
+		}
+		else if (nancy->lampType == LAMP_DIRECTIONAL) {
+
+			// pick a random direction sideways across the beam width
+			float sidewaysRandomness = (RNG()-0.5) * nancy->beamWidth ;
+
+			// pick a point that is 'sidewaysRandomness' distance away at right angles to the beam.
+			sunbeam.p1 = b2Vec2(  nancy->position.x +  (cos(nancy->direction + (pi*0.5) ) * sidewaysRandomness)  , nancy->position.y +  (sin(nancy->direction + (pi*0.5)) * sidewaysRandomness)    );
+
+			// photon starts from this direction and travels straight
+			sunbeam.p2 = b2Vec2( sunbeam.p1.x +  (cos(nancy->direction ) * nancy->illuminationRadius)  ,  sunbeam.p1.y +  (sin(nancy->direction ) * nancy->illuminationRadius)    );
+
+			if (true) { // print the rays of light
+
+			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2,  nancy->illuminationColor );
+			}
+
+			RayCastClosestCallback stupidMotherFucker;
+			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
+		}
+		else if (nancy->lampType == LAMP_ORTHOGONAL) {
+
+			
+
+		}
+		else if (nancy->lampType == LAMP_SOLAR) {
+
+			// pick a random point on the upper hemisphere.
+			float randomAngle =  ( (RNG()-0.5) * 2 * pi );
+			float incidentDirection = nancy->direction + randomAngle ;
+			float mirrorDirection = nancy->direction - randomAngle ;
+
+			sunbeam.p1 = b2Vec2( nancy->illuminationRadius * cos(incidentDirection)   ,  nancy->illuminationRadius * sin(incidentDirection)  );
+			
+			sunbeam.p2 = b2Vec2( nancy->illuminationRadius * cos(mirrorDirection)   ,  nancy->illuminationRadius * sin(mirrorDirection)  );
+
+			if (true) { // print the rays of light
+
+			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2,  nancy->illuminationColor );
+			}
+
+			RayCastClosestCallback stupidMotherFucker;
+
+			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
+		}
+	}
+}
+
 
 void drawingTest() {
 
@@ -3109,6 +3485,14 @@ void drawingTest() {
 		b2Color color = b2Color(0.25f, 0.5f, 0.75f);
 		local_debugDraw_pointer->DrawCircle(position, m_deepSeaSettings.barrierRadius, color);
 	}
+
+	if (TestMain::getLampStatus()) {
+			std::list<Lamp>::iterator lomp;
+			for (lomp = lamps.begin(); lomp !=  lamps.end(); ++lomp) 	{
+				shine(&(*lomp));
+			}
+		}
+
 
 
 
@@ -3396,16 +3780,22 @@ void loadmap_blank() {
 	// environment.push_back( *barrierA );
 
 	// add a lamp
-	Lamp sun = Lamp();
-	sun.lampType = LAMP_SOLAR;
-	sun.direction = pi; // 0 is actually straight up not straight down
-	sun.beamWidth = 40;
-	sun.brightness = 1;
-	sun.position = b2Vec2(0.0f, 5.5f);
-	sun.illuminationColor = b2Color( 0.3f, 0.2f ,  0.1f);
-	lamps.push_back(sun);
+	// Lamp sun = Lamp();
+	// sun.lampType = LAMP_SOLAR;
+	// sun.direction = pi; // 0 is actually straight up not straight down
+	// sun.beamWidth = 40;
+	// sun.brightness = 1;
+	// sun.position = b2Vec2(0.0f, 5.5f);
+	// sun.illuminationColor = b2Color( 0.3f, 0.2f ,  0.1f);
+	// lamps.push_back(sun);
 
 	m_deepSeaSettings.gravity = b2Vec2( 0.0f, -0.0f);
+
+
+	 TestMain::setBarrierStatus (true);
+ TestMain::setTriggerRadiusStatus (true);
+ TestMain::setFoodRadiusStatus (true) ;
+
 }
 
 void loadmap_fishtank() {
@@ -3482,6 +3872,64 @@ void loadmap_fishtank() {
 
 
 
+	// add a lamp
+	Lamp sun = Lamp();
+	sun.lampType = LAMP_POINTSOURCE;
+	sun.direction = pi; // 0 is actually straight up not straight down
+	sun.illuminationRadius = 75;
+	sun.brightness = 1;
+	sun.position = b2Vec2(0.0f, 50.0f);
+	sun.illuminationColor = b2Color( 0.8f, 0.8f ,  0.9f);
+
+	sun.lowerAngle = 1.0 * pi;
+	sun.upperAngle = 2.0 * pi;
+
+	lamps.push_back(sun);
+
+	// m_deepSeaSettings.gravity = b2Vec2( 0.0f, -0.0f);
+
+
+	// fluoro light fitting
+	Terrain * barrierE = new Terrain( b2Vec2(0.0f, -0.0f) );
+	b2Vec2 barrierEVertices[] = {
+		b2Vec2( + 15,  - 5 + 50 ), //b2Vec2 rootVertexA = 
+		b2Vec2( - 15,  - 5 + 50 ), // b2Vec2 rootVertexB =
+		b2Vec2( + 10,  + 5 + 50 ), //b2Vec2 tipVertexA = 
+		b2Vec2( - 10,  + 5 + 50 ) // b2Vec2 tipVertexB = 
+	};
+	barrierE->bodyDef.type = b2_staticBody;
+	barrierE->p_body = local_m_world->CreateBody( &(barrierE->bodyDef) );
+	barrierE->shape.Set(barrierEVertices, 4);
+	nonRecursiveTerrainIncorporator(barrierE);
+	environment.push_back( *barrierE );
+
+
+
+	// Big desk or something
+	Terrain * barrierF = new Terrain( b2Vec2(0.0f, -0.0f) );
+	b2Vec2 barrierFVertices[] = {
+		b2Vec2( + 100,  - 100 - 126 ), //b2Vec2 rootVertexA = 
+		b2Vec2( - 100,  - 100 - 126 ), // b2Vec2 rootVertexB =
+		b2Vec2( + 100,  + 100 - 126 ), //b2Vec2 tipVertexA = 
+		b2Vec2( - 100,  + 100 - 126 ) // b2Vec2 tipVertexB = 
+	};
+
+	barrierF->color = b2Color( 0.5f, 0.3f, 0.2f );
+	barrierF->outlineColor = b2Color( 0.8f, 0.5f, 0.4f );
+
+	barrierF->bodyDef.type = b2_staticBody;
+	barrierF->p_body = local_m_world->CreateBody( &(barrierF->bodyDef) );
+	barrierF->shape.Set(barrierFVertices, 4);
+	nonRecursiveTerrainIncorporator(barrierF);
+	environment.push_back( *barrierF );
+
+
+
+
+	 TestMain::setBarrierStatus (false);
+ TestMain::setTriggerRadiusStatus (false);
+ TestMain::setFoodRadiusStatus (false) ;
+
 
 
 }
@@ -3511,125 +3959,6 @@ void speciesNameBarCallback(int arg) {
 
 			currentSpecies->name = (TestMain::getSpeciesNameBar() )->get_text();
 			return;
-		}
-	}
-}
-
-class RayCastClosestCallback : public b2RayCastCallback
-{
-public:
-	RayCastClosestCallback() {
-		m_hit = false;
-	}
-
-	float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) {
-		b2Body* body = fixture->GetBody();
-		void* userData = body->GetUserData();
-		uDataWrap* myUserData = (uDataWrap* )body->GetUserData();
-
-		if (myUserData->dataType == TYPE_LEAF) {
-			 ((BoneUserData *)(myUserData->uData))->flagPhotosynth = true;
-		}
-
-		if (userData)
-		{
-			int32 index = *(int32*)userData;
-			if (index == 0)
-			{
-				// By returning -1, we instruct the calling code to ignore this fixture and
-				// continue the ray-cast to the next fixture.
-				return -1.0f;
-			}
-		}
-
-		m_hit = true;
-		m_point = point;
-		m_normal = normal;
-
-		// By returning the current fraction, we instruct the calling code to clip the ray and
-		// continue the ray-cast to the next fixture. WARNING: do not assume that fixtures
-		// are reported in order. However, by clipping, we can always get the closest fixture.
-		// printf("fraction: %f\n", fraction);
-		return fraction;
-	}
-	
-	bool m_hit;
-	b2Vec2 m_point;
-	b2Vec2 m_normal;
-};
-
-// a ray of light is cast from the star in a random direction. If it falls on the photosynthetic organ, the organ gains energy.
-void shine (Lamp * nancy) {
-	b2RayCastInput sunbeam;
-
-	sunbeam.maxFraction = 1.0f;
-
-	unsigned int totalBrightness = TestMain::getLampIntensity() * nancy->brightness;
-
-	// cast each ray, more for brighter lamps
-	for (unsigned int i = 0; i < totalBrightness; ++i)
-	{
-		if (nancy->lampType == LAMP_POINTSOURCE) 
-		{
-			sunbeam.p1 = nancy->position;
-
-			float randomDirection = (RNG() * 2 * pi);
-
-			sunbeam.p2 = b2Vec2(nancy->illuminationRadius * cos(randomDirection),nancy->illuminationRadius* sin(randomDirection));
-			
-			if (true) { // print the rays of light
-
-			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2, nancy->illuminationColor);
-			}
-
-			RayCastClosestCallback stupidMotherFucker;
-
-			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
-		
-		}
-		else if (nancy->lampType == LAMP_DIRECTIONAL) {
-
-			// pick a random direction sideways across the beam width
-			float sidewaysRandomness = (RNG()-0.5) * nancy->beamWidth ;
-
-			// pick a point that is 'sidewaysRandomness' distance away at right angles to the beam.
-			sunbeam.p1 = b2Vec2(  nancy->position.x +  (cos(nancy->direction + (pi*0.5) ) * sidewaysRandomness)  , nancy->position.y +  (sin(nancy->direction + (pi*0.5)) * sidewaysRandomness)    );
-
-			// photon starts from this direction and travels straight
-			sunbeam.p2 = b2Vec2( sunbeam.p1.x +  (cos(nancy->direction ) * nancy->illuminationRadius)  ,  sunbeam.p1.y +  (sin(nancy->direction ) * nancy->illuminationRadius)    );
-
-			if (true) { // print the rays of light
-
-			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2,  nancy->illuminationColor );
-			}
-
-			RayCastClosestCallback stupidMotherFucker;
-			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
-		}
-		else if (nancy->lampType == LAMP_ORTHOGONAL) {
-
-			
-
-		}
-		else if (nancy->lampType == LAMP_SOLAR) {
-
-			// pick a random point on the upper hemisphere.
-			float randomAngle =  ( (RNG()-0.5) * 2 * pi );
-			float incidentDirection = nancy->direction + randomAngle ;
-			float mirrorDirection = nancy->direction - randomAngle ;
-
-			sunbeam.p1 = b2Vec2( nancy->illuminationRadius * cos(incidentDirection)   ,  nancy->illuminationRadius * sin(incidentDirection)  );
-			
-			sunbeam.p2 = b2Vec2( nancy->illuminationRadius * cos(mirrorDirection)   ,  nancy->illuminationRadius * sin(mirrorDirection)  );
-
-			if (true) { // print the rays of light
-
-			   local_debugDraw_pointer->DrawSegment(sunbeam.p1, sunbeam.p2,  nancy->illuminationColor );
-			}
-
-			RayCastClosestCallback stupidMotherFucker;
-
-			local_m_world->RayCast( &stupidMotherFucker, sunbeam.p1, sunbeam.p2);
 		}
 	}
 }
@@ -3840,6 +4169,9 @@ Lamp::Lamp() {
 
 	 direction =  0;//0.3 * pi;
 	 beamWidth = 2;
+
+	lowerAngle = 0.0f;
+	upperAngle = 2.0f * pi;
 }
 
 void saveDefaultPlant() {
@@ -5785,13 +6117,7 @@ void deepSeaLoop () {
 			}
 		}
 
-		if (TestMain::getLampStatus()) {
-			std::list<Lamp>::iterator lomp;
-			for (lomp = lamps.begin(); lomp !=  lamps.end(); ++lomp) 	{
-				shine(&(*lomp));
-			}
-		}
-
+		
 		drawingTest();
 
 		runBiomechanicalFunctions();

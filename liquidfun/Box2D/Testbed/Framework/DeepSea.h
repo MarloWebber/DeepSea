@@ -133,6 +133,9 @@ struct Lamp {
 	float direction;
 	float beamWidth;
 
+	float upperAngle;
+	float lowerAngle;
+
 	Lamp();
 };
 
@@ -603,7 +606,7 @@ void showInstructions_laboratory	(int arg);
 void showInstructions_ecosystem		(int arg); 
 void showInstructions_habitat		(int arg); 
 // void showInstructions_game 			(int arg); 
-
+void closeAllInstructions () ;
 
 	// }
 #endif
