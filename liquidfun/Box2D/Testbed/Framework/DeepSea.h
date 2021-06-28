@@ -139,6 +139,41 @@ struct Lamp {
 	Lamp();
 };
 
+
+/**
+* @brief condensed information about a fish body segment
+// */
+// struct boneAndJointDescriptor_tOLD {
+// 		bool used;
+// 		bool isRoot;
+// 		bool isMouth;
+// 		bool isWeapon;
+// 		bool isFood;
+// 		bool sensor_radar; 			// like an olfactory sensor . senses distance from food
+// 		bool sensor_altradar; 		// like an olfactory sensor . senses angle to food
+// 		bool sensor_touch; 			// like how you can feel when things touch your skin.
+// 		bool sensor_jointangle;
+// 		bool sensor_eye;
+// 		bool isLeaf;
+	
+// 		unsigned int attachedTo; 	// the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
+
+// 		float torque;
+// 		float speedLimit;
+// 		float upperAngle;
+// 		float normalAngle;
+// 		float lowerAngle;
+// 		float length;
+// 		float rootThickness;
+// 		float tipThickness;
+// 		b2Color color;
+// 		b2Color outlineColor;
+
+// 		// float density;
+
+// 		// boneAndJointDescriptor_tOLD();
+// };
+
 /**
 * @brief condensed information about a fish body segment
 */
@@ -168,8 +203,11 @@ struct boneAndJointDescriptor_t {
 		b2Color color;
 		b2Color outlineColor;
 
+		// float density;
+
 		boneAndJointDescriptor_t();
 };
+
 
 // these type codes are used to route sensory and motor information between brains and limbs.
 #define SENSECONNECTOR_UNUSED 				0
@@ -218,6 +256,19 @@ struct fishDescriptor_t {
 
 	fishDescriptor_t();
 };
+
+/*!
+// * @brief condensed form of fish data for storage and transfer.
+// * 
+// */
+// struct fishDescriptor_tOLD {
+// 	boneAndJointDescriptor_tOLD bones[N_FINGERS];
+// 	senseConnector inputMatrix[N_SENSECONNECTORS]; // these need to get serialized too. so this is a workable place for them.
+// 	senseConnector outputMatrix[N_SENSECONNECTORS];
+
+// 	// fishDescriptor_tOLD();
+// };
+
 
 /*!
 * @brief a controllable joint between bodies.
@@ -425,11 +476,14 @@ struct BonyFish {
 };
 
 // these type codes are used with uDataWrappers to do stuff when physical bodies touch and collide, or with raycasts
-#define TYPE_DEFAULT 0
-#define TYPE_MOUTH 1
-#define TYPE_FOOD 2
-#define TYPE_TOUCHSENSOR 3
-#define TYPE_LEAF 4
+#define TYPE_DEFAULT 0			// default is a placeholder for i don't know what. Good to have.
+#define TYPE_MOUTH 1			// mouths EAT other stuff when they touch them.
+#define TYPE_FOOD 2				// food GETS EATEN when stuff touches it.
+#define TYPE_TOUCHSENSOR 3		// touchsensors are STIMULATED when stuff collides with them.
+#define TYPE_LEAF 4				// leaves ABSORB rays of light.
+#define TYPE_HARDTERRAIN 5		// hard terrain COLLIDES with stuff
+#define TYPE_SOFTTERRAIN 6		// soft terrain PASSES behind stuff, as if it is physically in the background.
+#define TYPE_LIQUID 7			// things FLOAT inside liquid.
 
 struct uDataWrap {
 	void * uData;
@@ -465,6 +519,7 @@ struct Terrain {
 
 	bool isUsed;
 	bool isWaterVolume;
+	bool isHardTerrain;
 
 	b2Vec2 position; 			// starting position of the object in the game world
 

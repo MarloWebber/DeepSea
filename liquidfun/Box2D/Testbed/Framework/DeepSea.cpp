@@ -167,11 +167,12 @@ JointUserData::JointUserData(boneAndJointDescriptor_t boneDescription, BoneUserD
 
 boneAndJointDescriptor_t::boneAndJointDescriptor_t () {
 	attachedTo = 0; 				// the INDEX (out of N_FINGERS) of the bone it is attached to. Storing data in this way instead of a pointer means that mutating it will have hilarious rather than alarming results.
-	length = 1.0f;
-	rootThickness = 0.2f;
-	tipThickness = 0.2f;
+	// length = 1.0f;
+	// rootThickness = 0.2f;
+	// tipThickness = 0.2f;
 	isRoot = false;
 	isMouth = false;
+	isFood = false;					// its never sposed to be food when its attached to something.
 	sensor_radar = false; 			// like an olfactory sensor . senses distance from food
 	sensor_altradar= false;
 	sensor_eye = false;
@@ -184,8 +185,17 @@ boneAndJointDescriptor_t::boneAndJointDescriptor_t () {
 	normalAngle = 		0.0f;		// normalAngle
 	lowerAngle = 		pi * -0.9f;	// lowerAngle
 	used = false;
-	color = b2Color(1,1,1);
-	outlineColor = b2Color(1,1,1);
+	color = b2Color(0.5,0.5,0.5);
+	outlineColor = b2Color(0,0,0);
+	// density = 1.2f;
+	// color.r = 0.5f;
+	// color.g = 0.5f;
+	// color.b = 0.5f;
+	length = 0.5f;
+	rootThickness = 0.2f;
+	tipThickness = 0.2f;
+
+
 }
 
 uDataWrap::uDataWrap(void * dat, unsigned int typ) {
@@ -315,8 +325,9 @@ Terrain::Terrain(b2Vec2 startingPosition) {
 
 	position = startingPosition;
 
-	density = 1.0f;
+	density = 1.2f;
 	isWaterVolume = false;
+	isHardTerrain = false;
 
 	isUsed = false;
 	flagDelete = false;
@@ -335,7 +346,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	tempFilter.groupIndex = 0;
 
 	if ( ! TestMain::getNoClipStatus()) {
-		tempFilter.maskBits = (1<<5) -1;	// all 1's
+		tempFilter.maskBits = (1<<8) -1;	// all 1's
 	}
 
 	if (p_bone->isMouth) {
@@ -386,6 +397,23 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		}
 	}
 
+
+	/*
+
+	hard terrain
+	i am a... 				1<<5
+	and i collide with... 	(1<<8) -1;	// everything, all 1's
+
+	soft terrain
+	i am a... 				1<<6
+	and i collide with... 	-1 (collide with nothing)
+	
+	liquid
+	i am a... 				1<<7	
+	and i collide with... 	-1 (collide with nothing)
+	
+	*/
+
 	p_bone->p_fixture->SetFilterData(tempFilter);
 
 	if (!p_bone->isRoot) {
@@ -402,35 +430,68 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	p_bone->hasGrown = true;
 }
 
-void nonRecursiveTerrainIncorporator(Terrain * p_bone) {
+void nonRecursiveTerrainIncorporator(Terrain * rock) {
 
 
 	
 
-	p_bone->p_fixture = p_bone->p_body->CreateFixture(&(p_bone->shape), p_bone->density);	// this endows the shape with mass and is what adds it to the physical world.
+	rock->p_fixture = rock->p_body->CreateFixture(&(rock->shape), rock->density);	// this endows the shape with mass and is what adds it to the physical world.
 
-	p_bone->p_body->SetTransform(p_bone->position, p_bone->p_body->GetAngle());
+	rock->p_body->SetTransform(rock->position, rock->p_body->GetAngle());
 
-	uDataWrap * p_dataWrapper = new uDataWrap(p_bone, TYPE_DEFAULT);
-	p_bone->p_body->SetUserData((void *)p_dataWrapper);
+	uDataWrap * p_dataWrapper = new uDataWrap(rock, TYPE_DEFAULT);
+	rock->p_body->SetUserData((void *)p_dataWrapper);
 
+		b2Filter tempFilter = rock->p_fixture->GetFilterData();
 
-		b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
+	if (rock->isWaterVolume) {
+		// tempFilter.groupIndex = -1; // water never collides with anything, but still needs a fixture so you can check if stuff is 'in' it.  //p_bone->collisionGroup;
 
-	if (p_bone->isWaterVolume) {
-		tempFilter.groupIndex = -1; // water never collides with anything, but still needs a fixture so you can check if stuff is 'in' it.  //p_bone->collisionGroup;	
+		tempFilter.categoryBits = 1<<7; // i am a..
+
+		// if (TestMain::getNoClipStatus()) {
+			tempFilter.maskBits = 0 ;	// and i collide with
+		// }
+
 	}
-	else {
-		tempFilter.groupIndex = p_bone->collisionGroup;	
+	else if (rock->isHardTerrain) {
+
+		// tempFilter.groupIndex = p_bone->collisionGroup;
+
+			tempFilter.categoryBits = 1<<5; // i am a..
+			tempFilter.maskBits = 0b00111111 ;	// and i collide with everything except soft terrain and water
+
+			// terrain status is not affected by fish noclipping.
+
+	}
+	else  { // else, rock is soft terrain
+
+			tempFilter.categoryBits = 1<<6; // i am a..
+			tempFilter.maskBits = 0 ;	// collide with nothing
+
+
 	}
 
-	p_bone->p_fixture->SetFilterData(tempFilter);
+	/*
 
+	hard terrain
+	i am a... 				1<<5
+	and i collide with... 	(1<<8) -1;	// everything, all 1's
 
+	soft terrain
+	i am a... 				1<<6
+	and i collide with... 	-1 (collide with nothing)
+	
+	liquid
+	i am a... 				1<<7	
+	and i collide with... 	-1 (collide with nothing)
+	
+	*/
 
+	rock->p_fixture->SetFilterData(tempFilter);
 
-	p_bone->isUsed = true;
-	p_bone->selected = false;	
+	rock->isUsed = true;
+	rock->selected = false;	
 }
 
 void nonRecursiveSensorUpdater (BoneUserData * p_bone) {
@@ -798,6 +859,8 @@ void loadFish (fishDescriptor_t driedFish, fann * nann, b2Vec2 startingPosition,
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
 		if (driedFish.bones[i].used) {
 
+			// driedFish.bones[i].density = 1.2f;
+
 			if( driedFish.bones[i].isRoot ) {
 				nonRecursiveBoneIncorporator( fish->bones[i]);
 			}
@@ -917,13 +980,13 @@ fishDescriptor_t::fishDescriptor_t () {				//initializes the blank fish as the 4
 	for (unsigned int i = 0; i < N_FINGERS; ++i) {
 		bones[i] = boneAndJointDescriptor_t();
 	
-		bones[i].color.r = 0.5f;
-		bones[i].color.g = 0.5f;
-		bones[i].color.b = 0.5f;
+		// bones[i].color.r = 0.5f;
+		// bones[i].color.g = 0.5f;
+		// bones[i].color.b = 0.5f;
 
-		bones[i].length = 0.5f;
-		bones[i].rootThickness = 0.2f;
-		bones[i].tipThickness = 0.2f;
+		// bones[i].length = 0.5f;
+		// bones[i].rootThickness = 0.2f;
+		// bones[i].tipThickness = 0.2f;
 
 		if (i == 0) {
 			bones[i].isRoot = true;
@@ -2131,14 +2194,15 @@ void polydactyly2 (BonyFish * fish) {
 		if (!fish->bones[i]->isUsed) {
 			targetFinger = i;
 		}
-		if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
-			boneAlone = fish->genes.bones[i];
-		}
 	}
+	// 	if (fish->bones[i]->attachedTo == currentlySelectedLimb) {
+	// 		boneAlone = fish->genes.bones[i];
+	// 	}
+	// }
 
 	boneAlone.used = true;
 	boneAlone.isLeaf = false;
-	boneAlone.sensor_radar = true;
+	boneAlone.sensor_radar = false;
 	boneAlone.sensor_jointangle = true;
 	boneAlone.attachedTo = currentlySelectedLimb;
 
@@ -2397,6 +2461,10 @@ void mutateFishDescriptor (fishDescriptor_t * fish, float mutationChance, float 
 			if (RNG() < mutationChance) {	fish->bones[i].speedLimit += fish->bones[i].speedLimit 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() < mutationChance) {	fish->bones[i].upperAngle += fish->bones[i].upperAngle 		*mutationSeverity*(RNG()-0.5); }
 			if (RNG() < mutationChance) {	fish->bones[i].lowerAngle += fish->bones[i].lowerAngle 		*mutationSeverity*(RNG()-0.5); }
+
+			// if (RNG() < mutationChance) {
+			// 	fish->bones[i].density += fish->bones[i].density * (RNG()-0.5) * mutationSeverity * 0.1f ; // change density less because small changes will have a big effect.
+			// }
 		}
 	}
 }
@@ -3830,6 +3898,7 @@ void loadmap_fishtank() {
 
 
 	Terrain * barrierA = new Terrain( b2Vec2(0.0f, -0.0f) );
+	barrierA->isHardTerrain =true;
 	b2Vec2 barrierAVertices[] = {
 		b2Vec2( + 50,  -0.5 -25), //b2Vec2 rootVertexA = 
 		b2Vec2( - 50,  -0.5 -25), // b2Vec2 rootVertexB =
@@ -3844,6 +3913,7 @@ void loadmap_fishtank() {
 
 
 	Terrain * barrierB = new Terrain( b2Vec2(0.0f, -0.0f) );
+	barrierB->isHardTerrain =true;
 	b2Vec2 barrierBVertices[] = {
 		b2Vec2( + 0.5 -50,  -25 ), //b2Vec2 rootVertexA = 
 		b2Vec2( - 0.5 -50,  -25 ), // b2Vec2 rootVertexB =
@@ -3858,6 +3928,7 @@ void loadmap_fishtank() {
 
 
 	Terrain * barrierC = new Terrain( b2Vec2(0.0f, -0.0f) );
+	barrierC->isHardTerrain =true;
 	b2Vec2 barrierCVertices[] = {
 		b2Vec2( + 0.5 +50,  -25 ), //b2Vec2 rootVertexA = 
 		b2Vec2( - 0.5 +50,  -25 ), // b2Vec2 rootVertexB =
@@ -3891,6 +3962,7 @@ void loadmap_fishtank() {
 
 	// fluoro light fitting
 	Terrain * barrierE = new Terrain( b2Vec2(0.0f, -0.0f) );
+	barrierE->isHardTerrain =true;
 	b2Vec2 barrierEVertices[] = {
 		b2Vec2( + 15,  - 5 + 50 ), //b2Vec2 rootVertexA = 
 		b2Vec2( - 15,  - 5 + 50 ), // b2Vec2 rootVertexB =
@@ -3907,6 +3979,7 @@ void loadmap_fishtank() {
 
 	// Big desk or something
 	Terrain * barrierF = new Terrain( b2Vec2(0.0f, -0.0f) );
+	barrierF->isHardTerrain = true;
 	b2Vec2 barrierFVertices[] = {
 		b2Vec2( + 100,  - 100 - 126 ), //b2Vec2 rootVertexA = 
 		b2Vec2( - 100,  - 100 - 126 ), // b2Vec2 rootVertexB =
@@ -5370,6 +5443,22 @@ void runBiomechanicalFunctions () {
 				if (underWater) {
 					// perform the flight simulation on the fish
 					flightModel( fish->bones[j] );
+
+					// push a little up or down depending on the creature's density
+
+					// float deltaDensity 0; //= fish->bones[j]->density - 1.2f; // water is 1.2
+
+					// if (deltaDensity > 1.0f) {
+					// 	deltaDensity = 1.0f;
+					// }
+					// else if (deltaDensity < -1.0f) {
+					// 	deltaDensity = -1.0f;
+					// }
+
+					// b2Vec2 bouyancy = b2Vec2(  m_deepSeaSettings.gravity.x * deltaDensity , m_deepSeaSettings.gravity.y * deltaDensity   );
+
+					// fish->bones[j]->p_body->ApplyForce(bouyancy, fish->bones[j]->p_body->GetWorldCenter() , true);
+
 				}	
 				else {
 					// add the force of gravity
