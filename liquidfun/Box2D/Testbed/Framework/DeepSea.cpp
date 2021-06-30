@@ -354,7 +354,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		p_bone->p_body->SetUserData((void *)p_dataWrapper);
 		tempFilter.categoryBits = 1; // i am a..
 		if (TestMain::getNoClipStatus()) {
-			tempFilter.maskBits = 1<<2 | 1<<3;	// and i collide with
+			tempFilter.maskBits = 1<<2 | 1<<3 | 1<<5 | 1<<6 | 1<<7 ;	// and i collide with
 		}
 	}
 	else if (p_bone->sensor_touch) {
@@ -363,7 +363,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 		tempFilter.categoryBits = 1<<1; // i am a..
 		if (TestMain::getNoClipStatus()) {
-			tempFilter.maskBits = 0;	// and i collide with
+			tempFilter.maskBits = 0 | 1<<5 | 1<<6 | 1<<7;	// and i collide with
 		}
 	}
 	else if (p_bone->isLeaf) {
@@ -373,7 +373,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		tempFilter.categoryBits = 1<<2; // i am a..
 
 		if (TestMain::getNoClipStatus()) {
-			tempFilter.maskBits = 1 ;	// and i collide with
+			tempFilter.maskBits = 1 | 1<<5 | 1<<6 | 1<<7 ;	// and i collide with
 		}
 	}
 	else if (p_bone->isFood) {
@@ -383,7 +383,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 		tempFilter.categoryBits = 1<<3; // i am a..
 
 		if (TestMain::getNoClipStatus()) {
-			tempFilter.maskBits = 1 ;	// and i collide with
+			tempFilter.maskBits = 1  | 1<<5 | 1<<6 | 1<<7;	// and i collide with
 		}
 
 	}
@@ -393,7 +393,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 		tempFilter.categoryBits = 1<<4; // i am a..
 		if (TestMain::getNoClipStatus()) {
-			tempFilter.maskBits = 0 ;	// and i collide with
+			tempFilter.maskBits = 0  | 1<<5 | 1<<6 | 1<<7;	// and i collide with
 		}
 	}
 
