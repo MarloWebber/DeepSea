@@ -51,7 +51,7 @@ namespace
 	int foodRadiusStatus = 1;
 	int showBrainEditWindow = 0;
 	int showBodyEditWindow = 0;
-	int showSpeciesWindow = 1;
+	int showSpeciesWindow = 0;
 	int voting_mode = 0;
 	int showFluidDynamicForces = 0;
 	int entropyStatus = 0;
@@ -641,7 +641,7 @@ int main(int argc, char** argv)
 		GLUI_SUBWINDOW_RIGHT );
 
 	GLUI_Rollout* selectionPanel =	glui->add_rollout("Selection Tools");
-	selectionPanel->open();
+	selectionPanel->close();
 
 	GLUI_Rollout* speciesPanel =	glui->add_rollout("Taxonomy");
 	speciesPanel->close();
@@ -671,19 +671,28 @@ int main(int argc, char** argv)
 	// glui->add_checkbox_to_panel(gamePanel, "Show fluid dynamic forces", &showFluidDynamicForces);
 
 
-	// glui->add_separator_to_panel(gamePanel);
+	glui->add_separator();
 	
+
+	glui->add_button(	"Add fish food", 0, addRandomFoodParticle);
 
 	glui->add_button( "About / How to play", 0, showInstructions);
 
+
 	// HABITAT ROLLOUT
 
-	mapNameBar = glui->add_edittext_to_panel(terrainPanel, "Map name: ", GLUI_EDITTEXT_TEXT, &mapNameBarContent, 1, mapNameBarCallback);
-	mapNameBar->set_text(mapNameBarContent);
+	// mapNameBar = glui->add_edittext_to_panel(terrainPanel, "Map name: ", GLUI_EDITTEXT_TEXT, &mapNameBarContent, 1, mapNameBarCallback);
+	// mapNameBar->set_text(mapNameBarContent);
 	
-	glui->add_button_to_panel(terrainPanel, "Load saved map from file", 0, loadSavedMapFromFile);
-	glui->add_button_to_panel(terrainPanel, "Save current map to file", 1, saveCurrentMapToFile);
+	// glui->add_button_to_panel(terrainPanel, "Load saved map from file", 0, loadSavedMapFromFile);
+	// glui->add_button_to_panel(terrainPanel, "Save current map to file", 1, saveCurrentMapToFile);
 	
+
+	glui->add_button_to_panel(terrainPanel, "Load fish tank", 0, loadmap_fishtank);
+	glui->add_button_to_panel(terrainPanel, "Load empty lab", 1, loadmap_blank);
+	
+
+
 
 
 	glui->add_separator_to_panel(terrainPanel);
@@ -714,7 +723,7 @@ int main(int argc, char** argv)
 
 
 glui->add_separator_to_panel(terrainPanel);
-	glui->add_button_to_panel(terrainPanel, "Instructions", 0, showInstructions_habitat);
+	glui->add_button_to_panel(terrainPanel, "?", 0, showInstructions_habitat);
 	
 
 
@@ -740,8 +749,6 @@ glui->add_separator_to_panel(terrainPanel);
 	foodRadiusAngleJitterSpinner->set_float_limits(0.0f, 2 * pi);
 	foodRadiusAngleJitterSpinner->set_float_val(m_deepSeaSettings.foodRadiusAngleJitter);
 
-	glui->add_button_to_panel(laboratoryPanel, "Add random food", 0, addRandomFoodParticle);
-
 	glui->add_separator_to_panel(laboratoryPanel);
 
 	glui->add_checkbox_to_panel(laboratoryPanel, "Barrier (blue)", &barrierRadiusStatus);
@@ -756,7 +763,7 @@ glui->add_separator_to_panel(terrainPanel);
 	glui->add_checkbox_to_panel(laboratoryPanel, "No collisions", &noClipStatus );
 
 glui->add_separator_to_panel(laboratoryPanel);
-	glui->add_button_to_panel(laboratoryPanel, "Instructions", 0, showInstructions_laboratory);
+	glui->add_button_to_panel(laboratoryPanel, "?", 0, showInstructions_laboratory);
 	
 	// ECOSYSTEM ROLLOUT
 
@@ -777,7 +784,7 @@ glui->add_separator_to_panel(laboratoryPanel);
 	glui->add_checkbox_to_panel(EcosystemPanel, "Movement costs energy", &entropyStatus);
 
 	glui->add_separator_to_panel(EcosystemPanel);
-	glui->add_button_to_panel(EcosystemPanel, "Instructions", 0, showInstructions_ecosystem);
+	glui->add_button_to_panel(EcosystemPanel, "?", 0, showInstructions_ecosystem);
 
 	// glui->add_separator_to_panel(EcosystemPanel);
 
@@ -813,7 +820,7 @@ glui->add_separator_to_panel(laboratoryPanel);
 	glui->add_separator_to_panel(speciesPanel);
 
 
-	glui->add_button_to_panel(speciesPanel, "Instructions", 0, showInstructions_taxonomy);
+	glui->add_button_to_panel(speciesPanel, "?", 0, showInstructions_taxonomy);
 
 	// SELECTION TOOLS ROLLOUT
 
@@ -867,7 +874,7 @@ glui->add_separator_to_panel(laboratoryPanel);
 
 	glui->add_separator_to_panel(selectionPanel);
 
-	glui->add_button_to_panel(selectionPanel, "Instructions", 0, showInstructions_selection);
+	glui->add_button_to_panel(selectionPanel, "?", 0, showInstructions_selection);
 
 
 	// NEUROSCIENCE ROLLOUT
@@ -899,7 +906,7 @@ glui->add_separator_to_panel(laboratoryPanel);
 
 glui->add_separator_to_panel(brainEditPanel);
 
-	glui->add_button_to_panel(brainEditPanel, "Instructions", 0, showInstructions_neuroscience);
+	glui->add_button_to_panel(brainEditPanel, "?", 0, showInstructions_neuroscience);
 
 
 	// SURGERY ROLLOUT
@@ -929,7 +936,7 @@ glui->add_separator_to_panel(brainEditPanel);
 
  	
 
-	glui->add_button_to_panel(bodyEditPanel, "Instructions", 0, showInstructions_surgery);
+	glui->add_button_to_panel(bodyEditPanel, "?", 0, showInstructions_surgery);
 
 
 

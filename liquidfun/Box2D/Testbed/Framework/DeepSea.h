@@ -652,6 +652,9 @@ void showInstructions (int arg) ;
 void loadSavedMapFromFile(int arg);
 void saveCurrentMapToFile(int arg);
 
+void loadmap_fishtank(int arg);
+void loadmap_blank(int arg);
+
 
 void showInstructions_selection		(int arg);
 void showInstructions_taxonomy		(int arg);
