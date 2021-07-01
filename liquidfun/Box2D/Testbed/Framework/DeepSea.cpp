@@ -345,8 +345,11 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 	b2Filter tempFilter = p_bone->p_fixture->GetFilterData();
 	tempFilter.groupIndex = 0;
 
-	if ( ! TestMain::getNoClipStatus()) {
-		tempFilter.maskBits = (1<<8) -1;	// all 1's
+	if (  TestMain::getNoClipStatus()) {
+		tempFilter.maskBits = 0;
+	}	
+	else {
+			tempFilter.maskBits = (1<<8) -1;	// all 1's
 	}
 
 	if (p_bone->isMouth) {
@@ -363,7 +366,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 		tempFilter.categoryBits = 1<<1; // i am a..
 		if (TestMain::getNoClipStatus()) {
-			tempFilter.maskBits = 0 | 1<<5 | 1<<6 | 1<<7;	// and i collide with
+			tempFilter.maskBits =  1<<5 | 1<<6 | 1<<7;	// and i collide with
 		}
 	}
 	else if (p_bone->isLeaf) {
@@ -393,7 +396,7 @@ void nonRecursiveBoneIncorporator(BoneUserData * p_bone) {
 
 		tempFilter.categoryBits = 1<<4; // i am a..
 		if (TestMain::getNoClipStatus()) {
-			tempFilter.maskBits = 0  | 1<<5 | 1<<6 | 1<<7;	// and i collide with
+			tempFilter.maskBits =  1<<5 | 1<<6 | 1<<7;	// and i collide with
 		}
 	}
 
@@ -650,7 +653,7 @@ networkDescriptor * createEmptyNetworkOfCorrectSize (fann * temp_ann) {
 }
 
 void BonyFish::feed(float amount) {
-	printf("fed %f\n", amount);
+	// printf("fed %f\n", amount);
 
 	energy += amount;
 }
@@ -3483,6 +3486,11 @@ connectorLabel =  	"Fish must have at least 1 bone, so the first bone is called 
 
 	connectorLabel =  	"    To start, select a fish, and open the body edit window.";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
+
+	connectorLabel =  	"    There are many ways to select one, which are covered in the 'Selection tools' menu.";
+	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
+
 
 	connectorLabel =  	"    Then add or remove segments from different nodes until it is the shape you want.";
 	labelPosition = b2Vec2(0.0f,labelsDrawnSoFar * -1); local_debugDraw_pointer->DrawString(labelPosition, connectorLabel.c_str()); labelsDrawnSoFar ++;
@@ -6786,11 +6794,14 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 	if (et && fud  ) 
 	{
+		// printf("a mouth hit some food\n");
+
 		if( dataB.dataType == TYPE_MOUTH ) {
 			BonyFish * fish = (((BoneUserData *)(dataB.uData))->p_owner );
 			BoneUserData * food = ((BoneUserData *)(dataA.uData) );
 
 			if (fish->flagDelete || food->p_owner->flagDelete || food->flagDelete) {
+				// printf("the food was flagged for deletion\n");
 				return;
 			}
 
@@ -6802,14 +6813,20 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 				// if the part is not terminal, it is smashed off and becomes food
 				bool terminal = true;
+				unsigned int n_bones_used = 0;
 				for (int i = 0; i < N_FINGERS; ++i) {
 					if (food->p_owner->bones[i]->isUsed) {
 					 	if ( food->p_owner->bones[i]->hasGrown ) {
+					 		n_bones_used++;
 							if (food->p_owner->bones[i]->attachedTo == food->index) {
 								terminal = false;
 							}
 						}
 					}
+				}
+
+				if (n_bones_used == 1) {
+					terminal = true;
 				}
 
 				if (terminal) {
@@ -6821,6 +6838,9 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 					fish->feed(food->energy);
 				}
+				else {
+					// printf("the food was not terminal\n");
+				}
 			}
 		}
 		else if (dataA.dataType == TYPE_MOUTH) {
@@ -6828,6 +6848,7 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 			BoneUserData * food = ((BoneUserData *)(dataB.uData) );
 
 			if (fish->flagDelete || food->p_owner->flagDelete || food->flagDelete) {
+					// printf("the food was flagged for deletion\n");
 				return;
 			}
 			if (m_deepSeaSettings.gameMode == GAME_MODE_LABORATORY) {
@@ -6837,14 +6858,20 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 
 				// if the part is not terminal, it is smashed off and becomes food
 				bool terminal = true;
+				unsigned int n_bones_used = 0;
 				for (int i = 0; i < N_FINGERS; ++i) {
 					if (food->p_owner->bones[i]->isUsed) {
 					 	if ( food->p_owner->bones[i]->hasGrown ) {
+					 		n_bones_used++;
 							if (food->p_owner->bones[i]->attachedTo == food->index) {
 								terminal = false;
 							}
 						}
 					}
+				}
+
+				if (n_bones_used == 1) {
+					terminal = true;
 				}
 
 				if (terminal) {
@@ -6854,6 +6881,9 @@ void collisionHandler (void * userDataA, void * userDataB, b2Contact * contact) 
 					}
 
 					fish->feed(food->energy);
+				}
+				else{
+					// printf("the food was not terminal\n");
 				}
 			}
 		}
