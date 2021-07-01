@@ -4,19 +4,6 @@ Epics ------------
 
 interacting ecosystem of several species
 
-fish can steer itself toward food
-	it's not entirely clear why we haven't been able to do this yet.
-	- maybe the shape and size of the brain does not permit this logic to occur.
-	- maybe the sensory data entering the brain is not sufficient to easily guide the creature.
-	- insufficient population and time, or too high mutation rate meaning that more complex solutions can't be resolved.
-
-
-	having to run the simulation for too long or with too many fish is bad gameplay, so better to improve the first 2.
-	it is hard to know what would have to change about the neural layout without a better understanding of how this problem is solved.
-
-	the middle point is the easiest to solve, adding better sensors that do not need as much processing to guide the creature.
-
-
 
 
 
@@ -38,12 +25,26 @@ In Progress -------------------------
 
 To Do ---------------------------------------
 
+
+
+	to finish first release:
+		- load nellyfish at start
+		- ability to load empty laboratory map
+		- portable copy built for release
+
+
+
+
+
+
+
+
+
+
 	mutation adds and removes limbs, neurons, layers, and other brain peripherals
+		- nah, that's up to the player or whatever.
 
 
-
-
-	- an enclosed boundary for the playable area (maps, terrain etc). loadable maps with a physical containment to keep the fish in. rigid polygonal terrain.
 
 
 	plants which are non-motile animals that photosynthesize and can be eaten
@@ -54,12 +55,16 @@ To Do ---------------------------------------
 
 
 
-	randomise timer phase on a per-animal basis
-
-
-
 
 Done -----------
+
+	randomise timer phase on a per-animal basis
+	- sort of done, between the removal of timers from the game, and the addition of neural noise, which gives a similar visual impression
+
+
+
+	- an enclosed boundary for the playable area (maps, terrain etc). loadable maps with a physical containment to keep the fish in. rigid polygonal terrain.
+		- done!
 
 	buttons to add and remove neurons in middle layers - done!
 
@@ -89,3 +94,19 @@ Done -----------
 	-> select and deselect a species
 	-> select all members of the species
 	-> 
+
+
+fish can steer itself toward food
+	it's not entirely clear why we haven't been able to do this yet.
+	- maybe the shape and size of the brain does not permit this logic to occur.
+	- maybe the sensory data entering the brain is not sufficient to easily guide the creature.
+	- insufficient population and time, or too high mutation rate meaning that more complex solutions can't be resolved.
+
+
+	having to run the simulation for too long or with too many fish is bad gameplay, so better to improve the first 2.
+	it is hard to know what would have to change about the neural layout without a better understanding of how this problem is solved.
+
+	the middle point is the easiest to solve, adding better sensors that do not need as much processing to guide the creature.
+
+
+		- done. 

@@ -4005,6 +4005,10 @@ void loadmap_fishtank() {
 
 
 
+
+ 	// load 3 "Nellyfish30"
+
+
 }
 
 // void loadFishTankMap() {
